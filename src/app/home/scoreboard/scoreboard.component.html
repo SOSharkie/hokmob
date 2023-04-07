@@ -9,7 +9,7 @@
       <mat-icon fontIcon="chevron_right"></mat-icon>
     </div>
   </div>
-  <div *ngFor="let game of currentDayGames" class="game-container">
+  <div *ngFor="let game of currentDayGames; let last = last" class="game-container" [ngClass]="{'last-scorecard': last}">
     <app-scorecard
       [game]="game"
     ></app-scorecard>

@@ -6,9 +6,9 @@
   align-items: center;
   align-content: center;
   height: 100px;
+  width: 650px;
   background-color: $black-02;
   color: white;
-  border-radius: 25px;
 
   .game-time {
     display: flex;
@@ -16,8 +16,19 @@
     justify-content: center;
     align-items: center;
     align-content: center;
-    margin-left: $spacing-x-large;
-    margin-right: $spacing-x-large;
+    width: 100px;
+  }
+
+  .home-team {
+    display: flex;
+    justify-content: flex-end;
+    width: 275px;
+  }
+
+  .away-team {
+    display: flex;
+    justify-content: flex-start;
+    width: 275px;
   }
 }
 

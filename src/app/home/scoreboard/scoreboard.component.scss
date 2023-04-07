@@ -10,6 +10,7 @@
     align-items: center;
     align-content: center;
     height: 100px;
+    width: 650px;
     background-color: $black-02;
     color: white;
     border-radius: 25px;
@@ -41,5 +42,10 @@
 
   .game-container {
     border-top: 1px solid gray;
+  }
+
+  .last-scorecard .scorecard-container {
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
   }
 }
