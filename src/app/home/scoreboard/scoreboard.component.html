@@ -4,7 +4,14 @@
     <div class="day-shift left">
       <mat-icon fontIcon="chevron_left"></mat-icon>
     </div>
-    <span class="current-day">Today</span>
+    <div class="date-container">
+      <div class="date-select-container" (click)="onClickDate()">
+        <span class="selected-day">Today</span>
+        <input matInput [matDatepicker]="datePicker" class="date-input">
+        <mat-icon fontIcon="arrow_drop_down" class="dropdown-arrow"></mat-icon>
+      </div>
+      <mat-datepicker #datePicker></mat-datepicker>
+    </div>
     <div class="day-shift right">
       <mat-icon fontIcon="chevron_right"></mat-icon>
     </div>

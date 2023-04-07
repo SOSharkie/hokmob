@@ -15,8 +15,29 @@
     color: white;
     border-radius: 25px;
 
-    .current-day {
-      font-size: x-large;
+    .date-container {
+      .date-select-container {
+        display: flex;
+        color: white;
+
+        .selected-day {
+          font-size: x-large;
+        }
+
+        .date-input {
+          width: 0;
+          height: 0;
+          opacity: 0;
+        }
+
+        .dropdown-arrow {
+        }
+      }
+
+      .date-select-container:hover {
+        color: $gray-03;
+        cursor: pointer;
+      }
     }
 
     .day-shift {
@@ -41,11 +62,17 @@
   }
 
   .game-container {
-    border-top: 1px solid gray;
+    border-top: 1px solid $black-03;
   }
 
   .last-scorecard .scorecard-container {
     border-bottom-left-radius: 25px;
     border-bottom-right-radius: 25px;
   }
+}
+
+.mat-datepicker-content {
+  border-radius: 25px !important;
+  margin-left: -175px;
+  margin-top: $spacing-huge;
 }
