@@ -1,0 +1,37 @@
+@import "variables";
+
+.main-toolbar {
+  height: 100px;
+  justify-content: space-around;
+  background-color: $header-color;
+
+  .title-and-search-container {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    align-items: center;
+
+    .site-name {
+      font-size: xx-large;
+      margin-right: $spacing-xx-large;
+      color: white;
+    }
+
+    .site-name:hover {
+      cursor: pointer;
+      color: lightgray;
+    }
+
+  }
+
+  .about-and-login-container {
+    .about-label {
+      color: white;
+    }
+
+    .about-label:hover {
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  }
+}
