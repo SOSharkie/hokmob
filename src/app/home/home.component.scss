@@ -1,0 +1,37 @@
+@import "variables";
+
+.home-page {
+  display: flex;
+  justify-content: center;
+  padding-top: $spacing-medium;
+  background-color: black;
+
+  .nav-menu {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    min-height: 1000px;
+    margin-right: $spacing-large;
+
+    .nav-menu-item {
+      color: white;
+      font-size: large;
+      margin-top: $spacing-large;
+      margin-bottom: $spacing-large;
+    }
+  }
+
+  .scores {
+    display: flex;
+    flex-direction: column;
+    width: 650px;
+    min-height: 1000px;
+    margin-right: $spacing-large;
+  }
+
+  .news-and-standings {
+    width: 300px;
+    min-height: 1000px;
+    color: white;
+  }
+}

@@ -1,0 +1,27 @@
+@import "variables";
+
+.scorecard-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  height: 100px;
+  background-color: $black-02;
+  color: white;
+  border-radius: 25px;
+
+  .game-time {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    margin-left: $spacing-x-large;
+    margin-right: $spacing-x-large;
+  }
+}
+
+.scorecard-container:hover {
+  background-color: $black-03;
+  cursor: pointer;
+}

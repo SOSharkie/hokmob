@@ -5,7 +5,7 @@
   justify-content: space-between;
   align-content: center;
   align-items: center;
-  background-color: $search-input-color;
+  background-color: $black-03;
   padding-left: $spacing-large;
   padding-right: $spacing-small;
   border: none;
@@ -16,8 +16,9 @@
     width: 300px;
     border: none;
     border-radius: 25px;
-    background-color: $search-input-color;
-    color: $search-text-color;
+    margin-left: $spacing-medium;
+    background-color: $black-03;
+    color: $gray-02;
     font-size: medium;
   }
 
@@ -26,7 +27,7 @@
   }
 
   .search-input::placeholder {
-    color: $search-text-color;
+    color: $gray-02;
     font-size: larger;
   }
 }

@@ -10,13 +10,19 @@ import { MatInputModule } from "@angular/material/input";
 import { MatIconModule } from '@angular/material/icon';
 import { HeaderComponent } from './header/header.component';
 import { SearchInputComponent } from './shared/components/search-input/search-input.component';
+import { NavigationMenuComponent } from './home/navigation-menu/navigation-menu.component';
+import { ScoreboardComponent } from './home/scoreboard/scoreboard.component';
+import { ScorecardComponent } from './shared/components/scorecard/scorecard.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
     HeaderComponent,
-    SearchInputComponent
+    SearchInputComponent,
+    NavigationMenuComponent,
+    ScoreboardComponent,
+    ScorecardComponent
   ],
   imports: [
     BrowserModule,

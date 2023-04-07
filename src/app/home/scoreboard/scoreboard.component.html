@@ -1,0 +1,17 @@
+<div class="scores-container">
+
+  <div class="day-select-container">
+    <div class="day-shift left">
+      <mat-icon fontIcon="chevron_left"></mat-icon>
+    </div>
+    <span class="current-day">Today</span>
+    <div class="day-shift right">
+      <mat-icon fontIcon="chevron_right"></mat-icon>
+    </div>
+  </div>
+  <div *ngFor="let game of currentDayGames" class="game-container">
+    <app-scorecard
+      [game]="game"
+    ></app-scorecard>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+@import "variables";
+
+.nav-menu-item {
+  height: 50px;
+  width: 250px;
+  padding-left: $spacing-xx-large;
+  padding-right: $spacing-xx-large;
+  background-color: black;
+  color: white;
+  border-radius: 25px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+
+  .nav-menu-text {
+
+  }
+}
+
+.nav-menu-item:hover {
+  background-color: $black-02;
+  cursor: pointer;
+}

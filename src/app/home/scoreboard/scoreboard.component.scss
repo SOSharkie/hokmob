@@ -1,0 +1,45 @@
+@import "variables";
+
+.scores-container {
+  background-color: $black-02;
+  border-radius: 25px;
+
+  .day-select-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    height: 100px;
+    background-color: $black-02;
+    color: white;
+    border-radius: 25px;
+
+    .current-day {
+      font-size: x-large;
+    }
+
+    .day-shift {
+      padding: 3px 4px 1px 3px;
+      background-color: $gray-02;
+      border-radius: 50%;
+    }
+
+    .day-shift:hover {
+      background-color: white;
+      color: $black-01;
+      cursor: pointer;
+    }
+
+    .day-shift.left {
+      margin-left: $spacing-x-large;
+    }
+
+    .day-shift.right {
+      margin-right: $spacing-x-large;
+    }
+  }
+
+  .game-container {
+    border-top: 1px solid gray;
+  }
+}

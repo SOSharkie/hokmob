@@ -3,7 +3,7 @@
 .main-toolbar {
   height: 100px;
   justify-content: space-around;
-  background-color: $header-color;
+  background-color: $black-02;
 
   .title-and-search-container {
     display: flex;
@@ -13,7 +13,7 @@
 
     .site-name {
       font-size: xx-large;
-      margin-right: $spacing-xx-large;
+      margin-right: $spacing-huge;
       color: white;
     }
 
