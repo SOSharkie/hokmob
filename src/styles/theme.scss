@@ -1,0 +1,26 @@
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+// https://m2.material.io/design/color/the-color-system.html#color-theme-creation
+
+$primary-palette: mat.define-palette(mat.$purple-palette, 600);
+$accent-palette: mat.define-palette(mat.$green-palette, A200, A100, A400);
+$typography: mat.define-typography-config(
+  $font-family: "GTWalsheim-Rg, GTWalsheim-Md, Rubik, system, Arial, sans-serif"
+);
+
+
+$theme: mat.define-dark-theme((
+ color: (
+   primary: $primary-palette,
+   accent: $accent-palette,
+ ),
+ typography: $typography
+));
+
+@include mat.all-component-themes($theme);
+
+// Uncomment below if typography is not working properly in some components:
+// https://stackoverflow.com/questions/74595732/angular-material-v15-theme-typography-default-text-not-styled
+// @include mat.all-component-typographies($typography);
