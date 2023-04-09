@@ -48,4 +48,17 @@ export class ScorecardComponent {
     }
     return "N/A"
   }
+
+  public get completedGameStatus(): string {
+    if (this.game) {
+      if (this.game.linescore.currentPeriod === 5 && this.game.linescore.hasShootout) {
+        return "SO";
+      } else if (this.game.linescore.currentPeriod === 4 && !this.game.linescore.hasShootout) {
+        return "OT";
+      } else {
+        return "Final";
+      }
+    }
+    return "N/A"
+  }
 }

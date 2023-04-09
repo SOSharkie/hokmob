@@ -20,7 +20,7 @@ export class NhlGameService {
 
   public getNhlGames(date: Date): Promise<NhlGameDayModel> {
     const options = {
-      params: new HttpParams().set("date", this.formatDateStringForNhl(date))
+      params: new HttpParams().set("date", this.formatDateStringForNhl(date)).set("expand", "schedule.linescore")
     };
 
     return new Promise((resolve, reject) => {

@@ -1,6 +1,6 @@
 import {NhlGameTeamModel} from "@shared/models/nhl-game-team.model";
 
-export class NhlGameTeamsModel {
+export class NhlHomeAwayGameTeamModel {
 
   public away: NhlGameTeamModel;
 
