@@ -10,6 +10,9 @@ import { ScoreboardComponent } from '@home/scoreboard/scoreboard.component';
 import { HeaderComponent } from '@header/header.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
 import { ScorecardComponent } from '@shared/components/scorecard/scorecard.component';
+import {FormsModule} from "@angular/forms";
+import {HttpClientModule} from "@angular/common/http";
+import {NhlGameService} from "./shared/services/nhl-game.service";
 
 import { MaterialModule } from '@shared/modules/material.module';
 
@@ -25,11 +28,13 @@ import { MaterialModule } from '@shared/modules/material.module';
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    FormsModule,
     MaterialModule
   ],
-  providers: [],
+  providers: [NhlGameService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

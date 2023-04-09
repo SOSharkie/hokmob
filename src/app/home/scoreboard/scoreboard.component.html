@@ -1,18 +1,18 @@
 <div class="scores-container">
 
   <div class="day-select-container">
-    <div class="day-shift left">
+    <div class="day-shift left" (click)="shiftDateLeft()">
       <mat-icon fontIcon="chevron_left"></mat-icon>
     </div>
     <div class="date-container">
       <div class="date-select-container" (click)="onClickDate()">
-        <span class="selected-day">Today</span>
-        <input matInput [matDatepicker]="datePicker" class="date-input">
+        <span class="selected-day">{{displayDayLabel}}</span>
+        <input matInput [(ngModel)]="selectedDay" (dateChange)="onDateChange($event)" [matDatepicker]="datePicker" class="date-input">
         <mat-icon fontIcon="arrow_drop_down" class="dropdown-arrow"></mat-icon>
       </div>
       <mat-datepicker #datePicker></mat-datepicker>
     </div>
-    <div class="day-shift right">
+    <div class="day-shift right" (click)="shiftDateRight()">
       <mat-icon fontIcon="chevron_right"></mat-icon>
     </div>
   </div>

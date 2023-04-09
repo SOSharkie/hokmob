@@ -17,6 +17,22 @@
     align-items: center;
     align-content: center;
     width: 100px;
+    color: $gray-03;
+  }
+
+  .game-score {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    width: 100px;
+
+    .status-label {
+      margin-top: $spacing-x-small;
+      color: $gray-03;
+      font-size: small;
+    }
   }
 
   .home-team {

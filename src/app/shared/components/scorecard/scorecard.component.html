@@ -1,12 +1,16 @@
 <div class="scorecard-container">
   <div class="home-team">
-    <span>{{game.homeTeam}}</span>
+    <span>{{homeTeamName}}</span>
   </div>
-  <div class="game-time">
-    <span>{{game.gameTime.hours}}:{{game.gameTime.minutes}}</span>
+  <div *ngIf="!completedGame" class="game-time">
+    <span>{{gameTime}}</span>
     <span>PM</span>
   </div>
+  <div *ngIf="completedGame" class="game-score">
+    <span>{{gameScore}}</span>
+    <span class="status-label">Final</span>
+  </div>
   <div class="away-team">
-    <span>{{game.awayTeam}}</span>
+    <span>{{awayTeamName}}</span>
   </div>
 </div>
