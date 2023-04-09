@@ -15,6 +15,8 @@ import {HttpClientModule} from "@angular/common/http";
 import {NhlGameService} from "./shared/services/nhl-game.service";
 
 import { MaterialModule } from '@shared/modules/material.module';
+import {NhlLogoService} from "@shared/services/nhl-logo.service";
+import {NgOptimizedImage} from "@angular/common";
 
 @NgModule({
   declarations: [
@@ -32,9 +34,13 @@ import { MaterialModule } from '@shared/modules/material.module';
     AppRoutingModule,
     BrowserAnimationsModule,
     FormsModule,
-    MaterialModule
+    MaterialModule,
+    NgOptimizedImage
   ],
-  providers: [NhlGameService],
+  providers: [
+    NhlGameService,
+    NhlLogoService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

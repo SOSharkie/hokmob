@@ -1,6 +1,7 @@
 <div class="scorecard-container">
   <div class="home-team">
     <span>{{homeTeamName}}</span>
+    <img [src]="homeTeamLogo" alt="home team logo" class="home-team-logo" *ngIf="!isHomeLogoLoading">
   </div>
   <div *ngIf="!completedGame" class="game-time">
     <span>{{gameTime}}</span>
@@ -11,6 +12,7 @@
     <span class="status-label">{{completedGameStatus}}</span>
   </div>
   <div class="away-team">
+    <img [src]="awayTeamLogo" alt="away team logo" class="away-team-logo" *ngIf="!isAwayLogoLoading">
     <span>{{awayTeamName}}</span>
   </div>
 </div>

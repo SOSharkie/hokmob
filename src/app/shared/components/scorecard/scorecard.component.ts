@@ -1,18 +1,26 @@
-import {Component, Input} from '@angular/core';
-import {Time} from "@angular/common";
-import {GameModel} from "../../models/game.model";
+import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {NhlGameModel} from "@shared/models/nhl-game.model";
 import * as dayjs from 'dayjs'
+import {NhlLogoService} from "@shared/services/nhl-logo.service";
+import {ImageUtils} from "@shared/utils/image-utils";
 
 @Component({
   selector: 'app-scorecard',
   templateUrl: './scorecard.component.html',
   styleUrls: ['./scorecard.component.scss']
 })
-export class ScorecardComponent {
+export class ScorecardComponent implements OnChanges {
 
   @Input()
   public game: NhlGameModel;
+
+  public isHomeLogoLoading: boolean;
+
+  public isAwayLogoLoading: boolean;
+
+  public homeTeamLogo: any;
+
+  public awayTeamLogo: any;
 
   public get completedGame(): boolean {
     if (this.game) {
@@ -60,5 +68,31 @@ export class ScorecardComponent {
       }
     }
     return "N/A"
+  }
+
+  constructor(private nhlLogoService: NhlLogoService) {
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['game']) {
+      this.isHomeLogoLoading = true;
+      this.isAwayLogoLoading = true;
+      this.nhlLogoService.getNhlTeamLogo(this.game.teams.home.team.id).then(data => {
+        let reader = new FileReader();
+        reader.addEventListener("load", () => {
+          this.homeTeamLogo = reader.result;
+        }, false);
+        reader.readAsDataURL(data);
+        this.isHomeLogoLoading = false;
+      });
+      this.nhlLogoService.getNhlTeamLogo(this.game.teams.away.team.id).then(data => {
+        let reader = new FileReader();
+        reader.addEventListener("load", () => {
+          this.awayTeamLogo = reader.result;
+        }, false);
+        reader.readAsDataURL(data);
+        this.isAwayLogoLoading = false;
+      });
+    }
   }
 }

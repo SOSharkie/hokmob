@@ -1,5 +1,7 @@
 @import "variables";
 
+$central-info-width: 75px;
+
 .scorecard-container {
   display: flex;
   justify-content: center;
@@ -16,7 +18,7 @@
     justify-content: center;
     align-items: center;
     align-content: center;
-    width: 100px;
+    width: $central-info-width;
     color: $gray-03;
   }
 
@@ -26,7 +28,7 @@
     justify-content: center;
     align-items: center;
     align-content: center;
-    width: 100px;
+    width: $central-info-width;
 
     .status-label {
       margin-top: $spacing-x-small;
@@ -39,12 +41,24 @@
     display: flex;
     justify-content: flex-end;
     width: 275px;
+
+    .home-team-logo {
+      height: 30px;
+      margin-top: -5px;
+      margin-left: $spacing-medium;
+    }
   }
 
   .away-team {
     display: flex;
     justify-content: flex-start;
     width: 275px;
+
+    .away-team-logo {
+      height: 30px;
+      margin-top: -5px;
+      margin-right: $spacing-medium;
+    }
   }
 }
 

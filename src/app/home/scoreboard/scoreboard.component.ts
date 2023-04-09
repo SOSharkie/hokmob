@@ -1,10 +1,11 @@
 import {Component, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
-import {GameModel} from "@shared/models/game.model";
 import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
 import {NhlGameDayModel} from "@shared/models/nhl-game-day.model";
 import {NhlGameModel} from "@shared/models/nhl-game.model";
+import {NhlLogoService} from "@shared/services/nhl-logo.service";
+import {ImageUtils} from "@shared/utils/image-utils";
 
 @Component({
   selector: 'app-scores',
@@ -30,15 +31,13 @@ export class ScoreboardComponent implements OnInit {
    */
   public displayDayLabel: string = "Today";
 
-  public testGames: GameModel[] = [
-    {homeTeam: "Sharks", awayTeam: "Flyers", gameTime: {hours: 4, minutes: 30}},
-    {homeTeam: "Kings", awayTeam: "Rangers", gameTime: {hours: 6, minutes: 30}},
-    {homeTeam: "Penguins", awayTeam: "Avalanche", gameTime: {hours: 7, minutes: 30}},
-  ];
-
+  /**
+   *
+   */
   public currentDayGames: NhlGameModel[] = [];
 
-  constructor(private nhlGameService: NhlGameService) {
+  constructor(private nhlGameService: NhlGameService,
+              private nhlLogoService: NhlLogoService) {
   }
 
   public ngOnInit() {
