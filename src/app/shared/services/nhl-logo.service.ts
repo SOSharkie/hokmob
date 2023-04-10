@@ -4,8 +4,8 @@ import {HttpParams} from "@angular/common/http";
 import {catchError, map, Observable, tap} from "rxjs";
 
 import * as dayjs from 'dayjs'
-import {NhlScheduleModel} from "@shared/models/nhl-schedule.model";
-import {NhlGameDayModel} from "@shared/models/nhl-game-day.model";
+import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
+import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
 
 @Injectable()
 export class NhlLogoService {

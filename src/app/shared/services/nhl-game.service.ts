@@ -1,21 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {HttpParams} from "@angular/common/http";
-import {catchError, map, Observable, tap} from "rxjs";
-
 import * as dayjs from 'dayjs'
-import {NhlScheduleModel} from "@shared/models/nhl-schedule.model";
-import {NhlGameDayModel} from "@shared/models/nhl-game-day.model";
+import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
+import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
+import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
 
 @Injectable()
 export class NhlGameService {
 
   private readonly nhlScheduleUrl = "https://statsapi.web.nhl.com/api/v1/schedule";
 
-  /**
-   *
-   * @param http
-   */
+  private readonly nhlGameUrl = "https://statsapi.web.nhl.com/api/v1/game/"
+
+  private readonly nhlGameBoxscore = "/boxscore";
+
   constructor(private http: HttpClient) { }
 
   public getNhlGames(date: Date): Promise<NhlGameDayModel> {
@@ -26,6 +25,16 @@ export class NhlGameService {
     return new Promise((resolve, reject) => {
       return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe(response => {
         resolve(response.dates[0])
+      });
+    });
+  }
+
+  public getNhlGameBoxscore(gameId: string): Promise<NhlBoxscoreModel> {
+    let gameUrl = this.nhlGameUrl + gameId + this.nhlGameBoxscore;
+
+    return new Promise((resolve, reject) => {
+      return this.http.get<NhlBoxscoreModel>(gameUrl).subscribe(response => {
+        resolve(response)
       });
     });
   }

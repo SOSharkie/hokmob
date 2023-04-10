@@ -1,7 +1,7 @@
-<div class="scorecard-container">
+<div class="scorecard-container" [routerLink]="['/game', game.gamePk]">
   <div class="home-team">
     <span>{{homeTeamName}}</span>
-    <img [src]="homeTeamLogo" alt="home team logo" class="home-team-logo" *ngIf="!isHomeLogoLoading">
+    <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
   </div>
   <div *ngIf="futureGame" class="game-time">
     <span>{{gameTime}}</span>
@@ -16,7 +16,7 @@
     <span class="live-status-label">{{liveGameStatus}}</span>
   </div>
   <div class="away-team">
-    <img [src]="awayTeamLogo" alt="away team logo" class="away-team-logo" *ngIf="!isAwayLogoLoading">
+    <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
     <span>{{awayTeamName}}</span>
   </div>
 </div>

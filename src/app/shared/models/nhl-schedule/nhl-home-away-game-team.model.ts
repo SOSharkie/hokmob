@@ -1,4 +1,4 @@
-import {NhlGameTeamModel} from "@shared/models/nhl-game-team.model";
+import {NhlGameTeamModel} from "@shared/models/nhl-schedule/nhl-game-team.model";
 
 export class NhlHomeAwayGameTeamModel {
 

@@ -7,7 +7,7 @@
     <div class="date-container">
       <div class="date-select-container" (click)="onClickDate()">
         <span class="selected-day">{{displayDayLabel}}</span>
-        <input matInput [(ngModel)]="selectedDay" (dateChange)="onDateChange($event)" [matDatepicker]="datePicker" class="date-input">
+        <input matInput [(ngModel)]="selectedDay" (dateChange)="onDateSelect($event)" [matDatepicker]="datePicker" class="date-input">
         <mat-icon fontIcon="arrow_drop_down" class="dropdown-arrow"></mat-icon>
       </div>
       <mat-datepicker #datePicker></mat-datepicker>

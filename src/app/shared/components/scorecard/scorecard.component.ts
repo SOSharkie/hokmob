@@ -1,5 +1,5 @@
 import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
-import {NhlGameModel} from "@shared/models/nhl-game.model";
+import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import * as dayjs from 'dayjs'
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {ImageUtils} from "@shared/utils/image-utils";
@@ -17,6 +17,10 @@ export class ScorecardComponent implements OnChanges {
   public isHomeLogoLoading: boolean;
 
   public isAwayLogoLoading: boolean;
+
+  public isHomeLogoLoaded: boolean = false;
+
+  public isAwayLogoLoaded: boolean = false;
 
   public homeTeamLogo: any;
 
@@ -101,13 +105,14 @@ export class ScorecardComponent implements OnChanges {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['game']) {
+    if (changes['game'] && !this.isHomeLogoLoaded && !this.isAwayLogoLoaded) {
       this.isHomeLogoLoading = true;
       this.isAwayLogoLoading = true;
       this.nhlLogoService.getNhlTeamLogo(this.game.teams.home.team.id).then(data => {
         let reader = new FileReader();
         reader.addEventListener("load", () => {
           this.homeTeamLogo = reader.result;
+          this.isHomeLogoLoaded = true;
         }, false);
         reader.readAsDataURL(data);
         this.isHomeLogoLoading = false;
@@ -116,6 +121,7 @@ export class ScorecardComponent implements OnChanges {
         let reader = new FileReader();
         reader.addEventListener("load", () => {
           this.awayTeamLogo = reader.result;
+          this.isAwayLogoLoaded = true;
         }, false);
         reader.readAsDataURL(data);
         this.isAwayLogoLoading = false;

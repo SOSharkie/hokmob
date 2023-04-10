@@ -2,8 +2,8 @@ import {Component, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
 import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
-import {NhlGameDayModel} from "@shared/models/nhl-game-day.model";
-import {NhlGameModel} from "@shared/models/nhl-game.model";
+import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
+import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {ImageUtils} from "@shared/utils/image-utils";
 
@@ -32,16 +32,26 @@ export class ScoreboardComponent implements OnInit {
   public displayDayLabel: string = "Today";
 
   /**
-   *
+   * The list of NHL games for the currently selected day.
    */
   public currentDayGames: NhlGameModel[] = [];
+
+  /**
+   * The ID of the timer which runs a function to GET the latest NHL games.
+   */
+  private nhlGameUpdateTimerId: number;
+
+  /**
+   * The refresh time to get updates on NHL games, set to 10 seconds.
+   */
+  private readonly nhlGameRefreshTime = 10000;
 
   constructor(private nhlGameService: NhlGameService,
               private nhlLogoService: NhlLogoService) {
   }
 
   public ngOnInit() {
-    this.retrieveNhlGames();
+    this.handleDateChange();
   }
 
   /**
@@ -56,10 +66,9 @@ export class ScoreboardComponent implements OnInit {
    *
    * @param $event - Event containing info including the newly selected date value.
    */
-  public onDateChange($event: any): void {
+  public onDateSelect($event: any): void {
     this.selectedDay = dayjs($event.value).toDate();
-    this.updateDisplayDayLabel();
-    this.retrieveNhlGames();
+    this.handleDateChange();
   }
 
   /**
@@ -67,8 +76,7 @@ export class ScoreboardComponent implements OnInit {
    */
   public shiftDateLeft(): void {
     this.selectedDay = dayjs(this.selectedDay).subtract(1, 'day').toDate();
-    this.updateDisplayDayLabel();
-    this.retrieveNhlGames();
+    this.handleDateChange();
   }
 
   /**
@@ -76,8 +84,17 @@ export class ScoreboardComponent implements OnInit {
    */
   public shiftDateRight(): void {
     this.selectedDay = dayjs(this.selectedDay).add(1, 'day').toDate();
+    this.handleDateChange();
+  }
+
+  private handleDateChange(): void {
     this.updateDisplayDayLabel();
     this.retrieveNhlGames();
+    if (this.displayDayLabel === "Today") {
+      this.startContinuousNhlGameUpdates();
+    } else {
+      this.stopContinuousNhlGameUpdates();
+    }
   }
 
   private retrieveNhlGames(): void {
@@ -88,8 +105,36 @@ export class ScoreboardComponent implements OnInit {
       } else {
         this.currentDayGames = [];
       }
-
     });
+  }
+
+  /**
+   * Starts continuous timer updating of current day nhl games every 10 seconds. Should always call retrieveNhlGames once
+   * before starting this timer.
+   */
+  private startContinuousNhlGameUpdates(): void {
+    this.nhlGameUpdateTimerId = setInterval(() => {
+      this.nhlGameService.getNhlGames(this.selectedDay).then(nhlGameDay => {
+        if (nhlGameDay) {
+          this.currentDayGames.forEach(existingGame  => {
+            let updatedGame = nhlGameDay.games.find(item => item.gamePk === existingGame.gamePk);
+            if (updatedGame) {
+              existingGame.linescore = updatedGame.linescore;
+              existingGame.teams = updatedGame.teams;
+            }
+          });
+        } else {
+          console.log("Problem updating NHL games");
+        }
+      });
+    }, this.nhlGameRefreshTime);
+  }
+
+  private stopContinuousNhlGameUpdates(): void {
+    if (this.nhlGameUpdateTimerId) {
+      clearInterval(this.nhlGameUpdateTimerId);
+      this.nhlGameUpdateTimerId = null;
+    }
   }
 
   private updateDisplayDayLabel(): void {
