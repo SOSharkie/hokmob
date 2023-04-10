@@ -22,9 +22,23 @@ export class ScorecardComponent implements OnChanges {
 
   public awayTeamLogo: any;
 
+  public get liveGame(): boolean {
+    if (this.game) {
+      return this.game.status.abstractGameState === "Live"
+    }
+    return false;
+  }
+
   public get completedGame(): boolean {
     if (this.game) {
       return this.game.status.abstractGameState === "Final"
+    }
+    return false;
+  }
+
+  public get futureGame(): boolean {
+    if (this.game) {
+      return this.game.status.abstractGameState === "Preview"
     }
     return false;
   }
@@ -70,6 +84,19 @@ export class ScorecardComponent implements OnChanges {
     return "N/A"
   }
 
+  public get liveGameStatus(): string {
+    if (this.game) {
+      if (this.game.linescore.hasShootout) {
+        return "SO";
+      } else if (this.game.linescore.currentPeriodTimeRemaining === "END") {
+        return "End " + this.game.linescore.currentPeriodOrdinal;
+      } else {
+        return this.game.linescore.currentPeriodOrdinal + " - " + this.formatTimeRemaining();
+      }
+    }
+    return "N/A"
+  }
+
   constructor(private nhlLogoService: NhlLogoService) {
   }
 
@@ -93,6 +120,14 @@ export class ScorecardComponent implements OnChanges {
         reader.readAsDataURL(data);
         this.isAwayLogoLoading = false;
       });
+    }
+  }
+
+  private formatTimeRemaining(): string {
+    if (this.game.linescore.currentPeriodTimeRemaining.startsWith("0")) {
+      return this.game.linescore.currentPeriodTimeRemaining.substring(1);
+    } else {
+      return this.game.linescore.currentPeriodTimeRemaining;
     }
   }
 }

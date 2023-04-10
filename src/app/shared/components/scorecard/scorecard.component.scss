@@ -1,13 +1,13 @@
 @import "variables";
 
-$central-info-width: 75px;
+$central-info-width: 80px;
 
 .scorecard-container {
   display: flex;
   justify-content: center;
   align-items: center;
   align-content: center;
-  height: 100px;
+  height: 90px;
   width: 650px;
   background-color: $black-02;
   color: white;
@@ -20,6 +20,8 @@ $central-info-width: 75px;
     align-content: center;
     width: $central-info-width;
     color: $gray-03;
+    padding-right: $spacing-x-small;
+    padding-left: $spacing-x-small;
   }
 
   .game-score {
@@ -29,11 +31,17 @@ $central-info-width: 75px;
     align-items: center;
     align-content: center;
     width: $central-info-width;
+    padding-right: $spacing-x-small;
+    padding-left: $spacing-x-small;
 
-    .status-label {
-      margin-top: $spacing-x-small;
+    .completed-status-label {
+      margin-top: $spacing-small;
       color: $gray-03;
-      font-size: small;
+    }
+
+    .live-status-label {
+      margin-top: $spacing-small;
+      color: $green-01;
     }
   }
 

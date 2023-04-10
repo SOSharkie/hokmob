@@ -17,6 +17,7 @@ import {NhlGameService} from "./shared/services/nhl-game.service";
 import { MaterialModule } from '@shared/modules/material.module';
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {NgOptimizedImage} from "@angular/common";
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import {NgOptimizedImage} from "@angular/common";
     SearchInputComponent,
     NavigationMenuComponent,
     ScoreboardComponent,
-    ScorecardComponent
+    ScorecardComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,

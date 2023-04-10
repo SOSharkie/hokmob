@@ -30,7 +30,6 @@ export class NhlGameService {
     });
   }
 
-
   private formatDateStringForNhl(date: Date): string {
     return dayjs(date).format("YYYY-MM-DD");
   }
