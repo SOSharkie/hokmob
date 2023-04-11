@@ -1,8 +1,9 @@
+import {NhlBoxscoreTeamModel} from "@shared/models/nhl-boxscore/nhl-boxscore-team.model";
 
 export class NhlBoxscoreTeamsModel {
 
-  public home: Object;
+  public home: NhlBoxscoreTeamModel;
 
-  public away: Object;
+  public away: NhlBoxscoreTeamModel;
 
 }

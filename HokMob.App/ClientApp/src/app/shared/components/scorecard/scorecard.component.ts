@@ -2,7 +2,7 @@ import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core'
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import * as dayjs from 'dayjs'
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
-import {ImageUtils} from "@shared/utils/image-utils";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
   selector: 'app-scorecard',

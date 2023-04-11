@@ -5,6 +5,7 @@ import * as dayjs from 'dayjs'
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
 import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
+import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 
 @Injectable()
 export class NhlGameService {
@@ -17,6 +18,11 @@ export class NhlGameService {
 
   constructor(private http: HttpClient) { }
 
+  /**
+   *  Gets all nhl game models for a given date.
+   *
+   * @param date - The date to get NHL game models for.
+   */
   public getNhlGames(date: Date): Promise<NhlGameDayModel> {
     const options = {
       params: new HttpParams().set("date", this.formatDateStringForNhl(date)).set("expand", "schedule.linescore")
@@ -29,6 +35,29 @@ export class NhlGameService {
     });
   }
 
+  /**
+   * Gets the nhl game for a given game ID (gamePk for NHL API).
+   *
+   * @param gameId - The ID of the game to get the NHL game model for.
+   */
+  public getNhlGame(gameId: number): Promise<NhlGameModel> {
+    const options = {
+      params: new HttpParams().set("gamePk", gameId).set("expand", "schedule.linescore")
+    };
+
+    return new Promise((resolve, reject) => {
+      return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe(response => {
+        let game: NhlGameModel = response.dates[0].games.find(game => game.gamePk === gameId);
+        resolve(game);
+      });
+    });
+  }
+
+  /**
+   * Gets the NHL game boxscore for a given game ID.
+   *
+   * @param gameId - The ID of the game to get the boxscore.
+   */
   public getNhlGameBoxscore(gameId: string): Promise<NhlBoxscoreModel> {
     let gameUrl = this.nhlGameUrl + gameId + this.nhlGameBoxscore;
 

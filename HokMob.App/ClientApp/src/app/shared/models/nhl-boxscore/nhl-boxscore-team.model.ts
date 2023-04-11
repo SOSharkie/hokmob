@@ -7,7 +7,7 @@ export class NhlBoxscoreTeamModel {
 
   public teamStats: NhlBoxscoreTeamStatsModel;
 
-  public players: Object;
+  public players: Map<string, Object>;
 
   public goalies: number[];
 

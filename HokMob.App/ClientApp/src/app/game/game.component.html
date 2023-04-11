@@ -1,12 +1,62 @@
 <div class="game-container">
   <div class="game-header">
     <div class="league-info">
-      <span class="league-info-label">NHL Regular Season</span>
+      <div class="games-back-button">
+        <mat-icon fontIcon="chevron_left"></mat-icon>
+        <span>Games</span>
+      </div>
+      <div class="league-info-container">
+        <img class="nhl-logo" src="assets/nhl_logo.png">
+        <span class="league-info-label">NHL Regular Season</span>
+      </div>
+      <span class="info-label">Info</span>
     </div>
-    <div class="main-score">
-      <app-scorecard
-        [game]="gameInfo"
-      ></app-scorecard>
+    <div class="expanded-scorecard-container">
+      <div class="main-score-container">
+        <div class="home-team">
+          <span>{{homeTeamName}}</span>
+          <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
+        </div>
+        <div *ngIf="futureGame" class="game-day-time-container">
+          <span class="game-time-label">{{gameTime}}</span>
+          <span class="game-day-label">{{gameDay}}</span>
+        </div>
+        <div *ngIf="completedGame" class="game-score">
+          <span class="game-score-label">{{gameScore}}</span>
+          <span class="completed-status-label">{{completedGameStatus}}</span>
+        </div>
+        <div *ngIf="liveGame" class="game-score">
+          <span class="game-score-label">{{gameScore}}</span>
+          <span *ngIf="liveGame" class="live-status-label">{{liveGameStatus}}</span>
+        </div>
+        <div class="away-team">
+          <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
+          <span>{{awayTeamName}}</span>
+        </div>
+      </div>
+      <div *ngIf="haveGoalsBeenSCored" class="goal-details-container">
+        <div class="goals-container home-goals">
+
+        </div>
+        <mat-icon fontIcon="sports_hockey"></mat-icon>
+        <div class="goals-container away-goals">
+
+        </div>
+      </div>
+    </div>
+    <div class="game-info-container">
+      <div class="game-info-item game-date-time">
+        <mat-icon fontIcon="calendar_today"></mat-icon>
+        <span>{{gameDateTime}}</span>
+      </div>
+      <div class="game-info-item game-venue-container">
+        <mat-icon fontIcon="stadium"></mat-icon>
+        <span>{{gameVenue}}</span>
+      </div>
+      <div class="game-info-item game-tv-container">
+        <mat-icon fontIcon="live_tv"></mat-icon>
+        <span>{{gameTVInfo}}</span>
+      </div>
     </div>
     <div class="game-info"></div>
   </div>
