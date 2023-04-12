@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
@@ -13,7 +13,7 @@ import {DateTimeUtils} from "@shared/utils/date-time-utils";
   styleUrls: ['./scoreboard.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class ScoreboardComponent implements OnInit {
+export class ScoreboardComponent implements OnInit, OnDestroy {
 
   /**
    * The date picker component.
@@ -65,6 +65,10 @@ export class ScoreboardComponent implements OnInit {
   public ngOnInit() {
     this.selectedDay = dayjs(this.selectedDayString, "YYYYMMDD").toDate();
     this.handleDateChange();
+  }
+
+  public ngOnDestroy() {
+    this.stopContinuousNhlGameUpdates();
   }
 
   /**
@@ -134,6 +138,7 @@ export class ScoreboardComponent implements OnInit {
             if (updatedGame) {
               existingGame.linescore = updatedGame.linescore;
               existingGame.teams = updatedGame.teams;
+              existingGame.status = updatedGame.status;
             }
           });
         } else {

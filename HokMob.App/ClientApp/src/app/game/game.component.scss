@@ -181,6 +181,21 @@ $central-info-width: 170px;
           margin-right: $spacing-medium;
         }
       }
+
+      .game-tv-container {
+        .stream-link {
+          color: $gray-03;
+          text-decoration-line: none;
+        }
+      }
+
+      .game-tv-container:hover {
+        color: white;
+        .stream-link {
+          color: white;
+          text-decoration-line: underline;
+        }
+      }
     }
   }
 }

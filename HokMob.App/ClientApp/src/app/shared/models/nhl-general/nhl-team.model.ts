@@ -7,4 +7,6 @@ export class NhlTeamModel {
 
   public link: string;
 
+  public triCode: string;
+
 }

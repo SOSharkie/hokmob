@@ -1,5 +1,5 @@
-import {NhlLeagueRecordModel} from "@shared/models/nhl-league-record.model";
-import {NhlTeamModel} from "@shared/models/nhl-team.model";
+import {NhlLeagueRecordModel} from "@shared/models/nhl-general/nhl-league-record.model";
+import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 
 export class NhlGameTeamModel {
 

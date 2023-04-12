@@ -20,4 +20,6 @@ export class NhlLinescoreModel {
   public hasShootout: boolean;
 
   public intermissionInfo: Object;
+
+  public powerPlayInfo: Object;
 }

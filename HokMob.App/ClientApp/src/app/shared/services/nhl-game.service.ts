@@ -6,6 +6,7 @@ import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
 import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
+import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 
 @Injectable()
 export class NhlGameService {
@@ -15,6 +16,8 @@ export class NhlGameService {
   private readonly nhlGameUrl = "https://statsapi.web.nhl.com/api/v1/game/"
 
   private readonly nhlGameBoxscore = "/boxscore";
+
+  private readonly nhlLiveFeed = "/feed/live";
 
   constructor(private http: HttpClient) { }
 
@@ -63,6 +66,21 @@ export class NhlGameService {
 
     return new Promise((resolve, reject) => {
       return this.http.get<NhlBoxscoreModel>(gameUrl).subscribe(response => {
+        resolve(response)
+      });
+    });
+  }
+
+  /**
+   * Gets the NHL game live feed for a given game ID.
+   *
+   * @param gameId - The ID of the game to get the live feed.
+   */
+  public getNhlGameLiveFeed(gameId: string): Promise<NhlLiveFeedModel> {
+    let gameUrl = this.nhlGameUrl + gameId + this.nhlLiveFeed;
+
+    return new Promise((resolve, reject) => {
+      return this.http.get<NhlLiveFeedModel>(gameUrl).subscribe(response => {
         resolve(response)
       });
     });
