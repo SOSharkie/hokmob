@@ -19,6 +19,7 @@ import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {NgOptimizedImage} from "@angular/common";
 import { AboutComponent } from './about/about.component';
 import { GameComponent } from './game/game.component';
+import { GoalScorersComponent } from './game/goal-scorers/goal-scorers.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { GameComponent } from './game/game.component';
     ScoreboardComponent,
     ScorecardComponent,
     AboutComponent,
-    GameComponent
+    GameComponent,
+    GoalScorersComponent
   ],
   imports: [
     BrowserModule,

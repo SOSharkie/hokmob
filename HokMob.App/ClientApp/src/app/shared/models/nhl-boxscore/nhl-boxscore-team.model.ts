@@ -1,5 +1,5 @@
 import {NhlBoxscoreTeamStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-team-stats.model";
-import {NhlTeamModel} from "@shared/models/nhl-team.model";
+import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 
 export class NhlBoxscoreTeamModel {
 
@@ -7,7 +7,7 @@ export class NhlBoxscoreTeamModel {
 
   public teamStats: NhlBoxscoreTeamStatsModel;
 
-  public players: Object;
+  public players: Map<string, Object>;
 
   public goalies: number[];
 

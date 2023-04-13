@@ -1,0 +1,41 @@
+<div class="goal-details-container">
+    <div class="goals-container home-goals">
+        <div *ngIf="hasPeriod(1)" class="first period-goals">
+            <span class="period-label">1st:</span>
+            <span>{{getHomeTeamGoals(1)}}</span>
+        </div>
+        <div *ngIf="hasPeriod(2)" class="second period-goals">
+            <span class="period-label">2nd:</span>
+            <span>{{getHomeTeamGoals(2)}}</span>
+        </div>
+        <div *ngIf="hasPeriod(3)" class="third period-goals">
+            <span class="period-label">3rd:</span>
+            <span>{{getHomeTeamGoals(3)}}</span>
+        </div>
+        <div *ngIf="hasPeriod(4)" class="ot period-goals">
+            <span class="period-label">OT:</span>
+            <span>{{getHomeTeamGoals(4)}}</span>
+        </div>
+    </div>
+    <div class="goal-icon">
+        <mat-icon fontIcon="sports_hockey"></mat-icon>
+    </div>
+    <div class="goals-container away-goals">
+        <div *ngIf="hasPeriod(1)" class="first period-goals">
+            <span class="period-label">1st:</span>
+            <span>{{getAwayTeamGoals(1)}}</span>
+        </div>
+        <div *ngIf="hasPeriod(2)" class="second period-goals">
+            <span class="period-label">2nd:</span>
+            <span>{{getAwayTeamGoals(2)}}</span>
+        </div>
+        <div *ngIf="hasPeriod(3)" class="third period-goals">
+            <span class="period-label">3rd:</span>
+            <span>{{getAwayTeamGoals(3)}}</span>
+        </div>
+        <div *ngIf="hasPeriod(4)" class="ot period-goals">
+            <span class="period-label">OT:</span>
+            <span>{{getAwayTeamGoals(4)}}</span>
+        </div>
+    </div>
+</div>

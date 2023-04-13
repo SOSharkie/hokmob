@@ -1,4 +1,4 @@
-import {NhlTeamModel} from "@shared/models/nhl-team.model";
+import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 
 export class NhlLinescoreTeamModel {
 

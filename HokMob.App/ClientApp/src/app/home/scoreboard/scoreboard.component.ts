@@ -1,11 +1,11 @@
-import {Component, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
 import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
-import {ImageUtils} from "@shared/utils/image-utils";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
   selector: 'app-scores',
@@ -13,13 +13,25 @@ import {ImageUtils} from "@shared/utils/image-utils";
   styleUrls: ['./scoreboard.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class ScoreboardComponent implements OnInit {
+export class ScoreboardComponent implements OnInit, OnDestroy {
 
   /**
    * The date picker component.
    */
   @ViewChild('datePicker')
   public datePicker: MatDatepicker<any>;
+
+  /**
+   * The current selected day of the scoreboard.
+   */
+  @Input()
+  public selectedDayString: string;
+
+  /**
+   * Outputs the new date when the selected day is changed;
+   */
+  @Output()
+  public selectedDayChange = new EventEmitter<Date>();
 
   /**
    * The current selected day of the scoreboard.
@@ -51,7 +63,12 @@ export class ScoreboardComponent implements OnInit {
   }
 
   public ngOnInit() {
+    this.selectedDay = dayjs(this.selectedDayString, "YYYYMMDD").toDate();
     this.handleDateChange();
+  }
+
+  public ngOnDestroy() {
+    this.stopContinuousNhlGameUpdates();
   }
 
   /**
@@ -88,6 +105,7 @@ export class ScoreboardComponent implements OnInit {
   }
 
   private handleDateChange(): void {
+    this.selectedDayChange.emit(this.selectedDay);
     this.updateDisplayDayLabel();
     this.retrieveNhlGames();
     if (this.displayDayLabel === "Today") {
@@ -99,7 +117,6 @@ export class ScoreboardComponent implements OnInit {
 
   private retrieveNhlGames(): void {
     this.nhlGameService.getNhlGames(this.selectedDay).then(nhlGameDay => {
-      console.log(nhlGameDay);
       if (nhlGameDay) {
         this.currentDayGames = nhlGameDay.games;
       } else {
@@ -121,6 +138,7 @@ export class ScoreboardComponent implements OnInit {
             if (updatedGame) {
               existingGame.linescore = updatedGame.linescore;
               existingGame.teams = updatedGame.teams;
+              existingGame.status = updatedGame.status;
             }
           });
         } else {
@@ -138,16 +156,6 @@ export class ScoreboardComponent implements OnInit {
   }
 
   private updateDisplayDayLabel(): void {
-    let today = dayjs();
-    let selectedDate = dayjs(this.selectedDay)
-    if (today.isSame(this.selectedDay, 'day')) {
-      this.displayDayLabel = "Today"
-    } else if (today.add(1, 'day').isSame(selectedDate, 'day')) {
-      this.displayDayLabel = "Tomorrow"
-    } else if (today.subtract(1, 'day').isSame(selectedDate, 'day')) {
-      this.displayDayLabel = "Yesterday"
-    } else {
-      this.displayDayLabel = selectedDate.format('dddd, MMMM D');
-    }
+    this.displayDayLabel = DateTimeUtils.getDayDisplayValue(this.selectedDay)
   }
 }

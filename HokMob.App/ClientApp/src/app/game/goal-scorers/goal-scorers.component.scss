@@ -1,0 +1,49 @@
+@import "variables";
+
+$central-info-width: 130px;
+
+.goal-details-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  min-height: 50px;
+  background-color: $black-02;
+  color: $gray-03;
+
+  .goal-icon {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    width: $central-info-width;
+    padding-right: $spacing-medium;
+    padding-left: $spacing-medium;
+  }
+
+  .goals-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 385px;
+    padding-right: $spacing-medium;
+    padding-left: $spacing-medium;
+
+    .period-goals {
+      display: flex;
+      margin-bottom: $spacing-medium;
+
+      .period-label {
+        font-weight: bolder;
+        margin-right: $spacing-medium;
+      }
+    }
+  }
+
+  .home-goals {
+    align-content: flex-end;
+  }
+
+  .away-goals {
+    align-content: flex-start;
+  }
+}

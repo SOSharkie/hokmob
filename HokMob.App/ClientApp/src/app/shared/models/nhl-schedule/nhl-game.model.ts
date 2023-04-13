@@ -1,6 +1,6 @@
-import {NhlVenueModel} from "@shared/models/nhl-venue.model";
+import {NhlVenueModel} from "@shared/models/nhl-general/nhl-venue.model";
 import {NhlHomeAwayGameTeamModel} from "@shared/models/nhl-schedule/nhl-home-away-game-team.model";
-import {NhlGameStatusModel} from "@shared/models/nhl-game-status.model";
+import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
 
 export class NhlGameModel {

@@ -3,7 +3,10 @@
     <app-navigation-menu></app-navigation-menu>
   </div>
   <div class="scores">
-    <app-scores></app-scores>
+    <app-scores
+        [selectedDayString]="selectedDayString"
+        (selectedDayChange)="onSelectedDayChange($event)"
+    ></app-scores>
   </div>
   <div class="news-and-standings">
 
