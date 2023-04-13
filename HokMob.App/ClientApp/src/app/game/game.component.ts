@@ -1,5 +1,5 @@
 import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
-import {ActivatedRoute, Params} from "@angular/router";
+import {ActivatedRoute, Params, Router} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
@@ -8,6 +8,7 @@ import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
+import {GoalModel} from "@shared/models/goal.model";
 
 @Component({
   selector: 'app-game',
@@ -21,6 +22,10 @@ export class GameComponent implements OnInit, OnDestroy {
   public gameBoxscore: NhlBoxscoreModel;
 
   public gameLinescore: NhlLinescoreModel;
+
+  public homeTeamGoals: GoalModel[] = [];
+
+  public awayTeamGoals: GoalModel[] = [];
 
   public isHomeLogoLoading: boolean;
 
@@ -155,6 +160,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   constructor(private route: ActivatedRoute,
+              private router: Router,
               private nhlLogoService: NhlLogoService,
               private nhlGameService: NhlGameService) {
   }
@@ -163,10 +169,10 @@ export class GameComponent implements OnInit, OnDestroy {
     this.route.params.subscribe((params: Params) => {
       this.gameId = params['id'];
       this.nhlGameService.getNhlGameLiveFeed(this.gameId).then(gameLiveData => {
-        console.log(gameLiveData);
         this.gameLiveData = gameLiveData;
         this.gameBoxscore = gameLiveData.liveData.boxscore;
         this.gameLinescore = gameLiveData.liveData.linescore;
+        this.calculateGoals();
         this.loadLogos();
         if (!this.completedGame && this.gameDay === "Today") {
           this.startContinuousNhlGameUpdates();
@@ -175,8 +181,19 @@ export class GameComponent implements OnInit, OnDestroy {
     });
   }
 
-  public ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.stopContinuousNhlGameUpdates();
+  }
+
+  public backToScoreboard(): void {
+    let dateString = dayjs(this.gameLiveData.gameData.datetime.dateTime).format("YYYYMMDD");
+    const dateParam = {date: dateString};
+    this.router.navigate([''],
+        {
+          relativeTo: this.route,
+          queryParams: dateParam
+        }
+    );
   }
 
   /**
@@ -190,6 +207,7 @@ export class GameComponent implements OnInit, OnDestroy {
           this.gameLiveData = gameLiveData;
           this.gameBoxscore = gameLiveData.liveData.boxscore;
           this.gameLinescore = gameLiveData.liveData.linescore;
+          this.calculateGoals();
         } else {
           console.log("Problem updating NHL game with ID", this.gameId);
         }
@@ -202,6 +220,27 @@ export class GameComponent implements OnInit, OnDestroy {
       clearInterval(this.nhlGameUpdateTimerId);
       this.nhlGameUpdateTimerId = null;
     }
+  }
+
+  private calculateGoals(): void {
+    let allPlays = this.gameLiveData.liveData.plays.allPlays;
+    this.homeTeamGoals = [];
+    this.awayTeamGoals = [];
+    this.gameLiveData.liveData.plays.scoringPlays.forEach(scoringPlayIndex => {
+      let goal = new GoalModel();
+      goal.period = allPlays[scoringPlayIndex].about.period;
+      goal.periodTime = allPlays[scoringPlayIndex].about.periodTime;
+      goal.periodTimeRemaining = allPlays[scoringPlayIndex].about.periodTimeRemaining
+
+      // Assumes scorer will always be 1st player in goal scoring event player list
+      goal.scorerFullName = allPlays[scoringPlayIndex].players[0].player.fullName;
+      goal.scorerLastName = goal.scorerFullName.substring(goal.scorerFullName.indexOf(' '));
+      if (allPlays[scoringPlayIndex].team.id === this.gameBoxscore.teams.home.team.id) {
+        this.homeTeamGoals.push(goal);
+      } else {
+        this.awayTeamGoals.push(goal);
+      }
+    });
   }
 
   private loadLogos(): void {

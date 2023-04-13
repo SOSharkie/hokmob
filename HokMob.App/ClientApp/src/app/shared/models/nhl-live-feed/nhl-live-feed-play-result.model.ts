@@ -9,4 +9,19 @@ export class NhlLiveFeedPlayResultModel {
   public eventTypeId: string;
 
   public description: string;
+
+  public secondaryType: string;
+
+  public penaltySeverity: string;
+
+  public penaltyMinutes: string;
+
+  public gameWinningGoal: string;
+
+  public emptyNet: boolean;
+
+  public strength: {
+    code: string,
+    name: string
+  }
 }

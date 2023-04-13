@@ -1,6 +1,6 @@
 @import "variables";
 
-$central-info-width: 170px;
+$central-info-width: 130px;
 
 .game-container {
   margin-top: $spacing-small;
@@ -29,6 +29,29 @@ $central-info-width: 170px;
         justify-content: center;
         align-items: center;
         width: 100px;
+        margin-left: $spacing-medium;
+        font-size: large;
+
+        .back-icon {
+          border-radius: 50%;
+          background-color: $gray-02;
+          height: 25px;
+          width: 25px;
+          margin-right: $spacing-large;
+        }
+      }
+
+      .games-back-button:hover {
+        cursor: pointer;
+
+        .back-icon {
+          background-color: white;
+          color: $black-01;
+        }
+
+        .games-label {
+          text-decoration: underline;
+        }
       }
 
       .league-info-container {
@@ -147,17 +170,6 @@ $central-info-width: 170px;
           }
         }
       }
-
-      .goal-details-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        align-content: center;
-        min-height: 50px;
-        background-color: $black-02;
-        color: $gray-03;
-
-      }
     }
 
     .game-info-container {
@@ -191,6 +203,7 @@ $central-info-width: 170px;
 
       .game-tv-container:hover {
         color: white;
+        
         .stream-link {
           color: white;
           text-decoration-line: underline;

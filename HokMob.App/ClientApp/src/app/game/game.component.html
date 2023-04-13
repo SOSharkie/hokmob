@@ -1,9 +1,11 @@
 <div class="game-container">
   <div class="game-header">
     <div class="league-info">
-      <div class="games-back-button">
-        <mat-icon fontIcon="chevron_left"></mat-icon>
-        <span>Games</span>
+      <div class="games-back-button" (click)="backToScoreboard()">
+        <div class="back-icon">
+          <mat-icon fontIcon="chevron_left"></mat-icon>
+        </div>
+        <span class="games-label">Games</span>
       </div>
       <div class="league-info-container">
         <img class="nhl-logo" src="assets/nhl_logo.png">
@@ -34,15 +36,12 @@
           <span>{{awayTeamName}}</span>
         </div>
       </div>
-      <div *ngIf="haveGoalsBeenSCored" class="goal-details-container">
-        <div class="goals-container home-goals">
-
-        </div>
-        <mat-icon fontIcon="sports_hockey"></mat-icon>
-        <div class="goals-container away-goals">
-
-        </div>
-      </div>
+      <app-goal-scorers
+          *ngIf="haveGoalsBeenSCored"
+          [numPeriods]="gameLinescore.periods.length"
+          [homeTeamGoals]="homeTeamGoals"
+          [awayTeamGoals]="awayTeamGoals">
+      </app-goal-scorers>
     </div>
     <div class="game-info-container">
       <div class="game-info-item game-date-time">
@@ -54,7 +53,7 @@
         <span>{{gameVenue}}</span>
       </div>
       <div class="game-info-item game-tv-container">
-        <mat-icon fontIcon="live_tv"></mat-icon>
+        <mat-icon fontIcon="tv"></mat-icon>
         <a class="stream-link" [href]="gameStreamLink">Game Stream</a>
       </div>
     </div>
