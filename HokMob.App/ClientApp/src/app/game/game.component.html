@@ -15,7 +15,7 @@
     </div>
     <div class="expanded-scorecard-container">
       <div class="main-score-container">
-        <div class="home-team">
+        <div class="home-team-header">
           <span>{{homeTeamName}}</span>
           <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
         </div>
@@ -31,7 +31,7 @@
           <span class="game-score-label">{{gameScore}}</span>
           <span *ngIf="liveGame" class="live-status-label">{{liveGameStatus}}</span>
         </div>
-        <div class="away-team">
+        <div class="away-team-header">
           <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
           <span>{{awayTeamName}}</span>
         </div>

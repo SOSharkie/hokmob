@@ -2,4 +2,9 @@
 
 .app-container {
   background-color: $black-01;
+  width: 100%;
+
+  .routerOutlet {
+    min-height: 100vh;
+  }
 }

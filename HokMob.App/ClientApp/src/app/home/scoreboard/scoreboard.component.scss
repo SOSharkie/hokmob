@@ -3,6 +3,8 @@
 .scores-container {
   background-color: $black-02;
   border-radius: 25px;
+  margin-left: $spacing-medium;
+  margin-right: $spacing-medium;
   margin-bottom: $spacing-large;
 
   .day-select-container {
@@ -11,7 +13,6 @@
     align-items: center;
     align-content: center;
     height: 100px;
-    width: 650px;
     background-color: $black-02;
     color: white;
     border-radius: 25px;
@@ -83,8 +84,30 @@
   }
 }
 
-.mat-datepicker-content {
-  border-radius: 25px !important;
-  margin-left: -175px;
-  margin-top: $spacing-huge;
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .day-select-container {
+    width: 650px;
+  }
+
+  .games-container {
+    width: 650px;
+  }
+
+  .mat-datepicker-content {
+    border-radius: 25px !important;
+    margin-left: -175px;
+    margin-top: $spacing-huge;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .day-select-container {
+    width: 100%;
+  }
+
+  .games-container {
+    width: 98%;
+  }
 }

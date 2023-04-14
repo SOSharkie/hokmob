@@ -2,7 +2,6 @@
 
 .main-toolbar {
   height: 100px;
-  justify-content: space-around;
   background-color: $black-02;
 
   .title-and-search-container {
@@ -12,8 +11,6 @@
     align-items: center;
 
     .site-name {
-      font-size: xx-large;
-      margin-right: $spacing-huge;
       color: white;
     }
 
@@ -32,6 +29,36 @@
     .about-label:hover {
       cursor: pointer;
       text-decoration: underline;
+    }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+
+  .main-toolbar {
+    justify-content: space-around;
+
+    .site-name {
+      font-size: xx-large;
+      margin-right: $spacing-huge;
+    }
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+
+  .main-toolbar {
+    justify-content: center;
+
+    .site-name {
+      font-size: x-large;
+      margin-right: $spacing-large;
+    }
+
+    .about-and-login-container {
+      display: none;
     }
   }
 }

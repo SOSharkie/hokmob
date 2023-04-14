@@ -3,14 +3,14 @@
 .home-page {
   display: flex;
   justify-content: center;
+  min-height: 500px;
+  width: 100%;
   padding-top: $spacing-medium;
   background-color: black;
 
   .nav-menu {
     display: flex;
     flex-direction: column;
-    width: 300px;
-    min-height: 1000px;
     margin-right: $spacing-large;
 
     .nav-menu-item {
@@ -24,14 +24,48 @@
   .scores {
     display: flex;
     flex-direction: column;
-    width: 650px;
-    min-height: 1000px;
     margin-right: $spacing-large;
   }
 
   .news-and-standings {
-    width: 300px;
-    min-height: 1000px;
     color: white;
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .home-page {
+    flex-direction: row;
+
+    .nav-menu {
+      min-width: 200px;
+    }
+
+    .scores {
+      min-width: 500px;
+    }
+
+    .news-and-standings {
+      min-width: 200px;
+    }
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .home-page {
+    flex-direction: column;
+
+    .nav-menu {
+      display: none;
+    }
+
+    .scores {
+      width: 100%;
+    }
+
+    .news-and-standings {
+      display: none;
+    }
   }
 }

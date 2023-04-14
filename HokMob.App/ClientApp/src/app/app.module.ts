@@ -22,6 +22,7 @@ import { GameComponent } from './game/game.component';
 import { GoalScorersComponent } from './game/goal-scorers/goal-scorers.component';
 import {EventTimelineComponent} from "@app/game/event-timeline/event-timeline.component";
 import { EventComponent } from './game/event-timeline/event/event.component';
+import { FooterComponent } from './footer/footer.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,8 @@ import { EventComponent } from './game/event-timeline/event/event.component';
     GameComponent,
     GoalScorersComponent,
     EventTimelineComponent,
-    EventComponent
+    EventComponent,
+    FooterComponent
   ],
   imports: [
     BrowserModule,
