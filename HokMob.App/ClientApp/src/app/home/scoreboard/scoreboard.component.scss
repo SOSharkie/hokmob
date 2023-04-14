@@ -38,7 +38,7 @@
       }
 
       .date-select-container:hover {
-        color: $gray-03;
+        color: $gray-04;
         cursor: pointer;
       }
     }
@@ -64,7 +64,16 @@
     }
   }
 
-  .game-container {
+  .games-container {
+    border-top: 1px solid $black-03;
+  }
+
+  .no-games-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60px;
+    color: white;
     border-top: 1px solid $black-03;
   }
 

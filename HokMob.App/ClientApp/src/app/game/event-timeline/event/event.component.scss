@@ -1,0 +1,73 @@
+@import "variables";
+
+.key-event-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  padding-left: $spacing-large;
+  padding-right: $spacing-large;
+  margin-top: $spacing-medium;
+  margin-bottom: $spacing-medium;
+
+  .event-description {
+    display: flex;
+    align-items: center;
+    width: 440px;
+    margin-left: $spacing-large;
+    margin-right: $spacing-large;
+
+    .event-icon {
+      border: 1px solid $gray-03;
+      border-radius: 50%;
+      margin-right: $spacing-medium;
+      margin-left: $spacing-medium;
+      padding: $spacing-x-small;
+    }
+
+    .event-text {
+      display: flex;
+      flex-direction: column;
+      margin-right: $spacing-medium;
+      margin-left: $spacing-medium;
+      font-weight: 400;
+
+      .event-main-label {
+        color: white;
+        margin-bottom: $spacing-small;
+      }
+
+      .event-secondary-label {
+        color: $gray-03;
+      }
+
+      .color-green {
+        color: $green-01;
+      }
+    }
+
+    .event-text-home {
+      align-items: flex-end;
+    }
+  }
+
+  .home-event {
+    justify-content: flex-end;
+  }
+
+  .away-event {
+    justify-content: flex-start;
+  }
+
+  .event-time {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 35px;
+    background-color: $black-04;
+    border-radius: 25px;
+  }
+}

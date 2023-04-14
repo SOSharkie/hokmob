@@ -1,0 +1,39 @@
+<div class="key-event-container">
+  <div class="home-event event-description">
+    <div *ngIf="isHomeEvent" class="event-text event-text-home">
+      <div *ngIf="isEventGoal" class="event-main-label">
+        <span class="color-green">{{eventPlayerName}}</span>
+        <span> (</span>
+        <span class="color-green">{{goalEventHomeScore}}</span>
+        <span> - </span>
+        <span>{{goalEventAwayScore}}</span>
+        <span>)</span>
+      </div>
+      <div *ngIf="!isEventGoal">
+        <span class="event-main-label">{{eventPlayerName}}</span>
+      </div>
+      <span class="event-secondary-label">{{eventSecondaryLabel}}</span>
+    </div>
+    <mat-icon *ngIf="isHomeEvent" [fontIcon]="fontIcon" class="event-icon"></mat-icon>
+  </div>
+  <div class="event-time">
+    <span>{{periodTime}}</span>
+  </div>
+  <div class="away-event event-description">
+    <mat-icon *ngIf="!isHomeEvent" [fontIcon]="fontIcon" class="event-icon"></mat-icon>
+    <div *ngIf="!isHomeEvent" class="event-text event-text-away">
+      <div *ngIf="isEventGoal" class="event-main-label">
+        <span class="color-green">{{eventPlayerName}}</span>
+        <span> (</span>
+        <span>{{goalEventHomeScore}}</span>
+        <span> - </span>
+        <span class="color-green">{{goalEventAwayScore}}</span>
+        <span>)</span>
+      </div>
+      <div *ngIf="!isEventGoal">
+        <span class="event-main-label">{{eventPlayerName}}</span>
+      </div>
+      <span class="event-secondary-label">{{eventSecondaryLabel}}</span>
+    </div>
+  </div>
+</div>

@@ -5,7 +5,8 @@ $central-info-width: 130px;
 .game-container {
   margin-top: $spacing-small;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 
   .game-header {
     width: 950px;
@@ -111,8 +112,12 @@ $central-info-width: 130px;
           .game-day-label {
             margin-top: $spacing-small;
             font-size: large;
-            color: $gray-03;
+            color: $gray-04;
           }
+        }
+
+        .future-game {
+          width: 170px !important;
         }
 
         .game-score {
@@ -132,7 +137,7 @@ $central-info-width: 130px;
           .completed-status-label {
             margin-top: $spacing-small;
             font-size: large;
-            color: $gray-03;
+            color: $gray-04;
           }
 
           .live-status-label {
@@ -178,7 +183,7 @@ $central-info-width: 130px;
       align-items: center;
       height: 70px;
       background-color: $black-02;
-      color: $gray-03;
+      color: $gray-04;
       width: 100%;
       border-bottom-left-radius: 25px;
       border-bottom-right-radius: 25px;
@@ -196,19 +201,24 @@ $central-info-width: 130px;
 
       .game-tv-container {
         .stream-link {
-          color: $gray-03;
+          color: $gray-04;
           text-decoration-line: none;
         }
       }
 
       .game-tv-container:hover {
         color: white;
-        
+
         .stream-link {
           color: white;
           text-decoration-line: underline;
         }
       }
     }
+  }
+
+  .key-events-container {
+    margin-top: $spacing-x-large;
+    margin-bottom: $spacing-x-large;
   }
 }

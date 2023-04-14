@@ -20,6 +20,8 @@ import {NgOptimizedImage} from "@angular/common";
 import { AboutComponent } from './about/about.component';
 import { GameComponent } from './game/game.component';
 import { GoalScorersComponent } from './game/goal-scorers/goal-scorers.component';
+import {EventTimelineComponent} from "@app/game/event-timeline/event-timeline.component";
+import { EventComponent } from './game/event-timeline/event/event.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +34,9 @@ import { GoalScorersComponent } from './game/goal-scorers/goal-scorers.component
     ScorecardComponent,
     AboutComponent,
     GameComponent,
-    GoalScorersComponent
+    GoalScorersComponent,
+    EventTimelineComponent,
+    EventComponent
   ],
   imports: [
     BrowserModule,

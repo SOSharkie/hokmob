@@ -9,7 +9,7 @@
       </div>
       <div class="league-info-container">
         <img class="nhl-logo" src="assets/nhl_logo.png">
-        <span class="league-info-label">NHL Regular Season</span>
+        <span class="league-info-label">{{gameType}}</span>
       </div>
       <span class="info-label">Info</span>
     </div>
@@ -19,7 +19,7 @@
           <span>{{homeTeamName}}</span>
           <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
         </div>
-        <div *ngIf="futureGame" class="game-day-time-container">
+        <div *ngIf="futureGame" class="game-day-time-container future-game">
           <span class="game-time-label">{{gameTime}}</span>
           <span class="game-day-label">{{gameDay}}</span>
         </div>
@@ -58,5 +58,10 @@
       </div>
     </div>
     <div class="game-info"></div>
+  </div>
+  <div class="key-events-container">
+    <app-event-timeline
+        [gameLiveData]="gameLiveData"
+    ></app-event-timeline>
   </div>
 </div>

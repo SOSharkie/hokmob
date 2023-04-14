@@ -1,8 +1,7 @@
-import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
-import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import * as dayjs from "dayjs";
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
@@ -46,6 +45,24 @@ export class GameComponent implements OnInit, OnDestroy {
    * The refresh time to get updates on NHL games, set to 10 seconds.
    */
   private readonly nhlGameRefreshTime = 10000;
+
+  public get gameType(): string {
+    if (this.gameLiveData) {
+      switch (this.gameLiveData.gameData.game.type) {
+        case "P":
+          let roundNum = this.gameId.charAt(7);
+          let gameNum = this.gameId.charAt(9);
+          return "NHL Playoffs Round " + roundNum + " Game " + gameNum;
+        case "PR":
+          return "NHL Preseason"
+        case "A":
+          return "NHL All-Star Game"
+        default:
+          return "NHL Regular Season"
+      }
+    }
+    return "";
+  }
 
   public get liveGame(): boolean {
     if (this.gameLiveData) {

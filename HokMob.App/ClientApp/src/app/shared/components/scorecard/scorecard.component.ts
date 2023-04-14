@@ -3,6 +3,7 @@ import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import * as dayjs from 'dayjs'
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 
 @Component({
   selector: 'app-scorecard',
@@ -63,9 +64,29 @@ export class ScorecardComponent implements OnChanges {
 
   public get gameTime(): string {
     if (this.game) {
-      return dayjs(this.game.gameDate).format("h:mm");
+      switch (this.game.status.detailedState) {
+        case NhlGameStateEnum.SCHEDULE_TBD:
+          return "TBD";
+        case NhlGameStateEnum.POSTPONED:
+          return "Postponed"
+        default:
+          return dayjs(this.game.gameDate).format("h:mm");
+      }
     }
     return "N/A"
+  }
+
+  public get gameAmPm(): string {
+    if (this.game) {
+      switch (this.game.status.detailedState) {
+        case NhlGameStateEnum.SCHEDULE_TBD:
+        case NhlGameStateEnum.POSTPONED:
+          return "";
+        default:
+          return dayjs(this.game.gameDate).format("A");
+      }
+    }
+    return ""
   }
 
   public get gameScore(): string {
