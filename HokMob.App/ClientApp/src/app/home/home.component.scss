@@ -33,7 +33,7 @@
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: 1175px) {
   .home-page {
     flex-direction: row;
 
@@ -47,6 +47,25 @@
 
     .news-and-standings {
       min-width: 200px;
+    }
+  }
+}
+
+// Small Display
+@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint){
+  .home-page {
+    flex-direction: row;
+
+    .nav-menu {
+      min-width: 130px;
+    }
+
+    .scores {
+      min-width: 450px;
+    }
+
+    .news-and-standings {
+      display: none;
     }
   }
 }

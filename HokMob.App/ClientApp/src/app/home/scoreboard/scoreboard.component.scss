@@ -84,6 +84,12 @@
   }
 }
 
+.mat-datepicker-content {
+  border-radius: 25px !important;
+  margin-left: -175px;
+  margin-top: $spacing-huge;
+}
+
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .day-select-container {
@@ -94,11 +100,6 @@
     width: 650px;
   }
 
-  .mat-datepicker-content {
-    border-radius: 25px !important;
-    margin-left: -175px;
-    margin-top: $spacing-huge;
-  }
 }
 
 // Mobile Styling
