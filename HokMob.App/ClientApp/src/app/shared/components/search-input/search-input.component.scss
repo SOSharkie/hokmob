@@ -2,7 +2,6 @@
 
 .search-container {
   display: flex;
-  justify-content: space-between;
   align-content: center;
   align-items: center;
   background-color: $black-03;
@@ -13,7 +12,6 @@
 
   .search-input {
     height: 50px;
-    width: 300px;
     border: none;
     border-radius: 25px;
     margin-left: $spacing-medium;
@@ -28,10 +26,37 @@
 
   .search-input::placeholder {
     color: $gray-02;
-    font-size: larger;
   }
 }
 
 .mat-datepicker-content {
   background-color: $black-04;
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+
+  .search-container {
+    justify-content: space-between;
+
+    .search-input {
+      width: 300px;
+    }
+    .search-input::placeholder {
+      font-size: larger;
+    }
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+
+  .search-input {
+    width: 100%;
+  }
+
+  .search-input::placeholder {
+    color: $gray-02;
+    font-size: small;
+  }
 }

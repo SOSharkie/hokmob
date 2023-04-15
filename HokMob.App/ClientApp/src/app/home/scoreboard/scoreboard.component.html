@@ -1,5 +1,4 @@
 <div class="scores-container">
-
   <div class="day-select-container">
     <div class="day-shift left" (click)="shiftDateLeft()">
       <mat-icon fontIcon="chevron_left"></mat-icon>
@@ -16,9 +15,12 @@
       <mat-icon fontIcon="chevron_right"></mat-icon>
     </div>
   </div>
-  <div *ngFor="let game of currentDayGames; let last = last" class="game-container" [ngClass]="{'last-scorecard': last}">
+  <div *ngFor="let game of currentDayGames; let last = last" class="games-container" [ngClass]="{'last-scorecard': last}">
     <app-scorecard
       [game]="game"
     ></app-scorecard>
+  </div>
+  <div *ngIf="currentDayGames && currentDayGames.length === 0" class="no-games-container" >
+    <span>No Games</span>
   </div>
 </div>

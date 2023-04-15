@@ -1,6 +1,10 @@
 @import "variables";
 
 .app-container {
-  height: 100vh;
   background-color: $black-01;
+  width: 100%;
+
+  .routerOutlet {
+    min-height: 100vh;
+  }
 }

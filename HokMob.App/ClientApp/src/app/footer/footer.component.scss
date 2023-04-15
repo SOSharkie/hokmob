@@ -1,0 +1,32 @@
+@import "variables";
+
+footer {
+  min-height: 100px;
+  width: 100%;
+  background-color: $black-02;
+  color: white;
+
+  .footer-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: $spacing-x-large;
+    margin-top: $spacing-large;
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+
+  .footer-container {
+    flex-direction: row;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+
+  .footer-container {
+    flex-direction: column;
+  }
+}
