@@ -3,17 +3,21 @@
     <span>{{homeTeamName}}</span>
     <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
   </div>
-  <div *ngIf="futureGame" class="game-time">
-    <span>{{gameTime}}</span>
-    <span>{{gameAmPm}}</span>
-  </div>
-  <div *ngIf="completedGame" class="game-score">
-    <span>{{gameScore}}</span>
-    <span class="completed-status-label">{{completedGameStatus}}</span>
-  </div>
-  <div *ngIf="liveGame" class="game-score">
-    <span>{{gameScore}}</span>
-    <span class="live-status-label">{{liveGameStatus}}</span>
+  <div class="central-info">
+    <span *ngIf="isPlayoffGame" class="playoff-series">{{playoffSeriesDetails}}</span>
+    <div *ngIf="futureGame" class="game-time">
+      <span>{{gameTime}}</span>
+      <span>{{gameAmPm}}</span>
+    </div>
+    <div *ngIf="completedGame" class="game-score">
+      <span>{{gameScore}}</span>
+      <span class="completed-status-label">{{completedGameStatus}}</span>
+    </div>
+    <div *ngIf="liveGame" class="game-score">
+      <span></span>
+      <span>{{gameScore}}</span>
+      <span class="live-status-label">{{liveGameStatus}}</span>
+    </div>
   </div>
   <div class="away-team">
     <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">

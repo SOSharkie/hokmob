@@ -19,6 +19,8 @@ export class NhlGameService {
 
   private readonly nhlLiveFeed = "/feed/live";
 
+  private readonly scheduleDetails = "linescore,broadcasts(all),game(seriesSummary),seriesSummary(series)"
+
   constructor(private http: HttpClient) { }
 
   /**
@@ -28,7 +30,7 @@ export class NhlGameService {
    */
   public getNhlGames(date: Date): Promise<NhlGameDayModel> {
     const options = {
-      params: new HttpParams().set("date", this.formatDateStringForNhl(date)).set("expand", "schedule.linescore")
+      params: new HttpParams().set("date", this.formatDateStringForNhl(date)).set("hydrate", this.scheduleDetails)
     };
 
     return new Promise((resolve, reject) => {
@@ -39,18 +41,39 @@ export class NhlGameService {
   }
 
   /**
-   * Gets the nhl game for a given game ID (gamePk for NHL API).
+   *  Gets all nhl game models for a given team.
    *
-   * @param gameId - The ID of the game to get the NHL game model for.
+   * @param startDate - The start date to look for.
+   * @param endDate - The end date to look for.
+   * @param teamId - The team ID to get NHL game models for.
    */
-  public getNhlGame(gameId: number): Promise<NhlGameModel> {
+  public getTeamGames(startDate: Date, endDate: Date, teamId?: number): Promise<NhlScheduleModel> {
     const options = {
-      params: new HttpParams().set("gamePk", gameId).set("expand", "schedule.linescore")
+      params: new HttpParams().set("startDate", this.formatDateStringForNhl(startDate))
+          .set("endDate", this.formatDateStringForNhl(endDate))
+          .set("teamId", teamId)
     };
 
     return new Promise((resolve, reject) => {
       return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe(response => {
-        let game: NhlGameModel = response.dates[0].games.find(game => game.gamePk === gameId);
+        resolve(response)
+      });
+    });
+  }
+
+  /**
+   * Gets the nhl game for a given game ID (gamePk for NHL API).
+   *
+   * @param gameId - The ID of the game to get the NHL game model for.
+   */
+  public getNhlGame(gameId: string): Promise<NhlGameModel> {
+    const options = {
+      params: new HttpParams().set("gamePk", gameId).set("hydrate", this.scheduleDetails)
+    };
+
+    return new Promise((resolve, reject) => {
+      return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe(response => {
+        let game: NhlGameModel = response.dates[0].games.find(game => game.gamePk === Number(gameId));
         resolve(game);
       });
     });

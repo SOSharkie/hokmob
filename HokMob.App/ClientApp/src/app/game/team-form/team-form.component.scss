@@ -1,0 +1,35 @@
+@import "variables";
+
+.team-form-container {
+  background-color: $black-02;
+  border-radius: 25px;
+  color: white;
+
+  .team-form-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+  }
+
+  .previous-games-container {
+    display: flex;
+    justify-content: space-around;
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+
+  .team-form-container {
+    width: 900px;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+
+  .team-form-container {
+    width: 100%;
+  }
+}

@@ -105,6 +105,13 @@ $central-info-width: 130px;
           width: $central-info-width;
           padding-right: $spacing-medium;
           padding-left: $spacing-medium;
+          padding-bottom: $spacing-medium;
+
+          .playoff-series-label {
+            margin-top: $spacing-small;
+            font-size: medium;
+            color: $gray-04;
+          }
 
           .game-day-label {
             margin-top: $spacing-small;

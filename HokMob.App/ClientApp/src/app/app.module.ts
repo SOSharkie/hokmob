@@ -23,6 +23,8 @@ import { GoalScorersComponent } from './game/goal-scorers/goal-scorers.component
 import {EventTimelineComponent} from "@app/game/event-timeline/event-timeline.component";
 import { EventComponent } from './game/event-timeline/event/event.component';
 import { FooterComponent } from './footer/footer.component';
+import { TeamFormComponent } from './game/team-form/team-form.component';
+import { PreviousGameComponent } from './game/team-form/previous-game/previous-game.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +40,9 @@ import { FooterComponent } from './footer/footer.component';
     GoalScorersComponent,
     EventTimelineComponent,
     EventComponent,
-    FooterComponent
+    FooterComponent,
+    TeamFormComponent,
+    PreviousGameComponent
   ],
   imports: [
     BrowserModule,

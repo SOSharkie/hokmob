@@ -62,6 +62,24 @@ export class ScorecardComponent implements OnChanges {
     return "N/A"
   }
 
+  public get isPlayoffGame(): boolean {
+    if (this.game) {
+      return this.game.gameType === "P";
+    }
+    return false;
+  }
+
+  public get playoffSeriesDetails(): string {
+    if (this.game) {
+      if (this.game.seriesSummary.gameNumber === 1 || this.game.seriesSummary.seriesStatusShort.length === 0) {
+        return "(0-0)";
+      } else {
+        return this.game.seriesSummary.seriesStatusShort;
+      }
+    }
+    return "";
+  }
+
   public get gameTime(): string {
     if (this.game) {
       switch (this.game.status.detailedState) {

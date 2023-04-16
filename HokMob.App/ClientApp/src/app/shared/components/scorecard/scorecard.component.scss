@@ -12,36 +12,46 @@ $central-info-width: 82px;
   background-color: $black-02;
   color: white;
 
-  .game-time {
+  .central-info {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    align-content: center;
-    width: $central-info-width;
-    color: $gray-04;
-    padding-right: $spacing-x-small;
-    padding-left: $spacing-x-small;
-  }
-
-  .game-score {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    align-content: center;
     width: $central-info-width;
     padding-right: $spacing-x-small;
     padding-left: $spacing-x-small;
 
-    .completed-status-label {
-      margin-top: $spacing-small;
+    .playoff-series {
+      font-size: small;
+      text-align: center;
+      color: $gray-04;
+      margin-bottom: $spacing-small;
+    }
+
+    .game-time {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      align-content: center;
+      width: $central-info-width;
       color: $gray-04;
     }
 
-    .live-status-label {
-      margin-top: $spacing-small;
-      color: $green-01;
+    .game-score {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      align-content: center;
+
+      .completed-status-label {
+        margin-top: $spacing-small;
+        color: $gray-04;
+      }
+
+      .live-status-label {
+        margin-top: $spacing-small;
+        color: $green-01;
+      }
     }
   }
 

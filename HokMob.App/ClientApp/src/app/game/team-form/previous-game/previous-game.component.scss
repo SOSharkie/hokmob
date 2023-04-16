@@ -1,0 +1,34 @@
+@import "variables";
+
+.previous-game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid $gray-01;
+  margin: $spacing-medium;
+  padding-bottom: $spacing-large;
+  padding-top: $spacing-large;
+
+  .team-name {
+    width: 41%;
+  }
+
+  .home {
+    text-align: right;
+  }
+
+  .score-container {
+    padding: $spacing-medium;
+    margin-left: $spacing-large;
+    margin-right: $spacing-large;
+    border-radius: 10px;
+  }
+
+  .green {
+    background-color: $green-02;
+  }
+
+  .red {
+    background-color: $red-01;
+  }
+}

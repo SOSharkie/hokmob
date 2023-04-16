@@ -21,6 +21,7 @@
         </div>
         <div *ngIf="futureGame" class="game-day-time-container future-game">
           <span class="game-time-label">{{gameTime}}</span>
+          <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
           <span class="game-day-label">{{gameDay}}</span>
         </div>
         <div *ngIf="completedGame" class="game-score">
@@ -63,5 +64,13 @@
     <app-event-timeline
         [gameLiveData]="gameLiveData"
     ></app-event-timeline>
+  </div>
+  <div *ngIf="gameModel && !completedGame">
+    <app-team-form
+        [homeTeam]="gameModel.teams.home.team"
+        [awayTeam]="gameModel.teams.away.team"
+        [homeTeamGames]="homeTeamGames"
+        [awayTeamGames]="awayTeamGames"
+    ></app-team-form>
   </div>
 </div>
