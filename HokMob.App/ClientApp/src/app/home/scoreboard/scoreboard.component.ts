@@ -2,7 +2,6 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, Vi
 import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
-import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";

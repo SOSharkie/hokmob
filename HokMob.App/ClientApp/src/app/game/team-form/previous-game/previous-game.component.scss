@@ -10,7 +10,7 @@
   padding-top: $spacing-large;
 
   .team-name {
-    width: 41%;
+    width: 42%;
   }
 
   .home {
@@ -18,10 +18,12 @@
   }
 
   .score-container {
+    min-width: 32px;
     padding: $spacing-medium;
     margin-left: $spacing-large;
     margin-right: $spacing-large;
     border-radius: 10px;
+    text-align: center;
   }
 
   .green {

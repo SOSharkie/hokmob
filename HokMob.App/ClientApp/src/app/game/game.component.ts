@@ -223,12 +223,12 @@ export class GameComponent implements OnInit, OnDestroy {
       });
       this.nhlGameService.getNhlGame(this.gameId).then(gameModel => {
         this.gameModel = gameModel;
-        let today = dayjs(this.gameModel.gameDate);
-        let thirtyDaysAgo = today.subtract(30, 'days');
-        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), today.toDate(), this.gameModel.teams.home.team.id).then(homeTeamGames => {
+        let yesterday = dayjs().subtract(1, 'day');
+        let thirtyDaysAgo = yesterday.subtract(30, 'days');
+        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.home.team.id).then(homeTeamGames => {
           this.homeTeamGames = homeTeamGames;
         });
-        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), today.toDate(), this.gameModel.teams.away.team.id).then(awayTeamGames => {
+        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.away.team.id).then(awayTeamGames => {
           this.awayTeamGames = awayTeamGames;
         });
       });
