@@ -13,11 +13,11 @@
   .event-description {
     display: flex;
     align-items: center;
-    width: 440px;
     margin-left: $spacing-large;
     margin-right: $spacing-large;
 
     .event-icon {
+      min-width: 24px;
       border: 1px solid $gray-03;
       border-radius: 50%;
       margin-right: $spacing-medium;
@@ -67,5 +67,23 @@
     height: 35px;
     background-color: $black-04;
     border-radius: 25px;
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .event-description {
+    width: 440px;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .event-description {
+    width: 45%;
+
+    .event-secondary-label {
+      display: none;
+    }
   }
 }

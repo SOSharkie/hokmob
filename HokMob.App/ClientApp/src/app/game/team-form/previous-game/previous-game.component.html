@@ -1,4 +1,4 @@
-<div class="previous-game-container">
+<div class="previous-game-container" [ngClass]="{'last-previous-game': isLast}">
   <span class="home team-name">{{gameDay.games[0].teams.home.team.name}}</span>
   <div class="score-container" [ngClass]="scoreColor">
     <span>{{score}}</span>

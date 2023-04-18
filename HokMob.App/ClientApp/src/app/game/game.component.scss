@@ -138,6 +138,7 @@ $central-info-width: 130px;
             margin-top: $spacing-small;
             font-size: large;
             color: $gray-04;
+            text-align: center;
           }
 
           .live-status-label {
@@ -195,6 +196,7 @@ $central-info-width: 130px;
         align-items: center;
 
         mat-icon {
+          min-width: 24px;
           margin-right: $spacing-medium;
         }
       }

@@ -15,6 +15,9 @@ export class PreviousGameComponent {
   @Input()
   public team: NhlTeamModel;
 
+  @Input()
+  public isLast: boolean;
+
   public get score(): string {
     if (this.gameDay) {
       return this.gameDay.games[0].teams.home.score + " - " + this.gameDay.games[0].teams.away.score;

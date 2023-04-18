@@ -67,6 +67,9 @@
   </div>
   <div *ngIf="!futureGame" class="game-container">
     <app-game-stats
+        [homeTeamLogo]="homeTeamLogo"
+        [awayTeamLogo]="awayTeamLogo"
+        [gameLiveData]="gameLiveData"
     ></app-game-stats>
   </div>
   <div *ngIf="gameModel && !completedGame" class="game-container">
