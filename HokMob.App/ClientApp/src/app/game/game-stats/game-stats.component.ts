@@ -268,7 +268,7 @@ export class GameStatsComponent implements OnInit, OnChanges {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes["gameLiveData"]) {
+    if (changes["gameLiveData"] && this.shotDoughnutChart) {
       this.shotDoughnutChart.data.datasets[0].backgroundColor = [this.awayColor, this.homeColor]
       this.shotDoughnutChart.data.datasets[0].data = [this.awayShots, this.homeShots];
       this.shotDoughnutChart.update();

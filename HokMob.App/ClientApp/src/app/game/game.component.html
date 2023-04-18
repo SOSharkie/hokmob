@@ -1,4 +1,29 @@
 <div class="main-game">
+  <div class="dropdown-header" id="dropdownHeader">
+    <div class="dropdown-score-container">
+      <div class="home-team-header">
+        <span>{{homeTeamName}}</span>
+        <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
+      </div>
+      <div *ngIf="futureGame" class="game-day-time-container future-game">
+        <span class="game-time-label">{{gameTime}}</span>
+        <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
+        <span class="game-day-label">{{gameDay}}</span>
+      </div>
+      <div *ngIf="completedGame" class="game-score">
+        <span class="game-score-label">{{gameScore}}</span>
+        <span class="completed-status-label">{{completedGameStatus}}</span>
+      </div>
+      <div *ngIf="liveGame" class="game-score">
+        <span class="game-score-label">{{gameScore}}</span>
+        <span *ngIf="liveGame" class="live-status-label">{{liveGameStatus}}</span>
+      </div>
+      <div class="away-team-header">
+        <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
+        <span>{{awayTeamName}}</span>
+      </div>
+    </div>
+  </div>
   <div class="game-header">
     <div class="league-info">
       <div class="games-back-button" (click)="backToScoreboard()">
