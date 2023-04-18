@@ -30,5 +30,21 @@
       padding: $spacing-medium;
     }
   }
+}
 
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .team-form-container {
+    width: 900px;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+
+  .team-form-container {
+    width: 100%;
+    padding-left: $spacing-medium;
+    padding-right: $spacing-medium;
+  }
 }

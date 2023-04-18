@@ -1,6 +1,6 @@
 <div>
-  <div *ngFor="let menuItem of navMenuItems" class="nav-menu-item">
-<!--    <mat-icon>{{menuItem.iconName}}</mat-icon>-->
+  <div *ngFor="let menuItem of navMenuItems" class="nav-menu-item" (click)="onClickMenuItem(menuItem)">
+    <mat-icon>{{menuItem.iconName}}</mat-icon>
     <span class="nav-menu-text">{{menuItem.name}}</span>
   </div>
 </div>

@@ -16,6 +16,14 @@
       <span class="period-label">OT:</span>
       <span>{{getHomeTeamGoals(4)}}</span>
     </div>
+    <div *ngIf="hasPeriod(5)" class="2ot period-goals">
+      <span class="period-label">2OT:</span>
+      <span>{{getHomeTeamGoals(5)}}</span>
+    </div>
+    <div *ngIf="hasPeriod(6)" class="3ot period-goals">
+      <span class="period-label">3OT:</span>
+      <span>{{getHomeTeamGoals(6)}}</span>
+    </div>
   </div>
   <div class="goal-icon">
     <mat-icon fontIcon="sports_hockey"></mat-icon>
@@ -36,6 +44,14 @@
     <div *ngIf="hasPeriod(4)" class="ot period-goals">
       <span class="period-label">OT:</span>
       <span>{{getAwayTeamGoals(4)}}</span>
+    </div>
+    <div *ngIf="hasPeriod(5)" class="2ot period-goals">
+      <span class="period-label">2OT:</span>
+      <span>{{getAwayTeamGoals(5)}}</span>
+    </div>
+    <div *ngIf="hasPeriod(6)" class="3ot period-goals">
+      <span class="period-label">3OT:</span>
+      <span>{{getAwayTeamGoals(6)}}</span>
     </div>
   </div>
 </div>

@@ -47,4 +47,28 @@
       ></app-event>
     </ng-container>
   </ng-container>
+  <ng-container *ngIf="hasSecondOvertimePeriod">
+    <div class="period-start-container">
+      <span class="period-label">2OT</span>
+    </div>
+    <ng-container *ngFor="let event of secondOvertimePeriodEvents">
+      <app-event
+          [event]="event"
+          [homeTeamId]="gameLiveData.gameData.teams.home.id"
+          [awayTeamId]="gameLiveData.gameData.teams.away.id"
+      ></app-event>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="hasThirdOvertimePeriod">
+    <div class="period-start-container">
+      <span class="period-label">3OT</span>
+    </div>
+    <ng-container *ngFor="let event of thirdOvertimePeriodEvents">
+      <app-event
+          [event]="event"
+          [homeTeamId]="gameLiveData.gameData.teams.home.id"
+          [awayTeamId]="gameLiveData.gameData.teams.away.id"
+      ></app-event>
+    </ng-container>
+  </ng-container>
 </div>

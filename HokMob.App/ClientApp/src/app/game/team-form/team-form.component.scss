@@ -1,0 +1,27 @@
+@import "variables";
+
+.team-form-container {
+  background-color: $black-02;
+  border-radius: 25px;
+  color: white;
+
+  .team-form-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+  }
+
+  .previous-games-container {
+    display: flex;
+    justify-content: space-around;
+
+    .home-games {
+      width: 45%;
+    }
+
+    .away-games {
+      width: 45%;
+    }
+  }
+}

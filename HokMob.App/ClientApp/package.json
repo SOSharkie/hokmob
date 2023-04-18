@@ -24,11 +24,12 @@
     "@angular/platform-browser": "^15.2.0",
     "@angular/platform-browser-dynamic": "^15.2.0",
     "@angular/router": "^15.2.0",
+    "chart.js": "^4.2.1",
+    "dayjs": "^1.11.7",
     "jquery": "^3.6.0",
+    "node": "^18.15.0",
     "oidc-client": "^1.11.5",
     "run-script-os": "^1.1.6",
-    "dayjs": "^1.11.7",
-    "node": "^18.15.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.12.0"
@@ -50,6 +51,5 @@
   },
   "overrides": {
     "autoprefixer": "10.4.5"
-  },
-  "optionalDependencies": {}
+  }
 }

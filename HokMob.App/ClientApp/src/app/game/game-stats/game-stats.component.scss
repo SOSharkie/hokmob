@@ -1,0 +1,142 @@
+@import "variables";
+
+.game-stats-container {
+  background-color: $black-02;
+  border-radius: 25px;
+  color: white;
+
+  .game-stats-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+  }
+
+  .all-stats-container {
+    display: flex;
+    justify-content: space-around;
+    padding-left: $spacing-medium;
+    padding-right: $spacing-medium;
+
+    .shots-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      margin-top: $spacing-large;
+      margin-bottom: $spacing-large;
+
+      .shots-header {
+        display: flex;
+        justify-content: center;
+        color: $gray-03;
+      }
+
+      .shot-chart-logo-container {
+        display: flex;
+        justify-content: space-between;
+
+        .chart-container {
+          display: flex;
+          align-items: center;
+        }
+
+        .team-shots {
+          display: flex;
+          align-items: center;
+
+          .team-logo {
+            width: 90px;
+          }
+        }
+      }
+
+      .shot-labels {
+        position: absolute;
+        font-size: xx-large;
+        display: flex;
+        justify-content: space-around;
+      }
+    }
+
+    .team-stats-container {
+      display: flex;
+      flex-direction: column;
+      margin-top: $spacing-large;
+      margin-bottom: $spacing-large;
+
+      .team-stats-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        margin-left: $spacing-x-large;
+        margin-right: $spacing-x-large;
+        margin-bottom: $spacing-large;
+        padding: $spacing-medium;
+        font-size: larger;
+
+        .team-stat {
+          text-align: center;
+          padding: $spacing-medium $spacing-large;
+          border-radius: 15px;
+        }
+
+        .stats-label {
+          color: $gray-03;
+          text-align: center;
+          min-width: 140px;
+        }
+      }
+    }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .all-stats-container {
+    flex-direction: row;
+
+    .shots-container {
+      width: 50%;
+      border-right: 1px solid $black-04;
+
+      .chart-container {
+        height: 300px;
+        width: 250px;
+      }
+      .shot-labels {
+        top: 150px;
+        width: 170px;
+      }
+    }
+
+    .team-stats-container {
+      width: 50%;
+    }
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .all-stats-container {
+    flex-direction: column;
+
+    .shots-container {
+      width: 100%;
+
+      .chart-container {
+        height: 250px;
+        width: 200px;
+      }
+      .shot-labels {
+        top: 127px;
+        width: 170px;
+      }
+    }
+
+    .team-stats-container {
+      width: 100%;
+    }
+  }
+}

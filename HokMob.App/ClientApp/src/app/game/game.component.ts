@@ -8,6 +8,8 @@ import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
 import {GoalModel} from "@shared/models/goal.model";
+import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
+import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 
 @Component({
   selector: 'app-game',
@@ -21,6 +23,12 @@ export class GameComponent implements OnInit, OnDestroy {
   public gameBoxscore: NhlBoxscoreModel;
 
   public gameLinescore: NhlLinescoreModel;
+
+  public gameModel: NhlGameModel;
+
+  public homeTeamGames: NhlScheduleModel;
+
+  public awayTeamGames: NhlScheduleModel;
 
   public homeTeamGoals: GoalModel[] = [];
 
@@ -89,28 +97,46 @@ export class GameComponent implements OnInit, OnDestroy {
     if (this.gameLiveData) {
       return this.gameLiveData.gameData.teams.home.name
     }
-    return "N/A"
+    return "N/A";
   }
 
   public get awayTeamName(): string {
     if (this.gameLiveData) {
       return this.gameLiveData.gameData.teams.away.name
     }
-    return "N/A"
+    return "N/A";
   }
 
   public get gameTime(): string {
     if (this.gameLiveData) {
       return dayjs(this.gameLiveData.gameData.datetime.dateTime).format("h:mm A");
     }
-    return "N/A"
+    return "N/A";
   }
 
   public get gameDay(): string {
     if (this.gameLiveData) {
       return DateTimeUtils.getDayDisplayValue(dayjs(this.gameLiveData.gameData.datetime.dateTime).toDate());
     }
-    return "N/A"
+    return "N/A";
+  }
+
+  public get playoffSeriesDetails(): string {
+    if (this.gameModel) {
+      if (this.gameModel.seriesSummary.gameNumber === 1 || this.gameModel.seriesSummary.seriesStatusShort.length === 0) {
+        return "Series (0-0)";
+      } else {
+        return this.gameModel.seriesSummary.seriesStatusShort;
+      }
+    }
+    return "";
+  }
+
+  public get isPlayoffGame(): boolean {
+    if (this.gameLiveData) {
+      return this.gameLiveData.gameData.game.type === "P";
+    }
+    return false;
   }
 
   public get gameScore(): string {
@@ -123,9 +149,11 @@ export class GameComponent implements OnInit, OnDestroy {
   public get completedGameStatus(): string {
     if (this.gameLinescore) {
       if (this.gameLinescore.currentPeriod === 5 && this.gameLinescore.hasShootout) {
-        return "SO";
+        return "Final SO";
       } else if (this.gameLinescore.currentPeriod === 4 && !this.gameLinescore.hasShootout) {
-        return "OT";
+        return "Final OT";
+      } else if (this.gameLinescore.currentPeriod > 4) {
+        return "Final " + (this.gameLinescore.currentPeriod - 3) + "OT";
       } else {
         return "Final";
       }
@@ -194,7 +222,18 @@ export class GameComponent implements OnInit, OnDestroy {
         if (!this.completedGame && this.gameDay === "Today") {
           this.startContinuousNhlGameUpdates();
         }
-      })
+      });
+      this.nhlGameService.getNhlGame(this.gameId).then(gameModel => {
+        this.gameModel = gameModel;
+        let yesterday = dayjs().subtract(1, 'day');
+        let thirtyDaysAgo = yesterday.subtract(30, 'days');
+        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.home.team.id).then(homeTeamGames => {
+          this.homeTeamGames = homeTeamGames;
+        });
+        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.away.team.id).then(awayTeamGames => {
+          this.awayTeamGames = awayTeamGames;
+        });
+      });
     });
   }
 

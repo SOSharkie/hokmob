@@ -1,0 +1,52 @@
+@import "variables";
+
+.previous-game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid $gray-01;
+  margin: $spacing-medium;
+  padding-bottom: $spacing-large;
+  padding-top: $spacing-large;
+
+  .team-name {
+    width: 42%;
+  }
+
+  .home {
+    text-align: right;
+  }
+
+  .score-container {
+    min-width: 32px;
+    padding: $spacing-medium;
+    margin-left: $spacing-large;
+    margin-right: $spacing-large;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .green {
+    background-color: $green-02;
+  }
+
+  .red {
+    background-color: $red-01;
+  }
+}
+
+.last-previous-game {
+  border-bottom: none !important;
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .team-name {
+    font-size: small;
+  }
+}
