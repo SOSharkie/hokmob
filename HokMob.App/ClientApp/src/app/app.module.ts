@@ -25,6 +25,9 @@ import { EventComponent } from './game/event-timeline/event/event.component';
 import { FooterComponent } from './footer/footer.component';
 import { TeamFormComponent } from './game/team-form/team-form.component';
 import { PreviousGameComponent } from './game/team-form/previous-game/previous-game.component';
+import { PlayoffsComponent } from './playoffs/playoffs.component';
+import { PlayoffSeriesComponent } from './playoffs/playoff-series/playoff-series.component';
+import { GameStatsComponent } from './game/game-stats/game-stats.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +45,10 @@ import { PreviousGameComponent } from './game/team-form/previous-game/previous-g
     EventComponent,
     FooterComponent,
     TeamFormComponent,
-    PreviousGameComponent
+    PreviousGameComponent,
+    PlayoffsComponent,
+    PlayoffSeriesComponent,
+    GameStatsComponent
   ],
   imports: [
     BrowserModule,

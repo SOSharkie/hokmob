@@ -1,5 +1,10 @@
-# HokMob.App
+# HokMob
 
+Website: [hokmob.azurewebsites.net/]()
+
+This is a hockey stats website based on the the soccer stats website
+[Fotmob](https://www.fotmob.com/). It uses publicly available NHL game API data to display scores, 
+stats, and more.
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.0.2.
 
 ## Development server

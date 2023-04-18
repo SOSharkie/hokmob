@@ -9,12 +9,14 @@
   color: white;
   border-radius: 25px;
   display: flex;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
   align-content: center;
-  flex-direction: column;
+
 
   .nav-menu-text {
-
+    margin-left: $spacing-large;
   }
 }
 

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import {NavMenuItemModel} from "../../shared/models/nav-menu-item.model";
+import {NavMenuItemModel} from "@shared/models/nav-menu-item.model";
+import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-navigation-menu',
@@ -9,10 +10,21 @@ import {NavMenuItemModel} from "../../shared/models/nav-menu-item.model";
 export class NavigationMenuComponent {
 
   public navMenuItems: NavMenuItemModel[] = [
+    {name: "Playoffs", iconName: "ballot"},
     {name: "Standings", iconName: "table_rows"},
     {name: "Stats", iconName: "leaderboard"},
     {name: "News", iconName: "newspaper"},
-    {name: "Teams", iconName: "group"},
-    {name: "More", iconName: "more"}
+    {name: "Teams", iconName: "group"}
   ];
+
+  constructor(private route: ActivatedRoute,
+              private router: Router) {
+  }
+
+  public onClickMenuItem(menuItem: NavMenuItemModel) {
+    switch (menuItem.name) {
+      case "Playoffs":
+        this.router.navigate(['playoffs']);
+    }
+  }
 }

@@ -120,6 +120,8 @@ export class ScorecardComponent implements OnChanges {
         return "SO";
       } else if (this.game.linescore.currentPeriod === 4 && !this.game.linescore.hasShootout) {
         return "OT";
+      } else if (this.game.linescore.currentPeriod > 4) {
+        return (this.game.linescore.currentPeriod - 3) + "OT";
       } else {
         return "Final";
       }

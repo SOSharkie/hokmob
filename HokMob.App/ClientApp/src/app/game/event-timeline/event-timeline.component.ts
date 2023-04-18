@@ -7,7 +7,7 @@ import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-p
   templateUrl: './event-timeline.component.html',
   styleUrls: ['./event-timeline.component.scss']
 })
-export class EventTimelineComponent implements OnInit, OnChanges {
+export class EventTimelineComponent implements OnChanges {
 
   @Input()
   public gameLiveData: NhlLiveFeedModel;
@@ -20,6 +20,10 @@ export class EventTimelineComponent implements OnInit, OnChanges {
 
   public overtimePeriodEvents: NhlLiveFeedPlayModel[];
 
+  public secondOvertimePeriodEvents: NhlLiveFeedPlayModel[];
+
+  public thirdOvertimePeriodEvents: NhlLiveFeedPlayModel[];
+
   public get hasFirstPeriod(): boolean {
     if (this.firstPeriodEvents) {
       return this.firstPeriodEvents.length > 0;
@@ -28,28 +32,38 @@ export class EventTimelineComponent implements OnInit, OnChanges {
   }
 
   public get hasSecondPeriod(): boolean {
-    if (this.firstPeriodEvents) {
+    if (this.secondOvertimePeriodEvents) {
       return this.secondPeriodEvents.length > 0;
     }
     return false;
   }
 
   public get hasThirdPeriod(): boolean {
-    if (this.firstPeriodEvents) {
+    if (this.thirdOvertimePeriodEvents) {
       return this.thirdPeriodEvents.length > 0;
     }
     return false;
   }
 
   public get hasOvertimePeriod(): boolean {
-    if (this.firstPeriodEvents) {
+    if (this.overtimePeriodEvents) {
       return this.overtimePeriodEvents.length > 0;
     }
     return false;
   }
 
-  public ngOnInit(): void {
+  public get hasSecondOvertimePeriod(): boolean {
+    if (this.secondOvertimePeriodEvents) {
+      return this.secondOvertimePeriodEvents.length > 0;
+    }
+    return false;
+  }
 
+  public get hasThirdOvertimePeriod(): boolean {
+    if (this.thirdOvertimePeriodEvents) {
+      return this.secondOvertimePeriodEvents.length > 0;
+    }
+    return false;
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -58,6 +72,8 @@ export class EventTimelineComponent implements OnInit, OnChanges {
       this.secondPeriodEvents = [];
       this.thirdPeriodEvents = [];
       this.overtimePeriodEvents = [];
+      this.secondOvertimePeriodEvents = [];
+      this.thirdOvertimePeriodEvents = [];
       let keyPlayIndices = this.gameLiveData.liveData.plays.scoringPlays
           .concat(this.gameLiveData.liveData.plays.penaltyPlays);
       keyPlayIndices.sort((a, b) => a - b);
@@ -72,8 +88,14 @@ export class EventTimelineComponent implements OnInit, OnChanges {
           case 3:
             this.thirdPeriodEvents.push(this.gameLiveData.liveData.plays.allPlays[keyPlayIndex]);
             break;
-          default:
+          case 4:
             this.overtimePeriodEvents.push(this.gameLiveData.liveData.plays.allPlays[keyPlayIndex]);
+            break;
+          case 5:
+            this.secondOvertimePeriodEvents.push(this.gameLiveData.liveData.plays.allPlays[keyPlayIndex]);
+            break;
+          default:
+            this.thirdOvertimePeriodEvents.push(this.gameLiveData.liveData.plays.allPlays[keyPlayIndex]);
         }
       });
     }

@@ -1,4 +1,4 @@
-<div class="game-container">
+<div class="main-game">
   <div class="game-header">
     <div class="league-info">
       <div class="games-back-button" (click)="backToScoreboard()">
@@ -60,12 +60,16 @@
     </div>
     <div class="game-info"></div>
   </div>
-  <div class="key-events-container">
+  <div *ngIf="!futureGame" class="game-container">
     <app-event-timeline
         [gameLiveData]="gameLiveData"
     ></app-event-timeline>
   </div>
-  <div *ngIf="gameModel && !completedGame">
+  <div *ngIf="!futureGame" class="game-container">
+    <app-game-stats
+    ></app-game-stats>
+  </div>
+  <div *ngIf="gameModel && !completedGame" class="game-container">
     <app-team-form
         [homeTeam]="gameModel.teams.home.team"
         [awayTeam]="gameModel.teams.away.team"

@@ -1,26 +1,26 @@
 @import "variables";
 
-.team-form-container {
+.game-stats-container {
   background-color: $black-02;
   border-radius: 25px;
   color: white;
 
-  .team-form-header {
+  .game-stats-header {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 40px;
   }
 
-  .previous-games-container {
+  .stats-container {
     display: flex;
     justify-content: space-around;
 
-    .home-games {
+    .shots-container {
       width: 45%;
     }
 
-    .away-games {
+    .team-stats-container {
       width: 45%;
     }
   }

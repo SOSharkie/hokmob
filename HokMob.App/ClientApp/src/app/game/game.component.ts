@@ -149,9 +149,11 @@ export class GameComponent implements OnInit, OnDestroy {
   public get completedGameStatus(): string {
     if (this.gameLinescore) {
       if (this.gameLinescore.currentPeriod === 5 && this.gameLinescore.hasShootout) {
-        return "SO";
+        return "Final SO";
       } else if (this.gameLinescore.currentPeriod === 4 && !this.gameLinescore.hasShootout) {
-        return "OT";
+        return "Final OT";
+      } else if (this.gameLinescore.currentPeriod > 4) {
+        return "Final " + (this.gameLinescore.currentPeriod - 3) + "OT";
       } else {
         return "Final";
       }

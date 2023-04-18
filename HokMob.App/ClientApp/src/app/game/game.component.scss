@@ -2,7 +2,7 @@
 
 $central-info-width: 130px;
 
-.game-container {
+.main-game {
   margin-top: $spacing-small;
   display: flex;
   flex-direction: column;
@@ -167,6 +167,7 @@ $central-info-width: 130px;
           align-items: center;
           width: 380px;
           text-align: center;
+          padding: $spacing-small;
 
           .away-team-logo {
             height: 60px;
@@ -192,7 +193,6 @@ $central-info-width: 130px;
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 250px;
 
         mat-icon {
           margin-right: $spacing-medium;
@@ -217,9 +217,9 @@ $central-info-width: 130px;
     }
   }
 
-  .key-events-container {
-    margin-top: $spacing-x-large;
-    margin-bottom: $spacing-x-large;
+  .game-container {
+    margin-top: $spacing-large;
+    margin-bottom: $spacing-large;
   }
 }
 
@@ -242,9 +242,14 @@ $central-info-width: 130px;
     .game-time-label, .game-score-label {
       font-size: xx-large;
     }
+
+    .game-info-item {
+      width: 250px;
+      font-size: medium;
+    }
   }
 
-  .key-events-container {
+  .game-container {
     width: 900px;
   }
 }
@@ -274,11 +279,17 @@ $central-info-width: 130px;
     }
 
     .game-time-label, .game-score-label {
+      text-align: center;
       font-size: x-large;
+    }
+
+    .game-info-item {
+      width: 30%;
+      font-size: small;
     }
   }
 
-  .key-events-container {
+  .game-container {
     width: 100%;
   }
 }

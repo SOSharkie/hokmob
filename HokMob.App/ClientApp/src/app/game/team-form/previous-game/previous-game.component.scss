@@ -34,3 +34,15 @@
     background-color: $red-01;
   }
 }
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .team-name {
+    font-size: small;
+  }
+}
