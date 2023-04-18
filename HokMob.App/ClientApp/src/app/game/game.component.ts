@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
@@ -16,7 +16,7 @@ import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss']
 })
-export class GameComponent implements OnInit, OnDestroy {
+export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public gameLiveData: NhlLiveFeedModel;
 
@@ -43,6 +43,8 @@ export class GameComponent implements OnInit, OnDestroy {
   public awayTeamLogo: any;
 
   public gameId: string;
+
+  public stickyHeader: HTMLElement;
 
   /**
    * The ID of the timer which runs a function to GET the latest NHL games.
@@ -237,6 +239,10 @@ export class GameComponent implements OnInit, OnDestroy {
     });
   }
 
+  public ngAfterViewInit(): void {
+    this.stickyHeader = document.getElementById("dropdownHeader");
+  }
+
   public ngOnDestroy(): void {
     this.stopContinuousNhlGameUpdates();
   }
@@ -325,6 +331,15 @@ export class GameComponent implements OnInit, OnDestroy {
       return this.gameLinescore.currentPeriodTimeRemaining.substring(1);
     } else {
       return this.gameLinescore.currentPeriodTimeRemaining;
+    }
+  }
+
+  @HostListener('document:scroll')
+  private onScroll(): void {
+    if (window.scrollY > 265) {
+      this.stickyHeader.classList.add("header-show");
+    } else {
+      this.stickyHeader.classList.remove("header-show");
     }
   }
 
