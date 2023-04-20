@@ -4,12 +4,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 45px;
   border-bottom: 1px solid $gray-01;
   margin: $spacing-medium;
   padding-bottom: $spacing-large;
   padding-top: $spacing-large;
 
   .team-name {
+    min-width: 65px;
     width: 42%;
   }
 

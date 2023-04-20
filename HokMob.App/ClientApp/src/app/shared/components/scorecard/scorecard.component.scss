@@ -1,7 +1,5 @@
 @import "variables";
 
-$central-info-width: 82px;
-
 .scorecard-container {
   display: flex;
   justify-content: center;
@@ -15,7 +13,6 @@ $central-info-width: 82px;
   .central-info {
     display: flex;
     flex-direction: column;
-    width: $central-info-width;
     padding-right: $spacing-x-small;
     padding-left: $spacing-x-small;
 
@@ -32,7 +29,6 @@ $central-info-width: 82px;
       justify-content: center;
       align-items: center;
       align-content: center;
-      width: $central-info-width;
       color: $gray-04;
     }
 
@@ -58,8 +54,8 @@ $central-info-width: 82px;
   .home-team {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     text-align: right;
-    width: 275px;
     padding-left: $spacing-medium;
 
     .home-team-logo {
@@ -72,7 +68,7 @@ $central-info-width: 82px;
   .away-team {
     display: flex;
     justify-content: flex-start;
-    width: 275px;
+    align-items: center;
     padding-right: $spacing-medium;
 
     .away-team-logo {
@@ -86,4 +82,30 @@ $central-info-width: 82px;
 .scorecard-container:hover {
   background-color: $black-03;
   cursor: pointer;
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .central-info {
+    width: 90px;
+  }
+  .home-team {
+    width: 280px;
+  }
+  .away-team {
+    width: 280px;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .central-info {
+    min-width: 85px;
+  }
+  .home-team {
+    width: 40%;
+  }
+  .away-team {
+    width: 40%;
+  }
 }
