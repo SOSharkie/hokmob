@@ -221,9 +221,6 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         this.gameLinescore = gameLiveData.liveData.linescore;
         this.calculateGoals();
         this.loadLogos();
-        if (!this.completedGame && this.gameDay === "Today") {
-          this.startContinuousNhlGameUpdates();
-        }
       });
       this.nhlGameService.getNhlGame(this.gameId).then(gameModel => {
         this.gameModel = gameModel;
@@ -234,6 +231,10 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
           this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.away.team.id).then(awayTeamGames => {
             this.awayTeamGames = awayTeamGames;
+
+            if (!this.completedGame && this.gameDay === "Today") {
+              this.startContinuousNhlGameUpdates();
+            }
           });
         });
       });
