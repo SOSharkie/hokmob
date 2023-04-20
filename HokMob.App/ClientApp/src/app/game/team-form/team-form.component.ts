@@ -24,18 +24,14 @@ export class TeamFormComponent {
 
   public get last5HomeTeamGames(): NhlGameDayModel[] {
     if (this.homeTeamGames) {
-      let homeGames = this.homeTeamGames.dates.reverse();
-      let end = Math.min(homeGames.length, 5);
-      return homeGames.slice(0, end);
+      return this.homeTeamGames.dates.slice(this.homeTeamGames.dates.length - 5, this.homeTeamGames.dates.length).reverse();
     }
     return [];
   }
 
   public get last5AwayTeamGames(): NhlGameDayModel[] {
     if (this.awayTeamGames) {
-      let awayGames = this.awayTeamGames.dates.reverse();
-      let end = Math.min(awayGames.length, 5);
-      return awayGames.slice(0, end);
+      return this.awayTeamGames.dates.slice(this.awayTeamGames.dates.length - 5, this.awayTeamGames.dates.length).reverse();
     }
     return [];
   }
