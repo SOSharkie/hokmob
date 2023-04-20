@@ -1,1 +1,18 @@
-<p>playoff-series works!</p>
+<div class="series-container">
+  <div class="series-header">
+    <img [src]="logoA" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoALoaded}">
+    <span class="next-game">{{nextGameDay}}</span>
+    <img [src]="logoB" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoBLoaded}">
+  </div>
+  <div class="series-info">
+    <div class="team-names">
+      <span>{{teamAName}}</span>
+      <span>{{teamBName}}</span>
+    </div>
+    <div class="series-score">
+      <span>{{teamAWins}}</span>
+      <span>-</span>
+      <span>{{teamBWins}}</span>
+    </div>
+  </div>
+</div>
