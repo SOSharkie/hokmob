@@ -34,8 +34,14 @@ export class NhlGameService {
     };
 
     return new Promise((resolve, reject) => {
-      return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe(response => {
-        resolve(response.dates[0])
+      return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe({
+        next: (response) => {
+          resolve(response.dates[0]);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
       });
     });
   }
@@ -55,8 +61,14 @@ export class NhlGameService {
     };
 
     return new Promise((resolve, reject) => {
-      return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe(response => {
-        resolve(response)
+      return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe({
+        next: (response) => {
+          resolve(response);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
       });
     });
   }
@@ -72,9 +84,15 @@ export class NhlGameService {
     };
 
     return new Promise((resolve, reject) => {
-      return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe(response => {
-        let game: NhlGameModel = response.dates[0].games.find(game => game.gamePk === Number(gameId));
-        resolve(game);
+      return this.http.get<NhlScheduleModel>(this.nhlScheduleUrl, options).subscribe({
+        next: (response) => {
+          let game: NhlGameModel = response.dates[0].games.find(game => game.gamePk === Number(gameId));
+          resolve(game);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
       });
     });
   }
@@ -88,8 +106,14 @@ export class NhlGameService {
     let gameUrl = this.nhlGameUrl + gameId + this.nhlGameBoxscore;
 
     return new Promise((resolve, reject) => {
-      return this.http.get<NhlBoxscoreModel>(gameUrl).subscribe(response => {
-        resolve(response)
+      return this.http.get<NhlBoxscoreModel>(gameUrl).subscribe({
+        next: (response) => {
+          resolve(response);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
       });
     });
   }
@@ -103,8 +127,14 @@ export class NhlGameService {
     let gameUrl = this.nhlGameUrl + gameId + this.nhlLiveFeed;
 
     return new Promise((resolve, reject) => {
-      return this.http.get<NhlLiveFeedModel>(gameUrl).subscribe(response => {
-        resolve(response)
+      return this.http.get<NhlLiveFeedModel>(gameUrl).subscribe({
+        next: (response) => {
+          resolve(response);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
       });
     });
   }

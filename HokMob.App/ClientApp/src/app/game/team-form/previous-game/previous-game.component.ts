@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 
