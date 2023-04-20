@@ -231,9 +231,10 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         let thirtyDaysAgo = yesterday.subtract(30, 'days');
         this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.home.team.id).then(homeTeamGames => {
           this.homeTeamGames = homeTeamGames;
-        });
-        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.away.team.id).then(awayTeamGames => {
-          this.awayTeamGames = awayTeamGames;
+
+          this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.away.team.id).then(awayTeamGames => {
+            this.awayTeamGames = awayTeamGames;
+          });
         });
       });
     });
