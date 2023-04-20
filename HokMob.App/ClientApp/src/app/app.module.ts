@@ -28,6 +28,7 @@ import { PreviousGameComponent } from './game/team-form/previous-game/previous-g
 import { PlayoffsComponent } from './playoffs/playoffs.component';
 import { PlayoffSeriesComponent } from './playoffs/playoff-series/playoff-series.component';
 import { GameStatsComponent } from './game/game-stats/game-stats.component';
+import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
 
 @NgModule({
   declarations: [
@@ -61,7 +62,8 @@ import { GameStatsComponent } from './game/game-stats/game-stats.component';
   ],
   providers: [
     NhlGameService,
-    NhlLogoService
+    NhlLogoService,
+    NhlPlayoffService
   ],
   bootstrap: [AppComponent]
 })

@@ -180,6 +180,14 @@ $central-info-width: 130px;
         }
       }
 
+      .league-info-container:hover {
+        cursor: pointer;
+
+        .league-info-label {
+          text-decoration: underline;
+        }
+      }
+
       .info-label {
         display: flex;
         justify-content: center;

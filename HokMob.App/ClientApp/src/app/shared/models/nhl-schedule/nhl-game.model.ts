@@ -2,7 +2,7 @@ import {NhlVenueModel} from "@shared/models/nhl-general/nhl-venue.model";
 import {NhlHomeAwayGameTeamModel} from "@shared/models/nhl-schedule/nhl-home-away-game-team.model";
 import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
-import {NhlSeriesSummaryModel} from "@shared/models/nhl-schedule/nhl-series-summary.model";
+import {NhlSeriesSummaryModel} from "@shared/models/nhl-playoffs/nhl-series-summary.model";
 
 export class NhlGameModel {
 

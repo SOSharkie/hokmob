@@ -1,0 +1,56 @@
+@import "variables";
+
+.series-container {
+  display: flex;
+  flex-direction: column;
+  background-color: $black-03;
+  width: 140px;
+  padding: $spacing-medium;
+  border-radius: 15px;
+  margin-top: $spacing-xx-large;
+  margin-bottom: $spacing-xx-large;
+
+  .series-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+
+    .team-logo {
+      width: 45px;
+      height: 30px;
+    }
+
+    .placeholder-logo {
+      width: 38px !important;
+      height: 30px !important;
+    }
+
+    .next-game {
+      width: 50px;
+      text-align: center;
+    }
+  }
+
+  .series-info {
+    display: flex;
+    flex-direction: column;
+
+    .team-names {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      text-align: center;
+      margin-top: $spacing-medium;
+      margin-bottom: $spacing-medium;
+    }
+
+    .series-score {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      padding-left: $spacing-x-large;
+      padding-right: $spacing-x-large;
+    }
+  }
+}
