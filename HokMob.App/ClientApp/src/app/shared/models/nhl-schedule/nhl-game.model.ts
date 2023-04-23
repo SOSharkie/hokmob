@@ -3,6 +3,7 @@ import {NhlHomeAwayGameTeamModel} from "@shared/models/nhl-schedule/nhl-home-awa
 import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
 import {NhlSeriesSummaryModel} from "@shared/models/nhl-playoffs/nhl-series-summary.model";
+import {NhlBroadcastModel} from "@shared/models/nhl-general/nhl-broadcast.model";
 
 export class NhlGameModel {
 
@@ -27,5 +28,7 @@ export class NhlGameModel {
   public content: Object;
 
   public seriesSummary: NhlSeriesSummaryModel;
+
+  public broadcasts: NhlBroadcastModel[];
 
 }
