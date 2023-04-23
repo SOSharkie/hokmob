@@ -74,6 +74,13 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "";
   }
 
+  public get tvInfo(): string {
+    if (this.gameModel) {
+      return "TV: " + this.gameModel.broadcasts[0].name;
+    }
+    return "";
+  }
+
   public get liveGame(): boolean {
     if (this.gameLiveData) {
       return this.gameLiveData.gameData.status.abstractGameState === "Live"
