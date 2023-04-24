@@ -1,12 +1,17 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges, ViewEncapsulation} from '@angular/core';
 import {NhlPlayoffSeriesModel} from "@shared/models/nhl-playoffs/nhl-playoff-series.model";
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import * as dayjs from "dayjs";
+import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
+import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
+import {MatDialog} from "@angular/material/dialog";
+import {PlayoffSeriesDialogComponent} from "@app/playoffs/playoff-series-dialog/playoff-series-dialog.component";
 
 @Component({
   selector: 'app-playoff-series',
   templateUrl: './playoff-series.component.html',
-  styleUrls: ['./playoff-series.component.scss']
+  styleUrls: ['./playoff-series.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class PlayoffSeriesComponent implements OnChanges {
 
@@ -21,6 +26,8 @@ export class PlayoffSeriesComponent implements OnChanges {
 
   public logoB: any = "assets/team_fallback.png";
 
+  public seriesGames: NhlScheduleModel;
+
   public get teamAName() : string {
     if (this.seriesData && this.seriesData.names.teamAbbreviationA.length > 0) {
       return this.seriesData.names.teamAbbreviationA;
@@ -33,6 +40,20 @@ export class PlayoffSeriesComponent implements OnChanges {
       return this.seriesData.names.teamAbbreviationB;
     }
     return "";
+  }
+
+  public get teamARank() : string {
+    if (this.seriesData && this.seriesData.matchupTeams) {
+      return "  " + this.seriesData.matchupTeams[0].seed.rank;
+    }
+    return " ";
+  }
+
+  public get teamBRank() : string {
+    if (this.seriesData && this.seriesData.matchupTeams) {
+      return  "  " + this.seriesData.matchupTeams[1].seed.rank.toString();
+    }
+    return " ";
   }
 
   public get teamAWins(): number {
@@ -56,7 +77,9 @@ export class PlayoffSeriesComponent implements OnChanges {
     return "TBD";
   }
 
-  constructor(private nhlLogoService: NhlLogoService) {
+  constructor(public seriesDialog: MatDialog,
+              private nhlLogoService: NhlLogoService,
+              private nhlPlayoffService: NhlPlayoffService) {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -64,6 +87,9 @@ export class PlayoffSeriesComponent implements OnChanges {
       if (!this.seriesData.matchupTeams) {
         return;
       }
+      this.nhlPlayoffService.getNhlPlayoffSeriesGames(this.seriesData.matchupTeams[0].team.id, this.seriesData.matchupTeams[1].team.id).then(result => {
+        this.seriesGames = result;
+      });
       this.nhlLogoService.getNhlTeamLogo(this.seriesData.matchupTeams[0].team.id).then(data => {
         let reader = new FileReader();
         reader.addEventListener("load", () => {
@@ -81,5 +107,13 @@ export class PlayoffSeriesComponent implements OnChanges {
         reader.readAsDataURL(data);
       });
     }
+  }
+
+  public openSeriesDialog(): void {
+    this.seriesDialog.open(PlayoffSeriesDialogComponent, {
+      maxWidth: "85vw",
+      backdropClass: "dialog-backdrop",
+      data: this.seriesData
+    });
   }
 }

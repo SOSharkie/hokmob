@@ -1,4 +1,4 @@
-<div class="scorecard-container" [routerLink]="['/game', game.gamePk]">
+<div class="scorecard-container" (click)="clickScorecard($event)" [routerLink]="['/game', game.gamePk]">
   <div class="home-team">
     <span>{{homeTeamName}}</span>
     <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">

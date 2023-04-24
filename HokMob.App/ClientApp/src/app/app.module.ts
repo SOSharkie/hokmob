@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
 import { AppRoutingModule } from '@app/app-routing.module';
 import { AppComponent } from '@app/app.component';
 import { HomeComponent } from '@home/home.component';
@@ -12,8 +11,6 @@ import { SearchInputComponent } from '@shared/components/search-input/search-inp
 import { ScorecardComponent } from '@shared/components/scorecard/scorecard.component';
 import {FormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
-import {NhlGameService} from "./shared/services/nhl-game.service";
-
 import { MaterialModule } from '@shared/modules/material.module';
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {NgOptimizedImage} from "@angular/common";
@@ -29,6 +26,9 @@ import { PlayoffsComponent } from './playoffs/playoffs.component';
 import { PlayoffSeriesComponent } from './playoffs/playoff-series/playoff-series.component';
 import { GameStatsComponent } from './game/game-stats/game-stats.component';
 import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
+import { PlayoffSeriesDialogComponent } from '@app/playoffs/playoff-series-dialog/playoff-series-dialog.component';
+import {NhlGameService} from "@shared/services/nhl-game.service";
+import {MatDialogModule} from "@angular/material/dialog";
 
 @NgModule({
   declarations: [
@@ -49,7 +49,8 @@ import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
     PreviousGameComponent,
     PlayoffsComponent,
     PlayoffSeriesComponent,
-    GameStatsComponent
+    GameStatsComponent,
+    PlayoffSeriesDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -58,7 +59,8 @@ import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
     BrowserAnimationsModule,
     FormsModule,
     MaterialModule,
-    NgOptimizedImage
+    NgOptimizedImage,
+    MatDialogModule
   ],
   providers: [
     NhlGameService,

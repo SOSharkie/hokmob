@@ -5,7 +5,6 @@
   justify-content: center;
   min-height: 500px;
   width: 100%;
-  padding-top: $spacing-medium;
   background-color: black;
 
   .nav-menu {
@@ -33,18 +32,16 @@
 }
 
 // Desktop Styling
-@media only screen and (min-width: 1175px) {
+@media only screen and (min-width: $small-display-breakpoint) {
   .home-page {
     flex-direction: row;
 
     .nav-menu {
       min-width: 200px;
     }
-
     .scores {
       min-width: 500px;
     }
-
     .news-and-standings {
       min-width: 200px;
     }
@@ -59,11 +56,9 @@
     .nav-menu {
       min-width: 130px;
     }
-
     .scores {
       min-width: 450px;
     }
-
     .news-and-standings {
       display: none;
     }
@@ -78,11 +73,9 @@
     .nav-menu {
       display: none;
     }
-
     .scores {
       width: 100%;
     }
-
     .news-and-standings {
       display: none;
     }

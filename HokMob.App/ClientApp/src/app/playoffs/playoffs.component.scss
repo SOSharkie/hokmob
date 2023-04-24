@@ -2,122 +2,242 @@
 
 .playoffs-container {
   width: 100%;
-  display: flex;
-  justify-content: center;
-}
 
-.playoffs-tree {
-  display: flex;
-  justify-content: center;
-  margin: $spacing-large;
-  padding: $spacing-large;
-  border-radius: 25px;
-  background-color: $black-02;
-  color: white;
-  overflow-x: auto;
+  .standard-playoffs-tree {
+    justify-content: center;
+    margin: $spacing-large;
+    padding: $spacing-large;
+    border-radius: 25px;
+    background-color: $black-02;
+    color: white;
+    overflow-x: auto;
 
-  .west-playoff-tree, .east-playoff-tree {
-    display: flex;
-
-    .first-round {
+    .west-playoff-tree, .east-playoff-tree {
       display: flex;
-      flex-direction: column;
 
-      .first-round-spacer {
+      .first-round {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
+
+        .first-round-spacer {
+          display: flex;
+          flex-direction: row;
+        }
       }
-    }
 
-    .second-round {
-      display: flex;
-      flex-direction: column;
+      .second-round {
+        display: flex;
+        flex-direction: column;
 
-      .second-round-spacer {
-        height: 50%;
+        .second-round-spacer {
+          height: 50%;
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      .conference-final {
         display: flex;
         align-items: center;
       }
     }
 
-    .conference-final {
+    .stanley-cup-final {
       display: flex;
       align-items: center;
     }
+
+    .connector-container {
+      position: relative;
+      width: 13px;
+      height: 100%;
+
+      .connector-top {
+        width: 100%;
+        height: 50%;
+      }
+
+      .connector-bottom {
+        width: 100%;
+        height: 50%;
+      }
+
+      .west-top-connection {
+        border-top-width: 2px;
+        border-top-style: solid;
+        border-right-width: 2px;
+        border-right-style: solid;
+        border-color: $gray-01;
+      }
+
+      .west-bottom-connection {
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        border-right-width: 2px;
+        border-right-style: solid;
+        border-color: $gray-01;
+      }
+
+      .east-top-connection {
+        border-top-width: 2px;
+        border-top-style: solid;
+        border-left-width: 2px;
+        border-left-style: solid;
+        border-color: $gray-01;
+      }
+
+      .east-bottom-connection {
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        border-left-width: 2px;
+        border-left-style: solid;
+        border-color: $gray-01;
+      }
+
+      .single-line {
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        border-color: $gray-01;
+      }
+    }
   }
 
-  .stanley-cup-final {
-    display: flex;
-    align-items: center;
-  }
+  .mobile-playoffs-tree {
+    justify-content: center;
+    margin: $spacing-small;
+    padding: $spacing-large $spacing-small;
+    border-radius: 25px;
+    background-color: $black-02;
+    color: white;
+    overflow-x: auto;
 
-  .connector-container {
-    position: relative;
-    width: 13px;
-    height: 100%;
+    .west-playoff-tree, .east-playoff-tree {
+      display: flex;
+      flex-direction: column;
 
-    .connector-top {
+      .first-round {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+
+        .first-round-spacer {
+          width: 25%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+
+      .second-round {
+        display: flex;
+        flex-direction: row;
+
+        .second-round-spacer {
+          width: 50%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+
+      .conference-final {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    .stanley-cup-final {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .connector-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
       width: 100%;
-      height: 50%;
-    }
+      height: 13px;
 
-    .connector-bottom {
-      width: 100%;
-      height: 50%;
-    }
+      .connector-left {
+        width: 50%;
+        height: 100%;
+      }
 
-    .west-top-connection {
-      border-top-width: 2px;
-      border-top-style: solid;
-      border-right-width: 2px;
-      border-right-style: solid;
-      border-color: $gray-01;
-    }
+      .connector-right {
+        width: 50%;
+        height: 100%;
+      }
 
-    .west-bottom-connection {
-      border-bottom-width: 2px;
-      border-bottom-style: solid;
-      border-right-width: 2px;
-      border-right-style: solid;
-      border-color: $gray-01;
-    }
+      .west-left-connection {
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        border-left-width: 2px;
+        border-left-style: solid;
+        border-color: $gray-01;
+      }
 
-    .east-top-connection {
-      border-top-width: 2px;
-      border-top-style: solid;
-      border-left-width: 2px;
-      border-left-style: solid;
-      border-color: $gray-01;
-    }
+      .west-right-connection {
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        border-right-width: 2px;
+        border-right-style: solid;
+        border-color: $gray-01;
+      }
 
-    .east-bottom-connection {
-      border-bottom-width: 2px;
-      border-bottom-style: solid;
-      border-left-width: 2px;
-      border-left-style: solid;
-      border-color: $gray-01;
-    }
+      .east-left-connection {
+        border-top-width: 2px;
+        border-top-style: solid;
+        border-left-width: 2px;
+        border-left-style: solid;
+        border-color: $gray-01;
+      }
 
-    .single-line {
-      border-bottom-width: 2px;
-      border-bottom-style: solid;
-      border-color: $gray-01;
+      .east-right-connection {
+        border-top-width: 2px;
+        border-top-style: solid;
+        border-right-width: 2px;
+        border-right-style: solid;
+        border-color: $gray-01;
+      }
+
+      .single-line {
+        border-right-width: 2px;
+        border-right-style: solid;
+        border-color: $gray-01;
+      }
     }
   }
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
-  .playoffs-tree {
-    width: 1200px;
+@media only screen and (min-width: $tiny-display-breakpoint) {
+  .standard-playoffs-tree {
+    display: flex;
     flex-direction: row;
+    width: 1200px;
+  }
+
+  .mobile-playoffs-tree {
+    display: none;
+  }
+}
+
+@media only screen and (min-width: $small-display-breakpoint) {
+  .playoffs-container {
+    display: flex;
+    justify-content: center;
   }
 }
 
 // Mobile Styling
-@media only screen and (max-width: $mobile-screen-breakpoint) {
-  .playoffs-tree {
-    width: 100%;
+@media only screen and (max-width: $tiny-display-breakpoint) {
+  .standard-playoffs-tree {
+    display: none;
+  }
+
+  .mobile-playoffs-tree {
     flex-direction: column;
   }
 }

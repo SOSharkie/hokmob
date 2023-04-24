@@ -1,4 +1,4 @@
-<div class="series-container">
+<div class="series-container" (click)="openSeriesDialog()">
   <div class="series-header">
     <img [src]="logoA" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoALoaded}">
     <span class="next-game">{{nextGameDay}}</span>
@@ -6,12 +6,19 @@
   </div>
   <div class="series-info">
     <div class="team-names">
-      <span>{{teamAName}}</span>
-      <span>{{teamBName}}</span>
+      <div>
+        <span class="team-abbr">{{teamAName}}</span>
+        <span class="team-rank">{{teamARank}}</span>
+      </div>
+      <span class="team-spacer"></span>
+      <div>
+        <span class="team-abbr">{{teamBName}}</span>
+        <span class="team-rank">{{teamBRank}}</span>
+      </div>
     </div>
     <div class="series-score">
       <span>{{teamAWins}}</span>
-      <span>-</span>
+      <span class="score-spacer">-</span>
       <span>{{teamBWins}}</span>
     </div>
   </div>
