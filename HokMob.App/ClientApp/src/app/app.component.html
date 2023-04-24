@@ -3,5 +3,19 @@
   <div class="routerOutlet">
     <router-outlet></router-outlet>
   </div>
+  <div class="mobile-menu">
+    <div id="games-item" class="menu-item selected" (click)="onMenuItemClick('/games')" [routerLink]="['/']">
+      <mat-icon>calendar_month</mat-icon>
+      <span>Games</span>
+    </div>
+    <div id="playoffs-item" class="menu-item" (click)="onMenuItemClick('/playoffs')" [routerLink]="['/playoffs']">
+      <mat-icon>ballot</mat-icon>
+      <span>Playoffs</span>
+    </div>
+    <div id="stats-item" class="menu-item" (click)="onMenuItemClick('/stats')">
+      <mat-icon>leaderboard</mat-icon>
+      <span>Stats</span>
+    </div>
+  </div>
   <app-footer></app-footer>
 </div>

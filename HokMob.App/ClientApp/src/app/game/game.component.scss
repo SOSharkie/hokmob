@@ -331,8 +331,7 @@ $central-info-width: 130px;
   }
 
   .game-container {
-    margin-top: $spacing-large;
-    margin-bottom: $spacing-large;
+    margin: $spacing-large $spacing-small;
   }
 }
 
@@ -370,7 +369,7 @@ $central-info-width: 130px;
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   .game-header {
-    width: 100%;
+    width: 99%;
 
     .league-info-label {
       display: none;
@@ -403,6 +402,6 @@ $central-info-width: 130px;
   }
 
   .game-container {
-    width: 100%;
+    width: 99%;
   }
 }

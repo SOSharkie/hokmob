@@ -4,21 +4,77 @@
   display: flex;
   flex-direction: column;
   background-color: $black-03;
-  width: 140px;
-  padding: $spacing-medium;
   border-radius: 15px;
-  margin-top: $spacing-xx-large;
-  margin-bottom: $spacing-xx-large;
 
   .series-header {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
+  }
+
+  .series-info {
+    display: flex;
+    flex-direction: column;
+
+    .team-names {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      text-align: center;
+      margin-top: $spacing-medium;
+      margin-bottom: $spacing-medium;
+    }
+
+    .series-score {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      padding-left: $spacing-x-large;
+      padding-right: $spacing-x-large;
+
+      .score-spacer {
+        width: 60px;
+        text-align: center;
+      }
+    }
+
+  }
+}
+
+.dialog-backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.series-container:hover {
+  cursor: pointer;
+  background-color: $black-04;
+}
+
+// Desktop Styling
+@media only screen and (min-width: $tiny-display-breakpoint) {
+  .series-container {
+    width: 140px;
+    margin-top: $spacing-xx-large;
+    margin-bottom: $spacing-xx-large;
+    padding: $spacing-medium;
+
+    .team-abbr {
+      font-size: medium;
+    }
 
     .team-logo {
       width: 45px;
       height: 30px;
+    }
+
+    .team-rank {
+      color: $gray-03;
+      font-size: smaller;
+    }
+
+    .team-spacer {
+      width: 40px;
     }
 
     .placeholder-logo {
@@ -31,26 +87,40 @@
       text-align: center;
     }
   }
+}
 
-  .series-info {
-    display: flex;
-    flex-direction: column;
+// Mobile Styling
+@media only screen and (max-width: $tiny-display-breakpoint) {
+  .series-container {
+    width: 78px;
+    margin-left: $spacing-small;
+    margin-right: $spacing-small;
+    padding: $spacing-medium $spacing-small;
 
-    .team-names {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-      text-align: center;
-      margin-top: $spacing-medium;
-      margin-bottom: $spacing-medium;
+    .team-logo {
+      width: 40px;
+      height: 26px;
     }
 
-    .series-score {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-      padding-left: $spacing-x-large;
-      padding-right: $spacing-x-large;
+    .team-abbr {
+      font-size: smaller;
+    }
+
+    .team-rank {
+      display: none;
+    }
+
+    .team-spacer {
+      width: 10px;
+    }
+
+    .placeholder-logo {
+      width: 30px !important;
+      height: 25px !important;
+    }
+
+    .next-game {
+      display: none;
     }
   }
 }

@@ -1,9 +1,10 @@
-import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import * as dayjs from 'dayjs'
 import {NhlLogoService} from "@shared/services/nhl-logo.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
+import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 
 @Component({
   selector: 'app-scorecard',
@@ -14,6 +15,9 @@ export class ScorecardComponent implements OnChanges {
 
   @Input()
   public game: NhlGameModel;
+
+  @Output()
+  public scorecardClicked = new EventEmitter<boolean>();
 
   public isHomeLogoLoading: boolean;
 
@@ -64,7 +68,7 @@ export class ScorecardComponent implements OnChanges {
 
   public get isPlayoffGame(): boolean {
     if (this.game) {
-      return this.game.gameType === "P";
+      return this.game.seriesSummary && this.game.gameType === "P";
     }
     return false;
   }
@@ -168,6 +172,10 @@ export class ScorecardComponent implements OnChanges {
         this.isAwayLogoLoading = false;
       });
     }
+  }
+
+  public clickScorecard($event: any) {
+    this.scorecardClicked.emit(true);
   }
 
   private formatTimeRemaining(): string {

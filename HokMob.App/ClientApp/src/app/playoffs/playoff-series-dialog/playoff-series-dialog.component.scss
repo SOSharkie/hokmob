@@ -1,0 +1,37 @@
+@import "variables";
+
+.mat-mdc-dialog-surface {
+  border: none;
+  border-radius: 25px !important;
+
+  .playoff-series-dialog-container {
+    background-color: $black-02;
+
+    .series-title {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 65px;
+      margin-left: $spacing-medium;
+      margin-right: $spacing-medium;
+      border-bottom: 1px solid $gray-01;
+
+      .series-title-text {
+        font-size: large;
+        color: white;
+        margin-top: $spacing-medium;
+        margin-bottom: $spacing-medium;
+      }
+    }
+
+    .series-game-container {
+      border-bottom: 1px solid $gray-01;
+    }
+
+    .last-scorecard {
+      border-bottom: none !important;
+    }
+  }
+}

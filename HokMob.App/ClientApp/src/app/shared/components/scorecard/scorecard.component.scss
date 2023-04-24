@@ -17,6 +17,7 @@
     padding-left: $spacing-x-small;
 
     .playoff-series {
+      min-width: 85px;
       font-size: small;
       text-align: center;
       color: $gray-04;
@@ -84,6 +85,10 @@
   cursor: pointer;
 }
 
+.scorecard-container:focus {
+  outline: none;
+}
+
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .central-info {
@@ -100,7 +105,7 @@
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   .central-info {
-    min-width: 85px;
+    min-width: 45px;
   }
   .home-team {
     width: 40%;

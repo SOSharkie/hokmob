@@ -13,21 +13,44 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'hokmob';
   ngUnsubscribe = new Subject<void>();
 
-  constructor( private route: ActivatedRoute, private router: Router) {
+  constructor(private route: ActivatedRoute,
+              private router: Router) {
     this.clientHeight = window.innerHeight;
   }
 
-  public ngOnInit() {
+  public ngOnInit(): void {
     this.router.events.pipe(takeUntil(this.ngUnsubscribe)).subscribe((event) => {
-      if (!(event instanceof NavigationEnd)) {
-        return;
+      if (event instanceof NavigationEnd) {
+        this.onMenuItemClick(event.url);
       }
       window.scrollTo(0, 0);
     });
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  public onMenuItemClick(item: string): void {
+    switch (item) {
+      case '/games':
+        document.getElementById("games-item").classList.add("selected");
+        document.getElementById("playoffs-item").classList.remove("selected");
+        document.getElementById("stats-item").classList.remove("selected");
+
+        break;
+      case '/playoffs':
+        document.getElementById("games-item").classList.remove("selected");
+        document.getElementById("playoffs-item").classList.add("selected");
+        document.getElementById("stats-item").classList.remove("selected");
+
+        break;
+      case '/stats':
+        document.getElementById("games-item").classList.remove("selected");
+        document.getElementById("playoffs-item").classList.remove("selected");
+        document.getElementById("stats-item").classList.add("selected");
+        break;
+    }
   }
 }

@@ -1,5 +1,5 @@
 <div class="playoffs-container">
-  <div *ngIf="playoffsData" class="playoffs-tree">
+  <div *ngIf="playoffsData" class="standard-playoffs-tree">
     <div class="west-playoff-tree">
       <div class="first-round">
         <div class="first-round-spacer">
@@ -160,6 +160,176 @@
           <div class="connector-container">
             <div class="connector-top east-bottom-connection"></div>
             <div class="connector-bottom"></div>
+          </div>
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[0].series[3]"
+          ></app-playoff-series>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="playoffsData" class="mobile-playoffs-tree">
+    <div class="west-playoff-tree">
+      <div class="first-round">
+        <div class="first-round-spacer">
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[0].series[4]"
+          ></app-playoff-series>
+          <div class="connector-container">
+            <div class="connector-left"></div>
+            <div class="connector-right west-left-connection"></div>
+          </div>
+        </div>
+        <div class="first-round-spacer">
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[0].series[5]"
+          ></app-playoff-series>
+          <div class="connector-container">
+            <div class="connector-left west-right-connection"></div>
+            <div class="connector-right"></div>
+          </div>
+        </div>
+        <div class="first-round-spacer">
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[0].series[6]"
+          ></app-playoff-series>
+          <div class="connector-container">
+            <div class="connector-left"></div>
+            <div class="connector-right west-left-connection"></div>
+          </div>
+        </div>
+        <div class="first-round-spacer">
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[0].series[7]"
+          ></app-playoff-series>
+          <div class="connector-container">
+            <div class="connector-left west-right-connection"></div>
+            <div class="connector-right"></div>
+          </div>
+        </div>
+      </div>
+      <div class="second-round">
+        <div class="second-round-spacer">
+          <div class="connector-container">
+            <div class="connector-left single-line"></div>
+            <div class="connector-right"></div>
+          </div>
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[1].series[2]"
+          ></app-playoff-series>
+          <div class="connector-container">
+            <div class="connector-left"></div>
+            <div class="connector-right west-left-connection"></div>
+          </div>
+        </div>
+        <div class="second-round-spacer">
+          <div class="connector-container">
+            <div class="connector-left single-line"></div>
+            <div class="connector-right"></div>
+          </div>
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[1].series[3]"
+          ></app-playoff-series>
+          <div class="connector-container">
+            <div class="connector-right west-right-connection"></div>
+            <div class="connector-left"></div>
+          </div>
+        </div>
+      </div>
+      <div class="conference-final">
+        <div class="connector-container">
+          <div class="connector-top single-line"></div>
+          <div class="connector-bottom"></div>
+        </div>
+        <app-playoff-series
+            [seriesData]="playoffsData.rounds[2].series[1]"
+        ></app-playoff-series>
+        <div class="connector-container">
+          <div class="connector-top single-line"></div>
+          <div class="connector-bottom"></div>
+        </div>
+      </div>
+    </div>
+    <div class="stanley-cup-final">
+      <app-playoff-series
+          [seriesData]="playoffsData.rounds[3].series[0]"
+      ></app-playoff-series>
+    </div>
+    <div class="east-playoff-tree">
+      <div class="conference-final">
+        <div class="connector-container">
+          <div class="connector-top single-line"></div>
+          <div class="connector-bottom"></div>
+        </div>
+        <app-playoff-series
+            [seriesData]="playoffsData.rounds[2].series[0]"
+        ></app-playoff-series>
+        <div class="connector-container">
+          <div class="connector-top single-line"></div>
+          <div class="connector-bottom"></div>
+        </div>
+      </div>
+      <div class="second-round">
+        <div class="second-round-spacer">
+          <div class="connector-container">
+            <div class="connector-left"></div>
+            <div class="connector-right east-left-connection"></div>
+          </div>
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[1].series[0]"
+          ></app-playoff-series>
+          <div class="connector-container">
+            <div class="connector-left single-line"></div>
+            <div class="connector-right"></div>
+          </div>
+        </div>
+        <div class="second-round-spacer">
+          <div class="connector-container">
+            <div class="connector-left east-right-connection"></div>
+            <div class="connector-right"></div>
+          </div>
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[1].series[1]"
+          ></app-playoff-series>
+          <div class="connector-container">
+            <div class="connector-left single-line"></div>
+            <div class="connector-right"></div>
+          </div>
+        </div>
+      </div>
+      <div class="first-round">
+        <div class="first-round-spacer">
+          <div class="connector-container">
+            <div class="connector-left"></div>
+            <div class="connector-right east-left-connection"></div>
+          </div>
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[0].series[0]"
+          ></app-playoff-series>
+        </div>
+        <div class="first-round-spacer">
+          <div class="connector-container">
+            <div class="connector-left east-right-connection"></div>
+            <div class="connector-right"></div>
+          </div>
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[0].series[1]"
+          ></app-playoff-series>
+        </div>
+        <div class="first-round-spacer">
+          <div class="connector-container">
+            <div class="connector-left"></div>
+            <div class="connector-right east-left-connection"></div>
+          </div>
+          <app-playoff-series
+              [seriesData]="playoffsData.rounds[0].series[2]"
+          ></app-playoff-series>
+        </div>
+        <div class="first-round-spacer">
+          <div class="connector-container">
+            <div class="connector-left east-right-connection"></div>
+            <div class="connector-right"></div>
           </div>
           <app-playoff-series
               [seriesData]="playoffsData.rounds[0].series[3]"

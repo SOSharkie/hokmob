@@ -1,0 +1,12 @@
+<div class="playoff-series-dialog-container">
+  <div class="series-title">
+    <span class="series-title-text">{{seriesTitle}}</span>
+    <span class="series-title-text">{{seriesStatus}}</span>
+  </div>
+  <div *ngFor="let game of seriesGames let last = last" class="series-game-container" [ngClass]="{'last-scorecard': last}">
+    <app-scorecard
+      [game]="game"
+      (scorecardClicked)="seriesGameClicked()"
+    ></app-scorecard>
+  </div>
+</div>
