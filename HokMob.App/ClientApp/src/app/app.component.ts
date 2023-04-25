@@ -1,6 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {Subject, takeUntil} from "rxjs";
+import {RouterExtensionService} from "@shared/services/router-extension.service";
 
 @Component({
   selector: 'app-root',
@@ -14,7 +15,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ngUnsubscribe = new Subject<void>();
 
   constructor(private route: ActivatedRoute,
-              private router: Router) {
+              private router: Router,
+              private routerExtensionService: RouterExtensionService) {
     this.clientHeight = window.innerHeight;
   }
 

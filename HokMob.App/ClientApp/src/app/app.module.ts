@@ -29,6 +29,7 @@ import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
 import { PlayoffSeriesDialogComponent } from '@app/playoffs/playoff-series-dialog/playoff-series-dialog.component';
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {MatDialogModule} from "@angular/material/dialog";
+import {RouterExtensionService} from "@shared/services/router-extension.service";
 
 @NgModule({
   declarations: [
@@ -65,7 +66,8 @@ import {MatDialogModule} from "@angular/material/dialog";
   providers: [
     NhlGameService,
     NhlLogoService,
-    NhlPlayoffService
+    NhlPlayoffService,
+    RouterExtensionService
   ],
   bootstrap: [AppComponent]
 })

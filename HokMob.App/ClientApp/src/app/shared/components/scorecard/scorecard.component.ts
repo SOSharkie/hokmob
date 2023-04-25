@@ -16,6 +16,9 @@ export class ScorecardComponent implements OnChanges {
   @Input()
   public game: NhlGameModel;
 
+  @Input()
+  public smallerScorecard: boolean = false;
+
   @Output()
   public scorecardClicked = new EventEmitter<boolean>();
 
@@ -74,7 +77,7 @@ export class ScorecardComponent implements OnChanges {
   }
 
   public get playoffSeriesDetails(): string {
-    if (this.game) {
+    if (this.game && this.game.seriesSummary && this.game.seriesSummary.seriesStatusShort) {
       if (this.game.seriesSummary.gameNumber === 1 || this.game.seriesSummary.seriesStatusShort.length === 0) {
         return "(0-0)";
       } else {

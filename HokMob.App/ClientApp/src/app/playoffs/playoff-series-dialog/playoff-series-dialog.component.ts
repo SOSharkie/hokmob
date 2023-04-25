@@ -15,27 +15,22 @@ export class PlayoffSeriesDialogComponent implements OnInit {
 
   public get seriesTitle(): string {
     if (this.seriesData) {
+      let conference = this.seriesData.conference.name === "Eastern" ? "East" : "West";
+      let status = this.seriesData.currentGame.seriesSummary.seriesStatus;
       switch (this.seriesData.round.number) {
         case 1:
-          return this.seriesData.conference.name + " Conference Round 1";
+          return conference + " Round 1: " + status;
         case 2:
-          return this.seriesData.conference.name + " Conference Semifinals";
+          return conference + " Semifinals: " + status;
         case 3:
-          return this.seriesData.conference.name + " Conference Finals";
+          return conference + " Finals: " + status;
         case 4:
-          return "Stanley Cup Finals";
+          return "Stanley Cup Finals: " + status;
         default:
-          return "NHL Playoffs";
+          return "NHL Playoffs: " + status;
       }
     }
-    return "";
-  }
-
-  public get seriesStatus(): string {
-    if (this.seriesData) {
-      return this.seriesData.currentGame.seriesSummary.seriesStatus;
-    }
-    return "";
+    return "NHL Playoffs";
   }
 
   public seriesGames: NhlGameModel[];

@@ -1,5 +1,8 @@
-<div class="scorecard-container" (click)="clickScorecard($event)" [routerLink]="['/game', game.gamePk]">
-  <div class="home-team">
+<div class="scorecard-container"
+     [ngClass]="{'smaller-scorecard': smallerScorecard}"
+     (click)="clickScorecard($event)"
+     [routerLink]="['/game', game.gamePk]">
+  <div class="home-team" [ngClass]="{'smaller-text': smallerScorecard}">
     <span>{{homeTeamName}}</span>
     <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
   </div>
@@ -18,7 +21,7 @@
       <span class="live-status-label">{{liveGameStatus}}</span>
     </div>
   </div>
-  <div class="away-team">
+  <div class="away-team" [ngClass]="{'smaller-text': smallerScorecard}">
     <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
     <span>{{awayTeamName}}</span>
   </div>

@@ -10,6 +10,7 @@ import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.mode
 import {GoalModel} from "@shared/models/goal.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
+import {RouterExtensionService} from "@shared/services/router-extension.service";
 
 @Component({
   selector: 'app-game',
@@ -213,13 +214,24 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "N/A";
   }
 
+  public get backButtonLabel(): string {
+    if (this.previousUrl) {
+      return this.previousUrl.includes("playoffs") ? "Playoffs" : "Games";
+    }
+    return "Games";
+  }
+
+  private previousUrl: string;
+
   constructor(private route: ActivatedRoute,
               private router: Router,
+              private routerExtensionService: RouterExtensionService,
               private nhlLogoService: NhlLogoService,
               private nhlGameService: NhlGameService) {
   }
 
   public ngOnInit(): void {
+    this.previousUrl = this.routerExtensionService.getPreviousUrl();
     this.route.params.subscribe((params: Params) => {
       this.gameId = params['id'];
       this.nhlGameService.getNhlGameLiveFeed(this.gameId).then(gameLiveData => {
@@ -255,15 +267,19 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.stopContinuousNhlGameUpdates();
   }
 
-  public backToScoreboard(): void {
-    let dateString = dayjs(this.gameLiveData.gameData.datetime.dateTime).format("YYYYMMDD");
-    const dateParam = {date: dateString};
-    this.router.navigate([''],
-        {
-          relativeTo: this.route,
-          queryParams: dateParam
-        }
-    );
+  public backToPrevious(): void {
+    if (this.previousUrl) {
+      this.router.navigateByUrl(this.previousUrl);
+    } else {
+      let dateString = dayjs(this.gameLiveData.gameData.datetime.dateTime).format("YYYYMMDD");
+      const dateParam = {date: dateString};
+      this.router.navigate([''],
+          {
+            relativeTo: this.route,
+            queryParams: dateParam
+          }
+      );
+    }
   }
 
   /**

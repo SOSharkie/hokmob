@@ -89,6 +89,10 @@
   outline: none;
 }
 
+.smaller-scorecard {
+  height: 75px !important;
+}
+
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .central-info {
@@ -104,13 +108,20 @@
 
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .central-info {
-    min-width: 45px;
-  }
-  .home-team {
-    width: 40%;
-  }
-  .away-team {
-    width: 40%;
+  .scorecard-container {
+
+    .central-info {
+      min-width: 45px;
+    }
+    .home-team {
+      width: 40%;
+    }
+    .away-team {
+      width: 40%;
+    }
+
+    .smaller-text {
+      font-size: smaller;
+    }
   }
 }
