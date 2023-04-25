@@ -33,6 +33,7 @@ $central-info-width: 130px;
       align-content: center;
       min-height: 90px;
       width: min(100vw - 60px, $small-display-breakpoint);
+      padding-top: $spacing-small;
       color: white;
 
       .game-day-time-container {

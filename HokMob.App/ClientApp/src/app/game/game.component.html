@@ -26,11 +26,11 @@
   </div>
   <div class="game-header">
     <div class="league-info">
-      <div class="games-back-button" (click)="backToScoreboard()">
+      <div class="games-back-button" (click)="backToPrevious()">
         <div class="back-icon">
           <mat-icon fontIcon="chevron_left"></mat-icon>
         </div>
-        <span class="games-label">Games</span>
+        <span class="games-label">{{backButtonLabel}}</span>
       </div>
       <div class="league-info-container" [routerLink]="['/playoffs']">
         <img class="nhl-logo" src="assets/nhl_logo.png">
