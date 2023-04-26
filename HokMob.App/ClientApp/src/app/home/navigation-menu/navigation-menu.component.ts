@@ -25,6 +25,10 @@ export class NavigationMenuComponent {
     switch (menuItem.name) {
       case "Playoffs":
         this.router.navigate(['playoffs']);
+        break;
+      case "Stats":
+        this.router.navigate(['stats'])
+        break;
     }
   }
 }

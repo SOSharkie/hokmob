@@ -3,7 +3,7 @@ import {ActivatedRoute, Params, Router} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
 import * as dayjs from "dayjs";
-import {NhlLogoService} from "@shared/services/nhl-logo.service";
+import {NhlImageService} from "@shared/services/nhl-image.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
@@ -226,7 +226,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private route: ActivatedRoute,
               private router: Router,
               private routerExtensionService: RouterExtensionService,
-              private nhlLogoService: NhlLogoService,
+              private nhlLogoService: NhlImageService,
               private nhlGameService: NhlGameService) {
   }
 

@@ -1,0 +1,108 @@
+@import "variables";
+
+.stat-leaderboard-container {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  padding: $spacing-medium;
+  background-color: $black-02;
+  border-radius: 25px;
+
+  .stat-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: larger;
+    height: 40px;
+    color: white;
+  }
+
+  .stat-players {
+    display: flex;
+    flex-direction: column;
+    color: white;
+
+    .stat-player {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 55px;
+      padding: $spacing-small $spacing-x-large;
+      border-top: 1px solid $black-03;
+
+      .player-container {
+        display: flex;
+
+        .player-headshot {
+          height: 50px;
+          width: 50px;
+          border-radius: 50%;
+          margin-right: $spacing-x-large;
+        }
+
+        .player-info {
+          display: flex;
+          flex-direction: column;
+
+          .player-name {
+            font-size: large;
+          }
+
+          .player-team {
+            display: flex;
+            align-items: center;
+            margin-top: $spacing-medium;
+
+            .player-team-logo {
+              height: 25px;
+            }
+
+            .player-team-label {
+              font-size: medium;
+              color: $gray-03;
+            }
+          }
+        }
+      }
+
+      .stat-container {
+        padding: $spacing-medium $spacing-large;
+        border-radius: 15px;
+        font-size: large;
+      }
+    }
+
+    .stat-leader {
+      height: 65px !important;
+
+      .leader-headshot {
+        height: 60px;
+        width: 60px;
+        border-radius: 50%;
+        margin-right: $spacing-x-large;
+      }
+      .leader-name {
+        font-size: larger;
+      }
+
+      .leader-team {
+        display: flex;
+        align-items: center;
+        margin-top: $spacing-medium;
+
+        .leader-team-logo {
+          height: 30px;
+        }
+
+        .leader-team-label {
+          font-size: large;
+          color: $gray-03;
+        }
+      }
+
+      .stat-container {
+        font-size: larger;
+      }
+    }
+  }
+}

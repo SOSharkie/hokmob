@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import * as dayjs from 'dayjs'
-import {NhlLogoService} from "@shared/services/nhl-logo.service";
+import {NhlImageService} from "@shared/services/nhl-image.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
@@ -149,7 +149,7 @@ export class ScorecardComponent implements OnChanges {
     return "N/A"
   }
 
-  constructor(private nhlLogoService: NhlLogoService) {
+  constructor(private nhlLogoService: NhlImageService) {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {

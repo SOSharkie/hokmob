@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {HttpParams} from "@angular/common/http";
-import {catchError, map, Observable, tap} from "rxjs";
-
 import * as dayjs from 'dayjs'
-import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
-import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
+
 
 @Injectable()
-export class NhlLogoService {
+export class NhlImageService {
 
   private nhlTeamLogoUrl = "https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/";
+
+  private nhlPlayerHeadShotUrl = "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/";
+
+  private test = "https://assets.nhle.com/mugs/nhl/20222023/DAL/8478449.png";
 
   /**
    *
@@ -28,8 +28,14 @@ export class NhlLogoService {
     });
   }
 
+  public getNhlPlayerHeadshot(playerId: number): Promise<Blob> {
+    let url = this.nhlPlayerHeadShotUrl + playerId + ".jpg";
 
-  private formatDateStringForNhl(date: Date): string {
-    return dayjs(date).format("YYYY-MM-DD");
+    return new Promise((resolve, reject) => {
+      return this.http.get(url, { responseType: 'blob' }).subscribe(response => {
+        resolve(response);
+      });
+    });
   }
+
 }

@@ -1,5 +1,6 @@
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 import {NhlPositionModel} from "@shared/models/nhl-general/nhl-position.model";
+import {NhlStatsTypeModel} from "@shared/models/nhl-stats/nhl-stats-type.model";
 
 export class NhlPersonModel {
 
@@ -46,4 +47,6 @@ export class NhlPersonModel {
   public currentTeam: NhlTeamModel;
 
   public primaryPosition: NhlPositionModel;
+
+  public stats: NhlStatsTypeModel[];
 }
