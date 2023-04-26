@@ -25,13 +25,18 @@ export class HomeComponent implements OnInit {
   }
 
   public onSelectedDayChange(date: Date): void {
+    let currentDay = dayjs().format("YYYYMMDD");
     this.selectedDayString = dayjs(date).format("YYYYMMDD");
-    const dateParam = {date: this.selectedDayString};
+    let dateParam;
+    if (currentDay !== this.selectedDayString) {
+      dateParam = {date: this.selectedDayString};
+    } else {
+      dateParam = {};
+    }
     this.router.navigate([],
         {
           relativeTo: this.route,
           queryParams: dateParam,
-          queryParamsHandling: "merge"
         }
     );
   }
