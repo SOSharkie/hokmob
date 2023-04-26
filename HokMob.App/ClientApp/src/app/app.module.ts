@@ -12,7 +12,7 @@ import { ScorecardComponent } from '@shared/components/scorecard/scorecard.compo
 import {FormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import { MaterialModule } from '@shared/modules/material.module';
-import {NhlLogoService} from "@shared/services/nhl-logo.service";
+import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NgOptimizedImage} from "@angular/common";
 import { AboutComponent } from './about/about.component';
 import { GameComponent } from './game/game.component';
@@ -30,6 +30,10 @@ import { PlayoffSeriesDialogComponent } from '@app/playoffs/playoff-series-dialo
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {MatDialogModule} from "@angular/material/dialog";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
+import { StatsComponent } from './stats/stats.component';
+import {BetaNhlStatsService} from "@shared/services/beta-nhl-stats.service";
+import {NhlStatsService} from "@shared/services/nhl-stats.service";
+import { StatLeaderboardComponent } from './stats/stat-leaderboard/stat-leaderboard.component';
 
 @NgModule({
   declarations: [
@@ -51,7 +55,9 @@ import {RouterExtensionService} from "@shared/services/router-extension.service"
     PlayoffsComponent,
     PlayoffSeriesComponent,
     GameStatsComponent,
-    PlayoffSeriesDialogComponent
+    PlayoffSeriesDialogComponent,
+    StatsComponent,
+    StatLeaderboardComponent
   ],
   imports: [
     BrowserModule,
@@ -65,8 +71,10 @@ import {RouterExtensionService} from "@shared/services/router-extension.service"
   ],
   providers: [
     NhlGameService,
-    NhlLogoService,
+    NhlImageService,
     NhlPlayoffService,
+    BetaNhlStatsService,
+    NhlStatsService,
     RouterExtensionService
   ],
   bootstrap: [AppComponent]

@@ -1,0 +1,12 @@
+@import "variables";
+
+.stats-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+
+  app-stat-leaderboard {
+    margin: $spacing-large;
+  }
+}

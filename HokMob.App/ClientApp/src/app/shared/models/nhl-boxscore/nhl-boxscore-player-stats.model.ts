@@ -4,5 +4,4 @@ export class NhlBoxscorePlayerStatsModel {
 
   public skaterStats: NhlBoxscorePlayerSkaterStatsModel;
 
-
 }

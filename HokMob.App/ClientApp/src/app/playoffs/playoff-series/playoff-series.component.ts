@@ -1,6 +1,6 @@
 import {Component, Input, OnChanges, SimpleChanges, ViewEncapsulation} from '@angular/core';
 import {NhlPlayoffSeriesModel} from "@shared/models/nhl-playoffs/nhl-playoff-series.model";
-import {NhlLogoService} from "@shared/services/nhl-logo.service";
+import {NhlImageService} from "@shared/services/nhl-image.service";
 import * as dayjs from "dayjs";
 import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
@@ -78,7 +78,7 @@ export class PlayoffSeriesComponent implements OnChanges {
   }
 
   constructor(public seriesDialog: MatDialog,
-              private nhlLogoService: NhlLogoService,
+              private nhlLogoService: NhlImageService,
               private nhlPlayoffService: NhlPlayoffService) {
   }
 

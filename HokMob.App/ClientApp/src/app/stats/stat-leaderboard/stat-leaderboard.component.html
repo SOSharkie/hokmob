@@ -1,0 +1,37 @@
+<div class="stat-leaderboard-container">
+  <div class="stat-title">
+    <span>{{statTitle}}</span>
+  </div>
+  <div *ngIf="topPlayersList" class="stat-players">
+    <div class="stat-leader stat-player">
+      <div class="player-container">
+        <img [src]="playerHeadshots[0]" class="leader-headshot">
+        <div class="player-info">
+          <span class="leader-name">{{statLeader.person.fullName}}</span>
+          <div class="leader-team">
+            <img [src]="teamLogos[0]" class="leader-team-logo">
+            <span class="leader-team-label">{{statLeader.person.currentTeam.name}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-container" [ngStyle]="{'background-color': getPlayerTeamColor(statLeader)}">
+        <span>{{statLeader.person.stats[0].splits[0].stat[statField]}}</span>
+      </div>
+    </div>
+    <div *ngFor="let player of statRunnerUps, let i = index" class="stat-player">
+      <div class="player-container">
+        <img [src]="playerHeadshots[i+1]" class="player-headshot">
+        <div class="player-info">
+          <span class="player-name">{{player.person.fullName}}</span>
+          <div class="player-team">
+            <img [src]="teamLogos[i+1]" class="player-team-logo">
+            <span class="player-team-label">{{player.person.currentTeam.name}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-container">
+        <span>{{player.person.stats[0].splits[0].stat[statField]}}</span>
+      </div>
+    </div>
+  </div>
+</div>
