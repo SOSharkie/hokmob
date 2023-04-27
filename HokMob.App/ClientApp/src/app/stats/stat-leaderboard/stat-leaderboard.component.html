@@ -5,7 +5,9 @@
   <div *ngIf="topPlayersList" class="stat-players">
     <div class="stat-leader stat-player">
       <div class="player-container">
-        <img [src]="playerHeadshots[0]" class="leader-headshot">
+        <div class="leader-headshot-container">
+          <img [src]="playerHeadshots[0]" class="leader-headshot">
+        </div>
         <div class="player-info">
           <span class="leader-name">{{statLeader.person.fullName}}</span>
           <div class="leader-team">
@@ -15,12 +17,14 @@
         </div>
       </div>
       <div class="stat-container" [ngStyle]="{'background-color': getPlayerTeamColor(statLeader)}">
-        <span>{{statLeader.person.stats[0].splits[0].stat[statField]}}</span>
+        <span>{{getPlayerStatField(statLeader)}}</span>
       </div>
     </div>
     <div *ngFor="let player of statRunnerUps, let i = index" class="stat-player">
       <div class="player-container">
-        <img [src]="playerHeadshots[i+1]" class="player-headshot">
+        <div class="player-headshot-container">
+          <img [src]="playerHeadshots[i+1]" class="player-headshot">
+        </div>
         <div class="player-info">
           <span class="player-name">{{player.person.fullName}}</span>
           <div class="player-team">
@@ -30,7 +34,7 @@
         </div>
       </div>
       <div class="stat-container">
-        <span>{{player.person.stats[0].splits[0].stat[statField]}}</span>
+        <span>{{getPlayerStatField(player)}}</span>
       </div>
     </div>
   </div>

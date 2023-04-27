@@ -1,4 +1,4 @@
-import {NhlStatsRosterPlayerModel} from "@shared/models/nhl-stats/nhl-stats-roster-player.model";
+import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
 
 export class NhlStatTeamModel {
 
@@ -28,6 +28,6 @@ export class NhlStatTeamModel {
 
   public roster: {
     link: string,
-    roster: NhlStatsRosterPlayerModel[]
+    roster: NhlPlayerModel[]
   };
 }

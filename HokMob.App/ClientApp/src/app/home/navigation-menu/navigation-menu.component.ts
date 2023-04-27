@@ -11,8 +11,8 @@ export class NavigationMenuComponent {
 
   public navMenuItems: NavMenuItemModel[] = [
     {name: "Playoffs", iconName: "ballot"},
-    {name: "Standings", iconName: "table_rows"},
     {name: "Stats", iconName: "leaderboard"},
+    {name: "Standings", iconName: "table_rows"},
     {name: "News", iconName: "newspaper"},
     {name: "Teams", iconName: "group"}
   ];

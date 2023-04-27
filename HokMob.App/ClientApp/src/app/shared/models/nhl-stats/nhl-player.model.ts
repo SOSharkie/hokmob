@@ -1,7 +1,7 @@
 import {NhlPersonModel} from "@shared/models/nhl-general/nhl-person.model";
 import {NhlPositionModel} from "@shared/models/nhl-general/nhl-position.model";
 
-export class NhlStatsRosterPlayerModel {
+export class NhlPlayerModel {
 
   public person: NhlPersonModel;
 

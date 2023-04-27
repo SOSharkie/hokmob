@@ -117,8 +117,7 @@ $central-info-width: 130px;
   }
 
   .game-header {
-    margin-left: $spacing-medium;
-    margin-right: $spacing-medium;
+    margin: $spacing-small $spacing-medium;
     padding-left: $spacing-medium;
     padding-right: $spacing-medium;
 
@@ -332,7 +331,7 @@ $central-info-width: 130px;
   }
 
   .game-container {
-    margin: $spacing-large $spacing-small;
+    margin: $spacing-small;
   }
 }
 
