@@ -91,12 +91,32 @@
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $small-display-breakpoint ) {
   .day-select-container {
     width: 650px;
   }
   .games-container {
     width: 650px;
+  }
+}
+
+// Small display Styling
+@media only screen and (min-width: $tiny-display-breakpoint) and (max-width: $small-display-breakpoint) {
+  .day-select-container {
+    width: 600px;
+  }
+  .games-container {
+    width: 600px;
+  }
+}
+
+// Tiny display Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint) {
+  .day-select-container {
+    width: 550px;
+  }
+  .games-container {
+    width: 550px;
   }
 }
 

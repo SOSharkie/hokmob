@@ -33,7 +33,8 @@ import {RouterExtensionService} from "@shared/services/router-extension.service"
 import { StatsComponent } from './stats/stats.component';
 import {BetaNhlStatsService} from "@shared/services/beta-nhl-stats.service";
 import {NhlStatsService} from "@shared/services/nhl-stats.service";
-import { StatLeaderboardComponent } from './stats/stat-leaderboard/stat-leaderboard.component';
+import { StatLeaderboardComponent } from '@app/stats/stat-leaderboard/stat-leaderboard.component';
+import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.component';
 
 @NgModule({
   declarations: [
@@ -57,7 +58,8 @@ import { StatLeaderboardComponent } from './stats/stat-leaderboard/stat-leaderbo
     GameStatsComponent,
     PlayoffSeriesDialogComponent,
     StatsComponent,
-    StatLeaderboardComponent
+    StatLeaderboardComponent,
+    PlayoffSummaryComponent
   ],
   imports: [
     BrowserModule,

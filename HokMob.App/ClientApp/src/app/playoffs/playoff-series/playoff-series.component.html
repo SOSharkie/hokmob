@@ -1,7 +1,7 @@
-<div class="series-container" (click)="openSeriesDialog()">
+<div class="series-container" [ngClass]="{'smaller-version': smallerVersion}" (click)="openSeriesDialog()">
   <div class="series-header">
     <img [src]="logoA" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoALoaded}">
-    <span class="next-game">{{nextGameDay}}</span>
+    <span *ngIf="!smallerVersion" class="next-game">{{nextGameDay}}</span>
     <img [src]="logoB" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoBLoaded}">
   </div>
   <div class="series-info">

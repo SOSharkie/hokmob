@@ -3,10 +3,16 @@
 .stats-container {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
   width: 100%;
 
-  app-stat-leaderboard {
-    margin: $spacing-large;
+  .leaderboards-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1400px;
+
+    app-stat-leaderboard {
+      margin: $spacing-large;
+    }
   }
 }

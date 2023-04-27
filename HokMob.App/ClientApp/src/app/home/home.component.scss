@@ -38,27 +38,44 @@
     flex-direction: row;
 
     .nav-menu {
-      min-width: 200px;
+      width: 200px;
     }
     .scores {
-      min-width: 500px;
+      min-width: 665px;
     }
     .news-and-standings {
-      min-width: 200px;
+      width: 300px;
     }
   }
 }
 
 // Small Display
-@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint){
+@media only screen and (min-width: $tiny-display-breakpoint) and (max-width: $small-display-breakpoint){
   .home-page {
     flex-direction: row;
 
     .nav-menu {
-      min-width: 130px;
+      width: 150px;
     }
     .scores {
-      min-width: 450px;
+      min-width: 613px;
+    }
+    .news-and-standings {
+      display: none;
+    }
+  }
+}
+
+// Tiny Display
+@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint){
+  .home-page {
+    flex-direction: row;
+
+    .nav-menu {
+      width: 130px;
+    }
+    .scores {
+      min-width: 563px;
     }
     .news-and-standings {
       display: none;
@@ -70,6 +87,7 @@
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   .home-page {
     flex-direction: column;
+    justify-content: flex-start;
 
     .nav-menu {
       display: none;

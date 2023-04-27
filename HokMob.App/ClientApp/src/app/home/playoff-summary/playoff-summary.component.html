@@ -1,0 +1,13 @@
+<div class="playoff-summary-container">
+  <div class="playoffs-title" [routerLink]="['/playoffs']">
+    <span>{{playoffsTitle}}</span>
+  </div>
+  <div class="series-summaries-container">
+    <div *ngFor="let series of currentSeries" class="series-summary">
+      <app-playoff-series
+          [seriesData]="series"
+          [smallerVersion]="true"
+      ></app-playoff-series>
+    </div>
+  </div>
+</div>

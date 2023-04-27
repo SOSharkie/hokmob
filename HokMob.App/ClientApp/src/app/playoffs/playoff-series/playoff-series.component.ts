@@ -18,6 +18,9 @@ export class PlayoffSeriesComponent implements OnChanges {
   @Input()
   public seriesData: NhlPlayoffSeriesModel;
 
+  @Input()
+  public smallerVersion: boolean = false;
+
   public isLogoALoaded: boolean = false;
 
   public isLogoBLoaded: boolean = false;

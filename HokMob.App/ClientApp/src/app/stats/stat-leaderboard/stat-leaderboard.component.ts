@@ -1,5 +1,5 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {NhlStatsRosterPlayerModel} from "@shared/models/nhl-stats/nhl-stats-roster-player.model";
+import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlImageService} from "@shared/services/nhl-image.service";
 
@@ -17,7 +17,7 @@ export class StatLeaderboardComponent implements OnChanges {
   public statField: string;
 
   @Input()
-  public topPlayersList: NhlStatsRosterPlayerModel[];
+  public topPlayersList: NhlPlayerModel[];
 
   public playerHeadshots: any[];
 
@@ -28,14 +28,14 @@ export class StatLeaderboardComponent implements OnChanges {
   public teamLogosLoaded: boolean = false;
 
 
-  public get statLeader(): NhlStatsRosterPlayerModel {
+  public get statLeader(): NhlPlayerModel {
     if (this.topPlayersList && this.topPlayersList[0]) {
       return this.topPlayersList[0];
     }
     return null;
   }
 
-  public get statRunnerUps(): NhlStatsRosterPlayerModel[] {
+  public get statRunnerUps(): NhlPlayerModel[] {
     if (this.topPlayersList && this.topPlayersList[4]) {
       return this.topPlayersList.slice(1, 5);
     }
@@ -45,8 +45,24 @@ export class StatLeaderboardComponent implements OnChanges {
   constructor(private nhlLogoService: NhlImageService) {
   }
 
-  public getPlayerTeamColor(player: NhlStatsRosterPlayerModel): string {
+  public getPlayerTeamColor(player: NhlPlayerModel): string {
     return NhlTeamColorUtils.getTeamPrimaryColor(player.person.currentTeam.id)
+  }
+
+  public getPlayerStatField(player: NhlPlayerModel): string {
+    if (this.statField) {
+      if (this.statField === "savePercentage") {
+        if (player.person.stats[0].splits[0].stat[this.statField] === 1) {
+          return "1.00";
+        }
+        return player.person.stats[0].splits[0].stat[this.statField].toFixed(3).slice(1);
+      } else if (this.statField === "goalAgainstAverage") {
+        return player.person.stats[0].splits[0].stat[this.statField].toFixed(2);
+      } else {
+        return player.person.stats[0].splits[0].stat[this.statField];
+      }
+    }
+    return "";
   }
 
   public ngOnChanges(changes: SimpleChanges): void {

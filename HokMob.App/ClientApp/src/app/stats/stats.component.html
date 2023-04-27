@@ -1,27 +1,49 @@
 <div class="stats-container">
-  <app-stat-leaderboard
-      [statTitle]="'Points'"
-      [statField]="'points'"
-      [topPlayersList]="topPointsList"
-  ></app-stat-leaderboard>
-  <app-stat-leaderboard
-      [statTitle]="'Goals'"
-      [statField]="'goals'"
-      [topPlayersList]="topGoalsList"
-  ></app-stat-leaderboard>
-  <app-stat-leaderboard
-      [statTitle]="'Assists'"
-      [statField]="'assists'"
-      [topPlayersList]="topAssistsList"
-  ></app-stat-leaderboard>
-<!--  <app-stat-leaderboard-->
-<!--      [statTitle]="'Save Percentage'"-->
-<!--      [statField]="'savePercentage'"-->
-<!--      [topPlayersList]="savePercentageList"-->
-<!--  ></app-stat-leaderboard>-->
-<!--  <app-stat-leaderboard-->
-<!--      [statTitle]="'Shutouts'"-->
-<!--      [statField]="'shutouts'"-->
-<!--      [topPlayersList]="shutOutsList"-->
-<!--  ></app-stat-leaderboard>-->
+  <div class="leaderboards-container">
+    <app-stat-leaderboard
+        [statTitle]="'Points'"
+        [statField]="'points'"
+        [topPlayersList]="topPointsList"
+    ></app-stat-leaderboard>
+    <app-stat-leaderboard
+        [statTitle]="'Goals'"
+        [statField]="'goals'"
+        [topPlayersList]="topGoalsList"
+    ></app-stat-leaderboard>
+    <app-stat-leaderboard
+        [statTitle]="'Assists'"
+        [statField]="'assists'"
+        [topPlayersList]="topAssistsList"
+    ></app-stat-leaderboard>
+    <app-stat-leaderboard
+        [statTitle]="'Save Percentage'"
+        [statField]="'savePercentage'"
+        [topPlayersList]="savePercentageList"
+    ></app-stat-leaderboard>
+    <app-stat-leaderboard
+        [statTitle]="'Goals Against Average'"
+        [statField]="'goalAgainstAverage'"
+        [topPlayersList]="goalsAgainstList"
+    ></app-stat-leaderboard>
+    <app-stat-leaderboard
+        [statTitle]="'Wins'"
+        [statField]="'wins'"
+        [topPlayersList]="winsList"
+    ></app-stat-leaderboard>
+    <app-stat-leaderboard
+        [statTitle]="'Shots'"
+        [statField]="'shots'"
+        [topPlayersList]="topShotsList"
+    ></app-stat-leaderboard>
+    <app-stat-leaderboard
+        [statTitle]="'Hits'"
+        [statField]="'hits'"
+        [topPlayersList]="topHitsList"
+    ></app-stat-leaderboard>
+    <app-stat-leaderboard
+        [statTitle]="'Time On Ice Per Game'"
+        [statField]="'timeOnIcePerGame'"
+        [topPlayersList]="timeOnIcePerGameList"
+    ></app-stat-leaderboard>
+  </div>
 </div>

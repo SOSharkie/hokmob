@@ -38,7 +38,24 @@
         text-align: center;
       }
     }
+  }
+}
 
+.smaller-version {
+  width: 120px !important;
+  margin-top: $spacing-x-large !important;
+  margin-bottom: $spacing-x-large !important;
+
+  .series-header {
+    justify-content: space-between !important;
+  }
+
+  .team-spacer {
+    width: 30px !important;
+  }
+
+  .score-spacer {
+    width: 50px !important;
   }
 }
 

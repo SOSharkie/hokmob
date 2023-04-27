@@ -3,7 +3,7 @@
 .stat-leaderboard-container {
   display: flex;
   flex-direction: column;
-  width: 400px;
+  min-width: 350px;
   padding: $spacing-medium;
   background-color: $black-02;
   border-radius: 25px;
@@ -15,6 +15,7 @@
     font-size: larger;
     height: 40px;
     color: white;
+    margin-bottom: $spacing-medium;
   }
 
   .stat-players {
@@ -33,11 +34,21 @@
       .player-container {
         display: flex;
 
-        .player-headshot {
+        .player-headshot-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
           height: 50px;
           width: 50px;
           border-radius: 50%;
           margin-right: $spacing-x-large;
+          overflow: hidden;
+
+          .player-headshot {
+            height: 67px;
+            width: 67px;
+            margin-top: 14px;
+          }
         }
 
         .player-info {
@@ -45,7 +56,8 @@
           flex-direction: column;
 
           .player-name {
-            font-size: large;
+            font-size: medium;
+            margin-left: $spacing-medium;
           }
 
           .player-team {
@@ -58,7 +70,7 @@
             }
 
             .player-team-label {
-              font-size: medium;
+              font-size: smaller;
               color: $gray-03;
             }
           }
@@ -75,14 +87,26 @@
     .stat-leader {
       height: 65px !important;
 
-      .leader-headshot {
+      .leader-headshot-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         height: 60px;
         width: 60px;
         border-radius: 50%;
         margin-right: $spacing-x-large;
+        overflow: hidden;
+
+        .leader-headshot {
+          height: 80px;
+          width: 80px;
+          margin-top: 17px;
+        }
       }
+
       .leader-name {
-        font-size: larger;
+        font-size: large;
+        margin-left: $spacing-medium;
       }
 
       .leader-team {
@@ -95,7 +119,7 @@
         }
 
         .leader-team-label {
-          font-size: large;
+          font-size: medium;
           color: $gray-03;
         }
       }
@@ -104,5 +128,19 @@
         font-size: larger;
       }
     }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $medium-display-breakpoint) {
+  .stat-leaderboard-container {
+    width: 400px;
+  }
+}
+
+// Small Display
+@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $medium-display-breakpoint){
+  .stat-leaderboard-container {
+    width: 330px;
   }
 }
