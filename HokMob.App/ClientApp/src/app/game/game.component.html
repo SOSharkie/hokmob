@@ -2,7 +2,7 @@
   <div class="dropdown-header" id="dropdownHeader">
     <div class="dropdown-score-container">
       <div class="home-team-header">
-        <span>{{homeTeamName}}</span>
+        <span>{{homeTeamShortName}}</span>
         <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
       </div>
       <div *ngIf="futureGame" class="game-day-time-container future-game">
@@ -20,7 +20,7 @@
       </div>
       <div class="away-team-header">
         <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
-        <span>{{awayTeamName}}</span>
+        <span>{{awayTeamShortName}}</span>
       </div>
     </div>
   </div>

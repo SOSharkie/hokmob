@@ -73,8 +73,8 @@ export class GoalScorersComponent {
 
   private getGoalPeriodTime(time: string): string {
     if (time.startsWith('0')) {
-      return " (" + time.substring(1) + ")";
+      return "(" + time.substring(1) + ")";
     }
-    return " (" + time + ")";
+    return "(" + time + ")";
   }
 }
