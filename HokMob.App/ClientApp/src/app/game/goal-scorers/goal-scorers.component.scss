@@ -11,30 +11,36 @@ $central-info-width: 130px;
   background-color: $black-02;
   color: $gray-04;
 
-  .goal-icon {
-    display: flex;
-    justify-content: center;
-    align-content: center;
-    width: $central-info-width;
-    padding-right: $spacing-medium;
-    padding-left: $spacing-medium;
-  }
-
   .goals-container {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    width: 385px;
-    padding-right: $spacing-large;
-    padding-left: $spacing-large;
+    width: 100%;
+    padding-right: $spacing-medium;
+    padding-left: $spacing-medium;
 
     .period-goals {
       display: flex;
-      margin-bottom: $spacing-medium;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      margin: $spacing-small;
+
+      .home-goals-label {
+        width: 47%;
+        text-align: right;
+      }
+
+      .goals-label {
+        width: 47%;
+      }
 
       .period-label {
+        width: 6%;
+        text-align: center;
+        margin-left: $spacing-x-large;
+        margin-right: $spacing-x-large;
         font-weight: bolder;
-        margin-right: $spacing-medium;
       }
     }
   }
@@ -45,5 +51,21 @@ $central-info-width: 130px;
 
   .away-goals {
     align-content: flex-start;
+  }
+}
+
+
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .goal-details-container {
+    font-size: medium;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .goal-details-container {
+    font-size: smaller;
   }
 }

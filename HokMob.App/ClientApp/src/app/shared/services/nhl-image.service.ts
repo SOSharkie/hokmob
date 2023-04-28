@@ -6,7 +6,7 @@ import * as dayjs from 'dayjs'
 @Injectable()
 export class NhlImageService {
 
-  private nhlTeamLogoUrl = "https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/";
+  private nhlTeamLogoUrl = "https://www-league.nhlstatic.com/images/logos/teams-current-primary-dark/";
 
   private nhlPlayerHeadShotUrl = "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/";
 

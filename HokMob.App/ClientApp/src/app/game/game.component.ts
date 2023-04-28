@@ -91,28 +91,42 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public get completedGame(): boolean {
     if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status.abstractGameState === "Final"
+      return this.gameLiveData.gameData.status.abstractGameState === "Final";
     }
     return false;
   }
 
   public get futureGame(): boolean {
     if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status.abstractGameState === "Preview"
+      return this.gameLiveData.gameData.status.abstractGameState === "Preview";
     }
     return false;
   }
 
   public get homeTeamName(): string {
     if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.home.name
+      return this.gameLiveData.gameData.teams.home.name;
     }
     return "N/A";
   }
 
   public get awayTeamName(): string {
     if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.away.name
+      return this.gameLiveData.gameData.teams.away.name;
+    }
+    return "N/A";
+  }
+
+  public get homeTeamShortName(): string {
+    if (this.gameLiveData) {
+      return this.gameLiveData.gameData.teams.home.teamName;
+    }
+    return "N/A";
+  }
+
+  public get awayTeamShortName(): string {
+    if (this.gameLiveData) {
+      return this.gameLiveData.gameData.teams.away.teamName;
     }
     return "N/A";
   }
