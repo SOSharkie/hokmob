@@ -46,28 +46,28 @@ export class PlayoffSeriesComponent implements OnChanges {
   }
 
   public get teamARank() : string {
-    if (this.seriesData && this.seriesData.matchupTeams) {
+    if (this.seriesData && this.seriesData.matchupTeams && this.seriesData.matchupTeams[0]) {
       return "  " + this.seriesData.matchupTeams[0].seed.rank;
     }
     return " ";
   }
 
   public get teamBRank() : string {
-    if (this.seriesData && this.seriesData.matchupTeams) {
+    if (this.seriesData && this.seriesData.matchupTeams && this.seriesData.matchupTeams[1]) {
       return  "  " + this.seriesData.matchupTeams[1].seed.rank.toString();
     }
     return " ";
   }
 
   public get teamAWins(): number {
-    if (this.seriesData && this.seriesData.matchupTeams) {
+    if (this.seriesData && this.seriesData.matchupTeams && this.seriesData.matchupTeams[0]) {
       return this.seriesData.matchupTeams[0].seriesRecord.wins;
     }
     return 0;
   }
 
   public get teamBWins(): number {
-    if (this.seriesData && this.seriesData.matchupTeams) {
+    if (this.seriesData && this.seriesData.matchupTeams && this.seriesData.matchupTeams[1]) {
       return this.seriesData.matchupTeams[1].seriesRecord.wins;
     }
     return 0;
@@ -90,25 +90,31 @@ export class PlayoffSeriesComponent implements OnChanges {
       if (!this.seriesData.matchupTeams) {
         return;
       }
-      this.nhlPlayoffService.getNhlPlayoffSeriesGames(this.seriesData.matchupTeams[0].team.id, this.seriesData.matchupTeams[1].team.id).then(result => {
-        this.seriesGames = result;
-      });
-      this.nhlLogoService.getNhlTeamLogo(this.seriesData.matchupTeams[0].team.id).then(data => {
-        let reader = new FileReader();
-        reader.addEventListener("load", () => {
-          this.logoA = reader.result;
-          this.isLogoALoaded = true;
-        }, false);
-        reader.readAsDataURL(data);
-      });
-      this.nhlLogoService.getNhlTeamLogo(this.seriesData.matchupTeams[1].team.id).then(data => {
-        let reader = new FileReader();
-        reader.addEventListener("load", () => {
-          this.logoB = reader.result;
-          this.isLogoBLoaded = true;
-        }, false);
-        reader.readAsDataURL(data);
-      });
+      if (this.seriesData.matchupTeams[0] && this.seriesData.matchupTeams[1]) {
+        this.nhlPlayoffService.getNhlPlayoffSeriesGames(this.seriesData.matchupTeams[0].team.id, this.seriesData.matchupTeams[1].team.id).then(result => {
+          this.seriesGames = result;
+        });
+      }
+      if (this.seriesData.matchupTeams[0]) {
+        this.nhlLogoService.getNhlTeamLogo(this.seriesData.matchupTeams[0].team.id).then(data => {
+          let reader = new FileReader();
+          reader.addEventListener("load", () => {
+            this.logoA = reader.result;
+            this.isLogoALoaded = true;
+          }, false);
+          reader.readAsDataURL(data);
+        });
+      }
+      if (this.seriesData.matchupTeams[1]) {
+        this.nhlLogoService.getNhlTeamLogo(this.seriesData.matchupTeams[1].team.id).then(data => {
+          let reader = new FileReader();
+          reader.addEventListener("load", () => {
+            this.logoB = reader.result;
+            this.isLogoBLoaded = true;
+          }, false);
+          reader.readAsDataURL(data);
+        });
+      }
     }
   }
 
