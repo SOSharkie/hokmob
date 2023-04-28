@@ -1,25 +1,25 @@
 <div class="series-container" [ngClass]="{'smaller-version': smallerVersion}" (click)="openSeriesDialog()">
   <div class="series-header">
-    <img [src]="logoA" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoALoaded}">
+    <img [src]="logoA" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoALoaded, 'loser': teamBWins === 4}">
     <span *ngIf="!smallerVersion" class="next-game">{{nextGameDay}}</span>
-    <img [src]="logoB" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoBLoaded}">
+    <img [src]="logoB" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoBLoaded, 'loser': teamAWins === 4}">
   </div>
   <div class="series-info">
     <div class="team-names">
       <div>
-        <span class="team-abbr">{{teamAName}}</span>
+        <span class="team-abbr" [ngClass]="{'loser': teamBWins === 4}">{{teamAName}}</span>
         <span class="team-rank">{{teamARank}}</span>
       </div>
       <span class="team-spacer"></span>
       <div>
-        <span class="team-abbr">{{teamBName}}</span>
+        <span class="team-abbr" [ngClass]="{'loser': teamAWins === 4}">{{teamBName}}</span>
         <span class="team-rank">{{teamBRank}}</span>
       </div>
     </div>
     <div class="series-score">
-      <span>{{teamAWins}}</span>
+      <span [ngClass]="{'loser': teamBWins === 4}">{{teamAWins}}</span>
       <span class="score-spacer">-</span>
-      <span>{{teamBWins}}</span>
+      <span [ngClass]="{'loser': teamAWins === 4}">{{teamBWins}}</span>
     </div>
   </div>
 </div>
