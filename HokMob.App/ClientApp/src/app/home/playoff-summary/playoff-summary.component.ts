@@ -32,7 +32,6 @@ export class PlayoffSummaryComponent implements OnInit {
   public ngOnInit(): void {
     this.nhlPlayoffService.getNhlPlayoffs().then(result => {
       this.playoffsData = result;
-      console.log(this.playoffsData);
     })
   }
 

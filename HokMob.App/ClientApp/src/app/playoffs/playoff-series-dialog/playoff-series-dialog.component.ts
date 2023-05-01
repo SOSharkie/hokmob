@@ -46,7 +46,9 @@ export class PlayoffSeriesDialogComponent implements OnInit {
         this.seriesGames = [];
         result.dates.forEach(date => {
           date.games.forEach(game => {
-            this.seriesGames.push(game);
+            if (this.isSeriesGame(game)) {
+              this.seriesGames.push(game);
+            }
           });
         });
       });
@@ -61,5 +63,12 @@ export class PlayoffSeriesDialogComponent implements OnInit {
 
   public seriesGameClicked(): void {
     this.dialogRef.close();
+  }
+
+  private isSeriesGame(game: NhlGameModel): boolean {
+    return (game.teams.home.team.id === this.seriesData.matchupTeams[0].team.id &&
+        game.teams.away.team.id === this.seriesData.matchupTeams[1].team.id) ||
+        (game.teams.home.team.id === this.seriesData.matchupTeams[1].team.id &&
+            game.teams.away.team.id === this.seriesData.matchupTeams[0].team.id)
   }
 }

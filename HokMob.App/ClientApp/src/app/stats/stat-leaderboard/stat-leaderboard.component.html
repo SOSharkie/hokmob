@@ -4,7 +4,7 @@
   </div>
   <div *ngIf="topPlayersList" class="stat-players">
     <div class="stat-leader stat-player">
-      <div class="player-container">
+      <div class="player-container" [routerLink]="['/player', statLeader.person.id]">
         <div class="leader-headshot-container">
           <img [src]="playerHeadshots[0]" class="leader-headshot">
         </div>
@@ -21,7 +21,7 @@
       </div>
     </div>
     <div *ngFor="let player of statRunnerUps, let i = index" class="stat-player">
-      <div class="player-container">
+      <div class="player-container" [routerLink]="['/player', player.person.id]">
         <div class="player-headshot-container">
           <img [src]="playerHeadshots[i+1]" class="player-headshot">
         </div>

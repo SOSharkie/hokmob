@@ -1,46 +1,58 @@
 <div class="stats-container">
+  <div class="stat-filters-container">
+    <div (click)="updateGameType(true)"
+         class="stat-filter-button"
+         [ngClass]="{'selected-filter': playoffsSelected}">
+      Playoffs
+    </div>
+    <div (click)="updateGameType(false)"
+         class="stat-filter-button"
+         [ngClass]="{'selected-filter': !playoffsSelected}">
+      Regular Season
+    </div>
+  </div>
   <div class="leaderboards-container">
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Points'"
         [statField]="'points'"
         [topPlayersList]="topPointsList"
     ></app-stat-leaderboard>
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Goals'"
         [statField]="'goals'"
         [topPlayersList]="topGoalsList"
     ></app-stat-leaderboard>
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Assists'"
         [statField]="'assists'"
         [topPlayersList]="topAssistsList"
     ></app-stat-leaderboard>
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Save Percentage'"
         [statField]="'savePercentage'"
         [topPlayersList]="savePercentageList"
     ></app-stat-leaderboard>
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Goals Against Average'"
         [statField]="'goalAgainstAverage'"
         [topPlayersList]="goalsAgainstList"
     ></app-stat-leaderboard>
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Wins'"
         [statField]="'wins'"
         [topPlayersList]="winsList"
     ></app-stat-leaderboard>
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Shots'"
         [statField]="'shots'"
         [topPlayersList]="topShotsList"
     ></app-stat-leaderboard>
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Hits'"
         [statField]="'hits'"
         [topPlayersList]="topHitsList"
     ></app-stat-leaderboard>
-    <app-stat-leaderboard
+    <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Time On Ice Per Game'"
         [statField]="'timeOnIcePerGame'"
         [topPlayersList]="timeOnIcePerGameList"
