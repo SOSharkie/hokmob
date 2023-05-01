@@ -1,8 +1,9 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {NhlStatsService} from "@shared/services/nhl-stats.service";
 import {NhlStatTeamModel} from "@shared/models/nhl-stats/nhl-stat-team.model";
 import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
+import {StatLeaderboardComponent} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
 
 @Component({
   selector: 'app-stats',
@@ -10,6 +11,9 @@ import {StatsUtils} from "@shared/utils/stats-utils";
   styleUrls: ['./stats.component.scss']
 })
 export class StatsComponent implements OnInit {
+
+  @ViewChildren('statLeaderboardComponent')
+  public statLeaderboards: QueryList<StatLeaderboardComponent>;
 
   public fullSkaterList: NhlPlayerModel[];
 
@@ -33,18 +37,38 @@ export class StatsComponent implements OnInit {
 
   public winsList: NhlPlayerModel[];
 
-  private readonly minimumGoalieSaves = 10;
+  public playoffsSelected: boolean = true;
+
+  public filtersEnabled: boolean = true;
+
+  private readonly minimumGoalieSavesPlayoffs = 20;
+
+  private readonly minimumGoalieSavesRegularSeason = 100;
 
   private readonly topNumberOfPlayers = 25;
-
 
   constructor(private nhlStatsService: NhlStatsService) {
   }
 
   public ngOnInit(): void {
+    this.updateStats();
+  }
+
+  public updateGameType(isPlayoffs: boolean): void {
+    if (this.filtersEnabled) {
+      this.playoffsSelected = isPlayoffs;
+      this.disableFiltersForTwoSeconds();
+      this.statLeaderboards.forEach(leaderboard => {
+        leaderboard.imagesLoaded = false;
+      });
+      this.updateStats();
+    }
+  }
+
+  private updateStats(): void {
     this.fullSkaterList = [];
     this.fullGoalieList = [];
-    this.nhlStatsService.netNhlStats("20222023", true).then(result  => {
+    this.nhlStatsService.getNhlStats("20222023", this.playoffsSelected).then(result  => {
       let fullPlayerList = [];
       result.forEach((team) => {
         fullPlayerList = fullPlayerList.concat(team.roster.roster);
@@ -54,7 +78,8 @@ export class StatsComponent implements OnInit {
         return player.person.stats[0].splits[0] && player.person.stats[0].splits[0].stat.points > 0;
       });
       this.fullGoalieList = fullPlayerList.filter(player => {
-        return player.person.stats[0].splits[0] && player.person.stats[0].splits[0].stat.saves > this.minimumGoalieSaves;
+        return player.person.stats[0].splits[0] && player.person.stats[0].splits[0].stat.saves >
+            (this.playoffsSelected ? this.minimumGoalieSavesPlayoffs : this.minimumGoalieSavesRegularSeason);
       });
 
       this.topPointsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "points")).slice(0, this.topNumberOfPlayers);
@@ -67,6 +92,13 @@ export class StatsComponent implements OnInit {
       this.topHitsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "hits")).slice(0, this.topNumberOfPlayers);
       this.timeOnIcePerGameList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByTimeField(a, b, "timeOnIcePerGame")).slice(0, this.topNumberOfPlayers);
     });
+  }
+
+  private disableFiltersForTwoSeconds() {
+    this.filtersEnabled = false;
+    setTimeout(() => {
+      this.filtersEnabled = true;
+    }, 2000);
   }
 }
 

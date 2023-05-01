@@ -2,8 +2,38 @@
 
 .stats-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
   width: 100%;
+
+  .stat-filters-container {
+    display: flex;
+    align-items: center;
+    height: 60px;
+    margin-top: $spacing-large;
+    margin-bottom: $spacing-medium;
+
+    background-color: $black-02;
+    border-radius: 25px;
+
+    .stat-filter-button {
+      font-size: large;
+      color: $gray-04;
+      margin-left: $spacing-x-large;
+      padding: $spacing-medium;
+      border-radius: 15px;
+    }
+
+    .stat-filter-button:hover {
+      cursor: pointer;
+      color: $gray-03;
+    }
+
+    .selected-filter {
+      color: white !important;
+    }
+  }
 
   .leaderboards-container {
     display: flex;
@@ -14,5 +44,19 @@
     app-stat-leaderboard {
       margin: $spacing-large;
     }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $medium-display-breakpoint) {
+  .stat-filters-container {
+    width: 1275px;
+  }
+}
+
+// Mobile and Small Display
+@media only screen and (max-width: $medium-display-breakpoint){
+  .stat-filters-container {
+    width: 90%;
   }
 }

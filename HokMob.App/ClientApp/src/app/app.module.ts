@@ -35,6 +35,7 @@ import {BetaNhlStatsService} from "@shared/services/beta-nhl-stats.service";
 import {NhlStatsService} from "@shared/services/nhl-stats.service";
 import { StatLeaderboardComponent } from '@app/stats/stat-leaderboard/stat-leaderboard.component';
 import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.component';
+import { PlayerComponent } from './player/player.component';
 
 @NgModule({
   declarations: [
@@ -59,7 +60,8 @@ import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.
     PlayoffSeriesDialogComponent,
     StatsComponent,
     StatLeaderboardComponent,
-    PlayoffSummaryComponent
+    PlayoffSummaryComponent,
+    PlayerComponent
   ],
   imports: [
     BrowserModule,

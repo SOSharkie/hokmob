@@ -5,6 +5,7 @@ import {AboutComponent} from "@app/about/about.component";
 import {GameComponent} from "@app/game/game.component";
 import {PlayoffsComponent} from "@app/playoffs/playoffs.component";
 import {StatsComponent} from "@app/stats/stats.component";
+import {PlayerComponent} from "@app/player/player.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent, data: {routeIdx: 0} },
@@ -12,6 +13,7 @@ const routes: Routes = [
   { path: 'about', component: AboutComponent, data: {routeIdx: 2} },
   { path: 'playoffs', component: PlayoffsComponent, data: {routeIdx: 3} },
   { path: 'stats', component: StatsComponent, data: {routeIdx: 4} },
+  { path: 'player/:id', component: PlayerComponent, data: {routeIdx: 5} },
   { path: '**', redirectTo: '' }
 ];
 

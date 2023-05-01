@@ -23,9 +23,7 @@ export class StatLeaderboardComponent implements OnChanges {
 
   public teamLogos: any[];
 
-  public playerHeadshotsLoaded: boolean = false;
-
-  public teamLogosLoaded: boolean = false;
+  public imagesLoaded: boolean = false;
 
 
   public get statLeader(): NhlPlayerModel {
@@ -66,14 +64,13 @@ export class StatLeaderboardComponent implements OnChanges {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['topPlayersList'] && !this.teamLogosLoaded) {
+    if (changes['topPlayersList'] && !this.imagesLoaded) {
       if (!this.topPlayersList) {
         return;
       }
       this.teamLogos = ['assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png'];
       this.playerHeadshots = ['assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png'];
       let teams = this.topPlayersList.slice(0, 5).map(player => player.person.currentTeam);
-      this.teamLogosLoaded = true;
       teams.forEach((team, index) => {
         this.nhlLogoService.getNhlTeamLogo(team.id).then(data => {
           let reader = new FileReader();
@@ -92,6 +89,7 @@ export class StatLeaderboardComponent implements OnChanges {
           reader.readAsDataURL(data);
         });
       });
+      this.imagesLoaded = true;
     }
   }
 }
