@@ -84,6 +84,18 @@
       }
     }
 
+    .stat-player:hover {
+      cursor: pointer;
+
+      .player-name {
+        color: $gray-04
+      }
+
+      .player-team-label {
+        color: $gray-02 !important;
+      }
+    }
+
     .stat-leader {
       height: 65px !important;
 
@@ -126,6 +138,18 @@
 
       .stat-container {
         font-size: larger;
+      }
+    }
+
+    .stat-leader:hover {
+      cursor: pointer;
+
+      .leader-name {
+        color: $gray-04
+      }
+
+      .leader-team-label {
+        color: $gray-02 !important;
       }
     }
   }

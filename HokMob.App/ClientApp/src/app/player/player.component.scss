@@ -1,0 +1,199 @@
+@import "variables";
+
+.player-container {
+  display: flex;
+  flex-direction: column;
+
+  .player-header {
+    display: flex;
+    align-items: flex-end;
+    height: 100px;
+    margin: $spacing-medium;
+    background-color: $black-02;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+
+    .team-color-container {
+      width: 75px;
+      height: 100px;
+
+      .team-line-1 {
+        position: absolute;
+        transform: translateY(60px) translateX(0px) rotate(-35deg);
+        width: 140px;
+        border-bottom: 12px solid;
+        z-index: 2;
+      }
+
+      .team-line-2 {
+        position: absolute;
+        transform: translateY(107px) translateX(0px) rotate(-35deg);
+        width: 100px;
+        border-bottom: 12px solid;
+        z-index: 2;
+      }
+    }
+
+    .player-headshot-container {
+      border-radius: 50%;
+      margin-bottom: -4px;
+      overflow: hidden;
+
+      .player-headshot {
+        position: relative;
+        height: 87px;
+        z-index: 4;
+      }
+    }
+
+    .player-info {
+      display: flex;
+      flex-direction: column;
+      margin-left: $spacing-large;
+      margin-bottom: $spacing-medium;
+
+      .player-name {
+        color: white;
+        font-size: x-large;
+        margin-left: $spacing-large;
+      }
+
+      .player-team {
+        display: flex;
+        align-items: center;
+        margin-top: $spacing-medium;
+
+        .player-team-logo {
+          height: 40px;
+        }
+
+        .player-team-label {
+          font-size: large;
+          color: $gray-03;
+        }
+      }
+    }
+  }
+
+  .player-info-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    margin: $spacing-medium;
+
+    .player-bio-container {
+      display: grid;
+      padding: 0 $spacing-x-large;
+      grid-auto-rows: 100px;
+      grid-template-rows: repeat(2, 1fr);
+      grid-template-columns: repeat(4, minmax(50px, 135px));
+      height: 240px;
+      background-color: $black-02;
+      border-radius: 25px;
+      margin-bottom: $spacing-medium;
+
+      .bio-item {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        font-size: larger;
+
+        .item-title {
+          padding: $spacing-medium;
+          color: $gray-02;
+        }
+
+        .item-value {
+          padding: $spacing-medium;
+          color: white;
+        }
+      }
+
+      .top {
+        border-bottom: 1px solid $black-03;
+      }
+    }
+
+    .player-position-container {
+      //display: flex;
+      //flex-direction: column;
+      //width: 300px;
+      //background-color: $black-02;
+      //border-radius: 25px;
+      //padding: 0 $spacing-x-large;
+      //color: white;
+      //
+      //.position-header {
+      //  font-size: larger;
+      //  text-align: center;
+      //  padding: $spacing-x-large;
+      //  border-bottom: 1px solid $black-03;
+      //}
+      //
+      //.rink {
+      //  height: 180px;
+      //  background-image: url("/./assets/half_rink.png");
+      //}
+    }
+
+    .player-stats-container {
+      background-color: $black-02;
+      border-radius: 25px;
+
+      .stats-header {
+        font-size: larger;
+        text-align: center;
+        padding: $spacing-x-large;
+        border-bottom: 1px solid $black-03;
+        color: white;
+      }
+
+      .stats-grid {
+        display: grid;
+        padding: 0 $spacing-x-large;
+        grid-auto-rows: 100px;
+        grid-template-rows: repeat(2, 1fr);
+        grid-template-columns: repeat(4, minmax(50px, 135px));
+        height: 185px;
+
+
+        .stats-item {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          text-align: center;
+          font-size: larger;
+
+          .item-title {
+            padding: $spacing-medium;
+            color: $gray-02;
+          }
+
+          .item-value {
+            padding: $spacing-medium;
+            color: white;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .player-header {
+    padding-left: $spacing-huge;
+    padding-right: $spacing-huge;
+  }
+}
+
+// Mobile Display
+@media only screen and (max-width: $mobile-screen-breakpoint){
+  .player-header {
+    padding-left: $spacing-small;
+    padding-right: $spacing-small;
+  }
+}
