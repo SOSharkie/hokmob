@@ -86,6 +86,11 @@
     <div class="game-info"></div>
   </div>
   <div *ngIf="!futureGame" class="game-container">
+    <app-momentum
+        [gameLiveData]="gameLiveData"
+    ></app-momentum>
+  </div>
+  <div *ngIf="!futureGame" class="game-container">
     <app-event-timeline
         [gameLiveData]="gameLiveData"
     ></app-event-timeline>
