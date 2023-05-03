@@ -36,6 +36,7 @@ import {NhlStatsService} from "@shared/services/nhl-stats.service";
 import { StatLeaderboardComponent } from '@app/stats/stat-leaderboard/stat-leaderboard.component';
 import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.component';
 import { PlayerComponent } from './player/player.component';
+import { MomentumComponent } from './game/momentum/momentum.component';
 
 @NgModule({
   declarations: [
@@ -61,7 +62,8 @@ import { PlayerComponent } from './player/player.component';
     StatsComponent,
     StatLeaderboardComponent,
     PlayoffSummaryComponent,
-    PlayerComponent
+    PlayerComponent,
+    MomentumComponent
   ],
   imports: [
     BrowserModule,
