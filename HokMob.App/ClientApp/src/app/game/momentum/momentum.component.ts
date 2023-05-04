@@ -100,12 +100,7 @@ export class MomentumComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   public ngAfterViewInit(): void {
-    let windowWidth = window.innerWidth;
-    if (windowWidth < 700) {
-      let transformX = Math.round((windowWidth - 612) / 2.16);
-      document.getElementById('chartContainer').style.transform = "rotateX(0) rotateY(180deg) rotate(90deg) translate(115px, " + transformX + "px)";
-      this.momentumChart.options.scales['x'].display = false;
-    }
+
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
