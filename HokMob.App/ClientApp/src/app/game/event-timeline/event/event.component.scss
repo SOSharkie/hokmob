@@ -26,7 +26,11 @@
       .event-main-label {
         color: white;
         margin-bottom: $spacing-small;
+      }
 
+      .event-main-label:hover {
+        cursor: pointer;
+        text-decoration: underline;
       }
 
       .event-secondary-label {

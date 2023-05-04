@@ -25,14 +25,14 @@ export class GameStatsComponent implements OnInit, OnChanges {
 
   public get homeColor(): string {
     if (this.gameLiveData) {
-      return NhlTeamColorUtils.getTeamPrimaryColor(this.gameLiveData.liveData.linescore.teams.home.team.id)
+      return NhlTeamColorUtils.getTeamPrimaryColor(this.gameLiveData.liveData.linescore.teams.home.team.id);
     }
     return "#000000";
   }
 
   public get awayColor(): string {
     if (this.gameLiveData) {
-      return NhlTeamColorUtils.getTeamPrimaryColor(this.gameLiveData.liveData.linescore.teams.away.team.id)
+      return NhlTeamColorUtils.getTeamSecondaryColor(this.gameLiveData.liveData.linescore.teams.home.team.id, this.gameLiveData.liveData.linescore.teams.away.team.id);
     }
     return "#FFFFFF";
   }

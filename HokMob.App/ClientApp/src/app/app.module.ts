@@ -37,6 +37,7 @@ import { StatLeaderboardComponent } from '@app/stats/stat-leaderboard/stat-leade
 import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.component';
 import { PlayerComponent } from './player/player.component';
 import { MomentumComponent } from './game/momentum/momentum.component';
+import { PlayerGameDialogComponent } from './game/player-game-dialog/player-game-dialog.component';
 
 @NgModule({
   declarations: [
@@ -63,7 +64,8 @@ import { MomentumComponent } from './game/momentum/momentum.component';
     StatLeaderboardComponent,
     PlayoffSummaryComponent,
     PlayerComponent,
-    MomentumComponent
+    MomentumComponent,
+    PlayerGameDialogComponent
   ],
   imports: [
     BrowserModule,

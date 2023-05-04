@@ -335,6 +335,10 @@ $central-info-width: 130px;
   }
 }
 
+.dialog-backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .dropdown-score-container {
