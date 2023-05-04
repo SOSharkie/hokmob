@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GoalModel} from "@shared/models/goal.model";
 
 @Component({
@@ -17,6 +17,9 @@ export class GoalScorersComponent {
   @Input()
   public numPeriods: number;
 
+  @Output()
+  public scorerClicked = new EventEmitter<number>();
+
   /**
    * Returns true if the game currently is in or has past a certain period.
    *
@@ -34,20 +37,22 @@ export class GoalScorersComponent {
    *
    * @param period - The period to get home goals for.
    */
-  public getHomeTeamGoals(period: number): string {
+  public getHomeTeamGoals(period: number): string[] {
     if (this.homeTeamGoals) {
       let periodGoals = this.homeTeamGoals.filter(goal => goal.period === period);
-      let goalsDisplayString = "";
+      let goalStrings = [];
       periodGoals.forEach((goal, index) => {
-        goalsDisplayString += goal.scorerLastName;
-        goalsDisplayString += this.getGoalPeriodTime(goal.periodTime);
+        let goalDisplayString = "";
+        goalDisplayString += goal.scorerLastName;
+        goalDisplayString += this.getGoalPeriodTime(goal.periodTime);
         if (index < periodGoals.length - 1) {
-          goalsDisplayString += ", "
+          goalDisplayString += ", "
         }
+        goalStrings.push(goalDisplayString);
       });
-      return goalsDisplayString;
+      return goalStrings;
     }
-    return "";
+    return [];
   }
 
   /**
@@ -55,26 +60,40 @@ export class GoalScorersComponent {
    *
    * @param period - The period to get away goals for.
    */
-  public getAwayTeamGoals(period: number): string {
-    if (this.awayTeamGoals) {
-      let periodGoals = this.awayTeamGoals.filter(goal => goal.period === period);
-      let goalsDisplayString = "";
-      periodGoals.forEach((goal, index) => {
-        goalsDisplayString += goal.scorerLastName;
-        goalsDisplayString += this.getGoalPeriodTime(goal.periodTime);
-        if (index < periodGoals.length - 1) {
-          goalsDisplayString += ", "
-        }
-      });
-      return goalsDisplayString;
+  public getAwayTeamGoals(period: number): string[] {
+      if (this.awayTeamGoals) {
+        let periodGoals = this.awayTeamGoals.filter(goal => goal.period === period);
+        let goalStrings = [];
+        periodGoals.forEach((goal, index) => {
+          let goalDisplayString = "";
+          goalDisplayString += goal.scorerLastName;
+          goalDisplayString += this.getGoalPeriodTime(goal.periodTime);
+          if (index < periodGoals.length - 1) {
+            goalDisplayString += ", "
+          }
+          goalStrings.push(goalDisplayString);
+        });
+        return goalStrings;
+      }
+      return [];
     }
-    return "";
-  }
 
   private getGoalPeriodTime(time: string): string {
     if (time.startsWith('0')) {
       return "(" + time.substring(1) + ")";
     }
     return "(" + time + ")";
+  }
+
+  public clickHomeScorer(scoreString: string): void {
+    let lastName = scoreString.slice(0, scoreString.indexOf('('));
+    let playerId = this.homeTeamGoals.find(goal => goal.scorerLastName === lastName).scorerId;
+    this.scorerClicked.emit(playerId);
+  }
+
+  public clickAwayScorer(scoreString: string): void {
+    let lastName = scoreString.slice(0, scoreString.indexOf('('));
+    let playerId = this.awayTeamGoals.find(goal => goal.scorerLastName === lastName).scorerId;
+    this.scorerClicked.emit(playerId);
   }
 }

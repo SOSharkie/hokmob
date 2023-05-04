@@ -352,6 +352,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       // Assumes scorer will always be 1st player in goal scoring event player list
       goal.scorerFullName = allPlays[scoringPlayIndex].players[0].player.fullName;
       goal.scorerLastName = goal.scorerFullName.substring(goal.scorerFullName.indexOf(' '));
+      goal.scorerId = allPlays[scoringPlayIndex].players[0].player.id;
       if (allPlays[scoringPlayIndex].team.id === this.gameBoxscore.teams.home.team.id) {
         this.homeTeamGoals.push(goal);
       } else {

@@ -66,7 +66,8 @@
           *ngIf="haveGoalsBeenSCored"
           [numPeriods]="gameLinescore.periods.length"
           [homeTeamGoals]="homeTeamGoals"
-          [awayTeamGoals]="awayTeamGoals">
+          [awayTeamGoals]="awayTeamGoals"
+          (scorerClicked)="openPlayerGameDialog($event)">
       </app-goal-scorers>
     </div>
     <div class="game-info-container">

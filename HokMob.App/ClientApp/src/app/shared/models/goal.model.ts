@@ -5,6 +5,8 @@ export class GoalModel {
 
   public scorerLastName: string;
 
+  public scorerId: number;
+
   public primaryAssistName: string;
 
   public secondaryAssistName: string;

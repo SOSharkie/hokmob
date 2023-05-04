@@ -1,34 +1,58 @@
 <div class="goal-details-container">
   <div class="goals-container">
     <div *ngIf="hasPeriod(1)" class="first period-goals">
-      <span class="home-goals-label">{{getHomeTeamGoals(1)}}</span>
+      <div class="home-goals-label">
+        <span *ngFor="let goal of getHomeTeamGoals(1)" (click)="clickHomeScorer(goal)" class="scorer-label" class="scorer-label">{{goal}}</span>
+      </div>
       <span *ngIf="hasPeriod(1)" class="period-label">1st</span>
-      <span class="away-goals-label">{{getAwayTeamGoals(1)}}</span>
+      <div class="away-goals-label">
+        <span *ngFor="let goal of getAwayTeamGoals(1)" (click)="clickAwayScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
     </div>
-    <div *ngIf="hasPeriod(2)" class="second period-goals">
-      <span class="home-goals-label">{{getHomeTeamGoals(2)}}</span>
+    <div *ngIf="hasPeriod(2)" class="first period-goals">
+      <div class="home-goals-label">
+        <span *ngFor="let goal of getHomeTeamGoals(2)" (click)="clickHomeScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
       <span *ngIf="hasPeriod(2)" class="period-label">2nd</span>
-      <span class="away-goals-label">{{getAwayTeamGoals(2)}}</span>
+      <div class="away-goals-label">
+        <span *ngFor="let goal of getAwayTeamGoals(2)" (click)="clickAwayScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
     </div>
-    <div *ngIf="hasPeriod(3)" class="third period-goals">
-      <span class="home-goals-label">{{getHomeTeamGoals(3)}}</span>
+    <div *ngIf="hasPeriod(3)" class="first period-goals">
+      <div class="home-goals-label">
+        <span *ngFor="let goal of getHomeTeamGoals(3)" (click)="clickHomeScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
       <span *ngIf="hasPeriod(3)" class="period-label">3rd</span>
-      <span class="away-goals-label">{{getAwayTeamGoals(3)}}</span>
+      <div class="away-goals-label">
+        <span *ngFor="let goal of getAwayTeamGoals(3)" (click)="clickAwayScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
     </div>
-    <div *ngIf="hasPeriod(4)" class="ot period-goals">
-      <span class="home-goals-label">{{getHomeTeamGoals(4)}}</span>
+    <div *ngIf="hasPeriod(4)" class="first period-goals">
+      <div class="home-goals-label">
+        <span *ngFor="let goal of getHomeTeamGoals(4)" (click)="clickHomeScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
       <span *ngIf="hasPeriod(4)" class="period-label">OT</span>
-      <span class="away-goals-label">{{getAwayTeamGoals(4)}}</span>
+      <div class="away-goals-label">
+        <span *ngFor="let goal of getAwayTeamGoals(4)" (click)="clickAwayScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
     </div>
-    <div *ngIf="hasPeriod(5)" class="2ot period-goals">
-      <span class="home-goals-label">{{getHomeTeamGoals(5)}}</span>
+    <div *ngIf="hasPeriod(5)" class="first period-goals">
+      <div class="home-goals-label">
+        <span *ngFor="let goal of getHomeTeamGoals(5)" (click)="clickHomeScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
       <span *ngIf="hasPeriod(5)" class="period-label">2OT</span>
-      <span class="away-goals-label">{{getAwayTeamGoals(5)}}</span>
+      <div class="away-goals-label">
+        <span *ngFor="let goal of getAwayTeamGoals(5)" (click)="clickAwayScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
     </div>
-    <div *ngIf="hasPeriod(6)" class="3ot period-goals">
-      <span class="home-goals-label">{{getHomeTeamGoals(6)}}</span>
+    <div *ngIf="hasPeriod(6)" class="first period-goals">
+      <div class="home-goals-label">
+        <span *ngFor="let goal of getHomeTeamGoals(6)" (click)="clickHomeScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
       <span *ngIf="hasPeriod(6)" class="period-label">3OT</span>
-      <span class="away-goals-label">{{getAwayTeamGoals(6)}}</span>
+      <div class="away-goals-label">
+        <span *ngFor="let goal of getAwayTeamGoals(6)" (click)="clickAwayScorer(goal)" class="scorer-label">{{goal}}</span>
+      </div>
     </div>
   </div>
 </div>
