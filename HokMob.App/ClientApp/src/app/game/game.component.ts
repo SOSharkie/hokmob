@@ -234,7 +234,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public get backButtonLabel(): string {
     if (this.previousUrl) {
-      return this.previousUrl.includes("playoffs") ? "Playoffs" : "Games";
+      if (this.previousUrl.includes("playoffs")) {
+        return "Playoffs";
+      } else if (this.previousUrl.includes("player")) {
+        return "Player";
+      }
     }
     return "Games";
   }
@@ -302,7 +306,6 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public openPlayerGameDialog(playerId: number): void {
-    console.log(playerId);
     let data = new GamePlayerModel();
     data.boxscore = this.gameLiveData.liveData.boxscore;
     data.playerId = playerId;

@@ -1,0 +1,73 @@
+<div class="player-stats-container">
+  <div class="stats-header">
+    <span>{{statTitle}}</span>
+  </div>
+  <div *ngIf="!isGoalie" class="stats-grid">
+    <div class="stats-item">
+      <span class="item-title">Points</span>
+      <span class="item-value">{{stats.points}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Goals</span>
+      <span class="item-value">{{stats.goals}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Assists</span>
+      <span class="item-value">{{stats.assists}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Shots</span>
+      <span class="item-value">{{stats.shots}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">+/-</span>
+      <span class="item-value">{{stats.plusMinus}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">FaceOff%</span>
+      <span class="item-value">{{formatFaceOffPercent(stats.faceOffPct)}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Hits</span>
+      <span class="item-value">{{stats.hits}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Blocks</span>
+      <span class="item-value">{{stats.blocked}}</span>
+    </div>
+  </div>
+  <div *ngIf="isGoalie" class="stats-grid">
+    <div class="stats-item">
+      <span class="item-title">Save %</span>
+      <span class="item-value">{{stats.savePercentage.toFixed(3).slice(1)}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">GAA</span>
+      <span class="item-value">{{stats.goalAgainstAverage.toFixed(2)}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Shutouts</span>
+      <span class="item-value">{{stats.shutouts}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Shots Against</span>
+      <span class="item-value">{{stats.shotsAgainst}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Starts</span>
+      <span class="item-value">{{stats.gamesStarted}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Wins</span>
+      <span class="item-value">{{stats.wins}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">Losses</span>
+      <span class="item-value">{{stats.losses}}</span>
+    </div>
+    <div class="stats-item">
+      <span class="item-title">OT Losses</span>
+      <span class="item-value">{{stats.ot}}</span>
+    </div>
+  </div>
+</div>

@@ -17,118 +17,65 @@
   </div>
   <div class="player-info-container">
     <div class="player-bio-container">
-      <div class="bio-item top">
-        <span class="item-title">Position</span>
-        <span class="item-value">{{player.primaryPosition.abbreviation}}</span>
-      </div>
-      <div class="bio-item top">
-        <span class="item-title">Age</span>
-        <span class="item-value">{{player.currentAge}}</span>
-      </div>
-      <div class="bio-item top">
-        <span class="item-title">Height</span>
-        <span class="item-value">{{player.height}}</span>
-      </div>
-      <div class="bio-item top">
-        <span class="item-title">Shoots</span>
-        <span class="item-value">{{shoots}}</span>
-      </div>
-      <div class="bio-item">
-        <span class="item-title">Country</span>
-        <span class="item-value">{{player.birthCountry}}</span>
-      </div>
-      <div class="bio-item">
-        <span class="item-title">Number</span>
-        <span class="item-value">{{player.primaryNumber}}</span>
-      </div>
-      <div class="bio-item">
-        <span class="item-title">Weight</span>
-        <span class="item-value">{{weight}}</span>
-      </div>
-      <div class="bio-item">
-        <span class="item-title">{{rosterStatusHeader}}</span>
-        <span class="item-value">{{rosterStatus}}</span>
+      <div class="bio-grid">
+        <div class="bio-item top">
+          <span class="item-title">Position</span>
+          <span class="item-value">{{player.primaryPosition.abbreviation}}</span>
+        </div>
+        <div class="bio-item top">
+          <span class="item-title">Age</span>
+          <span class="item-value">{{player.currentAge}}</span>
+        </div>
+        <div class="bio-item top">
+          <span class="item-title">Height</span>
+          <span class="item-value">{{player.height}}</span>
+        </div>
+        <div class="bio-item top">
+          <span class="item-title">Shoots</span>
+          <span class="item-value">{{shoots}}</span>
+        </div>
+        <div class="bio-item">
+          <span class="item-title">Country</span>
+          <span class="item-value">{{player.birthCountry}}</span>
+        </div>
+        <div class="bio-item">
+          <span class="item-title">Number</span>
+          <span class="item-value">{{player.primaryNumber}}</span>
+        </div>
+        <div class="bio-item">
+          <span class="item-title">Weight</span>
+          <span class="item-value">{{weight}}</span>
+        </div>
+        <div class="bio-item">
+          <span class="item-title">{{rosterStatusHeader}}</span>
+          <span class="item-value">{{rosterStatus}}</span>
+        </div>
       </div>
     </div>
-<!--    <div class="player-position-container">-->
-<!--      <div class="position-header">-->
-<!--        <span>Primary Position: {{player.primaryPosition.name}}</span>-->
-<!--      </div>-->
-<!--      <div class="rink"></div>-->
+    <div *ngIf="currentPlayoffStats" class="playoff-stats">
+      <app-player-stats
+          [statTitle]="'2023 NHL Playoffs Stats'"
+          [player]="player"
+          [stats]="currentYearStats"
+      ></app-player-stats>
+    </div>
+    <div class="regular-season-stats">
+      <app-player-stats
+          [statTitle]="'2022-2023 NHL Regular Season Stats'"
+          [player]="player"
+          [stats]="currentYearStats"
+      ></app-player-stats>
+    </div>
+    <div class="match-stats-container">
+      <app-recent-player-games
+        [regularSeasonGames]="regularSeasonGames"
+        [playoffGames]="playoffGames"
+        [recentGames]="recentGames"
+        [teamId]="player.currentTeam.id"
+      ></app-recent-player-games>
+    </div>
+    <div class="career-totals">
 
-<!--    </div>-->
-    <div class="player-stats-container">
-      <div class="stats-header">
-        <span>2022-2023 NHL Regular Season</span>
-      </div>
-      <div *ngIf="!isGoalie" class="stats-grid">
-        <div class="stats-item">
-          <span class="item-title">Points</span>
-          <span class="item-value">{{currentYearStats.points}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Goals</span>
-          <span class="item-value">{{currentYearStats.goals}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Assists</span>
-          <span class="item-value">{{currentYearStats.assists}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Shots</span>
-          <span class="item-value">{{currentYearStats.shots}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">+/-</span>
-          <span class="item-value">{{currentYearStats.plusMinus}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Face Off %</span>
-          <span class="item-value">{{currentYearStats.faceOffPct}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Hits</span>
-          <span class="item-value">{{currentYearStats.hits}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Blocks</span>
-          <span class="item-value">{{currentYearStats.blocked}}</span>
-        </div>
-      </div>
-      <div *ngIf="isGoalie" class="stats-grid">
-        <div class="stats-item">
-          <span class="item-title">Save %</span>
-          <span class="item-value">{{currentYearStats.savePercentage.toFixed(3).slice(1)}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">GAA</span>
-          <span class="item-value">{{currentYearStats.goalAgainstAverage.toFixed(2)}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Shutouts</span>
-          <span class="item-value">{{currentYearStats.shutouts}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Shots Against</span>
-          <span class="item-value">{{currentYearStats.shotsAgainst}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Starts</span>
-          <span class="item-value">{{currentYearStats.gamesStarted}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Wins</span>
-          <span class="item-value">{{currentYearStats.wins}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">Losses</span>
-          <span class="item-value">{{currentYearStats.losses}}</span>
-        </div>
-        <div class="stats-item">
-          <span class="item-title">OT Losses</span>
-          <span class="item-value">{{currentYearStats.ot}}</span>
-        </div>
-      </div>
     </div>
   </div>
 </div>
