@@ -5,5 +5,5 @@ export class GamePlayerModel {
   public playerId: number;
 
   public boxscore: NhlBoxscoreModel;
-  
+
 }

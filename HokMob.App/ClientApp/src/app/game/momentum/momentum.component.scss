@@ -22,6 +22,7 @@
     color: white;
     font-size: smaller;
     margin-top: -5px;
+    margin-left: -7px;
     height: 580px;
   }
 
@@ -44,7 +45,7 @@
 
     // Mobile styling for chart also includes rotation and translation in ngAfterViewInit based on window width.
     .chart-container {
-      height: 380px !important;
+      height: 350px !important;
       width: 590px;
     }
   }
