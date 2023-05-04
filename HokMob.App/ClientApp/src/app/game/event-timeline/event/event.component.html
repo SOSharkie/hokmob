@@ -1,20 +1,28 @@
 <div class="key-event-container">
   <div class="home-event event-description">
-    <div *ngIf="isHomeEvent" class="event-text event-text-home">
-      <div *ngIf="isEventGoal" class="event-main-label home-label" (click)="onMainPlayerClicked()">
-        <span class="color-green">{{eventPlayerName}}</span>
-        <div class="score-update">
-          <span> (</span>
-          <span class="color-green">{{goalEventHomeScore}}</span>
-          <span> - </span>
-          <span>{{goalEventAwayScore}}</span>
-          <span>)</span>
+    <div *ngIf="isHomeEvent" class="event-text">
+      <div *ngIf="isEventGoal" class="goal-event event-text-home">
+        <div class="event-main-label home-label" (click)="onMainPlayerClicked()">
+          <span class="color-green">{{eventPlayerName}}</span>
+          <div class="score-update">
+            <span> (</span>
+            <span class="color-green">{{goalEventHomeScore}}</span>
+            <span> - </span>
+            <span>{{goalEventAwayScore}}</span>
+            <span>)</span>
+          </div>
+        </div>
+        <div>
+          <span *ngIf="goalEventAssists.length > 0" class="event-secondary-label">Assists: </span>
+          <span *ngIf="goalEventAssists.length === 0" class="event-secondary-label">Unassisted</span>
+          <span *ngFor="let assist of goalEventAssists, let i = index" class="event-secondary-label assist-name"
+                (click)="onAssistClicked(i)">{{assist}}</span>
         </div>
       </div>
-      <div *ngIf="!isEventGoal" (click)="onMainPlayerClicked()">
-        <span class="event-main-label home-label">{{eventPlayerName}}</span>
+      <div *ngIf="!isEventGoal" class="penalty-event event-text-home">
+        <span class="event-main-label home-label penalty" (click)="onMainPlayerClicked()">{{eventPlayerName}}</span>
+        <span class="event-secondary-label">{{penaltyType}}</span>
       </div>
-      <span class="event-secondary-label">{{eventSecondaryLabel}}</span>
     </div>
     <mat-icon *ngIf="isHomeEvent" [fontIcon]="fontIcon" class="event-icon"></mat-icon>
   </div>
@@ -23,21 +31,29 @@
   </div>
   <div class="away-event event-description">
     <mat-icon *ngIf="!isHomeEvent" [fontIcon]="fontIcon" class="event-icon"></mat-icon>
-    <div *ngIf="!isHomeEvent" class="event-text event-text-away">
-      <div *ngIf="isEventGoal" class="event-main-label away-event" (click)="onMainPlayerClicked()">
-        <span class="color-green">{{eventPlayerName}}</span>
-        <div class="score-update">
-          <span> (</span>
-          <span>{{goalEventHomeScore}}</span>
-          <span> - </span>
-          <span class="color-green">{{goalEventAwayScore}}</span>
-          <span>)</span>
+    <div *ngIf="!isHomeEvent" class="event-text">
+      <div *ngIf="isEventGoal" class="goal-event">
+        <div class="event-main-label away-label" (click)="onMainPlayerClicked()">
+          <span class="color-green">{{eventPlayerName}}</span>
+          <div class="score-update">
+            <span> (</span>
+            <span>{{goalEventHomeScore}}</span>
+            <span> - </span>
+            <span class="color-green">{{goalEventAwayScore}}</span>
+            <span>)</span>
           </div>
+        </div>
+        <div>
+          <span *ngIf="goalEventAssists.length > 0" class="event-secondary-label">Assists: </span>
+          <span *ngIf="goalEventAssists.length === 0" class="event-secondary-label">Unassisted</span>
+          <span *ngFor="let assist of goalEventAssists, let i = index" class="event-secondary-label assist-name"
+                (click)="onAssistClicked(i)">{{assist}}</span>
+        </div>
       </div>
-      <div *ngIf="!isEventGoal" (click)="onMainPlayerClicked()">
-        <span class="event-main-label">{{eventPlayerName}}</span>
+      <div *ngIf="!isEventGoal" class="penalty-event">
+        <span class="event-main-label home-label penalty" (click)="onMainPlayerClicked()">{{eventPlayerName}}</span>
+        <span class="event-secondary-label">{{penaltyType}}</span>
       </div>
-      <span class="event-secondary-label">{{eventSecondaryLabel}}</span>
     </div>
   </div>
 </div>

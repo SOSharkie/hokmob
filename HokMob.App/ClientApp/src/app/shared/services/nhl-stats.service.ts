@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {NhlStatTeamModel} from "@shared/models/nhl-stats/nhl-stat-team.model";
-import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
 import {NhlPersonModel} from "@shared/models/nhl-general/nhl-person.model";
 
 @Injectable()
@@ -12,7 +11,7 @@ export class NhlStatsService {
 
   private readonly playersStatsUrl = "https://statsapi.web.nhl.com/api/v1/people/";
 
-  private readonly playerStatsParams = "?expand=person.stats&stats=yearByYear,yearByYearPlayoffs,careerRegularSeason&expand=stats.team";
+  private readonly playerStatsParams = "?expand=person.stats&stats=yearByYear,yearByYearPlayoffs,careerRegularSeason,gameLog,playoffGameLog&expand=stats.team";
 
   constructor(private http: HttpClient) { }
 

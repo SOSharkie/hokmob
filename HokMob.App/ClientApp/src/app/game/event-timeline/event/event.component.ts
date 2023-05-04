@@ -53,18 +53,24 @@ export class EventComponent {
     return this.event.players[0].player.fullName;
   }
 
-  public get eventSecondaryLabel(): string {
+  public get goalEventAssists(): string[] {
     if (this.isEventGoal) {
       if (this.event.players.length === 4) {
-        return "Assists: " + this.event.players[1].player.fullName + ", " + this.event.players[2].player.fullName;
+        return [this.event.players[1].player.fullName + ", ", this.event.players[2].player.fullName];
       } else if (this.event.players.length === 3) {
-        return "Assists: " + this.event.players[1].player.fullName;
+        return [this.event.players[1].player.fullName];
       } else {
-        return "Unassisted"
+        return [];
       }
-    } else {
+    }
+    return [];
+  }
+
+  public get penaltyType(): string {
+    if (!this.isEventGoal) {
       return this.event.result.secondaryType;
     }
+    return "";
   }
 
   public get fontIcon(): string {
@@ -80,6 +86,10 @@ export class EventComponent {
 
   public onMainPlayerClicked(): void {
     this.playerClicked.emit(this.event.players[0].player.id);
+  }
+
+  public onAssistClicked(index: number): void {
+    this.playerClicked.emit(this.event.players[index + 1].player.id);
   }
 
 }

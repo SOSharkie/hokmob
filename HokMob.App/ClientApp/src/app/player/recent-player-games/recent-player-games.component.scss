@@ -1,0 +1,146 @@
+@import "variables";
+
+.player-recent-games-container {
+  color: white;
+  background-color: $black-02;
+  border-radius: 25px;
+
+  .recent-games-header {
+    height: 25px;
+    display: flex;
+    align-items: center;
+    padding-top: $spacing-large;
+    padding-bottom: $spacing-small;
+    padding-left: $spacing-xx-large;
+    font-size: larger;
+  }
+
+  .recent-games-table {
+    width: 100%;
+
+    .player-game-header {
+      text-align: left;
+
+      th {
+        padding: $spacing-x-large;
+        color: $gray-03;
+        font-weight: normal;
+      }
+    }
+
+    .player-game-row {
+      td {
+        padding: $spacing-x-large;
+        border-bottom: 1px solid $black-04;
+      }
+
+      .date-cell {
+        color: $gray-03;
+      }
+
+      .opponent-cell:hover {
+        cursor: pointer;
+        color: $gray-02;
+
+        .opponent-logo {
+          opacity: 0.5;
+        }
+
+        .game-score {
+          color: $gray-02;
+        }
+      }
+
+      .opponent-logo {
+        width: 30px;
+        translate: -6px 4px;
+      }
+
+      .game-score {
+        color: $gray-03;
+        margin-left: $spacing-large;
+      }
+    }
+
+    .last-row {
+      td {
+        border-bottom: none !important;
+      }
+    }
+
+    .stat-cell {
+      text-align: center;
+    }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $tiny-display-breakpoint) {
+  .player-game-header {
+    .date-header {
+      width: 15%;
+    }
+    .vs-header {
+      width: 25%;
+    }
+    .toi-header {
+      width: 10%;
+    }
+    .goals-header {
+      width: 10%;
+    }
+    .assists-header {
+      width: 10%;
+    }
+    .shots-header {
+      width: 10%;
+    }
+    .hits-header {
+      width: 10%;
+    }
+    .plus-minus-header {
+      width: 10%;
+    }
+  }
+}
+
+
+// Mobile Display
+@media only screen and (max-width: $tiny-display-breakpoint) {
+  .player-game-header {
+    .date-header {
+      width: 20%;
+    }
+    .vs-header {
+      width: 35%;
+    }
+    .toi-header {
+      width: 10%;
+    }
+    .goals-header {
+      width: 10%;
+    }
+    .assists-header {
+      width: 10%;
+    }
+    .shots-header {
+      display: none;
+    }
+    .hits-header {
+      display: none;
+    }
+    .plus-minus-header {
+      display: none;
+    }
+  }
+  th {
+    padding: $spacing-medium !important;
+  }
+  td {
+    padding: $spacing-medium !important;
+    font-size: smaller;
+  }
+  .hide-mobile {
+    display: none;
+  }
+}

@@ -1,0 +1,35 @@
+<div class="player-recent-games-container">
+  <div class="recent-games-header">
+    <span>Recent Games</span>
+  </div>
+  <table class="recent-games-table">
+    <thead>
+      <tr class="player-game-header">
+        <th class="date-header"><span>Date</span></th>
+        <th class="vs-header"><span>VS</span></th>
+        <th class="toi-header"><span>TOI</span></th>
+        <th class="goals-header stat-cell"><span>Goals</span></th>
+        <th class="assists-header stat-cell"><span>Assists</span></th>
+        <th class="shots-header stat-cell"><span>Shots</span></th>
+        <th class="hits-header stat-cell"><span>Hits</span></th>
+        <th class="plus-minus-header stat-cell"><span>+/-</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let game of lastTenGames, let i = index, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
+        <td class="date-cell"><span>{{getDateString(game.date)}}</span></td>
+        <td class="opponent-cell" [routerLink]="['/game', game.game.gamePk]">
+          <img class="opponent-logo" [src]="teamLogos[i]">
+          <span>{{game.opponent.abbreviation}}</span>
+          <span class="game-score">{{getRecentGameScore(i)}}</span>
+        </td>
+        <td><span>{{game.stat.timeOnIce}}</span></td>
+        <td class="stat-cell"><span>{{game.stat.goals}}</span></td>
+        <td class="stat-cell"><span>{{game.stat.assists}}</span></td>
+        <td class="stat-cell hide-mobile"><span>{{game.stat.shots}}</span></td>
+        <td class="stat-cell hide-mobile"><span>{{game.stat.hits}}</span></td>
+        <td class="stat-cell hide-mobile"><span>{{game.stat.plusMinus}}</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

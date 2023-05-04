@@ -1,4 +1,4 @@
-import {Component, OnInit, SimpleChanges} from '@angular/core';
+import {Component, Input, OnInit, SimpleChanges} from '@angular/core';
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import * as dayjs from "dayjs";
@@ -7,6 +7,10 @@ import {NhlPersonModel} from "@shared/models/nhl-general/nhl-person.model";
 import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
+import {NhlGameService} from "@shared/services/nhl-game.service";
+import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
+import {NhlStatsSplitModel} from "@shared/models/nhl-stats/nhl-stats-split.model";
+import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 
 @Component({
   selector: 'app-player',
@@ -29,12 +33,13 @@ export class PlayerComponent implements OnInit {
 
   public currentYearStats: NhlPlayerStatsModel;
 
-  public get isGoalie(): boolean {
-    if (this.player) {
-      return this.player.primaryPosition.code === "G";
-    }
-    return false;
-  }
+  public currentPlayoffStats: NhlPlayerStatsModel;
+
+  public playoffGames: NhlStatsSplitModel[];
+
+  public regularSeasonGames: NhlStatsSplitModel[];
+
+  public recentGames: NhlGameModel[];
 
   public get shoots(): string {
     if (this.player) {
@@ -84,6 +89,7 @@ export class PlayerComponent implements OnInit {
   constructor(private route: ActivatedRoute,
               private router: Router,
               private routerExtensionService: RouterExtensionService,
+              private nhlGameService: NhlGameService,
               private nhlImageService: NhlImageService,
               private nhlStatsService: NhlStatsService) {}
 
@@ -92,12 +98,22 @@ export class PlayerComponent implements OnInit {
     this.route.params.subscribe((params: Params) => {
       this.playerId = params['id'];
       this.nhlStatsService.getNhlPlayerStats(this.playerId).then(result => {
-        console.log(result);
         this.player = result;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.player.currentTeam.id);
         this.currentYearStats = this.player.stats[0].splits[this.player.stats[0].splits.length - 1].stat;
+        let latestPlayoffs = this.player.stats[1].splits[this.player.stats[1].splits.length - 1];
+        if (latestPlayoffs && latestPlayoffs.season === "20222023") {
+          this.currentPlayoffStats = latestPlayoffs.stat;
+        }
+        this.regularSeasonGames = this.player.stats[3].splits;
+        this.playoffGames = this.player.stats[4].splits;
         this.loadImages();
-      })
+        let yesterday = dayjs().subtract(1, 'day');
+        let sixtyDaysAgo = yesterday.subtract(60, 'days');
+        this.nhlGameService.getTeamGames(sixtyDaysAgo.toDate(), yesterday.toDate(), this.player.currentTeam.id).then(games => {
+          this.recentGames = games.dates.map(date => date.games[0]).reverse().slice(0, 10);
+        });
+      });
     });
   }
 

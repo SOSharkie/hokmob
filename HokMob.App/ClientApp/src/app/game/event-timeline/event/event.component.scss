@@ -20,25 +20,38 @@
     .event-text {
       display: flex;
       flex-direction: column;
-
       font-weight: 400;
 
-      .event-main-label {
-        color: white;
-        margin-bottom: $spacing-small;
-      }
+      .goal-event, .penalty-event {
+        display: flex;
+        flex-direction: column;
 
-      .event-main-label:hover {
-        cursor: pointer;
-        text-decoration: underline;
-      }
+        .event-main-label {
+          color: white;
+          margin-bottom: $spacing-small;
+        }
 
-      .event-secondary-label {
-        color: $gray-03;
-      }
+        .penalty {
+          color: $red-03 !important;
+        }
 
-      .color-green {
-        color: $green-01;
+        .event-main-label:hover {
+          cursor: pointer;
+          text-decoration: underline;
+        }
+
+        .event-secondary-label {
+          color: $gray-03;
+        }
+
+        .assist-name:hover {
+          cursor: pointer;
+          text-decoration: underline;
+        }
+
+        .color-green {
+          color: $green-01;
+        }
       }
     }
 
@@ -137,6 +150,7 @@
         display: none;
       }
     }
+
     .event-icon {
       width: 20px;
       height: 20px;

@@ -80,87 +80,23 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-evenly;
-    margin: $spacing-medium;
 
     .player-bio-container {
-      display: grid;
-      padding: 0 $spacing-x-large;
-      grid-auto-rows: 100px;
-      grid-template-rows: repeat(2, 1fr);
-      grid-template-columns: repeat(4, minmax(50px, 135px));
-      height: 240px;
+      width: 36%;
+      min-width: 375px;
       background-color: $black-02;
       border-radius: 25px;
-      margin-bottom: $spacing-medium;
+      margin: $spacing-medium;
 
-      .bio-item {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        text-align: center;
-        font-size: larger;
-
-        .item-title {
-          padding: $spacing-medium;
-          color: $gray-02;
-        }
-
-        .item-value {
-          padding: $spacing-medium;
-          color: white;
-        }
-      }
-
-      .top {
-        border-bottom: 1px solid $black-03;
-      }
-    }
-
-    .player-position-container {
-      //display: flex;
-      //flex-direction: column;
-      //width: 300px;
-      //background-color: $black-02;
-      //border-radius: 25px;
-      //padding: 0 $spacing-x-large;
-      //color: white;
-      //
-      //.position-header {
-      //  font-size: larger;
-      //  text-align: center;
-      //  padding: $spacing-x-large;
-      //  border-bottom: 1px solid $black-03;
-      //}
-      //
-      //.rink {
-      //  height: 180px;
-      //  background-image: url("/./assets/half_rink.png");
-      //}
-    }
-
-    .player-stats-container {
-      background-color: $black-02;
-      border-radius: 25px;
-
-      .stats-header {
-        font-size: larger;
-        text-align: center;
-        padding: $spacing-x-large;
-        border-bottom: 1px solid $black-03;
-        color: white;
-      }
-
-      .stats-grid {
+      .bio-grid {
+        height: 240px;
+        padding: $spacing-x-small;
         display: grid;
-        padding: 0 $spacing-x-large;
         grid-auto-rows: 100px;
         grid-template-rows: repeat(2, 1fr);
-        grid-template-columns: repeat(4, minmax(50px, 135px));
-        height: 185px;
+        grid-template-columns: repeat(4, 25%);
 
-
-        .stats-item {
+        .bio-item {
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -177,23 +113,65 @@
             color: white;
           }
         }
+
+        .top {
+          border-bottom: 1px solid $black-03;
+        }
       }
+    }
+
+    .regular-season-stats, .playoff-stats, .career-totals {
+      height: 240px;
+      width: 30%;
+      min-width: 375px;
+      margin: $spacing-small;
+    }
+
+    .match-stats-container {
+      width: 68%;
+      min-width: 375px;
+      margin: $spacing-medium;
     }
   }
 }
 
-// Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+// Large Desktop Styling
+@media only screen and (min-width: $small-display-breakpoint) {
   .player-header {
     padding-left: $spacing-huge;
     padding-right: $spacing-huge;
   }
+  .player-info-container {
+    justify-content: flex-start;
+  }
+}
+
+// Small Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint) {
+  .player-header {
+    padding-left: $spacing-xx-large;
+    padding-right: $spacing-xx-large;
+  }
+  .player-info-container {
+    justify-content: flex-start;
+  }
 }
 
 // Mobile Display
-@media only screen and (max-width: $mobile-screen-breakpoint){
-  .player-header {
-    padding-left: $spacing-small;
-    padding-right: $spacing-small;
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .player-info-container {
+    flex-direction: column !important;
+    align-items: flex-start;
+
+    .player-header {
+      padding-left: $spacing-small;
+      padding-right: $spacing-small;
+    }
+    .bio-item {
+      font-size: medium !important;
+    }
+    .career-totals {
+      display: none;
+    }
   }
 }

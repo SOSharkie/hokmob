@@ -38,6 +38,8 @@ import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.
 import { PlayerComponent } from './player/player.component';
 import { MomentumComponent } from './game/momentum/momentum.component';
 import { PlayerGameDialogComponent } from './game/player-game-dialog/player-game-dialog.component';
+import { PlayerStatsComponent } from './player/player-stats/player-stats.component';
+import { RecentPlayerGamesComponent } from './player/recent-player-games/recent-player-games.component';
 
 @NgModule({
   declarations: [
@@ -65,7 +67,9 @@ import { PlayerGameDialogComponent } from './game/player-game-dialog/player-game
     PlayoffSummaryComponent,
     PlayerComponent,
     MomentumComponent,
-    PlayerGameDialogComponent
+    PlayerGameDialogComponent,
+    PlayerStatsComponent,
+    RecentPlayerGamesComponent
   ],
   imports: [
     BrowserModule,
