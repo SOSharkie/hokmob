@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, HostListener, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
@@ -11,11 +11,15 @@ import {GoalModel} from "@shared/models/goal.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
+import {MatDialog} from "@angular/material/dialog";
+import {PlayerGameDialogComponent} from "@app/game/player-game-dialog/player-game-dialog.component";
+import {GamePlayerModel} from "@shared/models/game-player.model";
 
 @Component({
   selector: 'app-game',
   templateUrl: './game.component.html',
-  styleUrls: ['./game.component.scss']
+  styleUrls: ['./game.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
@@ -237,7 +241,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private previousUrl: string;
 
-  constructor(private route: ActivatedRoute,
+  constructor(public seriesDialog: MatDialog,
+              private route: ActivatedRoute,
               private router: Router,
               private routerExtensionService: RouterExtensionService,
               private nhlLogoService: NhlImageService,
@@ -294,6 +299,18 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
           }
       );
     }
+  }
+
+  public openPlayerGameDialog(playerId: number): void {
+    console.log(playerId);
+    let data = new GamePlayerModel();
+    data.boxscore = this.gameLiveData.liveData.boxscore;
+    data.playerId = playerId;
+    this.seriesDialog.open(PlayerGameDialogComponent, {
+      maxWidth: "85vw",
+      backdropClass: "dialog-backdrop",
+      data: data
+    });
   }
 
   /**

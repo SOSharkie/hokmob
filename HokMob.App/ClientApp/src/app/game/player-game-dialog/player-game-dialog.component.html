@@ -1,0 +1,81 @@
+<div class="player-game-dialog-container">
+  <div class="header-container">
+    <div class="player-headshot-container">
+      <img [src]="playerHeadshot" class="player-headshot">
+    </div>
+    <img [src]="teamLogo" class="team-logo">
+    <div class="player-name">
+      <span>{{player.person.fullName}}</span>
+    </div>
+    <div class="player-info">
+      <div class="info-item">
+        <span class="info-item-label">Position</span>
+        <span>{{player.position.abbreviation}}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">Country</span>
+        <span>{{player.person.birthCountry}}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">Age</span>
+        <span>{{player.person.currentAge}}</span>
+      </div>
+    </div>
+  </div>
+  <div class="player-game-stats-container">
+    <div class="stats-label">
+      <span>Top Stats</span>
+    </div>
+    <div class="player-game-stats">
+      <div class="game-stat-item">
+        <span class="game-stat-label">Time On Ice</span>
+        <span>{{player.stats.skaterStats.timeOnIce}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Goals</span>
+        <span>{{player.stats.skaterStats.goals}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Assists</span>
+        <span>{{player.stats.skaterStats.assists}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Shots</span>
+        <span>{{player.stats.skaterStats.shots}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Hits</span>
+        <span>{{player.stats.skaterStats.hits}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Blocks</span>
+        <span>{{player.stats.skaterStats.blocked}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Face Offs</span>
+        <span>{{player.stats.skaterStats.faceOffWins}}/{{player.stats.skaterStats.faceoffTaken}}</span>
+      </div>
+<!--      <div class="game-stat-item">-->
+<!--        <span class="game-stat-label">Plus/Minus</span>-->
+<!--        <span>{{player.stats.skaterStats.plusMinus}}</span>-->
+<!--      </div>-->
+      <div class="game-stat-item">
+        <span class="game-stat-label">Penalty Minutes</span>
+        <span>{{player.stats.skaterStats.penaltyMinutes}}</span>
+      </div>
+<!--      <div class="game-stat-item">-->
+<!--        <span class="game-stat-label">Giveaways</span>-->
+<!--        <span>{{player.stats.skaterStats.giveaways}}</span>-->
+<!--      </div>-->
+    </div>
+  </div>
+  <div class="player-footer-container">
+    <div class="profile-container" (click)="closeDialog()" [routerLink]="['/player', player.person.id]">
+      <mat-icon>person</mat-icon>
+      <span class="profile-label">Player Profile</span>
+    </div>
+    <div class="done-button" (click)="closeDialog()">
+      <span>Done</span>
+    </div>
+  </div>
+</div>

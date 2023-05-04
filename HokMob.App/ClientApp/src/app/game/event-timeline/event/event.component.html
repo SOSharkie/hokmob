@@ -1,7 +1,7 @@
 <div class="key-event-container">
   <div class="home-event event-description">
     <div *ngIf="isHomeEvent" class="event-text event-text-home">
-      <div *ngIf="isEventGoal" class="event-main-label home-label">
+      <div *ngIf="isEventGoal" class="event-main-label home-label" (click)="onMainPlayerClicked()">
         <span class="color-green">{{eventPlayerName}}</span>
         <div class="score-update">
           <span> (</span>
@@ -11,7 +11,7 @@
           <span>)</span>
         </div>
       </div>
-      <div *ngIf="!isEventGoal">
+      <div *ngIf="!isEventGoal" (click)="onMainPlayerClicked()">
         <span class="event-main-label home-label">{{eventPlayerName}}</span>
       </div>
       <span class="event-secondary-label">{{eventSecondaryLabel}}</span>
@@ -24,7 +24,7 @@
   <div class="away-event event-description">
     <mat-icon *ngIf="!isHomeEvent" [fontIcon]="fontIcon" class="event-icon"></mat-icon>
     <div *ngIf="!isHomeEvent" class="event-text event-text-away">
-      <div *ngIf="isEventGoal" class="event-main-label away-event">
+      <div *ngIf="isEventGoal" class="event-main-label away-event" (click)="onMainPlayerClicked()">
         <span class="color-green">{{eventPlayerName}}</span>
         <div class="score-update">
           <span> (</span>
@@ -34,7 +34,7 @@
           <span>)</span>
           </div>
       </div>
-      <div *ngIf="!isEventGoal">
+      <div *ngIf="!isEventGoal" (click)="onMainPlayerClicked()">
         <span class="event-main-label">{{eventPlayerName}}</span>
       </div>
       <span class="event-secondary-label">{{eventSecondaryLabel}}</span>

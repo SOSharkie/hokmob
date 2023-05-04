@@ -1,0 +1,161 @@
+@import "variables";
+
+.mat-mdc-dialog-surface {
+  border: none;
+  border-radius: 25px !important;
+}
+
+.player-game-dialog-container {
+  border-radius: 25px;
+  background-color: $black-02;
+
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: 1px solid $black-01;
+    padding: $spacing-large;
+
+    .player-headshot-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 75px;
+      width: 75px;
+      border-radius: 50%;
+      overflow: hidden;
+
+      .player-headshot {
+        height: 80px;
+        width: 80px;
+        margin-top: 5px;
+      }
+    }
+    .team-logo {
+      position: absolute;
+      width: 50px;
+    }
+
+    .player-name {
+      text-align: center;
+      font-size: larger;
+      color: white;
+      margin-top: $spacing-medium;
+    }
+
+    .player-info {
+      display: flex;
+      justify-content: space-evenly;
+      width: 100%;
+      margin-top: $spacing-large;
+      margin-bottom: $spacing-large;
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        color: white;
+        width: 33%;
+
+        .info-item-label {
+          color: $gray-03;
+          margin-bottom: $spacing-medium;
+        }
+      }
+    }
+  }
+
+  .player-game-stats-container {
+    display: flex;
+    flex-direction: column;
+    margin: $spacing-large;
+    padding: $spacing-x-large;
+
+    .stats-label {
+      color: white;
+      font-size: large;
+    }
+
+    .player-game-stats {
+      display: flex;
+      flex-direction: column;
+
+      .game-stat-item {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        margin-top: $spacing-xx-large;
+
+        .game-stat-label {
+          color: $gray-03;
+        }
+      }
+    }
+  }
+
+  .player-footer-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: $black-03;
+    padding: $spacing-large;
+    border-top: 2px solid $gray-01;
+
+    .profile-container {
+      display: flex;
+      align-items: center;
+      height: 30px;
+      width: fit-content;
+      color: white;
+
+      .profile-label {
+        margin-left: $spacing-medium;
+      }
+    }
+
+    .profile-container:hover {
+      cursor: pointer;
+      color: $gray-04 !important;
+    }
+
+    .profile-container:focus {
+      outline: none;
+    }
+
+    .done-button {
+      color: $green-01;
+      margin-right: $spacing-large;
+    }
+
+    .done-button:hover {
+      color: $green-02;
+      cursor: pointer;
+    }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .player-game-dialog-container {
+    min-width: 350px;
+
+    .team-logo {
+      left: 187px;
+      top: 52px;
+    }
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .player-game-dialog-container {
+    min-width: 300px;
+
+    .team-logo {
+      left: 158px;
+      top: 52px;
+    }
+  }
+}

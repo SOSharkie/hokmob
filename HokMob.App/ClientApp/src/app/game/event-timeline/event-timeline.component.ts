@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from "@angular/core";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
 
@@ -11,6 +11,9 @@ export class EventTimelineComponent implements OnChanges {
 
   @Input()
   public gameLiveData: NhlLiveFeedModel;
+
+  @Output()
+  public playerClicked = new EventEmitter<number>();
 
   public firstPeriodEvents: NhlLiveFeedPlayModel[];
 
@@ -99,6 +102,10 @@ export class EventTimelineComponent implements OnChanges {
         }
       });
     }
+  }
+
+  public onPlayerClicked(playerId: number): void {
+    this.playerClicked.emit(playerId);
   }
 
 }

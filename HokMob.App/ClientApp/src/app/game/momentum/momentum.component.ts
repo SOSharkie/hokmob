@@ -112,7 +112,7 @@ export class MomentumComponent implements OnInit, AfterViewInit, OnChanges {
     if (changes["gameLiveData"] && this.momentumChart) {
       this.momentumChart.data.datasets[0].fill = {
         above: NhlTeamColorUtils.getTeamPrimaryColor(this.gameLiveData.gameData.teams.home.id),
-        below: NhlTeamColorUtils.getTeamPrimaryColor(this.gameLiveData.gameData.teams.away.id),
+        below: NhlTeamColorUtils.getTeamSecondaryColor(this.gameLiveData.gameData.teams.home.id, this.gameLiveData.gameData.teams.away.id),
         target: "origin"
       };
       this.generateChartData();

@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
 
 @Component({
@@ -16,6 +16,9 @@ export class EventComponent {
 
   @Input()
   public awayTeamId: number;
+
+  @Output()
+  public playerClicked = new EventEmitter<number>();
 
   public get isHomeEvent(): boolean {
     if (this.event) {
@@ -73,6 +76,10 @@ export class EventComponent {
       default:
         return "";
     }
+  }
+
+  public onMainPlayerClicked(): void {
+    this.playerClicked.emit(this.event.players[0].player.id);
   }
 
 }

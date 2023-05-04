@@ -93,6 +93,7 @@
   <div *ngIf="!futureGame" class="game-container">
     <app-event-timeline
         [gameLiveData]="gameLiveData"
+        (playerClicked)="openPlayerGameDialog($event)"
     ></app-event-timeline>
   </div>
   <div *ngIf="!futureGame" class="game-container">
