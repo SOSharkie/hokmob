@@ -37,6 +37,11 @@ $central-info-width: 130px;
         width: 47%;
       }
 
+      .scorer-label:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
       .period-label {
         width: 6%;
         text-align: center;

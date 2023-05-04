@@ -78,9 +78,9 @@ export class NhlTeamColorUtils {
 
   public static getTeamSecondaryColor(primaryTeamId: number, secondaryTeamId: number): string {
     if (NhlTeamColorUtils.blueTeams.includes(primaryTeamId) && NhlTeamColorUtils.blueTeams.includes(secondaryTeamId)) {
-      return "#FFFFFFF1";
+      return "#FFFFFFB1";
     } else if (NhlTeamColorUtils.redTeams.includes(primaryTeamId) && NhlTeamColorUtils.redTeams.includes(secondaryTeamId)) {
-      return "#FFFFFFF1";
+      return "#FFFFFFB1";
     } else {
       return NhlTeamColorUtils.getTeamPrimaryColor(secondaryTeamId);
     }
