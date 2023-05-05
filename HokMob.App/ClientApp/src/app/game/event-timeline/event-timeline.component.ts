@@ -17,6 +17,13 @@ export class EventTimelineComponent implements OnChanges {
 
   public periodEvents: NhlLiveFeedPlayModel[][];
 
+  public get isGameFinal(): boolean {
+    if (this.gameLiveData) {
+      return this.gameLiveData.gameData.status.abstractGameState === 'Final'
+    }
+    return false;
+  }
+
   public hasPeriod(periodIndex: number): boolean {
     if (this.periodEvents && this.periodEvents[periodIndex]) {
       return this.periodEvents[periodIndex].length > 0;

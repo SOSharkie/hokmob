@@ -36,7 +36,10 @@
         </div>
         <div class="bio-item">
           <span class="item-title">Country</span>
-          <span class="item-value">{{player.birthCountry}}</span>
+          <div class="country-container">
+            <img [src]="countryFlagPath" class="country-flag">
+            <span class="item-value">{{player.birthCountry}}</span>
+          </div>
         </div>
         <div class="bio-item">
           <span class="item-title">Number</span>
@@ -56,10 +59,10 @@
       <app-player-stats
           [statTitle]="'2023 NHL Playoffs Stats'"
           [player]="player"
-          [stats]="currentYearStats"
+          [stats]="currentPlayoffStats"
       ></app-player-stats>
     </div>
-    <div class="regular-season-stats">
+    <div *ngIf="currentYearStats" class="regular-season-stats">
       <app-player-stats
           [statTitle]="'2022-2023 NHL Regular Season Stats'"
           [player]="player"

@@ -14,7 +14,10 @@
       </div>
       <div class="info-item">
         <span class="info-item-label">Country</span>
-        <span>{{player.person.birthCountry}}</span>
+        <div class="country-container">
+          <img [src]="countryFlagPath" class="country-flag">
+          <span>{{player.person.birthCountry}}</span>
+        </div>
       </div>
       <div class="info-item">
         <span class="info-item-label">Age</span>
@@ -70,7 +73,7 @@
     </div>
   </div>
   <div class="player-footer-container">
-    <div class="profile-container" (click)="closeDialog()" [routerLink]="['/player', player.person.id]">
+    <div class="profile-container" (click)="clickPlayerProfile()">
       <mat-icon>person</mat-icon>
       <span class="profile-label">Player Profile</span>
     </div>

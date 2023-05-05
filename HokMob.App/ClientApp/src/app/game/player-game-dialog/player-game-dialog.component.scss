@@ -62,6 +62,17 @@
           margin-bottom: $spacing-medium;
         }
       }
+
+      .country-container {
+        display: flex;
+        justify-content: center;
+
+        .country-flag {
+          width: 20px;
+          height: 20px;
+          margin-right: $spacing-medium;
+        }
+      }
     }
   }
 

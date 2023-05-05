@@ -6,6 +6,7 @@ import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {GamePlayerModel} from "@shared/models/game-player.model";
 import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-player-game-dialog',
@@ -27,6 +28,8 @@ export class PlayerGameDialogComponent implements OnInit {
 
   public teamColor: string = "#000000";
 
+  public countryFlagPath = "assets/flags/CAN.png";
+
   public get isGoalie(): boolean {
     if (this.player) {
       return this.player.person.primaryPosition.code === "G";
@@ -43,6 +46,7 @@ export class PlayerGameDialogComponent implements OnInit {
 
   constructor(private nhlImageService: NhlImageService,
               private nhlStatsService: NhlStatsService,
+              private router: Router,
               private dialogRef: MatDialogRef<PlayerGameDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: GamePlayerModel) {}
 
@@ -58,6 +62,7 @@ export class PlayerGameDialogComponent implements OnInit {
     this.loadImages();
     this.nhlStatsService.getNhlPlayerStats(this.playerId.toString()).then(result => {
       this.player.person = result;
+      this.countryFlagPath = "assets/flags/" + this.player.person.birthCountry + ".png"
     });
   }
 
@@ -81,6 +86,14 @@ export class PlayerGameDialogComponent implements OnInit {
       }, false);
       reader.readAsDataURL(data);
     });
+  }
+
+  public clickPlayerProfile(): void {
+    this.dialogRef.close();
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      this.router.navigate(['/player', this.player.person.id]);
+    }, 100)
   }
 
   public closeDialog(): void {
