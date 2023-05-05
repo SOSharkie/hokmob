@@ -26,7 +26,10 @@ export class PlayerStatsComponent {
   }
 
   public formatFaceOffPercent(value: number): string {
-    return value.toFixed(1) + "%";
+    if (value) {
+      return value.toFixed(1) + "%";
+    }
+    return "-";
   }
 
 }

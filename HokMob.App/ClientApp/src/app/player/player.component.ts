@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, SimpleChanges} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import * as dayjs from "dayjs";
@@ -8,7 +8,6 @@ import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
 import {NhlGameService} from "@shared/services/nhl-game.service";
-import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {NhlStatsSplitModel} from "@shared/models/nhl-stats/nhl-stats-split.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 
@@ -31,15 +30,21 @@ export class PlayerComponent implements OnInit {
 
   public teamColor: string = "#000000";
 
-  public currentYearStats: NhlPlayerStatsModel;
+  public countryFlagPath: string;
 
-  public currentPlayoffStats: NhlPlayerStatsModel;
+  public currentYearStats: NhlPlayerStatsModel = null;
+
+  public currentPlayoffStats: NhlPlayerStatsModel = null;
 
   public playoffGames: NhlStatsSplitModel[];
 
   public regularSeasonGames: NhlStatsSplitModel[];
 
   public recentGames: NhlGameModel[];
+
+  private readonly currentSeason: string = "20222023";
+
+  private readonly nhlLeagueId: number = 133;
 
   public get shoots(): string {
     if (this.player) {
@@ -100,13 +105,8 @@ export class PlayerComponent implements OnInit {
       this.nhlStatsService.getNhlPlayerStats(this.playerId).then(result => {
         this.player = result;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.player.currentTeam.id);
-        this.currentYearStats = this.player.stats[0].splits[this.player.stats[0].splits.length - 1].stat;
-        let latestPlayoffs = this.player.stats[1].splits[this.player.stats[1].splits.length - 1];
-        if (latestPlayoffs && latestPlayoffs.season === "20222023") {
-          this.currentPlayoffStats = latestPlayoffs.stat;
-        }
-        this.regularSeasonGames = this.player.stats[3].splits;
-        this.playoffGames = this.player.stats[4].splits;
+        this.countryFlagPath =  "assets/flags/" + this.player.birthCountry + ".png";
+        this.setCurrentStatModels();
         this.loadImages();
         let yesterday = dayjs().subtract(1, 'day');
         let sixtyDaysAgo = yesterday.subtract(60, 'days');
@@ -137,5 +137,33 @@ export class PlayerComponent implements OnInit {
       }, false);
       reader.readAsDataURL(data);
     });
+  }
+
+  private setCurrentStatModels(): void {
+    // Current Regular Season
+    let latestRegularSeason = this.player.stats[0].splits[this.player.stats[0].splits.length - 1];
+    if (latestRegularSeason && latestRegularSeason.season === this.currentSeason && latestRegularSeason.league.id === this.nhlLeagueId) {
+      this.currentYearStats = latestRegularSeason.stat;
+    } else {
+      latestRegularSeason = this.player.stats[0].splits[this.player.stats[0].splits.length - 2];
+      if (latestRegularSeason && latestRegularSeason.season === this.currentSeason && latestRegularSeason.league.id === this.nhlLeagueId) {
+        this.currentYearStats = latestRegularSeason.stat;
+      }
+    }
+
+    // Current Playoffs
+    let latestPlayoffs = this.player.stats[1].splits[this.player.stats[1].splits.length - 1];
+    if (latestPlayoffs && latestPlayoffs.season === this.currentSeason && latestPlayoffs.league.id === this.nhlLeagueId) {
+      this.currentPlayoffStats = latestPlayoffs.stat;
+    } else {
+      latestPlayoffs = this.player.stats[1].splits[this.player.stats[1].splits.length - 2];
+      if (latestPlayoffs && latestPlayoffs.season === this.currentSeason && latestPlayoffs.league.id === this.nhlLeagueId) {
+        this.currentPlayoffStats = latestPlayoffs.stat;
+      }
+    }
+
+    // Current season game by game breakdowns
+    this.regularSeasonGames = this.player.stats[3].splits;
+    this.playoffGames = this.player.stats[4].splits;
   }
 }

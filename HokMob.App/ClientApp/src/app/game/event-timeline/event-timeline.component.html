@@ -14,7 +14,7 @@
       </ng-container>
     </ng-container>
   </div>
-  <div *ngIf="gameLiveData.gameData.status.abstractGameState === 'Final'" class="period-start-container">
+  <div *ngIf="isGameFinal" class="period-start-container">
     <span class="period-label">End</span>
   </div>
 </div>

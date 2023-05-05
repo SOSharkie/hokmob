@@ -52,6 +52,7 @@
       flex-direction: column;
       margin-left: $spacing-large;
       margin-bottom: $spacing-medium;
+      padding-right: $spacing-medium;
 
       .player-name {
         color: white;
@@ -69,7 +70,7 @@
         }
 
         .player-team-label {
-          font-size: large;
+          font-size: larger;
           color: $gray-03;
         }
       }
@@ -111,6 +112,18 @@
           .item-value {
             padding: $spacing-medium;
             color: white;
+          }
+        }
+
+        .country-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          .country-flag {
+            width: 25px;
+            height: 25px;
+            margin-right: $spacing-x-small;
           }
         }
 
@@ -159,6 +172,17 @@
 
 // Mobile Display
 @media only screen and (max-width: $mobile-screen-breakpoint) {
+  .player-name {
+    font-size: larger !important;
+    margin-left: $spacing-medium !important;
+  }
+
+  .player-team {
+    .player-team-label {
+      font-size: large !important;
+    }
+  }
+
   .player-info-container {
     flex-direction: column !important;
     align-items: flex-start;
@@ -169,6 +193,10 @@
     }
     .bio-item {
       font-size: medium !important;
+    }
+    .country-flag {
+      width: 20px !important;
+      height: 20px !important;
     }
     .career-totals {
       display: none;
