@@ -1,27 +1,19 @@
 @import "variables";
 
-.player-stats-container {
+.player-bio {
   width: 100%;
   background-color: $black-02;
   border-radius: 25px;
 
-  .stats-header {
-    font-size: larger;
-    text-align: center;
-    padding: $spacing-x-large;
-    border-bottom: 1px solid $black-03;
-    color: white;
-  }
-
-  .stats-grid {
+  .bio-grid {
+    height: 240px;
+    padding: $spacing-x-small;
     display: grid;
-    padding: $spacing-x-small $spacing-medium;
     grid-auto-rows: 100px;
     grid-template-rows: repeat(2, 1fr);
     grid-template-columns: repeat(4, 25%);
-    height: 185px;
 
-    .stats-item {
+    .bio-item {
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -38,12 +30,32 @@
         color: white;
       }
     }
+
+    .country-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .country-flag {
+        width: 25px;
+        height: 25px;
+        margin-right: $spacing-x-small;
+      }
+    }
+
+    .top {
+      border-bottom: 1px solid $black-03;
+    }
   }
 }
 
 // Mobile Display
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .item-title, .item-value {
-    font-size: smaller;
+  .bio-item {
+      font-size: medium !important;
+    }
+  .country-flag {
+    width: 20px !important;
+    height: 20px !important;
   }
 }

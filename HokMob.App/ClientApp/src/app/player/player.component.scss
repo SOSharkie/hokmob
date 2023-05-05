@@ -8,11 +8,54 @@
     display: flex;
     align-items: flex-end;
     height: 100px;
-    margin: $spacing-medium;
+    margin: $spacing-medium $spacing-medium $spacing-x-small $spacing-medium;
     background-color: $black-02;
     border-radius: 25px;
     position: relative;
     overflow: hidden;
+
+    .back-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 80px;
+      height: 100%;
+      margin-left: $spacing-large;
+    }
+
+    .games-back-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: large;
+      color: white;
+
+      .back-icon {
+        height: 25px;
+        width: 25px;
+        border-radius: 50%;
+        background-color: $gray-02;
+        margin-top: $spacing-x-large;
+        margin-right: $spacing-large;
+      }
+
+      .games-label {
+        margin-top: $spacing-x-large;
+      }
+    }
+
+    .games-back-button:hover {
+      cursor: pointer;
+
+      .back-icon {
+        background-color: white;
+        color: $black-01;
+      }
+
+      .games-label {
+        text-decoration: underline;
+      }
+    }
 
     .team-color-container {
       width: 75px;
@@ -77,129 +120,95 @@
     }
   }
 
-  .player-info-container {
+  .player-info-container, .player-games-container {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 
-    .player-bio-container {
-      width: 36%;
-      min-width: 375px;
-      background-color: $black-02;
-      border-radius: 25px;
-      margin: $spacing-medium;
-
-      .bio-grid {
-        height: 240px;
-        padding: $spacing-x-small;
-        display: grid;
-        grid-auto-rows: 100px;
-        grid-template-rows: repeat(2, 1fr);
-        grid-template-columns: repeat(4, 25%);
-
-        .bio-item {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          text-align: center;
-          font-size: larger;
-
-          .item-title {
-            padding: $spacing-medium;
-            color: $gray-02;
-          }
-
-          .item-value {
-            padding: $spacing-medium;
-            color: white;
-          }
-        }
-
-        .country-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-
-          .country-flag {
-            width: 25px;
-            height: 25px;
-            margin-right: $spacing-x-small;
-          }
-        }
-
-        .top {
-          border-bottom: 1px solid $black-03;
-        }
-      }
-    }
-
-    .regular-season-stats, .playoff-stats, .career-totals {
+    .player-bio-container, .regular-season-stats, .playoff-stats, .career-totals {
       height: 240px;
-      width: 30%;
+      width: 32%;
       min-width: 375px;
       margin: $spacing-small;
     }
 
     .match-stats-container {
-      width: 68%;
+      width: 66%;
       min-width: 375px;
-      margin: $spacing-medium;
+      margin: $spacing-small;
     }
   }
 }
 
-// Large Desktop Styling
-@media only screen and (min-width: $small-display-breakpoint) {
-  .player-header {
-    padding-left: $spacing-huge;
-    padding-right: $spacing-huge;
-  }
-  .player-info-container {
-    justify-content: flex-start;
-  }
-}
-
 // Small Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint) {
+@media only screen and (min-width: $mobile-screen-breakpoint) {
   .player-header {
-    padding-left: $spacing-xx-large;
+    padding-left: $spacing-small;
     padding-right: $spacing-xx-large;
   }
   .player-info-container {
     justify-content: flex-start;
   }
+  .games-back-button-mobile {
+    display: none;
+  }
 }
 
 // Mobile Display
 @media only screen and (max-width: $mobile-screen-breakpoint) {
+  .back-container {
+    display: none !important;
+  }
+  .games-back-button-mobile {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    color: white;
+
+    .back-icon {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background-color: $gray-02;
+      margin-top: $spacing-large;
+      margin-right: $spacing-small;
+      margin-left: $spacing-small;
+
+      .material-icons {
+        font-size: 20px;
+      }
+    }
+
+    .games-label {
+      margin-top: $spacing-large;
+    }
+  }
   .player-name {
     font-size: larger !important;
     margin-left: $spacing-medium !important;
   }
-
   .player-team {
     .player-team-label {
       font-size: large !important;
     }
   }
-
-  .player-info-container {
-    flex-direction: column !important;
-    align-items: flex-start;
+  .player-info-container, .player-games-container{
+    flex-direction: column;
 
     .player-header {
       padding-left: $spacing-small;
       padding-right: $spacing-small;
     }
-    .bio-item {
-      font-size: medium !important;
-    }
-    .country-flag {
-      width: 20px !important;
-      height: 20px !important;
+    .player-bio-container, .regular-season-stats, .playoff-stats {
+      width: 98% !important;
     }
     .career-totals {
       display: none;
+    }
+    .career-totals, .match-stats-container {
+      width: 98% !important;
     }
   }
 }

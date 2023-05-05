@@ -40,6 +40,7 @@ import { MomentumComponent } from './game/momentum/momentum.component';
 import { PlayerGameDialogComponent } from './game/player-game-dialog/player-game-dialog.component';
 import { PlayerStatsComponent } from './player/player-stats/player-stats.component';
 import { RecentPlayerGamesComponent } from './player/recent-player-games/recent-player-games.component';
+import { PlayerBioComponent } from './player/player-bio/player-bio.component';
 
 @NgModule({
   declarations: [
@@ -69,7 +70,8 @@ import { RecentPlayerGamesComponent } from './player/recent-player-games/recent-
     MomentumComponent,
     PlayerGameDialogComponent,
     PlayerStatsComponent,
-    RecentPlayerGamesComponent
+    RecentPlayerGamesComponent,
+    PlayerBioComponent
   ],
   imports: [
     BrowserModule,
