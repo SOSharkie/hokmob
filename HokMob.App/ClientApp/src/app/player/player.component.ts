@@ -46,49 +46,15 @@ export class PlayerComponent implements OnInit {
 
   private readonly nhlLeagueId: number = 133;
 
-  public get shoots(): string {
-    if (this.player) {
-      if (this.player.shootsCatches === "L") {
-        return "Left";
-      }
-      return "Right";
-    }
-    return "Right";
-  }
-
-  public get weight(): string {
-    if (this.player) {
-      return this.player.weight + " lb";
-    }
-    return "-";
-  }
-
-  public get rosterStatusHeader(): string {
-    if (this.player) {
-      if (this.player.captain) {
-        return "Captain";
-      } else if (this.player.alternateCaptain) {
-        return "Captain";
-      } else {
-        return "Rookie"
+  public get backButtonLabel(): string {
+    if (this.previousUrl) {
+      if (this.previousUrl.includes("stats")) {
+        return "Stats";
+      } else if (this.previousUrl.includes("game")) {
+        return "Game";
       }
     }
-    return "-";
-  }
-
-  public get rosterStatus(): string {
-    if (this.player) {
-      if (this.player.captain) {
-        return "Yes";
-      } else if (this.player.alternateCaptain) {
-        return "Alternate";
-      } else if (this.player.rookie) {
-        return "Yes"
-      } else {
-        return "No";
-      }
-    }
-    return "-";
+    return "Games";
   }
 
   constructor(private route: ActivatedRoute,
@@ -137,6 +103,21 @@ export class PlayerComponent implements OnInit {
       }, false);
       reader.readAsDataURL(data);
     });
+  }
+
+  public backToPrevious(): void {
+    if (this.previousUrl) {
+      this.router.navigateByUrl(this.previousUrl);
+    } else {
+      let dateString = dayjs().format("YYYYMMDD");
+      const dateParam = {date: dateString};
+      this.router.navigate([''],
+          {
+            relativeTo: this.route,
+            queryParams: dateParam
+          }
+      );
+    }
   }
 
   private setCurrentStatModels(): void {

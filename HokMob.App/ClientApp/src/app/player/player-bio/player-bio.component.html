@@ -1,0 +1,39 @@
+<div class="player-bio">
+  <div class="bio-grid">
+    <div class="bio-item top">
+      <span class="item-title">Position</span>
+      <span class="item-value">{{player.primaryPosition.abbreviation}}</span>
+    </div>
+    <div class="bio-item top">
+      <span class="item-title">Age</span>
+      <span class="item-value">{{player.currentAge}}</span>
+    </div>
+    <div class="bio-item top">
+      <span class="item-title">Height</span>
+      <span class="item-value">{{player.height}}</span>
+    </div>
+    <div class="bio-item top">
+      <span class="item-title">Shoots</span>
+      <span class="item-value">{{shoots}}</span>
+    </div>
+    <div class="bio-item">
+      <span class="item-title">Country</span>
+      <div class="country-container">
+        <img [src]="countryFlagPath" class="country-flag">
+        <span class="item-value">{{player.birthCountry}}</span>
+      </div>
+    </div>
+    <div class="bio-item">
+      <span class="item-title">Number</span>
+      <span class="item-value">{{player.primaryNumber}}</span>
+    </div>
+    <div class="bio-item">
+      <span class="item-title">Weight</span>
+      <span class="item-value">{{weight}}</span>
+    </div>
+    <div class="bio-item">
+      <span class="item-title">{{rosterStatusHeader}}</span>
+      <span class="item-value">{{rosterStatus}}</span>
+    </div>
+  </div>
+</div>
