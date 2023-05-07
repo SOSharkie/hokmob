@@ -84,6 +84,12 @@ $central-info-width: 130px;
           font-size: large;
           color: $green-01;
         }
+
+        .intermission-countdown {
+          margin-top: $spacing-small;
+          margin-bottom: $spacing-small;
+          color: $gray-04;
+        }
       }
 
       .home-team-header {
@@ -259,6 +265,12 @@ $central-info-width: 130px;
             margin-top: $spacing-small;
             font-size: large;
             color: $green-01;
+          }
+
+          .intermission-countdown {
+            margin-top: $spacing-small;
+            margin-bottom: $spacing-small;
+            color: $gray-04;
           }
         }
 

@@ -17,6 +17,7 @@
       <div *ngIf="liveGame" class="game-score">
         <span class="game-score-label">{{gameScore}}</span>
         <span class="live-status-label">{{liveGameStatus}}</span>
+        <span *ngIf="isIntermission" title="Intermission Countdown" class="intermission-countdown">{{intermissionTimeRemaining}}</span>
       </div>
       <div class="away-team-header">
         <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
@@ -56,6 +57,7 @@
         <div *ngIf="liveGame" class="game-score">
           <span class="game-score-label">{{gameScore}}</span>
           <span *ngIf="liveGame" class="live-status-label">{{liveGameStatus}}</span>
+          <span *ngIf="isIntermission" title="Intermission Countdown" class="intermission-countdown">{{intermissionTimeRemaining}}</span>
         </div>
         <div class="away-team-header">
           <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">

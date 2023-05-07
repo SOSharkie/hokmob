@@ -14,6 +14,7 @@ import {RouterExtensionService} from "@shared/services/router-extension.service"
 import {MatDialog} from "@angular/material/dialog";
 import {PlayerGameDialogComponent} from "@app/game/player-game-dialog/player-game-dialog.component";
 import {GamePlayerModel} from "@shared/models/game-player.model";
+import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
 
 @Component({
   selector: 'app-game',
@@ -51,14 +52,16 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public stickyHeader: HTMLElement;
 
-  /**
-   * The ID of the timer which runs a function to GET the latest NHL games.
-   */
+  public isIntermission: boolean = false
+
+  private intermissionTimeRemainingMs: number;
+
+  private periodEndEvent: NhlLiveFeedPlayModel;
+
   private nhlGameUpdateTimerId: number;
 
-  /**
-   * The refresh time to get updates on NHL games, set to 10 seconds.
-   */
+  private intermissionTimerId: number;
+
   private readonly nhlGameRefreshTime = 10000;
 
   public get gameType(): string {
@@ -243,6 +246,26 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "Games";
   }
 
+  public get intermissionTimeRemaining(): string {
+    if (this.intermissionTimeRemainingMs) {
+      let nextPeriod: string;
+
+      if (this.gameLinescore.currentPeriod === 1) {
+        nextPeriod = "2nd";
+      } else if (this.gameLinescore.currentPeriod === 2) {
+        nextPeriod = "3rd";
+      } else if (this.gameLinescore.currentPeriod === 3) {
+        nextPeriod = "OT";
+      } else {
+        nextPeriod = (this.gameLinescore.currentPeriod - 3) + "OT";
+      }
+      let pad = (n, z = 2) => ('00' + n).slice(-z);
+      return ((this.intermissionTimeRemainingMs%3.6e6)/6e4 | 0) + ':' + pad((this.intermissionTimeRemainingMs%6e4)/1000 | 0)
+          + " till " + nextPeriod;
+    }
+    return "";
+  }
+
   private previousUrl: string;
 
   constructor(public seriesDialog: MatDialog,
@@ -265,6 +288,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadLogos();
         if (!this.completedGame && this.gameDay === "Today") {
           this.startContinuousNhlGameUpdates();
+          this.calculateIntermission();
         }
       });
       this.nhlGameService.getNhlGame(this.gameId).then(gameModel => {
@@ -288,6 +312,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.stopContinuousNhlGameUpdates();
+    this.stopNhlIntermissionTimer();
   }
 
   public backToPrevious(): void {
@@ -328,6 +353,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
           this.gameBoxscore = gameLiveData.liveData.boxscore;
           this.gameLinescore = gameLiveData.liveData.linescore;
           this.calculateGoals();
+          this.calculateIntermission();
         } else {
           console.log("Problem updating NHL game with ID", this.gameId);
         }
@@ -339,6 +365,45 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.nhlGameUpdateTimerId) {
       clearInterval(this.nhlGameUpdateTimerId);
       this.nhlGameUpdateTimerId = null;
+    }
+  }
+
+  private calculateIntermission() {
+    let allPlays = this.gameLiveData.liveData.plays.allPlays;
+    if (this.gameLiveData.liveData.plays.currentPlay.result.eventTypeId === "PERIOD_END") {
+      this.periodEndEvent = this.gameLiveData.liveData.plays.currentPlay;
+      this.isIntermission = true;
+    } else if (allPlays[allPlays.length - 2].result.eventTypeId === "PERIOD_END") {
+      this.periodEndEvent = allPlays[allPlays.length - 2];
+      this.isIntermission = true;
+    }
+      if (this.gameLiveData.liveData.plays.currentPlay.result.eventTypeId === "PERIOD_START" ||
+        this.gameLiveData.liveData.plays.currentPlay.result.eventTypeId === "GAME_END") {
+      this.periodEndEvent = null;
+      this.isIntermission = false;
+      this.stopNhlIntermissionTimer();
+    }
+    if (this.isIntermission && !this.intermissionTimerId) {
+      this.intermissionTimerId = setInterval(() => {
+        this.calculateIntermissionTimer();
+      }, 1000);
+    }
+  }
+
+  private stopNhlIntermissionTimer(): void {
+    if (this.intermissionTimerId) {
+      clearInterval(this.intermissionTimerId);
+      this.intermissionTimerId = null;
+    }
+  }
+
+  private calculateIntermissionTimer(): void {
+    if (this.isIntermission) {
+      let intermissionTimeMs = 18.5 * 60 * 1000;
+      let periodEndTime = dayjs(this.periodEndEvent.about.dateTime);
+      let currentTime = dayjs();
+      let elapsedTimeMs = currentTime.diff(periodEndTime, 'ms');
+      this.intermissionTimeRemainingMs = Math.max(intermissionTimeMs - elapsedTimeMs, 0);
     }
   }
 
