@@ -39,8 +39,6 @@ export class MomentumComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   public ngOnInit(): void {
-    let livePoint = new Image(10, 10);
-    livePoint.src = "assets/live-pulse-animation.gif";
     this.momentumData = [0];
     this.momentumChart = new Chart("momentumChart", {
       type: 'line',

@@ -370,6 +370,9 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private calculateIntermission() {
     let allPlays = this.gameLiveData.liveData.plays.allPlays;
+    if (this.gameLiveData.liveData.plays.allPlays.length < 3) {
+      return;
+    }
     if (this.gameLiveData.liveData.plays.currentPlay.result.eventTypeId === "PERIOD_END") {
       this.periodEndEvent = this.gameLiveData.liveData.plays.currentPlay;
       this.isIntermission = true;
