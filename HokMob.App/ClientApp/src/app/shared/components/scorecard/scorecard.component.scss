@@ -112,6 +112,11 @@
 
     .central-info {
       min-width: 45px;
+
+      .live-status-label {
+        font-size: smaller;
+        white-space: nowrap;
+      }
     }
     .home-team {
       width: 40%;

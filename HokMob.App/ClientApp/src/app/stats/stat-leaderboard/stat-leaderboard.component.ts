@@ -69,7 +69,7 @@ export class StatLeaderboardComponent implements OnChanges {
         return;
       }
       this.teamLogos = ['assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png'];
-      this.playerHeadshots = ['assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png', 'assets/nhl_logo.png'];
+      this.playerHeadshots = ['assets/blank_headshot.png', 'assets/blank_headshot.png', 'assets/blank_headshot.png', 'assets/blank_headshot.png', 'assets/blank_headshot.png'];
       let teams = this.topPlayersList.slice(0, 5).map(player => player.person.currentTeam);
       teams.forEach((team, index) => {
         this.nhlLogoService.getNhlTeamLogo(team.id).then(data => {

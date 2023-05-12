@@ -71,7 +71,7 @@ export class PlayerGameDialogComponent implements OnInit {
       return;
     }
     this.teamLogo = 'assets/nhl_logo.png';
-    this.playerHeadshot = 'assets/nhl_logo.png';
+    this.playerHeadshot = 'assets/blank_headshot.png';
     this.nhlImageService.getNhlTeamLogo(this.playerTeam.id).then(data => {
       let reader = new FileReader();
       reader.addEventListener("load", () => {

@@ -8,9 +8,13 @@
   </div>
   <div class="central-info">
     <span *ngIf="isPlayoffGame" class="playoff-series">{{playoffSeriesDetails}}</span>
-    <div *ngIf="futureGame" class="game-time">
+    <div *ngIf="futureGame && !smallerScorecard" class="game-time">
       <span>{{gameTime}}</span>
       <span>{{gameAmPm}}</span>
+    </div>
+    <div *ngIf="futureGame && smallerScorecard" class="game-time">
+      <span>{{gameDate}}</span>
+      <span>{{gameTime}} {{gameAmPm}}</span>
     </div>
     <div *ngIf="completedGame" class="game-score">
       <span>{{gameScore}}</span>

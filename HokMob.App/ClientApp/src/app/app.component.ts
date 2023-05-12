@@ -1,6 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {NavigationEnd, Router} from "@angular/router";
 import {Subject, takeUntil} from "rxjs";
+import {RouterExtensionService} from "@shared/services/router-extension.service";
 
 @Component({
   selector: 'app-root',
@@ -14,7 +15,14 @@ export class AppComponent implements OnInit, OnDestroy {
   ngUnsubscribe = new Subject<void>();
   menuUrl: string = '';
 
-  constructor(private router: Router) {
+  /**
+   *
+   * @param router - The angular router.
+   * @param routerExtensionService - Router extension service used for storing previous URL, needs to be defined here
+   * in the app component even though it is not used.
+   */
+  constructor(private router: Router,
+              private routerExtensionService: RouterExtensionService) {
     this.clientHeight = window.innerHeight;
   }
 
