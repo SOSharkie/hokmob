@@ -122,7 +122,7 @@
 
   .player-info-container, .player-games-container {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
 
     .player-bio-container, .regular-season-stats, .playoff-stats, .career-totals {
@@ -145,9 +145,6 @@
   .player-header {
     padding-left: $spacing-small;
     padding-right: $spacing-xx-large;
-  }
-  .player-info-container {
-    justify-content: flex-start;
   }
   .games-back-button-mobile {
     display: none;

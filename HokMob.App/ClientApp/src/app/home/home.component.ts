@@ -11,11 +11,11 @@ export class HomeComponent implements OnInit {
 
   public selectedDayString: string;
 
-  constructor(private route: ActivatedRoute,
+  constructor(private activatedRoute: ActivatedRoute,
               private router: Router){}
 
   public ngOnInit(): void {
-    this.route.queryParamMap.subscribe((params: ParamMap) => {
+    this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("date") && params.get("date").length === 8) {
         this.selectedDayString = params.get("date");
       } else {
@@ -35,7 +35,7 @@ export class HomeComponent implements OnInit {
     }
     this.router.navigate([],
         {
-          relativeTo: this.route,
+          relativeTo: this.activatedRoute,
           queryParams: dateParam,
         }
     );

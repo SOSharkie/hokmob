@@ -11,7 +11,7 @@
       Regular Season
     </div>
   </div>
-  <div class="leaderboards-container">
+  <div *ngIf="!isLoading" class="leaderboards-container">
     <app-stat-leaderboard #statLeaderboardComponent
         [statTitle]="'Points'"
         [statField]="'points'"
@@ -57,5 +57,8 @@
         [statField]="'timeOnIcePerGame'"
         [topPlayersList]="timeOnIcePerGameList"
     ></app-stat-leaderboard>
+  </div>
+  <div *ngIf="isLoading" class="loading-container">
+    <img src="assets/loading.gif" class="loading-gif">
   </div>
 </div>

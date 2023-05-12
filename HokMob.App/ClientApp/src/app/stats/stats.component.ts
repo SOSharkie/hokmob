@@ -1,9 +1,10 @@
 import {Component, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {NhlStatsService} from "@shared/services/nhl-stats.service";
-import {NhlStatTeamModel} from "@shared/models/nhl-stats/nhl-stat-team.model";
 import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {StatLeaderboardComponent} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
+import {ActivatedRoute, ParamMap, Router} from "@angular/router";
+import * as dayjs from "dayjs";
 
 @Component({
   selector: 'app-stats',
@@ -41,23 +42,41 @@ export class StatsComponent implements OnInit {
 
   public filtersEnabled: boolean = true;
 
+  public isLoading: boolean = false;
+
   private readonly minimumGoalieSavesPlayoffs = 20;
 
   private readonly minimumGoalieSavesRegularSeason = 100;
 
   private readonly topNumberOfPlayers = 25;
 
-  constructor(private nhlStatsService: NhlStatsService) {
+  constructor(private nhlStatsService: NhlStatsService,
+              private activatedRoute: ActivatedRoute,
+              private router: Router) {
   }
 
   public ngOnInit(): void {
-    this.updateStats();
+    this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
+      if (params.has("gameType")) {
+        this.playoffsSelected = params.get("gameType") === "P";
+      }
+      this.isLoading = true;
+      this.updateStats();
+    });
   }
 
   public updateGameType(isPlayoffs: boolean): void {
-    if (this.filtersEnabled) {
+    if (this.filtersEnabled && (isPlayoffs !== this.playoffsSelected)) {
+      this.isLoading = true;
       this.playoffsSelected = isPlayoffs;
       this.disableFiltersForTwoSeconds();
+      let gameTypeParam = this.playoffsSelected ? "P" : "R";
+      this.router.navigate([],
+          {
+            relativeTo: this.activatedRoute,
+            queryParams: {gameType: gameTypeParam},
+          }
+      );
       this.statLeaderboards.forEach(leaderboard => {
         leaderboard.imagesLoaded = false;
       });
@@ -91,6 +110,7 @@ export class StatsComponent implements OnInit {
       this.topShotsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "shots")).slice(0, this.topNumberOfPlayers);
       this.topHitsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "hits")).slice(0, this.topNumberOfPlayers);
       this.timeOnIcePerGameList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByTimeField(a, b, "timeOnIcePerGame")).slice(0, this.topNumberOfPlayers);
+      this.isLoading = false;
     });
   }
 

@@ -88,7 +88,7 @@ export class PlayerComponent implements OnInit {
       return;
     }
     this.teamLogo = 'assets/nhl_logo.png';
-    this.playerHeadshot = 'assets/nhl_logo.png';
+    this.playerHeadshot = 'assets/blank_headshot.png';
     this.nhlImageService.getNhlTeamLogo(this.player.currentTeam.id).then(data => {
       let reader = new FileReader();
       reader.addEventListener("load", () => {

@@ -87,13 +87,26 @@ export class ScorecardComponent implements OnChanges {
     return "";
   }
 
+  public get gameDate(): string {
+    if (this.game) {
+      switch (this.game.status.detailedState) {
+        case NhlGameStateEnum.SCHEDULE_TBD:
+        case NhlGameStateEnum.POSTPONED:
+          return "";
+        default:
+          return DateTimeUtils.getDateDisplayValue(dayjs(this.game.gameDate).toDate());
+      }
+    }
+    return ""
+  }
+
   public get gameTime(): string {
     if (this.game) {
       switch (this.game.status.detailedState) {
         case NhlGameStateEnum.SCHEDULE_TBD:
           return "TBD";
         case NhlGameStateEnum.POSTPONED:
-          return "Postponed"
+          return "Postponed";
         default:
           return dayjs(this.game.gameDate).format("h:mm");
       }
