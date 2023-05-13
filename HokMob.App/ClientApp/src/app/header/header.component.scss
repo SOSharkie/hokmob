@@ -2,7 +2,7 @@
 
 .main-toolbar {
   height: 100px;
-  background-color: $black-02;
+  background-color: var(--bg-color);
 
   .title-and-search-container {
     display: flex;
@@ -11,7 +11,7 @@
     align-items: center;
 
     .site-name {
-      color: white;
+      color: var(--text-color);
     }
 
     .site-name:hover {
@@ -23,7 +23,7 @@
 
   .about-and-login-container {
     .about-label {
-      color: white;
+      color: var(--text-color);
     }
 
     .about-label:hover {

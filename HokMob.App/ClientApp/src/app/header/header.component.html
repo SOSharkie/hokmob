@@ -7,5 +7,9 @@
     <div class="about-and-login-container">
       <span class="about-label" [routerLink]="['/about']">About</span>
     </div>
+    <div class="about-and-login-container">
+      <input #lightModeSwitchInput type="checkbox" role="switch" id="lightModeSwitchInput" (change)="lightModeSwitch($any($event.target).checked)">
+      <span class="about-label" for="lightModeSwitchInput">Light Mode</span>
+    </div>
   </mat-toolbar>
 </div>

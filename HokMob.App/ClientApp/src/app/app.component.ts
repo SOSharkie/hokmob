@@ -2,6 +2,8 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {NavigationEnd, Router} from "@angular/router";
 import {Subject, takeUntil} from "rxjs";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
+import { ThemeService } from '@shared/services/theme/theme.service';
+import { ThemeEnum } from '@shared/enums/theme.enum';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +24,8 @@ export class AppComponent implements OnInit, OnDestroy {
    * in the app component even though it is not used.
    */
   constructor(private router: Router,
-              private routerExtensionService: RouterExtensionService) {
+              private routerExtensionService: RouterExtensionService,
+              private themeService: ThemeService) {
     this.clientHeight = window.innerHeight;
   }
 
@@ -33,6 +36,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       window.scrollTo(0, 0);
     });
+    this.themeService.initTheme();
   }
 
   public ngOnDestroy(): void {
