@@ -7,13 +7,13 @@
       </div>
       <div *ngIf="futureGame" class="game-day-time-container future-game">
         <span class="game-time-label">{{gameTime}}</span>
-        <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
         <span class="game-day-label">{{gameDay}}</span>
+        <span *ngIf="isPlayoffGame" class="playoff-series-label-dropdown">{{playoffSeriesDetails}}</span>
       </div>
       <div *ngIf="completedGame" class="game-score">
         <span class="game-score-label">{{gameScore}}</span>
         <span class="completed-status-label">{{completedGameStatus}}</span>
-        <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
+        <span *ngIf="isPlayoffGame" class="playoff-series-label-dropdown">{{playoffSeriesDetails}}</span>
       </div>
       <div *ngIf="liveGame" class="game-score">
         <span class="game-score-label">{{gameScore}}</span>
@@ -49,10 +49,12 @@
         <div *ngIf="futureGame" class="game-day-time-container future-game">
           <span class="game-time-label">{{gameTime}}</span>
           <span class="game-day-label">{{gameDay}}</span>
+          <span *ngIf="isPlayoffGame" class="playoff-series-label-main">{{playoffSeriesDetails}}</span>
         </div>
         <div *ngIf="completedGame" class="game-score">
           <span class="game-score-label">{{gameScore}}</span>
           <span class="completed-status-label">{{completedGameStatus}}</span>
+          <span *ngIf="isPlayoffGame" class="playoff-series-label-main">{{playoffSeriesDetails}}</span>
         </div>
         <div *ngIf="liveGame" class="game-score">
           <span class="game-score-label">{{gameScore}}</span>

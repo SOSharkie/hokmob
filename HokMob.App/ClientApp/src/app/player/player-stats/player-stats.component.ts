@@ -36,7 +36,7 @@ export class PlayerStatsComponent {
   }
 
   public get faceOffColor(): string {
-    if (this.stats) {
+    if (this.stats && this.stats.faceOffPct) {
       return this.stats.faceOffPct > 50 ? '#84dc7b' : this.stats.plusMinus < 50 ? '#e34d53' : 'white';
     }
     return "white";

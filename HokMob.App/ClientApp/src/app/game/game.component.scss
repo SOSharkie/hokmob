@@ -86,7 +86,7 @@ $central-info-width: 130px;
         }
       }
 
-      .playoff-series-label {
+      .playoff-series-label-dropdown {
         margin-top: $spacing-small;
         font-size: medium;
         color: $gray-04;
@@ -268,7 +268,7 @@ $central-info-width: 130px;
           }
         }
 
-        .playoff-series-label {
+        .playoff-series-label-main {
           margin-top: $spacing-small;
           font-size: medium;
           color: $gray-04;
@@ -379,6 +379,10 @@ $central-info-width: 130px;
 
   .game-time-label, .game-score-label {
     font-size: xx-large;
+  }
+
+  .playoff-series-label-main {
+    display: none;
   }
 
   .game-container {
