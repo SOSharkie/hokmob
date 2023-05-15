@@ -41,6 +41,7 @@
           [statTitle]="'2023 NHL Playoffs Stats'"
           [player]="player"
           [stats]="currentPlayoffStats"
+          [teamColor]="teamColor"
       ></app-player-stats>
     </div>
     <div *ngIf="currentYearStats" class="regular-season-stats">
@@ -48,6 +49,7 @@
           [statTitle]="'2022-2023 NHL Regular Season Stats'"
           [player]="player"
           [stats]="currentYearStats"
+          [teamColor]="teamColor"
       ></app-player-stats>
     </div>
   </div>
@@ -58,6 +60,7 @@
           [playoffGames]="playoffGames"
           [recentGames]="recentGames"
           [teamId]="player.currentTeam.id"
+          [teamColor]="teamColor"
       ></app-recent-player-games>
     </div>
     <div class="career-totals">

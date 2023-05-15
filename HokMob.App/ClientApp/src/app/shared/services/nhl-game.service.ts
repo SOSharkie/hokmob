@@ -98,27 +98,6 @@ export class NhlGameService {
   }
 
   /**
-   * Gets the NHL game boxscore for a given game ID.
-   *
-   * @param gameId - The ID of the game to get the boxscore.
-   */
-  public getNhlGameBoxscore(gameId: string): Promise<NhlBoxscoreModel> {
-    let gameUrl = this.nhlGameUrl + gameId + this.nhlGameBoxscore;
-
-    return new Promise((resolve, reject) => {
-      return this.http.get<NhlBoxscoreModel>(gameUrl).subscribe({
-        next: (response) => {
-          resolve(response);
-        },
-        error: (error) => {
-          console.error(error);
-          reject(error);
-        }
-      });
-    });
-  }
-
-  /**
    * Gets the NHL game live feed for a given game ID.
    *
    * @param gameId - The ID of the game to get the live feed.

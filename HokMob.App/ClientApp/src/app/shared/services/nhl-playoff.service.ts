@@ -42,7 +42,7 @@ export class NhlPlayoffService {
    */
   public getNhlPlayoffSeriesGames(teamId1: number, teamId2: number): Promise<NhlScheduleModel> {
     const options = {
-      params: new HttpParams().set("startDate", this.formatDateStringForNhl(dayjs().subtract(20, 'days').toDate()))
+      params: new HttpParams().set("startDate", this.formatDateStringForNhl(dayjs().subtract(40, 'days').toDate()))
           .set("endDate", this.formatDateStringForNhl(dayjs().add(20, 'days').toDate()))
           .set("teamId", teamId1 + "," + teamId2)
           .set("gameType", "P")

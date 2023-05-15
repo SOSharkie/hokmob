@@ -13,6 +13,7 @@
       <div *ngIf="completedGame" class="game-score">
         <span class="game-score-label">{{gameScore}}</span>
         <span class="completed-status-label">{{completedGameStatus}}</span>
+        <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
       </div>
       <div *ngIf="liveGame" class="game-score">
         <span class="game-score-label">{{gameScore}}</span>
@@ -35,7 +36,7 @@
       </div>
       <div class="league-info-container" [routerLink]="['/playoffs']">
         <img class="nhl-logo" src="assets/nhl_logo.png">
-        <span class="league-info-label">{{gameType}}</span>
+        <span class="league-info-label">{{gameInfoLabel}}</span>
       </div>
       <span class="info-label">{{tvInfo}}</span>
     </div>
@@ -47,7 +48,6 @@
         </div>
         <div *ngIf="futureGame" class="game-day-time-container future-game">
           <span class="game-time-label">{{gameTime}}</span>
-          <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
           <span class="game-day-label">{{gameDay}}</span>
         </div>
         <div *ngIf="completedGame" class="game-score">

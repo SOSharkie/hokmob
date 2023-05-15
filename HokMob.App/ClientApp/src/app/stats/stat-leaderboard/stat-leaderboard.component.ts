@@ -25,7 +25,6 @@ export class StatLeaderboardComponent implements OnChanges {
 
   public imagesLoaded: boolean = false;
 
-
   public get statLeader(): NhlPlayerModel {
     if (this.topPlayersList && this.topPlayersList[0]) {
       return this.topPlayersList[0];

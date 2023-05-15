@@ -36,39 +36,39 @@
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Goals</span>
-        <span>{{player.stats.skaterStats.goals}}</span>
+        <span class="game-stat-value" [ngStyle]="{'background-color': player.stats.skaterStats.goals > 0 ? teamColor : ''}">{{player.stats.skaterStats.goals}}</span>
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Assists</span>
-        <span>{{player.stats.skaterStats.assists}}</span>
+        <span class="game-stat-value" [ngStyle]="{'background-color': player.stats.skaterStats.assists > 0 ? teamColor : ''}">{{player.stats.skaterStats.assists}}</span>
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Shots</span>
-        <span>{{player.stats.skaterStats.shots}}</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.shots}}</span>
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Hits</span>
-        <span>{{player.stats.skaterStats.hits}}</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.hits}}</span>
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Blocks</span>
-        <span>{{player.stats.skaterStats.blocked}}</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.blocked}}</span>
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Face Offs</span>
-        <span>{{player.stats.skaterStats.faceOffWins}}/{{player.stats.skaterStats.faceoffTaken}}</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.faceOffWins}}/{{player.stats.skaterStats.faceoffTaken}}</span>
       </div>
 <!--      <div class="game-stat-item">-->
 <!--        <span class="game-stat-label">Plus/Minus</span>-->
-<!--        <span>{{player.stats.skaterStats.plusMinus}}</span>-->
+<!--        <span class="game-stat-value">{{player.stats.skaterStats.plusMinus}}</span>-->
 <!--      </div>-->
       <div class="game-stat-item">
         <span class="game-stat-label">Penalty Minutes</span>
-        <span>{{player.stats.skaterStats.penaltyMinutes}}</span>
+        <span class="game-stat-value" [ngStyle]="{'color': player.stats.skaterStats.penaltyMinutes > 0 ? '#e34d53' : ''}">{{player.stats.skaterStats.penaltyMinutes}}</span>
       </div>
 <!--      <div class="game-stat-item">-->
 <!--        <span class="game-stat-label">Giveaways</span>-->
-<!--        <span>{{player.stats.skaterStats.giveaways}}</span>-->
+<!--        <span class="game-stat-value">{{player.stats.skaterStats.giveaways}}</span>-->
 <!--      </div>-->
     </div>
   </div>

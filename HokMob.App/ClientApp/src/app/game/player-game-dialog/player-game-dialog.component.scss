@@ -102,6 +102,11 @@
         .game-stat-label {
           color: $gray-03;
         }
+
+        .game-stat-value {
+          padding: $spacing-medium $spacing-large;
+          border-radius: 15px;
+        }
       }
     }
   }

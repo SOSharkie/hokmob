@@ -22,7 +22,11 @@ export class NhlLiveFeedTeamModel {
 
   public division: Object;
 
-  public conference: Object;
+  public conference: {
+    id: number,
+    name: string,
+    link: string
+  };
 
   public franchise: {
     franchiseId: number,

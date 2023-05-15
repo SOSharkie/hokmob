@@ -3,8 +3,8 @@ import {NhlStatsSplitModel} from "@shared/models/nhl-stats/nhl-stats-split.model
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import * as dayjs from "dayjs";
 import {NhlImageService} from "@shared/services/nhl-image.service";
-import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
+import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
 
 @Component({
   selector: 'app-recent-player-games',
@@ -25,6 +25,9 @@ export class RecentPlayerGamesComponent implements OnChanges {
   @Input()
   public teamId: number;
 
+  @Input()
+  public teamColor: string;
+
   public teamLogos: any[];
 
   public imagesLoaded: boolean = false;
@@ -40,6 +43,10 @@ export class RecentPlayerGamesComponent implements OnChanges {
       return this.regularSeasonGames.slice(0, 10);
     }
     return [];
+  }
+
+  public getPlusMinusColor(stat: NhlPlayerStatsModel): string {
+    return stat.plusMinus > 0 ? '#84dc7b' : stat.plusMinus < 0 ? '#e34d53' : 'white';
   }
 
   constructor(private nhlImageService: NhlImageService) {
