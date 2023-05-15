@@ -10,7 +10,7 @@ Chart.register(...registerables);
   templateUrl: './momentum.component.html',
   styleUrls: ['./momentum.component.scss']
 })
-export class MomentumComponent implements OnInit, AfterViewInit, OnChanges {
+export class MomentumComponent implements OnInit, OnChanges {
 
   @Input()
   public homeTeamLogo: any;
@@ -106,10 +106,6 @@ export class MomentumComponent implements OnInit, AfterViewInit, OnChanges {
         }
       },
     });
-  }
-
-  public ngAfterViewInit(): void {
-
   }
 
   public ngOnChanges(changes: SimpleChanges): void {

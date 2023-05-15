@@ -45,12 +45,6 @@ $central-info-width: 130px;
         width: $central-info-width;
         padding: $spacing-medium;
 
-        .playoff-series-label {
-          margin-top: $spacing-small;
-          font-size: medium;
-          color: $gray-04;
-        }
-
         .game-day-label {
           margin-top: $spacing-small;
           font-size: large;
@@ -90,6 +84,12 @@ $central-info-width: 130px;
           margin-bottom: $spacing-small;
           color: $gray-04;
         }
+      }
+
+      .playoff-series-label-dropdown {
+        margin-top: $spacing-small;
+        font-size: medium;
+        color: $gray-04;
       }
 
       .home-team-header {
@@ -227,12 +227,6 @@ $central-info-width: 130px;
           width: $central-info-width;
           padding: $spacing-medium;
 
-          .playoff-series-label {
-            margin-top: $spacing-small;
-            font-size: medium;
-            color: $gray-04;
-          }
-
           .game-day-label {
             margin-top: $spacing-small;
             font-size: large;
@@ -272,6 +266,12 @@ $central-info-width: 130px;
             margin-bottom: $spacing-small;
             color: $gray-04;
           }
+        }
+
+        .playoff-series-label-main {
+          margin-top: $spacing-small;
+          font-size: medium;
+          color: $gray-04;
         }
 
         .home-team-header {
@@ -379,6 +379,10 @@ $central-info-width: 130px;
 
   .game-time-label, .game-score-label {
     font-size: xx-large;
+  }
+
+  .playoff-series-label-main {
+    display: none;
   }
 
   .game-container {

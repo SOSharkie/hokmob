@@ -64,13 +64,31 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly nhlGameRefreshTime = 10000;
 
-  public get gameType(): string {
-    if (this.gameLiveData) {
+  public get gameInfoLabel(): string {
+    if (this.gameLiveData && this.gameModel) {
       switch (this.gameLiveData.gameData.game.type) {
         case "P":
-          let roundNum = this.gameId.charAt(7);
-          let gameNum = this.gameId.charAt(9);
-          return "NHL Playoffs Round " + roundNum + " Game " + gameNum;
+          if (this.gameModel.seriesSummary) {
+            let conference = this.gameLiveData.gameData.teams.home.conference.name;
+            let status = this.gameModel.seriesSummary.seriesStatus ?
+                this.gameModel.seriesSummary.seriesStatus : "TBD";
+            switch (this.gameId.charAt(7)) {
+              case '1':
+                return conference + " Round 1: " + status;
+              case '2':
+                return conference + " Semifinals: " + status;
+              case '3':
+                return conference + " Finals: " + status;
+              case '4':
+                return "Stanley Cup Finals: " + status;
+              default:
+                return "NHL Playoffs: " + status;
+            }
+          } else {
+            let roundNum = this.gameId.charAt(7);
+            let gameNum = this.gameId.charAt(9);
+            return "NHL Playoffs Round " + roundNum + " Game " + gameNum;
+          }
         case "PR":
           return "NHL Preseason"
         case "A":

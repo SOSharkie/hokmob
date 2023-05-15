@@ -18,11 +18,28 @@ export class PlayerStatsComponent {
   @Input()
   public player: NhlPersonModel;
 
+  @Input()
+  public teamColor: string;
+
   public get isGoalie(): boolean {
     if (this.player) {
       return this.player.primaryPosition.code === "G";
     }
     return false;
+  }
+
+  public get plusMinusColor(): string {
+    if (this.stats) {
+      return this.stats.plusMinus > 0 ? '#84dc7b' : this.stats.plusMinus < 0 ? '#e34d53' : 'white';
+    }
+    return "white";
+  }
+
+  public get faceOffColor(): string {
+    if (this.stats && this.stats.faceOffPct) {
+      return this.stats.faceOffPct > 50 ? '#84dc7b' : this.stats.plusMinus < 50 ? '#e34d53' : 'white';
+    }
+    return "white";
   }
 
   public formatFaceOffPercent(value: number): string {

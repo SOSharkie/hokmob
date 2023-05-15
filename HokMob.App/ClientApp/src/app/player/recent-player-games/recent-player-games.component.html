@@ -24,11 +24,11 @@
           <span class="game-score">{{getRecentGameScore(i)}}</span>
         </td>
         <td><span>{{game.stat.timeOnIce}}</span></td>
-        <td class="stat-cell"><span>{{game.stat.goals}}</span></td>
-        <td class="stat-cell"><span>{{game.stat.assists}}</span></td>
+        <td class="stat-cell"><span class="point-cell" [ngStyle]="{'background-color': game.stat.goals > 0 ? teamColor : ''}">{{game.stat.goals}}</span></td>
+        <td class="stat-cell"><span class="point-cell" [ngStyle]="{'background-color': game.stat.assists > 0 ? teamColor : ''}">{{game.stat.assists}}</span></td>
         <td class="stat-cell hide-mobile"><span>{{game.stat.shots}}</span></td>
         <td class="stat-cell hide-mobile"><span>{{game.stat.hits}}</span></td>
-        <td class="stat-cell hide-mobile"><span>{{game.stat.plusMinus}}</span></td>
+        <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': getPlusMinusColor(game.stat)}">{{game.stat.plusMinus}}</span></td>
       </tr>
     </tbody>
   </table>

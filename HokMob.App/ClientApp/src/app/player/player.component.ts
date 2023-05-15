@@ -54,7 +54,7 @@ export class PlayerComponent implements OnInit {
         return "Game";
       }
     }
-    return "Games";
+    return "Stats";
   }
 
   constructor(private route: ActivatedRoute,
@@ -66,6 +66,9 @@ export class PlayerComponent implements OnInit {
 
   public ngOnInit(): void {
     this.previousUrl = this.routerExtensionService.getPreviousUrl();
+    if (this.previousUrl === '/') {
+      this.previousUrl = null;
+    }
     this.route.params.subscribe((params: Params) => {
       this.playerId = params['id'];
       this.nhlStatsService.getNhlPlayerStats(this.playerId).then(result => {
@@ -109,14 +112,7 @@ export class PlayerComponent implements OnInit {
     if (this.previousUrl) {
       this.router.navigateByUrl(this.previousUrl);
     } else {
-      let dateString = dayjs().format("YYYYMMDD");
-      const dateParam = {date: dateString};
-      this.router.navigate([''],
-          {
-            relativeTo: this.route,
-            queryParams: dateParam
-          }
-      );
+      this.router.navigate(['stats']);
     }
   }
 

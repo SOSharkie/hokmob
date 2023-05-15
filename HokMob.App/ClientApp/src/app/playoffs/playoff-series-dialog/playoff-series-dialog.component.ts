@@ -41,7 +41,7 @@ export class PlayoffSeriesDialogComponent implements OnInit {
               @Inject(MAT_DIALOG_DATA) public seriesData: NhlPlayoffSeriesModel) {}
 
   public ngOnInit(): void {
-    if (this.seriesData.matchupTeams) {
+    if (this.seriesData.matchupTeams && this.seriesData.matchupTeams[0] && this.seriesData.matchupTeams[1]) {
       this.nhlPlayoffService.getNhlPlayoffSeriesGames(this.seriesData.matchupTeams[0].team.id, this.seriesData.matchupTeams[1].team.id).then(result => {
         this.seriesGames = [];
         result.dates.forEach(date => {
