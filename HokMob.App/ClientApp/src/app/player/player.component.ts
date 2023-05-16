@@ -10,6 +10,7 @@ import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.mod
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsSplitModel} from "@shared/models/nhl-stats/nhl-stats-split.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
   selector: 'app-player',
@@ -41,8 +42,6 @@ export class PlayerComponent implements OnInit {
   public regularSeasonGames: NhlStatsSplitModel[];
 
   public recentGames: NhlGameModel[];
-
-  private readonly currentSeason: string = "20222023";
 
   private readonly nhlLeagueId: number = 133;
 
@@ -117,24 +116,26 @@ export class PlayerComponent implements OnInit {
   }
 
   private setCurrentStatModels(): void {
+    let currentSeason = DateTimeUtils.getCurrentNhlSeason();
+
     // Current Regular Season
     let latestRegularSeason = this.player.stats[0].splits[this.player.stats[0].splits.length - 1];
-    if (latestRegularSeason && latestRegularSeason.season === this.currentSeason && latestRegularSeason.league.id === this.nhlLeagueId) {
+    if (latestRegularSeason && latestRegularSeason.season === currentSeason && latestRegularSeason.league.id === this.nhlLeagueId) {
       this.currentYearStats = latestRegularSeason.stat;
     } else {
       latestRegularSeason = this.player.stats[0].splits[this.player.stats[0].splits.length - 2];
-      if (latestRegularSeason && latestRegularSeason.season === this.currentSeason && latestRegularSeason.league.id === this.nhlLeagueId) {
+      if (latestRegularSeason && latestRegularSeason.season === currentSeason && latestRegularSeason.league.id === this.nhlLeagueId) {
         this.currentYearStats = latestRegularSeason.stat;
       }
     }
 
     // Current Playoffs
     let latestPlayoffs = this.player.stats[1].splits[this.player.stats[1].splits.length - 1];
-    if (latestPlayoffs && latestPlayoffs.season === this.currentSeason && latestPlayoffs.league.id === this.nhlLeagueId) {
+    if (latestPlayoffs && latestPlayoffs.season === currentSeason && latestPlayoffs.league.id === this.nhlLeagueId) {
       this.currentPlayoffStats = latestPlayoffs.stat;
     } else {
       latestPlayoffs = this.player.stats[1].splits[this.player.stats[1].splits.length - 2];
-      if (latestPlayoffs && latestPlayoffs.season === this.currentSeason && latestPlayoffs.league.id === this.nhlLeagueId) {
+      if (latestPlayoffs && latestPlayoffs.season === currentSeason && latestPlayoffs.league.id === this.nhlLeagueId) {
         this.currentPlayoffStats = latestPlayoffs.stat;
       }
     }

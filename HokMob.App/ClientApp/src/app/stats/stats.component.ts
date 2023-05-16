@@ -5,6 +5,7 @@ import {StatsUtils} from "@shared/utils/stats-utils";
 import {StatLeaderboardComponent} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import * as dayjs from "dayjs";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
   selector: 'app-stats',
@@ -87,7 +88,7 @@ export class StatsComponent implements OnInit {
   private updateStats(): void {
     this.fullSkaterList = [];
     this.fullGoalieList = [];
-    this.nhlStatsService.getNhlStats("20222023", this.playoffsSelected).then(result  => {
+    this.nhlStatsService.getNhlStats(DateTimeUtils.getCurrentNhlSeason(), this.playoffsSelected).then(result  => {
       let fullPlayerList = [];
       result.forEach((team) => {
         fullPlayerList = fullPlayerList.concat(team.roster.roster);

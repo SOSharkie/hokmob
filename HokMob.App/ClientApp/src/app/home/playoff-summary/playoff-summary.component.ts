@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {NhlPlayoffModel} from "@shared/models/nhl-playoffs/nhl-playoff.model";
 import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
 import {NhlPlayoffSeriesModel} from "@shared/models/nhl-playoffs/nhl-playoff-series.model";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
   selector: 'app-playoff-summary',
@@ -30,7 +31,7 @@ export class PlayoffSummaryComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.nhlPlayoffService.getNhlPlayoffs().then(result => {
+    this.nhlPlayoffService.getNhlPlayoffs(DateTimeUtils.getCurrentNhlSeason()).then(result => {
       this.playoffsData = result;
     })
   }

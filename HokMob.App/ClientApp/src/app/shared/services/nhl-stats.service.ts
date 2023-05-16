@@ -2,6 +2,8 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {NhlStatTeamModel} from "@shared/models/nhl-stats/nhl-stat-team.model";
 import {NhlPersonModel} from "@shared/models/nhl-general/nhl-person.model";
+import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
+import {NhlTeamExtendedModel} from "@shared/models/nhl-general/nhl-team-extended.model";
 
 @Injectable()
 export class NhlStatsService {
@@ -12,6 +14,10 @@ export class NhlStatsService {
   private readonly playersStatsUrl = "https://statsapi.web.nhl.com/api/v1/people/";
 
   private readonly playerStatsParams = "?expand=person.stats&stats=yearByYear,yearByYearPlayoffs,careerRegularSeason,gameLog,playoffGameLog&expand=stats.team";
+
+  private readonly teamStatsUrl = "https://statsapi.web.nhl.com/api/v1/teams?teamId=";
+
+  private readonly teamStatsParams = "&hydrate=previousSchedule(limit=10,linescore,team),record,coaches,roster(person(stats(splits=[statsSingleSeason,statsSingleSeasonPlayoffs])))&gameType=R,P&season=";
 
   constructor(private http: HttpClient) { }
 
@@ -56,6 +62,29 @@ export class NhlStatsService {
       return this.http.get<any>(url).subscribe({
         next: (response) => {
           resolve(response.people[0]);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
+
+  /**
+   *  Gets stats for a given NHL team.
+   *
+   * @param teamId - The ID of the team to get stats for.
+   * @param season - The season to get stats for.
+   */
+  public getNhlTeamStats(teamId: string, season: string): Promise<NhlTeamExtendedModel> {
+    let url = this.teamStatsUrl + teamId + this.teamStatsParams + season;
+
+    return new Promise((resolve, reject) => {
+      return this.http.get<any>(url).subscribe({
+        next: (response) => {
+          resolve(response.teams[0]);
         },
         error: (error) => {
           console.error(error);

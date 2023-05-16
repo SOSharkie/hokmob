@@ -1,0 +1,102 @@
+@import "variables";
+
+.team-container {
+  display: flex;
+  flex-direction: column;
+
+  .team-header {
+    display: flex;
+    align-items: flex-end;
+    height: 100px;
+    margin: $spacing-medium $spacing-medium $spacing-x-small $spacing-medium;
+    background-color: $black-02;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+
+    .back-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 80px;
+      height: 100%;
+      margin-left: $spacing-x-large;
+    }
+
+    .games-back-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: large;
+      color: white;
+
+      .back-icon {
+        height: 25px;
+        width: 25px;
+        border-radius: 50%;
+        background-color: $gray-02;
+        margin-top: $spacing-x-large;
+        margin-right: $spacing-large;
+      }
+
+      .games-label {
+        margin-top: $spacing-x-large;
+      }
+    }
+
+    .games-back-button:hover {
+      cursor: pointer;
+
+      .back-icon {
+        background-color: white;
+        color: $black-01;
+      }
+
+      .games-label {
+        text-decoration: underline;
+      }
+    }
+
+    .team-logo-container {
+      margin-left: $spacing-large;
+
+      .team-logo {
+        position: relative;
+        height: 85px;
+        z-index: 4;
+      }
+    }
+
+    .team-info {
+      display: flex;
+      flex-direction: column;
+      margin-left: $spacing-large;
+      margin-bottom: $spacing-medium;
+      padding-right: $spacing-medium;
+
+      .team-name {
+        color: white;
+        font-size: x-large;
+      }
+
+      .team-division {
+        display: flex;
+        align-items: center;
+        margin-top: $spacing-medium;
+
+        .team-division-label {
+          font-size: larger;
+          color: $gray-03;
+        }
+      }
+    }
+  }
+
+  .work-in-progress {
+    display: flex;
+    justify-content: center;
+    color: white;
+    font-size: x-large;
+    margin-top: $spacing-xx-large;
+  }
+}

@@ -4,15 +4,15 @@
     <router-outlet></router-outlet>
   </div>
   <div class="mobile-menu">
-    <div id="games-item" class="menu-item" [ngClass]="{selected : menuUrl == '/'}" [routerLink]="['/']">
+    <div id="games-item" class="menu-item" [ngClass]="{selected : isGamesSelected}" [routerLink]="['/']">
       <mat-icon>calendar_month</mat-icon>
       <span>Games</span>
     </div>
-    <div id="playoffs-item" class="menu-item" [ngClass]="{selected : menuUrl == '/playoffs'}" [routerLink]="['/playoffs']">
+    <div id="playoffs-item" class="menu-item" [ngClass]="{selected : menuUrl === '/playoffs'}" [routerLink]="['/playoffs']">
       <mat-icon>ballot</mat-icon>
       <span>Playoffs</span>
     </div>
-    <div id="stats-item" class="menu-item" [ngClass]="{selected : menuUrl == '/stats'}" [routerLink]="['/stats']">
+    <div id="stats-item" class="menu-item" [ngClass]="{selected : menuUrl === '/stats'}" [routerLink]="['/stats']">
       <mat-icon>leaderboard</mat-icon>
       <span>Stats</span>
     </div>

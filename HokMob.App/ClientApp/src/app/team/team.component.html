@@ -1,0 +1,24 @@
+<div *ngIf="teamData" class="team-container">
+  <div class="team-header">
+    <div class="back-container">
+      <div class="games-back-button" (click)="backToPrevious()">
+        <div class="back-icon">
+          <mat-icon fontIcon="chevron_left"></mat-icon>
+        </div>
+        <span class="games-label">{{backButtonLabel}}</span>
+      </div>
+    </div>
+    <div class="team-logo-container">
+      <img [src]="teamLogo" class="team-logo">
+    </div>
+    <div class="team-info">
+      <span class="team-name">{{teamData.name}}</span>
+      <div class="team-division">
+        <span class="team-division-label">{{teamData.division.name}} Division</span>
+      </div>
+    </div>
+  </div>
+  <div>
+    <span class="work-in-progress">Work In Progress</span>
+  </div>
+</div>

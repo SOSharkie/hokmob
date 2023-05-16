@@ -107,6 +107,10 @@
         display: flex;
         align-items: center;
         margin-top: $spacing-medium;
+        :hover {
+          cursor: pointer;
+          text-decoration: underline;
+        }
 
         .player-team-logo {
           height: 40px;
