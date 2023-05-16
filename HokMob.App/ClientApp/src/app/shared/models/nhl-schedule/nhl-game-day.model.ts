@@ -2,7 +2,7 @@ import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 
 export class NhlGameDayModel {
 
-  public date: String;
+  public date: string;
 
   public totalItems: number;
 

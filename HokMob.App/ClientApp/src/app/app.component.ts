@@ -10,10 +10,17 @@ import {RouterExtensionService} from "@shared/services/router-extension.service"
 })
 export class AppComponent implements OnInit, OnDestroy {
 
-  clientHeight: number;
-  title = 'hokmob';
-  ngUnsubscribe = new Subject<void>();
-  menuUrl: string = '';
+  public clientHeight: number;
+
+  public title = 'hokmob';
+
+  public ngUnsubscribe = new Subject<void>();
+
+  public menuUrl: string = '';
+
+  public get isGamesSelected(): boolean {
+    return this.menuUrl === '/' || this.menuUrl.startsWith('/?date=')
+  }
 
   /**
    *

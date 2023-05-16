@@ -23,7 +23,7 @@
     </div>
     <div class="player-info">
       <span class="player-name">{{player.fullName}}</span>
-      <div class="player-team">
+      <div class="player-team" [routerLink]="['/team', this.player.currentTeam.id]">
         <img [src]="teamLogo" class="player-team-logo">
         <span class="player-team-label">{{player.currentTeam.name}}</span>
       </div>

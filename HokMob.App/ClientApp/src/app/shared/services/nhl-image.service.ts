@@ -9,12 +9,6 @@ export class NhlImageService {
 
   private nhlPlayerHeadShotUrl = "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/";
 
-  private test = "https://assets.nhle.com/mugs/nhl/20222023/DAL/8478449.png";
-
-  /**
-   *
-   * @param http
-   */
   constructor(private http: HttpClient) { }
 
   public getNhlTeamLogo(teamId: number): Promise<Blob> {

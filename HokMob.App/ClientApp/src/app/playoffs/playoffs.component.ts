@@ -3,6 +3,7 @@ import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
 import {NhlPlayoffModel} from "@shared/models/nhl-playoffs/nhl-playoff.model";
 import {NhlPlayoffMatchupTeamModel} from "@shared/models/nhl-playoffs/nhl-playoff-matchup-team.model";
 import {NhlSeriesSummaryModel} from "@shared/models/nhl-playoffs/nhl-series-summary.model";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
   selector: 'app-playoffs',
@@ -17,7 +18,7 @@ export class PlayoffsComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.nhlPlayoffService.getNhlPlayoffs().then(result => {
+    this.nhlPlayoffService.getNhlPlayoffs(DateTimeUtils.getCurrentNhlSeason()).then(result => {
       result.rounds.forEach((round, roundNum) => {
         round.series.forEach((series, seriesNum) => {
           // Handle the case where a series is finished but the NHL API has not updated the next round with the winners

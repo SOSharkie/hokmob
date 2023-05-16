@@ -41,6 +41,7 @@ import { PlayerGameDialogComponent } from './game/player-game-dialog/player-game
 import { PlayerStatsComponent } from './player/player-stats/player-stats.component';
 import { RecentPlayerGamesComponent } from './player/recent-player-games/recent-player-games.component';
 import { PlayerBioComponent } from './player/player-bio/player-bio.component';
+import { TeamComponent } from './team/team.component';
 
 @NgModule({
   declarations: [
@@ -71,7 +72,8 @@ import { PlayerBioComponent } from './player/player-bio/player-bio.component';
     PlayerGameDialogComponent,
     PlayerStatsComponent,
     RecentPlayerGamesComponent,
-    PlayerBioComponent
+    PlayerBioComponent,
+    TeamComponent
   ],
   imports: [
     BrowserModule,

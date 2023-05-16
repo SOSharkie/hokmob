@@ -26,7 +26,7 @@
       </div>
     </div>
   </div>
-  <div class="game-header">
+  <div class="game-header" *ngIf="gameLiveData">
     <div class="league-info">
       <div class="games-back-button" (click)="backToPrevious()">
         <div class="back-icon">
@@ -43,8 +43,8 @@
     <div class="expanded-scorecard-container">
       <div class="main-score-container">
         <div class="home-team-header">
-          <span>{{homeTeamName}}</span>
-          <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
+          <span class="team-name" [routerLink]="['/team', this.gameLiveData.gameData.teams.home.id]">{{homeTeamName}}</span>
+          <img [src]="homeTeamLogo" [routerLink]="['/team', this.gameLiveData.gameData.teams.home.id]" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
         </div>
         <div *ngIf="futureGame" class="game-day-time-container future-game">
           <span class="game-time-label">{{gameTime}}</span>
@@ -62,8 +62,8 @@
           <span *ngIf="isIntermission" title="Intermission Countdown" class="intermission-countdown">{{intermissionTimeRemaining}}</span>
         </div>
         <div class="away-team-header">
-          <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
-          <span>{{awayTeamName}}</span>
+          <img [src]="awayTeamLogo" [routerLink]="['/team', this.gameLiveData.gameData.teams.away.id]" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
+          <span class="team-name" [routerLink]="['/team', this.gameLiveData.gameData.teams.away.id]">{{awayTeamName}}</span>
         </div>
       </div>
       <app-goal-scorers
