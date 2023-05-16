@@ -21,12 +21,8 @@ export class PlayerStatsComponent {
   @Input()
   public teamColor: string;
 
-  public get isGoalie(): boolean {
-    if (this.player) {
-      return this.player.primaryPosition.code === "G";
-    }
-    return false;
-  }
+  @Input()
+  public isGoalie: boolean;
 
   public get plusMinusColor(): string {
     if (this.stats) {

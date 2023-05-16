@@ -1,30 +1,15 @@
 <div class="main-game">
   <div class="dropdown-header" id="dropdownHeader">
-    <div class="dropdown-score-container">
-      <div class="home-team-header">
-        <span>{{homeTeamShortName}}</span>
-        <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
-      </div>
-      <div *ngIf="futureGame" class="game-day-time-container future-game">
-        <span class="game-time-label">{{gameTime}}</span>
-        <span class="game-day-label">{{gameDay}}</span>
-        <span *ngIf="isPlayoffGame" class="playoff-series-label-dropdown">{{playoffSeriesDetails}}</span>
-      </div>
-      <div *ngIf="completedGame" class="game-score">
-        <span class="game-score-label">{{gameScore}}</span>
-        <span class="completed-status-label">{{completedGameStatus}}</span>
-        <span *ngIf="isPlayoffGame" class="playoff-series-label-dropdown">{{playoffSeriesDetails}}</span>
-      </div>
-      <div *ngIf="liveGame" class="game-score">
-        <span class="game-score-label">{{gameScore}}</span>
-        <span class="live-status-label">{{liveGameStatus}}</span>
-        <span *ngIf="isIntermission" title="Intermission Countdown" class="intermission-countdown">{{intermissionTimeRemaining}}</span>
-      </div>
-      <div class="away-team-header">
-        <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
-        <span>{{awayTeamShortName}}</span>
-      </div>
-    </div>
+    <app-game-header
+        [isDropdownHeader]="true"
+        [gameLiveData]="gameLiveData"
+        [gameLinescore]="gameLinescore"
+        [gameModel]="gameModel"
+        [intermissionTimeRemaining]="intermissionTimeRemaining"
+        [homeTeamLogo]="homeTeamLogo"
+        [awayTeamLogo]="awayTeamLogo"
+        [isIntermission]="isIntermission"
+    ></app-game-header>
   </div>
   <div class="game-header" *ngIf="gameLiveData">
     <div class="league-info">
@@ -41,33 +26,18 @@
       <span class="info-label">{{tvInfo}}</span>
     </div>
     <div class="expanded-scorecard-container">
-      <div class="main-score-container">
-        <div class="home-team-header">
-          <span class="team-name" [routerLink]="['/team', this.gameLiveData.gameData.teams.home.id]">{{homeTeamName}}</span>
-          <img [src]="homeTeamLogo" [routerLink]="['/team', this.gameLiveData.gameData.teams.home.id]" alt="" class="home-team-logo" *ngIf="!isHomeLogoLoading">
-        </div>
-        <div *ngIf="futureGame" class="game-day-time-container future-game">
-          <span class="game-time-label">{{gameTime}}</span>
-          <span class="game-day-label">{{gameDay}}</span>
-          <span *ngIf="isPlayoffGame" class="playoff-series-label-main">{{playoffSeriesDetails}}</span>
-        </div>
-        <div *ngIf="completedGame" class="game-score">
-          <span class="game-score-label">{{gameScore}}</span>
-          <span class="completed-status-label">{{completedGameStatus}}</span>
-          <span *ngIf="isPlayoffGame" class="playoff-series-label-main">{{playoffSeriesDetails}}</span>
-        </div>
-        <div *ngIf="liveGame" class="game-score">
-          <span class="game-score-label">{{gameScore}}</span>
-          <span *ngIf="liveGame" class="live-status-label">{{liveGameStatus}}</span>
-          <span *ngIf="isIntermission" title="Intermission Countdown" class="intermission-countdown">{{intermissionTimeRemaining}}</span>
-        </div>
-        <div class="away-team-header">
-          <img [src]="awayTeamLogo" [routerLink]="['/team', this.gameLiveData.gameData.teams.away.id]" alt="" class="away-team-logo" *ngIf="!isAwayLogoLoading">
-          <span class="team-name" [routerLink]="['/team', this.gameLiveData.gameData.teams.away.id]">{{awayTeamName}}</span>
-        </div>
-      </div>
+      <app-game-header
+          [isDropdownHeader]="false"
+          [gameLiveData]="gameLiveData"
+          [gameLinescore]="gameLinescore"
+          [gameModel]="gameModel"
+          [intermissionTimeRemaining]="intermissionTimeRemaining"
+          [homeTeamLogo]="homeTeamLogo"
+          [awayTeamLogo]="awayTeamLogo"
+          [isIntermission]="isIntermission"
+      ></app-game-header>
       <app-goal-scorers
-          *ngIf="haveGoalsBeenSCored"
+          *ngIf="haveGoalsBeenScored"
           [numPeriods]="gameLinescore.periods.length"
           [homeTeamGoals]="homeTeamGoals"
           [awayTeamGoals]="awayTeamGoals"

@@ -15,6 +15,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {PlayerGameDialogComponent} from "@app/game/player-game-dialog/player-game-dialog.component";
 import {GamePlayerModel} from "@shared/models/game-player.model";
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Component({
   selector: 'app-game',
@@ -62,40 +63,15 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private intermissionTimerId: number;
 
+  private nextPeriod: string;
+
   private readonly nhlGameRefreshTime = 10000;
 
   public get gameInfoLabel(): string {
     if (this.gameLiveData && this.gameModel) {
-      switch (this.gameLiveData.gameData.game.type) {
-        case "P":
-          if (this.gameModel.seriesSummary) {
-            let conference = this.gameLiveData.gameData.teams.home.conference.name;
-            let status = this.gameModel.seriesSummary.seriesStatus ?
-                this.gameModel.seriesSummary.seriesStatus : "TBD";
-            switch (this.gameId.charAt(7)) {
-              case '1':
-                return conference + " Round 1: " + status;
-              case '2':
-                return conference + " Semifinals: " + status;
-              case '3':
-                return conference + " Finals: " + status;
-              case '4':
-                return "Stanley Cup Finals: " + status;
-              default:
-                return "NHL Playoffs: " + status;
-            }
-          } else {
-            let roundNum = this.gameId.charAt(7);
-            let gameNum = this.gameId.charAt(9);
-            return "NHL Playoffs Round " + roundNum + " Game " + gameNum;
-          }
-        case "PR":
-          return "NHL Preseason"
-        case "A":
-          return "NHL All-Star Game"
-        default:
-          return "NHL Regular Season"
-      }
+      return NhlGameInfoUtils.getNhlGameDescription(this.gameLiveData.gameData.game.type, Number(this.gameId.charAt(7)),
+          this.gameLiveData.gameData.teams.home.conference.name, this.gameModel.seriesSummary,
+          this.gameLinescore.teams.home.team.triCode + " vs " + this.gameLinescore.teams.away.team.triCode);
     }
     return "";
   }
@@ -107,60 +83,18 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "";
   }
 
-  public get liveGame(): boolean {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status.abstractGameState === "Live"
-    }
-    return false;
-  }
-
   public get completedGame(): boolean {
     if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status.abstractGameState === "Final";
+      return NhlGameInfoUtils.isCompletedGame(this.gameLiveData.gameData.status);
     }
     return false;
   }
 
   public get futureGame(): boolean {
     if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status.abstractGameState === "Preview";
+      return NhlGameInfoUtils.isFutureGame(this.gameLiveData.gameData.status);
     }
     return false;
-  }
-
-  public get homeTeamName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.home.name;
-    }
-    return "N/A";
-  }
-
-  public get awayTeamName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.away.name;
-    }
-    return "N/A";
-  }
-
-  public get homeTeamShortName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.home.teamName;
-    }
-    return "N/A";
-  }
-
-  public get awayTeamShortName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.away.teamName;
-    }
-    return "N/A";
-  }
-
-  public get gameTime(): string {
-    if (this.gameLiveData) {
-      return dayjs(this.gameLiveData.gameData.datetime.dateTime).format("h:mm A");
-    }
-    return "N/A";
   }
 
   public get gameDay(): string {
@@ -170,60 +104,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "N/A";
   }
 
-  public get playoffSeriesDetails(): string {
-    if (this.gameModel) {
-      if (this.gameModel.seriesSummary.gameNumber === 1 || this.gameModel.seriesSummary.seriesStatusShort.length === 0) {
-        return "Series (0-0)";
-      } else {
-        return this.gameModel.seriesSummary.seriesStatusShort;
-      }
-    }
-    return "";
-  }
-
-  public get isPlayoffGame(): boolean {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.game.type === "P";
-    }
-    return false;
-  }
-
-  public get gameScore(): string {
-    if (this.gameLinescore) {
-      return this.gameLinescore.teams.home.goals + " - " + this.gameLinescore.teams.away.goals;
-    }
-    return "N/A"
-  }
-
-  public get completedGameStatus(): string {
-    if (this.gameLinescore) {
-      if (this.gameLinescore.currentPeriod === 5 && this.gameLinescore.hasShootout) {
-        return "Final SO";
-      } else if (this.gameLinescore.currentPeriod === 4 && !this.gameLinescore.hasShootout) {
-        return "Final OT";
-      } else if (this.gameLinescore.currentPeriod > 4) {
-        return "Final " + (this.gameLinescore.currentPeriod - 3) + "OT";
-      } else {
-        return "Final";
-      }
-    }
-    return "N/A"
-  }
-
-  public get liveGameStatus(): string {
-    if (this.gameLinescore) {
-      if (this.gameLinescore.hasShootout) {
-        return "SO";
-      } else if (this.gameLinescore.currentPeriodTimeRemaining === "END") {
-        return "End " + this.gameLinescore.currentPeriodOrdinal;
-      } else {
-        return this.gameLinescore.currentPeriodOrdinal + " - " + this.formatTimeRemaining();
-      }
-    }
-    return "N/A"
-  }
-
-  public get haveGoalsBeenSCored(): boolean {
+  public get haveGoalsBeenScored(): boolean {
     if (this.gameBoxscore) {
       return this.gameBoxscore.teams.home.teamStats.teamSkaterStats.goals > 0 ||
           this.gameBoxscore.teams.away.teamStats.teamSkaterStats.goals > 0;
@@ -266,20 +147,9 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public get intermissionTimeRemaining(): string {
     if (this.intermissionTimeRemainingMs) {
-      let nextPeriod: string;
-
-      if (this.gameLinescore.currentPeriod === 1) {
-        nextPeriod = "2nd";
-      } else if (this.gameLinescore.currentPeriod === 2) {
-        nextPeriod = "3rd";
-      } else if (this.gameLinescore.currentPeriod === 3) {
-        nextPeriod = "OT";
-      } else {
-        nextPeriod = (this.gameLinescore.currentPeriod - 3) + "OT";
-      }
       let pad = (n, z = 2) => ('00' + n).slice(-z);
       return ((this.intermissionTimeRemainingMs%3.6e6)/6e4 | 0) + ':' + pad((this.intermissionTimeRemainingMs%6e4)/1000 | 0)
-          + " till " + nextPeriod;
+          + " till " + this.nextPeriod;
     }
     return "";
   }
@@ -386,6 +256,12 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Starts an intermission countdown timer if the current play or the previous play are of type 'PERIOD_END'.
+   * Stops the existing intermission time if the current play is of type 'PERIOD_START' or 'GAME_END'.
+   * 1st and 2nd intermissions are about 18.5 minutes long. Intermissions between playoff overtimes are about 15.5
+   * minutes long. Intermission before regular season overtime is about 3 minutes long.
+   */
   private calculateIntermission() {
     let allPlays = this.gameLiveData.liveData.plays.allPlays;
     if (this.gameLiveData.liveData.plays.allPlays.length < 3) {
@@ -405,8 +281,28 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       this.stopNhlIntermissionTimer();
     }
     if (this.isIntermission && !this.intermissionTimerId) {
+      switch (this.gameLinescore.currentPeriod) {
+        case 1:
+          this.nextPeriod = "2nd";
+          break;
+        case 2:
+          this.nextPeriod = "3rd";
+          break;
+        case 3:
+          this.nextPeriod = "OT";
+          break;
+        default:
+          this.nextPeriod = (this.gameLinescore.currentPeriod - 3) + "OT";
+          break;
+      }
+      let intermissionTimeMs = 18.5 * 60 * 1000;
+      if (this.nextPeriod === "OT" && this.gameModel.gameType !== "P") {
+        intermissionTimeMs =  3 * 60 * 1000;
+      } else if (this.nextPeriod.includes("OT") && this.gameModel.gameType === "P") {
+        intermissionTimeMs =  15.5 * 60 * 1000;
+      }
       this.intermissionTimerId = setInterval(() => {
-        this.calculateIntermissionTimer();
+        this.calculateIntermissionTimer(intermissionTimeMs);
       }, 1000);
     }
   }
@@ -418,9 +314,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private calculateIntermissionTimer(): void {
+  private calculateIntermissionTimer(intermissionTimeMs: number): void {
     if (this.isIntermission) {
-      let intermissionTimeMs = 18.5 * 60 * 1000;
       let periodEndTime = dayjs(this.periodEndEvent.about.dateTime);
       let currentTime = dayjs();
       let elapsedTimeMs = currentTime.diff(periodEndTime, 'ms');
@@ -469,14 +364,6 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       reader.readAsDataURL(data);
       this.isAwayLogoLoading = false;
     });
-  }
-
-  private formatTimeRemaining(): string {
-    if (this.gameLinescore.currentPeriodTimeRemaining.startsWith("0")) {
-      return this.gameLinescore.currentPeriodTimeRemaining.substring(1);
-    } else {
-      return this.gameLinescore.currentPeriodTimeRemaining;
-    }
   }
 
   @HostListener('document:scroll')

@@ -5,6 +5,7 @@ import {NhlImageService} from "@shared/services/nhl-image.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Component({
   selector: 'app-scorecard',
@@ -36,35 +37,35 @@ export class ScorecardComponent implements OnChanges {
 
   public get liveGame(): boolean {
     if (this.game) {
-      return this.game.status.abstractGameState === "Live"
+      return NhlGameInfoUtils.isLiveGame(this.game.status);
     }
     return false;
   }
 
   public get completedGame(): boolean {
     if (this.game) {
-      return this.game.status.abstractGameState === "Final"
+      return NhlGameInfoUtils.isCompletedGame(this.game.status);
     }
     return false;
   }
 
   public get futureGame(): boolean {
     if (this.game) {
-      return this.game.status.abstractGameState === "Preview"
+      return NhlGameInfoUtils.isFutureGame(this.game.status);
     }
     return false;
   }
 
   public get homeTeamName(): string {
     if (this.game) {
-      return this.game.teams.home.team.name
+      return this.game.teams.home.team.name;
     }
     return "N/A"
   }
 
   public get awayTeamName(): string {
     if (this.game) {
-      return this.game.teams.away.team.name
+      return this.game.teams.away.team.name;
     }
     return "N/A"
   }
@@ -77,8 +78,8 @@ export class ScorecardComponent implements OnChanges {
   }
 
   public get playoffSeriesDetails(): string {
-    if (this.game && this.game.seriesSummary && this.game.seriesSummary.seriesStatusShort) {
-      if (this.game.seriesSummary.gameNumber === 1 || this.game.seriesSummary.seriesStatusShort.length === 0) {
+    if (this.game && this.game.seriesSummary) {
+      if (this.game.seriesSummary.gameNumber === 1 || !this.game.seriesSummary.seriesStatusShort) {
         return "(0-0)";
       } else {
         return this.game.seriesSummary.seriesStatusShort;

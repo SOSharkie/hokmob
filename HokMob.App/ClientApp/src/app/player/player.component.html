@@ -42,6 +42,7 @@
           [player]="player"
           [stats]="currentPlayoffStats"
           [teamColor]="teamColor"
+          [isGoalie]="isGoalie"
       ></app-player-stats>
     </div>
     <div *ngIf="currentYearStats" class="regular-season-stats">
@@ -50,6 +51,7 @@
           [player]="player"
           [stats]="currentYearStats"
           [teamColor]="teamColor"
+          [isGoalie]="isGoalie"
       ></app-player-stats>
     </div>
   </div>
@@ -61,6 +63,7 @@
           [recentGames]="recentGames"
           [teamId]="player.currentTeam.id"
           [teamColor]="teamColor"
+          [isGoalie]="isGoalie"
       ></app-recent-player-games>
     </div>
     <div class="career-totals">

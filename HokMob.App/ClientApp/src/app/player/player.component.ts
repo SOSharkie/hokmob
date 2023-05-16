@@ -56,6 +56,13 @@ export class PlayerComponent implements OnInit {
     return "Stats";
   }
 
+  public get isGoalie(): boolean {
+    if (this.player) {
+      return this.player.primaryPosition.code === "G";
+    }
+    return false;
+  }
+
   constructor(private route: ActivatedRoute,
               private router: Router,
               private routerExtensionService: RouterExtensionService,
