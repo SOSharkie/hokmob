@@ -17,7 +17,8 @@ export class PlayoffSeriesDialogComponent implements OnInit {
     if (this.seriesData) {
       let conference = this.seriesData.conference.name === "Eastern" ? "East" : "West";
       let status = this.seriesData.currentGame.seriesSummary.seriesStatus ?
-          this.seriesData.currentGame.seriesSummary.seriesStatus : "TBD";
+          this.seriesData.currentGame.seriesSummary.seriesStatus : this.seriesData.names.matchupShortName ?
+              this.seriesData.names.matchupShortName : "TBD";
       switch (this.seriesData.round.number) {
         case 1:
           return conference + " Round 1: " + status;
