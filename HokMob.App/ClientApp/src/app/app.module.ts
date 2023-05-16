@@ -42,6 +42,9 @@ import { PlayerStatsComponent } from './player/player-stats/player-stats.compone
 import { RecentPlayerGamesComponent } from './player/recent-player-games/recent-player-games.component';
 import { PlayerBioComponent } from './player/player-bio/player-bio.component';
 import { TeamComponent } from './team/team.component';
+import { GameHeaderComponent } from './game/dropdown-header/game-header.component';
+import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
+import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe";
 
 @NgModule({
   declarations: [
@@ -73,7 +76,10 @@ import { TeamComponent } from './team/team.component';
     PlayerStatsComponent,
     RecentPlayerGamesComponent,
     PlayerBioComponent,
-    TeamComponent
+    TeamComponent,
+    GameHeaderComponent,
+    SavePercentagePipe,
+    GoalsAgainstAveragePipe
   ],
   imports: [
     BrowserModule,

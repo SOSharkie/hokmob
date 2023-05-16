@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from "@angular/core";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Component({
   selector: 'app-event-timeline',
@@ -19,7 +20,7 @@ export class EventTimelineComponent implements OnChanges {
 
   public get isGameFinal(): boolean {
     if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status.abstractGameState === 'Final'
+      return NhlGameInfoUtils.isLiveGame(this.gameLiveData.gameData.status);
     }
     return false;
   }

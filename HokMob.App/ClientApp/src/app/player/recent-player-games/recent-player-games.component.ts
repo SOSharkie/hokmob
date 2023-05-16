@@ -28,6 +28,9 @@ export class RecentPlayerGamesComponent implements OnChanges {
   @Input()
   public teamColor: string;
 
+  @Input()
+  public isGoalie: boolean;
+
   public teamLogos: any[];
 
   public imagesLoaded: boolean = false;
@@ -66,6 +69,10 @@ export class RecentPlayerGamesComponent implements OnChanges {
       }
     }
     return "";
+  }
+
+  public getRecentGameGoalsAgainstAverage(gameStats: NhlPlayerStatsModel): number {
+    return ((gameStats.goalsAgainst * 60) / Number(gameStats.timeOnIce.replace(":", ".")));
   }
 
   public ngOnChanges(changes: SimpleChanges): void {

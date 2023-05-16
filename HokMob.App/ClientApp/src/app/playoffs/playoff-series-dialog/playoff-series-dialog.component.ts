@@ -3,6 +3,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlPlayoffSeriesModel} from "@shared/models/nhl-playoffs/nhl-playoff-series.model";
 import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 
 @Component({
@@ -15,21 +16,8 @@ export class PlayoffSeriesDialogComponent implements OnInit {
 
   public get seriesTitle(): string {
     if (this.seriesData) {
-      let conference = this.seriesData.conference.name === "Eastern" ? "East" : "West";
-      let status = this.seriesData.currentGame.seriesSummary.seriesStatus ?
-          this.seriesData.currentGame.seriesSummary.seriesStatus : "TBD";
-      switch (this.seriesData.round.number) {
-        case 1:
-          return conference + " Round 1: " + status;
-        case 2:
-          return conference + " Semifinals: " + status;
-        case 3:
-          return conference + " Finals: " + status;
-        case 4:
-          return "Stanley Cup Finals: " + status;
-        default:
-          return "NHL Playoffs: " + status;
-      }
+      return NhlGameInfoUtils.getNhlGameDescription("P", this.seriesData.round.number, this.seriesData.conference.name,
+          this.seriesData.currentGame.seriesSummary, this.seriesData.names.matchupShortName);
     }
     return "NHL Playoffs";
   }
@@ -53,7 +41,7 @@ export class PlayoffSeriesDialogComponent implements OnInit {
         });
       });
     } else {
-      if (this.seriesData.seriesCode === "L" || this.seriesData.seriesCode === "K" || this.seriesData.seriesCode === "N") {
+      if (['E', 'F', 'G', 'H', 'L', 'K', 'N'].includes(this.seriesData.seriesCode)) {
         this.seriesData.conference.name = "Western";
       } else {
         this.seriesData.conference.name = "Eastern";
