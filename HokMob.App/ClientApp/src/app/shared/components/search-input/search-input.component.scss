@@ -16,7 +16,6 @@
 
   .search-input {
     height: 50px;
-    padding-left: $spacing-huge;
     border: none;
     border-radius: 25px;
     background-color: $black-03;
@@ -55,6 +54,7 @@
 
     .search-input {
       width: 300px;
+      padding-left: $spacing-huge;
     }
     .search-input::placeholder {
       font-size: larger;
@@ -66,6 +66,7 @@
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   .search-input {
     width: 100%;
+    padding-left: $spacing-small;
   }
   .search-input::placeholder {
     font-size: small;
