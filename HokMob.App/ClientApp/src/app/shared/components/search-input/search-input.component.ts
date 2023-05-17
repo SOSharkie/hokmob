@@ -17,6 +17,10 @@ export class SearchInputComponent implements OnInit {
 
   public filterResults: SearchResultModel[];
 
+  public typingTimer;
+
+  public doneTypingInterval = 500;
+
   constructor(private nhlSearchService: NhlSearchService) {
   }
 
@@ -30,7 +34,17 @@ export class SearchInputComponent implements OnInit {
     });
   }
 
-  public searchNew($event: Event) {
+  /**
+   * Wait half a second before searching to make sure user is done typing.
+   */
+  public onKeyUp() {
+    clearTimeout(this.typingTimer);
+    if (this.searchValue && this.searchValue.length > 1) {
+      this.typingTimer = setTimeout(() => this.searchNew(), this.doneTypingInterval);
+    }
+  }
+
+  public searchNew() {
     this.filterResults = this.searchResults.filter(value => value.displayValue.toLowerCase().includes(this.searchValue.toLowerCase()));
   }
 }

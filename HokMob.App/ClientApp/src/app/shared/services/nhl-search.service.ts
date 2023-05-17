@@ -95,6 +95,7 @@ export class NhlSearchService {
         searchResult.playerLastName = person.person.lastName;
         searchResult.playerFirstName = person.person.firstName;
         searchResult.displayValue = person.person.fullName;
+        searchResult.link = "player/" + searchResult.playerId;
         allPlayers.push(searchResult);
       });
     });
@@ -109,6 +110,7 @@ export class NhlSearchService {
       searchResult.teamId = team.id.toString();
       searchResult.team = team;
       searchResult.displayValue = team.name;
+      searchResult.link = "team/" + searchResult.teamId;
       allTeams.push(searchResult);
     });
     return allTeams;
