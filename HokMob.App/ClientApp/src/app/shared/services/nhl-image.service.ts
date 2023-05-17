@@ -25,8 +25,17 @@ export class NhlImageService {
     let url = this.nhlPlayerHeadShotUrl + playerId + ".jpg";
 
     return new Promise((resolve, reject) => {
-      return this.http.get(url, { responseType: 'blob' }).subscribe(response => {
-        resolve(response);
+      return this.http.get(url, { responseType: 'blob' }).subscribe({
+        next: (response) => {
+          resolve(response);
+        },
+        error: (error) => {
+          if (error.status === 403) {
+            console.log("Image for playerId " + playerId + " could not be found");
+          } else {
+            console.error(error);
+          }
+        }
       });
     });
   }

@@ -1,0 +1,27 @@
+@import "variables";
+
+.search-result-container {
+  display: flex;
+  align-items: center;
+
+  .player-headshot {
+    height: 30px;
+    border-radius: 50%;
+  }
+
+  .team-logo {
+    height: 25px;
+    margin-left: -6px;
+  }
+
+  .result-text {
+    margin-left: $spacing-large;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .result-text {
+    font-size: smaller;
+  }
+}

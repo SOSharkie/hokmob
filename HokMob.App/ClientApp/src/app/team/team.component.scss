@@ -6,7 +6,7 @@
 
   .team-header {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     height: 100px;
     margin: $spacing-medium $spacing-medium $spacing-x-small $spacing-medium;
     background-color: $black-02;
@@ -18,51 +18,42 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      width: 80px;
       height: 100%;
-      margin-left: $spacing-x-large;
-    }
 
-    .games-back-button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: large;
-      color: white;
+      .games-back-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
 
-      .back-icon {
-        height: 25px;
-        width: 25px;
-        border-radius: 50%;
-        background-color: $gray-02;
-        margin-top: $spacing-x-large;
-        margin-right: $spacing-large;
+        .back-icon {
+          border-radius: 50%;
+          background-color: $gray-02;
+          margin-top: $spacing-x-large;
+        }
+
+        .games-label {
+          margin-top: $spacing-x-large;
+        }
       }
 
-      .games-label {
-        margin-top: $spacing-x-large;
-      }
-    }
+      .games-back-button:hover {
+        cursor: pointer;
 
-    .games-back-button:hover {
-      cursor: pointer;
+        .back-icon {
+          background-color: white;
+          color: $black-01;
+        }
 
-      .back-icon {
-        background-color: white;
-        color: $black-01;
-      }
-
-      .games-label {
-        text-decoration: underline;
+        .games-label {
+          text-decoration: underline;
+        }
       }
     }
 
     .team-logo-container {
-      margin-left: $spacing-large;
-
       .team-logo {
         position: relative;
-        height: 85px;
         z-index: 4;
       }
     }
@@ -70,13 +61,9 @@
     .team-info {
       display: flex;
       flex-direction: column;
-      margin-left: $spacing-large;
-      margin-bottom: $spacing-medium;
-      padding-right: $spacing-medium;
 
       .team-name {
         color: white;
-        font-size: x-large;
       }
 
       .team-division {
@@ -85,7 +72,6 @@
         margin-top: $spacing-medium;
 
         .team-division-label {
-          font-size: larger;
           color: $gray-03;
         }
       }
@@ -98,5 +84,89 @@
     color: white;
     font-size: x-large;
     margin-top: $spacing-xx-large;
+  }
+}
+
+// Small Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .back-container {
+    width: 80px;
+    margin-left: $spacing-x-large;
+
+    .games-back-button {
+      font-size: large;
+
+      .back-icon {
+        height: 25px;
+        width: 25px;
+        margin-right: $spacing-large;
+      }
+    }
+  }
+  .team-logo-container {
+    margin-left: $spacing-large;
+
+    .team-logo {
+      height: 85px;
+    }
+  }
+  .team-info {
+    margin-left: $spacing-large;
+    margin-bottom: $spacing-medium;
+    padding-right: $spacing-medium;
+
+    .team-name {
+      font-size: x-large;
+    }
+
+    .team-division {
+      .team-division-label {
+        font-size: large;
+      }
+    }
+  }
+}
+
+// Mobile Display
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .back-container {
+    width: 60px;
+    margin-left: $spacing-large;
+
+    .games-back-button {
+      font-size: medium;
+
+      .back-icon {
+        height: 20px;
+        width: 20px;
+        margin-right: $spacing-large;
+
+        .material-icons {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+  .team-logo-container {
+    margin-left: $spacing-medium;
+
+    .team-logo {
+      height: 75px;
+    }
+  }
+  .team-info {
+    margin-left: $spacing-medium;
+    margin-bottom: $spacing-small;
+    padding-right: $spacing-small;
+
+    .team-name {
+      font-size: larger;
+    }
+
+    .team-division {
+      .team-division-label {
+        font-size: medium;
+      }
+    }
   }
 }
