@@ -1,7 +1,7 @@
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {NhlSearchService} from "@shared/services/nhl-search.service";
-import {Observable, of} from "rxjs";
 import {SearchResultModel} from "@shared/models/search-result.model";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
   selector: 'app-search-input',
@@ -13,33 +13,24 @@ export class SearchInputComponent implements OnInit {
 
   public searchValue: string = "";
 
-  public searchResults: SearchResultModel[] = [];
+  public searchResults: SearchResultModel[];
 
-  public filterResults: Observable<SearchResultModel[]> = of(this.searchResults);
+  public filterResults: SearchResultModel[];
 
   constructor(private nhlSearchService: NhlSearchService) {
   }
 
   public ngOnInit(): void {
-
-  }
-
-  public search($event: Event) {
-    this.nhlSearchService.searchNhlTeamsAndPlayers(this.searchValue).then(results => {
-      if (this.newResultsHasNewItems(results)) {
-        this.searchResults = results;
-        this.filterResults = of(this.searchResults);
-      }
+    this.searchResults = [];
+    this.nhlSearchService.getNhlTeams().then(result => {
+      this.searchResults = this.searchResults.concat(result);
+    });
+    this.nhlSearchService.getNhlPlayers(DateTimeUtils.getCurrentNhlSeason()).then(result => {
+      this.searchResults = this.searchResults.concat(result);
     });
   }
 
-  private newResultsHasNewItems(newResults: SearchResultModel[]) {
-    let hasNewItems = false;
-    newResults.forEach(result => {
-      if(!this.searchResults.includes(result)) {
-        hasNewItems = true;
-      }
-    });
-    return hasNewItems;
+  public searchNew($event: Event) {
+    this.filterResults = this.searchResults.filter(value => value.displayValue.toLowerCase().includes(this.searchValue.toLowerCase()));
   }
 }
