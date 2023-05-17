@@ -1,4 +1,16 @@
 <div class="search-container">
-  <mat-icon fontIcon="search"></mat-icon>
-  <input type="search" placeholder="Teams, players, and more" class="search-input">
+  <mat-icon class="search-icon" fontIcon="search"></mat-icon>
+  <input type="search"
+         placeholder="Teams, players, and more"
+         class="search-input"
+         [(ngModel)]="searchValue"
+         (keyup)="search($event)"
+         [matAutocomplete]="auto">
+  <mat-autocomplete #auto="matAutocomplete">
+    <mat-option *ngFor="let result of filterResults | async" [value]="result.displayValue">
+      <app-search-result
+          [searchResult]="result"
+      ></app-search-result>
+    </mat-option>
+  </mat-autocomplete>
 </div>

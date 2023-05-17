@@ -71,6 +71,27 @@ export class NhlStatsService {
     });
   }
 
+  /**
+   *  Gets a given NHL team.
+   *
+   * @param teamId - The ID of the team to get stats for.
+   */
+  public getNhlTeam(teamId: string): Promise<NhlTeamModel> {
+    let url = this.teamStatsUrl + teamId;
+
+    return new Promise((resolve, reject) => {
+      return this.http.get<any>(url).subscribe({
+        next: (response) => {
+          resolve(response.teams[0]);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
 
   /**
    *  Gets stats for a given NHL team.

@@ -10,11 +10,15 @@
   border: none;
   border-radius: 25px;
 
+  .search-icon {
+    position: absolute;
+  }
+
   .search-input {
     height: 50px;
+    padding-left: $spacing-huge;
     border: none;
     border-radius: 25px;
-    margin-left: $spacing-medium;
     background-color: $black-03;
     color: white;
     font-size: medium;
@@ -29,13 +33,23 @@
   }
 }
 
-.mat-datepicker-content {
+.mdc-menu-surface.mat-mdc-autocomplete-panel.mdc-menu-surface--open {
+  max-height: 352px;
+  margin-top: $spacing-large;
   background-color: $black-04;
+  border-radius: 25px !important;
+}
+
+.mdc-list-item--selected .mdc-list-item__primary-text {
+  color: $green-01 !important;
+}
+
+.mat-mdc-option .mat-pseudo-checkbox-minimal {
+  display: none;
 }
 
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
-
   .search-container {
     justify-content: space-between;
 
@@ -50,13 +64,13 @@
 
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-
   .search-input {
     width: 100%;
   }
-
   .search-input::placeholder {
-    color: $gray-02;
     font-size: small;
+  }
+  .search-icon {
+    display: none;
   }
 }

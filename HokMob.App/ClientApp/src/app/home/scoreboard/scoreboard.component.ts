@@ -140,8 +140,6 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
               existingGame.status = updatedGame.status;
             }
           });
-        } else {
-          console.log("Problem updating NHL games");
         }
       });
     }, this.nhlGameRefreshTime);

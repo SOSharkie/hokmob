@@ -9,7 +9,7 @@ import { ScoreboardComponent } from '@home/scoreboard/scoreboard.component';
 import { HeaderComponent } from '@header/header.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
 import { ScorecardComponent } from '@shared/components/scorecard/scorecard.component';
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import { MaterialModule } from '@shared/modules/material.module';
 import {NhlImageService} from "@shared/services/nhl-image.service";
@@ -45,6 +45,9 @@ import { TeamComponent } from './team/team.component';
 import { GameHeaderComponent } from './game/dropdown-header/game-header.component';
 import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
 import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe";
+import {NhlSearchService} from "@shared/services/nhl-search.service";
+import {MatAutocompleteModule} from "@angular/material/autocomplete";
+import { SearchResultComponent } from './shared/components/search-result/search-result.component';
 
 @NgModule({
   declarations: [
@@ -79,7 +82,8 @@ import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe"
     TeamComponent,
     GameHeaderComponent,
     SavePercentagePipe,
-    GoalsAgainstAveragePipe
+    GoalsAgainstAveragePipe,
+    SearchResultComponent
   ],
   imports: [
     BrowserModule,
@@ -89,7 +93,9 @@ import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe"
     FormsModule,
     MaterialModule,
     NgOptimizedImage,
-    MatDialogModule
+    MatDialogModule,
+    MatAutocompleteModule,
+    ReactiveFormsModule
   ],
   providers: [
     NhlGameService,
@@ -97,7 +103,8 @@ import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe"
     NhlPlayoffService,
     BetaNhlStatsService,
     NhlStatsService,
-    RouterExtensionService
+    RouterExtensionService,
+      NhlSearchService
   ],
   bootstrap: [AppComponent]
 })
