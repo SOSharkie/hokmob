@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {SearchResultModel} from "@shared/models/search-result.model";
-import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlStatTeamModel} from "@shared/models/nhl-stats/nhl-stat-team.model";
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
+import {SearchResultTypeEnum} from "@shared/enums/search-result-type.enum";
 
 
 @Injectable()
@@ -90,7 +90,7 @@ export class NhlSearchService {
     teams.forEach(team => {
       team.roster.roster.forEach(person => {
         let searchResult = new SearchResultModel();
-        searchResult.isPlayer = true;
+        searchResult.resultType = SearchResultTypeEnum.PLAYER;
         searchResult.playerId = person.person.id.toString();
         searchResult.playerLastName = person.person.lastName;
         searchResult.playerFirstName = person.person.firstName;
@@ -106,7 +106,7 @@ export class NhlSearchService {
     let allTeams: SearchResultModel[] = [];
     teams.forEach(team => {
       let searchResult = new SearchResultModel();
-      searchResult.isPlayer = false;
+      searchResult.resultType = SearchResultTypeEnum.TEAM;
       searchResult.teamId = team.id.toString();
       searchResult.team = team;
       searchResult.displayValue = team.name;

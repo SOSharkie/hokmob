@@ -19,7 +19,9 @@ export class SearchInputComponent implements OnInit {
 
   public typingTimer;
 
-  public doneTypingInterval = 500;
+  public readonly doneTypingInterval = 500;
+
+  public readonly maxSearchItems = 10;
 
   constructor(private nhlSearchService: NhlSearchService) {
   }
@@ -35,16 +37,19 @@ export class SearchInputComponent implements OnInit {
   }
 
   /**
-   * Wait half a second before searching to make sure user is done typing.
+   * Wait 500ms before searching to make sure user is done typing.
    */
   public onKeyUp() {
     clearTimeout(this.typingTimer);
-    if (this.searchValue && this.searchValue.length > 1) {
-      this.typingTimer = setTimeout(() => this.searchNew(), this.doneTypingInterval);
-    }
+    this.typingTimer = setTimeout(() => this.searchNew(), this.doneTypingInterval);
   }
 
   public searchNew() {
-    this.filterResults = this.searchResults.filter(value => value.displayValue.toLowerCase().includes(this.searchValue.toLowerCase()));
+    if (this.searchValue && this.searchValue.length > 1) {
+      this.filterResults = this.searchResults.filter(value => value.displayValue.toLowerCase().includes(this.searchValue.toLowerCase()))
+          .slice(0, this.maxSearchItems);
+    } else {
+      this.filterResults = [];
+    }
   }
 }

@@ -3,6 +3,7 @@
   <input type="search"
          placeholder="Teams, players, and more"
          class="search-input"
+         spellcheck="false"
          [(ngModel)]="searchValue"
          (keyup)="onKeyUp()"
          [matAutocomplete]="auto">
