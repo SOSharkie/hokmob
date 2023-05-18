@@ -1,7 +1,7 @@
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 import {NhlLeagueRecordModel} from "@shared/models/nhl-general/nhl-league-record.model";
 
-export class NhlRecordModel {
+export class NhlTeamRecordModel {
 
   public team: NhlTeamModel;
 

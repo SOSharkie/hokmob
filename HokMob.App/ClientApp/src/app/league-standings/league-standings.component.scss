@@ -1,0 +1,36 @@
+@import "variables";
+
+.league-standings-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: $spacing-medium;
+
+  app-standings {
+    width: 100%;
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $small-display-breakpoint) {
+  .main-standings {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 1200px;
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $tiny-display-breakpoint) and (max-width: $small-display-breakpoint){
+  .main-standings {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 950px;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $tiny-display-breakpoint) {
+
+}

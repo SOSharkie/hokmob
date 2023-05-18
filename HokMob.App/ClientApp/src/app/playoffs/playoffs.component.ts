@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
+import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlPlayoffModel} from "@shared/models/nhl-playoffs/nhl-playoff.model";
 import {NhlPlayoffMatchupTeamModel} from "@shared/models/nhl-playoffs/nhl-playoff-matchup-team.model";
 import {NhlSeriesSummaryModel} from "@shared/models/nhl-playoffs/nhl-series-summary.model";
@@ -14,7 +14,7 @@ export class PlayoffsComponent implements OnInit {
 
   public playoffsData: NhlPlayoffModel;
 
-  constructor(private nhlPlayoffService: NhlPlayoffService) {
+  constructor(private nhlPlayoffService: NhlStandingAndPlayoffService) {
   }
 
   public ngOnInit(): void {

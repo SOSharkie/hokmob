@@ -1,5 +1,6 @@
 import {NhlSeriesSummaryModel} from "@shared/models/nhl-playoffs/nhl-series-summary.model";
 import {NhlPlayoffMatchupTeamModel} from "@shared/models/nhl-playoffs/nhl-playoff-matchup-team.model";
+import {NhlConferenceModel} from "@shared/models/nhl-general/nhl-conference.model";
 
 export class NhlPlayoffSeriesModel {
 
@@ -19,11 +20,7 @@ export class NhlPlayoffSeriesModel {
     seriesSummary: NhlSeriesSummaryModel;
   }
 
-  public conference: {
-    id: number,
-    name: string,
-    link: string
-  }
+  public conference: NhlConferenceModel;
 
   public round: {
     number: number

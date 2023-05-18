@@ -91,6 +91,21 @@
   margin-top: $spacing-huge;
 }
 
+.mat-calendar-body-cell:hover {
+  .mat-calendar-body-cell-content {
+    background-color: $gray-02 !important;
+  }
+}
+
+.mat-calendar-body-cell-content:hover {
+  background-color: $gray-02 !important;
+}
+
+.mat-calendar-body-selected {
+  background-color: white !important;
+  color: $black-01 !important;
+}
+
 // Desktop Styling
 @media only screen and (min-width: $small-display-breakpoint ) {
   .day-select-container {

@@ -12,6 +12,9 @@ import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import * as dayjs from "dayjs";
 import {NhlTeamExtendedModel} from "@shared/models/nhl-general/nhl-team-extended.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
+import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
+import {NhlStandingsModel} from "@shared/models/nhl-general/nhl-standings.model";
 
 @Component({
   selector: 'app-team',
@@ -32,6 +35,8 @@ export class TeamComponent implements OnInit {
 
   public recentGames: NhlGameModel[];
 
+  public standings: NhlStandingsModel[];
+
   private readonly nhlLeagueId: number = 133;
 
   public get backButtonLabel(): string {
@@ -50,17 +55,26 @@ export class TeamComponent implements OnInit {
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
               private nhlImageService: NhlImageService,
+              private nhlStandingAndPlayoffService: NhlStandingAndPlayoffService,
               private nhlStatsService: NhlStatsService) {}
 
   public ngOnInit(): void {
     this.previousUrl = this.routerExtensionService.getPreviousUrl();
     this.route.params.subscribe((params: Params) => {
       this.teamId = params['id'];
-      this.nhlStatsService.getNhlTeamStats(this.teamId, DateTimeUtils.getCurrentNhlSeason()).then(result => {
-        console.log(result);
-        this.teamData = result;
+      this.nhlStatsService.getNhlTeamStats(this.teamId, DateTimeUtils.getCurrentNhlSeason()).then(teamData => {
+        console.log(teamData);
+        this.teamData = teamData;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.teamData.id);
         this.loadImages();
+        this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), NhlStandingsTypeEnum.BY_CONFERENCE).then(standings => {
+          if (this.teamData.conference.id === 5) {
+            this.standings = standings.reverse();
+          } else {
+            this.standings = standings;
+          }
+          console.log(standings);
+        });
       });
     });
   }
@@ -94,4 +108,5 @@ export class TeamComponent implements OnInit {
     }
   }
 
+  protected readonly NhlStandingsTypeEnum = NhlStandingsTypeEnum;
 }

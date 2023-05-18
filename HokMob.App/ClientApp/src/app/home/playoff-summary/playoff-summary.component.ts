@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {NhlPlayoffModel} from "@shared/models/nhl-playoffs/nhl-playoff.model";
-import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
+import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlPlayoffSeriesModel} from "@shared/models/nhl-playoffs/nhl-playoff-series.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
@@ -27,7 +27,7 @@ export class PlayoffSummaryComponent implements OnInit {
     return "Playoffs"
   }
 
-  constructor(private nhlPlayoffService: NhlPlayoffService) {
+  constructor(private nhlPlayoffService: NhlStandingAndPlayoffService) {
   }
 
   public ngOnInit(): void {

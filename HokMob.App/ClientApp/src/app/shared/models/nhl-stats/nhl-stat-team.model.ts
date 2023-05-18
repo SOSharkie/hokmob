@@ -1,4 +1,6 @@
 import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
+import {NhlConferenceModel} from "@shared/models/nhl-general/nhl-conference.model";
+import {NhlDivisionModel} from "@shared/models/nhl-general/nhl-division.model";
 
 export class NhlStatTeamModel {
 
@@ -14,9 +16,9 @@ export class NhlStatTeamModel {
 
   public teamName: string;
 
-  public conference: any;
+  public conference: NhlConferenceModel;
 
-  public division: any;
+  public division: NhlDivisionModel;
 
   public firstYearOfPlay: string;
 

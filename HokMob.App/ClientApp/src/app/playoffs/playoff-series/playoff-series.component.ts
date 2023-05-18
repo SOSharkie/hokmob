@@ -2,7 +2,7 @@ import {Component, Input, OnChanges, SimpleChanges, ViewEncapsulation} from '@an
 import {NhlPlayoffSeriesModel} from "@shared/models/nhl-playoffs/nhl-playoff-series.model";
 import {NhlImageService} from "@shared/services/nhl-image.service";
 import * as dayjs from "dayjs";
-import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
+import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {MatDialog} from "@angular/material/dialog";
 import {PlayoffSeriesDialogComponent} from "@app/playoffs/playoff-series-dialog/playoff-series-dialog.component";
@@ -82,7 +82,7 @@ export class PlayoffSeriesComponent implements OnChanges {
 
   constructor(public seriesDialog: MatDialog,
               private nhlLogoService: NhlImageService,
-              private nhlPlayoffService: NhlPlayoffService) {
+              private nhlPlayoffService: NhlStandingAndPlayoffService) {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {

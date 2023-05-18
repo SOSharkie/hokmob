@@ -4,11 +4,14 @@ import {HttpParams} from "@angular/common/http";
 import {NhlPlayoffModel} from "@shared/models/nhl-playoffs/nhl-playoff.model";
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import * as dayjs from "dayjs";
+import {NhlStandingsModel} from "@shared/models/nhl-general/nhl-standings.model";
 
 @Injectable()
-export class NhlPlayoffService {
+export class NhlStandingAndPlayoffService {
 
   private readonly nhlPlayoffUrl = "https://statsapi.web.nhl.com/api/v1/tournaments/playoffs?expand=round.series,schedule.game.seriesSummary&season=";
+
+  private readonly nhlStandingsUrl = "https://statsapi.web.nhl.com/api/v1/standings";
 
   private readonly nhlScheduleUrl = "https://statsapi.web.nhl.com/api/v1/schedule";
 
@@ -17,7 +20,33 @@ export class NhlPlayoffService {
   constructor(private http: HttpClient) { }
 
   /**
-   *  Gets the NHL playoff details for the current season.
+   *  Gets the NHL standings details for the given season.
+   *
+   * @param season - The season to get standing details for.
+   * @param standingsType - The type of standings to retreive.
+   */
+  public getNhlStandings(season: string, standingsType: string): Promise<NhlStandingsModel[]> {
+    const options = {
+      params: new HttpParams().set("season", season)
+          .set("standingsType", standingsType)
+    };
+    return new Promise((resolve, reject) => {
+      return this.http.get(this.nhlStandingsUrl, options).subscribe({
+        next: (response) => {
+          resolve(response['records']);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+   *  Gets the NHL playoff details for the given season.
+   *
+   * @param season - The season to get playoff details for.
    */
   public getNhlPlayoffs(season: string): Promise<NhlPlayoffModel> {
     let url = this.nhlPlayoffUrl + season

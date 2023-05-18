@@ -25,7 +25,7 @@ import { PreviousGameComponent } from './game/team-form/previous-game/previous-g
 import { PlayoffsComponent } from './playoffs/playoffs.component';
 import { PlayoffSeriesComponent } from './playoffs/playoff-series/playoff-series.component';
 import { GameStatsComponent } from './game/game-stats/game-stats.component';
-import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
+import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import { PlayoffSeriesDialogComponent } from '@app/playoffs/playoff-series-dialog/playoff-series-dialog.component';
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {MatDialogModule} from "@angular/material/dialog";
@@ -42,12 +42,14 @@ import { PlayerStatsComponent } from './player/player-stats/player-stats.compone
 import { RecentPlayerGamesComponent } from './player/recent-player-games/recent-player-games.component';
 import { PlayerBioComponent } from './player/player-bio/player-bio.component';
 import { TeamComponent } from './team/team.component';
-import { GameHeaderComponent } from './game/dropdown-header/game-header.component';
+import { GameHeaderComponent } from '@app/game/game-header/game-header.component';
 import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
 import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe";
 import {NhlSearchService} from "@shared/services/nhl-search.service";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import { SearchResultComponent } from './shared/components/search-result/search-result.component';
+import { StandingsComponent } from './shared/components/standings/standings.component';
+import { LeagueStandingsComponent } from './league-standings/league-standings.component';
 
 @NgModule({
   declarations: [
@@ -83,7 +85,9 @@ import { SearchResultComponent } from './shared/components/search-result/search-
     GameHeaderComponent,
     SavePercentagePipe,
     GoalsAgainstAveragePipe,
-    SearchResultComponent
+    SearchResultComponent,
+    StandingsComponent,
+    LeagueStandingsComponent
   ],
   imports: [
     BrowserModule,
@@ -100,7 +104,7 @@ import { SearchResultComponent } from './shared/components/search-result/search-
   providers: [
     NhlGameService,
     NhlImageService,
-    NhlPlayoffService,
+    NhlStandingAndPlayoffService,
     BetaNhlStatsService,
     NhlStatsService,
     RouterExtensionService,
