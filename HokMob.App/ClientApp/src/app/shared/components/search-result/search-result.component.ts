@@ -1,6 +1,7 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {SearchResultModel} from "@shared/models/search-result.model";
 import {NhlImageService} from "@shared/services/nhl-image.service";
+import {SearchResultTypeEnum} from "@shared/enums/search-result-type.enum";
 
 @Component({
   selector: 'app-search-result',
@@ -16,14 +17,27 @@ export class SearchResultComponent implements OnChanges {
 
   public playerHeadshot: any;
 
+  public get isPlayer(): boolean {
+    if (this.searchResult) {
+      return this.searchResult.resultType === SearchResultTypeEnum.PLAYER;
+    }
+    return false;
+  }
+  public get isTeam(): boolean {
+    if (this.searchResult) {
+      return this.searchResult.resultType === SearchResultTypeEnum.TEAM;
+    }
+    return false;
+  }
+
   constructor(private nhlImageService: NhlImageService) {
   }
 
   public ngOnChanges(changes: SimpleChanges) {
     if (changes['searchResult'] && this.searchResult) {
-      if (this.searchResult.isPlayer) {
+      if (this.isPlayer) {
         this.loadPlayerImage();
-      } else {
+      } else if (this.isTeam) {
         this.loadTeamLogo();
       }
     }

@@ -1,9 +1,9 @@
 <div [routerLink]="[searchResult.link]">
-  <div class="search-result-container" *ngIf="searchResult.isPlayer">
+  <div class="search-result-container" *ngIf="isPlayer">
     <img *ngIf="playerHeadshot" [src]="playerHeadshot" class="player-headshot">
     <span class="result-text">{{searchResult.playerFirstName}} {{searchResult.playerLastName}}</span>
   </div>
-  <div class="search-result-container" *ngIf="!searchResult.isPlayer">
+  <div class="search-result-container" *ngIf="isTeam">
     <img *ngIf="teamLogo" [src]="teamLogo" class="team-logo">
     <span *ngIf="searchResult.team" class="result-text">{{searchResult.team.name}}</span>
   </div>
