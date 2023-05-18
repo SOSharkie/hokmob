@@ -1,0 +1,176 @@
+@import "variables";
+
+.standings-container {
+  color: white;
+  background-color: $black-02;
+  border-radius: 25px;
+  padding: $spacing-medium $spacing-large;
+
+  .standings-type-container {
+    padding: $spacing-large;
+    font-size: larger;
+    border-bottom: 1px solid $black-03;
+  }
+
+  .standings-table {
+    width: 100%;
+    border-spacing: 0 $spacing-small;
+
+    .standings-header {
+      text-align: left;
+
+      th {
+        padding: $spacing-x-large;
+        color: $gray-03;
+        font-weight: normal;
+      }
+    }
+
+    .standings-row {
+      height: 50px;
+
+      td {
+        font-weight: lighter;
+        padding: $spacing-large;
+      }
+
+      .rank-cell {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+      }
+
+      .playoffPosition {
+        border-left: 4px solid $green-02;
+      }
+
+      .team-name-cell {
+        :hover {
+          cursor: pointer;
+          color: $gray-03;
+        }
+        .team-logo {
+          position: absolute;
+          width: 30px;
+          margin-left: -2px;
+          margin-top: -2px;
+        }
+        .team-name-text {
+          margin-left: $spacing-huge;
+        }
+      }
+      .points-cell {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+      }
+    }
+
+    .standings-row:hover {
+      background-color: $black-04;
+    }
+
+    .selected-row {
+      background-color: $black-01;
+
+      .points-value {
+        text-align: center;
+        padding: $spacing-medium $spacing-large;
+        border-radius: 15px;
+      }
+    }
+
+    .stat-cell {
+      text-align: center;
+    }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $tiny-display-breakpoint) {
+  .standings-header {
+    .rank-header {
+      width: 7%;
+    }
+    .team-name-header {
+      width: 20%;
+    }
+    .gp-header {
+      width: 7%;
+    }
+    .wins-header {
+      width: 7%;
+    }
+    .losses-header {
+      width: 7%;
+    }
+    .ot-header {
+      width: 7%;
+    }
+    .rw-header {
+      width: 7%;
+    }
+    .gd-header {
+      width: 7%;
+    }
+    .points-header {
+      width: 7%;
+    }
+    .form-header {
+      width: 18%;
+    }
+    .next-game-header {
+      width: 7%;
+    }
+  }
+  .show-mobile {
+    display: none;
+  }
+}
+
+// Mobile Display
+@media only screen and (max-width: $tiny-display-breakpoint) {
+  .standings-header {
+    .rank-header {
+      width: 9%;
+    }
+    .team-name-header {
+      width: 36%;
+    }
+    .gp-header {
+      width: 9%;
+    }
+    .wins-header {
+      width: 9%;
+    }
+    .losses-header {
+      width: 9%;
+    }
+    .ot-header {
+      width: 9%;
+    }
+    .rw-header {
+      width: 9%;
+    }
+    .gd-header {
+      display: none;
+    }
+    .points-header {
+      width: 9%;
+    }
+    .form-header {
+      display: none;
+    }
+    .next-game-header {
+      display: none;
+    }
+  }
+  th {
+    padding: $spacing-medium !important;
+  }
+  td {
+    padding: $spacing-medium !important;
+    font-size: smaller;
+  }
+  .hide-mobile {
+    display: none;
+  }
+}

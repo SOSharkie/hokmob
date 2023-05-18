@@ -77,6 +77,11 @@ $central-info-width: 130px;
     text-align: center;
     padding: $spacing-small;
 
+    :hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
     .home-team-logo {
       height: 60px;
       margin-left: $spacing-medium;
@@ -90,6 +95,11 @@ $central-info-width: 130px;
     align-items: center;
     text-align: center;
     padding: $spacing-small;
+
+    :hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
 
     .away-team-logo {
       height: 60px;

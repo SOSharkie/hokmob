@@ -27,7 +27,10 @@ export class NavigationMenuComponent {
         this.router.navigate(['playoffs']);
         break;
       case "Stats":
-        this.router.navigate(['stats'])
+        this.router.navigate(['stats']);
+        break;
+      case "Standings":
+        this.router.navigate(['standings']);
         break;
     }
   }

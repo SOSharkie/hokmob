@@ -2,7 +2,7 @@ import {Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlPlayoffSeriesModel} from "@shared/models/nhl-playoffs/nhl-playoff-series.model";
-import {NhlPlayoffService} from "@shared/services/nhl-playoff.service";
+import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 
@@ -24,7 +24,7 @@ export class PlayoffSeriesDialogComponent implements OnInit {
 
   public seriesGames: NhlGameModel[];
 
-  constructor(private nhlPlayoffService: NhlPlayoffService,
+  constructor(private nhlPlayoffService: NhlStandingAndPlayoffService,
               private dialogRef: MatDialogRef<PlayoffSeriesDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public seriesData: NhlPlayoffSeriesModel) {}
 

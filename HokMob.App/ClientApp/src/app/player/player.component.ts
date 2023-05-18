@@ -33,9 +33,9 @@ export class PlayerComponent implements OnInit {
 
   public countryFlagPath: string;
 
-  public currentYearStats: NhlPlayerStatsModel = null;
+  public currentYearStats: NhlPlayerStatsModel;
 
-  public currentPlayoffStats: NhlPlayerStatsModel = null;
+  public currentPlayoffStats: NhlPlayerStatsModel;
 
   public playoffGames: NhlStatsSplitModel[];
 
@@ -76,7 +76,7 @@ export class PlayerComponent implements OnInit {
       this.previousUrl = null;
     }
     this.route.params.subscribe((params: Params) => {
-      this.playerId = params['id'];
+      this.initProperties(params);
       this.nhlStatsService.getNhlPlayerStats(this.playerId).then(result => {
         this.player = result;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.player.currentTeam.id);
@@ -120,6 +120,15 @@ export class PlayerComponent implements OnInit {
     } else {
       this.router.navigate(['stats']);
     }
+  }
+
+  private initProperties(params: Params): void {
+    this.currentPlayoffStats = null;
+    this.currentYearStats = null;
+    this.playoffGames = [];
+    this.regularSeasonGames = [];
+    this.recentGames = [];
+    this.playerId = params['id'];
   }
 
   private setCurrentStatModels(): void {

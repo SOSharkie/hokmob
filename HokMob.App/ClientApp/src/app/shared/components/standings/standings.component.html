@@ -1,0 +1,49 @@
+<div class="standings-container">
+  <div class="standings-type-container">
+    <span>{{standingsTableTitle}}</span>
+  </div>
+  <table class="standings-table">
+    <thead>
+    <tr class="standings-header">
+      <th class="rank-header stat-cell"><span>#</span></th>
+      <th class="team-name-header"><span>Team</span></th>
+      <th class="gp-header stat-cell"><span [title]="'Games Played'">GP</span></th>
+      <th class="wins-header stat-cell"><span [title]="'Wins'">W</span></th>
+      <th class="losses-header stat-cell"><span [title]="'Losses'">L</span></th>
+      <th class="ot-header stat-cell"><span [title]="'Overtime Losses'">OT</span></th>
+      <th class="rw-header stat-cell"><span [title]="'Regulation Wins'">RW</span></th>
+      <th class="gd-header stat-cell"><span [title]="'Goal Differential'">GD</span></th>
+      <th class="points-header stat-cell"><span [title]="'Points'">PTS</span></th>
+      <th *ngIf="showFormAndNext" class="form-header"><span>Form</span></th>
+      <th *ngIf="showFormAndNext" class="next-game-header"><span>Next</span></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let team of teamStandings, let i = index, let isLast = last"
+        class="standings-row"
+        [ngClass]="{'last-row': isLast, 'selected-row': team.team.id === selectedTeamId}">
+      <td class="rank-cell stat-cell" [ngClass]="{'playoffPosition' : isPlayoffPosition(team)}">
+        <span>{{getTeamRank(team)}}</span>
+      </td>
+      <td class="team-name-cell" [routerLink]="['/team', team.team.id]">
+        <img class="team-logo" [src]="teamLogos[i]">
+        <span class="team-name-text hide-mobile">{{team.team.name}}</span>
+        <span class="team-name-text show-mobile">{{getTeamShortName(team.team.name)}}</span>
+      </td>
+      <td class="gp-cell stat-cell"><span>{{team.gamesPlayed}}</span></td>
+      <td class="wins-cell stat-cell"><span>{{team.leagueRecord.wins}}</span></td>
+      <td class="losses-cell stat-cell"><span>{{team.leagueRecord.losses}}</span></td>
+      <td class="ot-cell stat-cell"><span>{{team.leagueRecord.ot}}</span></td>
+      <td class="rw-cell stat-cell"><span>{{team.regulationWins}}</span></td>
+      <td class="gd-cell stat-cell hide-mobile"><span>{{team.goalsScored - team.goalsAgainst}}</span></td>
+      <td class="points-cell stat-cell">
+        <span class="points-value" [ngStyle]="{'background-color': team.team.id === selectedTeamId ? selectedTeamColor : ''}">
+          {{team.points}}
+        </span>
+      </td>
+      <td *ngIf="showFormAndNext" class="form-cell hide-mobile"><span>{{team.streak.steakNumber}}{{team.streak.streakCode}}</span></td>
+      <td *ngIf="showFormAndNext" class="next-game-cell hide-mobile"><span>Next</span></td>
+    </tr>
+    </tbody>
+  </table>
+</div>

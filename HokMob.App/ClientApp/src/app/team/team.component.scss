@@ -78,12 +78,28 @@
     }
   }
 
-  .work-in-progress {
+  .team-data-container {
     display: flex;
-    justify-content: center;
-    color: white;
-    font-size: x-large;
-    margin-top: $spacing-xx-large;
+    justify-content: flex-start;
+    align-items: center;
+
+    .team-standings {
+      width: 65%;
+      min-width: 375px;
+      margin: $spacing-small;
+    }
+
+    .team-info-container {
+      display: flex;
+      flex-direction: column;
+      width: 32%;
+      min-width: 250px;
+      margin: $spacing-small;
+
+      .team-form-container, .team-next-game-container {
+        height: 240px;
+      }
+    }
   }
 }
 

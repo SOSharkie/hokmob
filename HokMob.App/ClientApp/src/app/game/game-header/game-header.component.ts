@@ -86,6 +86,20 @@ export class GameHeaderComponent {
     return "N/A";
   }
 
+  public get homeTeamId(): number {
+    if (this.gameLiveData) {
+      return this.gameLiveData.gameData.teams.home.id;
+    }
+    return 0;
+  }
+
+  public get awayTeamId(): number {
+    if (this.gameLiveData) {
+      return this.gameLiveData.gameData.teams.away.id;
+    }
+    return 0;
+  }
+
   public get gameTime(): string {
     if (this.gameLiveData) {
       return dayjs(this.gameLiveData.gameData.datetime.dateTime).format("h:mm A");

@@ -1,5 +1,7 @@
 import {NhlVenueModel} from "@shared/models/nhl-general/nhl-venue.model";
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
+import {NhlConferenceModel} from "@shared/models/nhl-general/nhl-conference.model";
+import {NhlDivisionModel} from "@shared/models/nhl-general/nhl-division.model";
 
 export class NhlLiveFeedTeamModel extends NhlTeamModel{
 
@@ -13,19 +15,9 @@ export class NhlLiveFeedTeamModel extends NhlTeamModel{
 
   public firstYearOfPlay: string;
 
-  public division: {
-    id: number,
-    name: string,
-    nameShort: string,
-    link: string,
-    abbreviation: string
-  };
+  public division: NhlDivisionModel;
 
-  public conference: {
-    id: number,
-    name: string,
-    link: string
-  };
+  public conference: NhlConferenceModel;
 
   public franchise: {
     franchiseId: number,
