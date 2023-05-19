@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GoalModel} from "@shared/models/goal.model";
+import {NhlLinescorePeriodModel} from "@shared/models/nhl-linescore/nhl-linescore-period.model";
 
 @Component({
   selector: 'app-goal-scorers',
@@ -20,6 +21,17 @@ export class GoalScorersComponent {
   @Output()
   public scorerClicked = new EventEmitter<number>();
 
+  public get periods(): number[] {
+    if (this.numPeriods) {
+      let periods = [];
+      for (let i = 1; i < this.numPeriods + 1; i++) {
+        periods.push(i);
+      }
+      return periods;
+    }
+    return [];
+  }
+
   /**
    * Returns true if the game currently is in or has past a certain period.
    *
@@ -30,6 +42,21 @@ export class GoalScorersComponent {
       return this.numPeriods >= period;
     }
     return false;
+  }
+
+  public getPeriodLabel(periodIndex: number): string {
+    switch (periodIndex) {
+      case 1:
+        return "1st";
+      case 2:
+        return "2nd";
+      case 3:
+        return "3rd";
+      case 4:
+        return "OT";
+      default:
+        return (periodIndex - 3) + "OT";
+    }
   }
 
   /**
