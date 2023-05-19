@@ -2,6 +2,7 @@ import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {NhlLinescorePeriodModel} from "@shared/models/nhl-linescore/nhl-linescore-period.model";
 
 @Component({
   selector: 'app-event-timeline',
@@ -26,8 +27,9 @@ export class EventTimelineComponent implements OnChanges {
   }
 
   public hasPeriod(periodIndex: number): boolean {
-    if (this.periodEvents && this.periodEvents[periodIndex]) {
-      return this.periodEvents[periodIndex].length > 0;
+    if (this.gameLiveData && this.gameLiveData.liveData.plays.playsByPeriod &&
+        this.gameLiveData.liveData.plays.playsByPeriod[periodIndex]) {
+      return this.gameLiveData.liveData.plays.playsByPeriod[periodIndex].plays.length > 0;
     }
     return false;
   }

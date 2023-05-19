@@ -1,4 +1,5 @@
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
+import {NhlLiveFeedPlaysByPeriodModel} from "@shared/models/nhl-live-feed/nhl-live-feed-plays-by-period.model";
 
 export class NhlLiveFeedPlaysModel {
 
@@ -8,7 +9,7 @@ export class NhlLiveFeedPlaysModel {
 
   public penaltyPlays: number[];
 
-  public playsByPeriod: Object[];
+  public playsByPeriod: NhlLiveFeedPlaysByPeriodModel[];
 
   public currentPlay: NhlLiveFeedPlayModel;
 }
