@@ -21,7 +21,7 @@ export class EventTimelineComponent implements OnChanges {
 
   public get isGameFinal(): boolean {
     if (this.gameLiveData) {
-      return NhlGameInfoUtils.isLiveGame(this.gameLiveData.gameData.status);
+      return NhlGameInfoUtils.isCompletedGame(this.gameLiveData.gameData.status);
     }
     return false;
   }
