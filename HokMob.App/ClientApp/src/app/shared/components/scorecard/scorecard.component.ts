@@ -6,6 +6,7 @@ import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-scorecard',
@@ -22,10 +23,6 @@ export class ScorecardComponent implements OnChanges {
 
   @Output()
   public scorecardClicked = new EventEmitter<boolean>();
-
-  public isHomeLogoLoading: boolean;
-
-  public isAwayLogoLoading: boolean;
 
   public isHomeLogoLoaded: boolean = false;
 
@@ -168,26 +165,10 @@ export class ScorecardComponent implements OnChanges {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['game'] && !this.isHomeLogoLoaded && !this.isAwayLogoLoaded) {
-      this.isHomeLogoLoading = true;
-      this.isAwayLogoLoading = true;
-      this.nhlLogoService.getNhlTeamLogo(this.game.teams.home.team.id).then(data => {
-        let reader = new FileReader();
-        reader.addEventListener("load", () => {
-          this.homeTeamLogo = reader.result;
-          this.isHomeLogoLoaded = true;
-        }, false);
-        reader.readAsDataURL(data);
-        this.isHomeLogoLoading = false;
-      });
-      this.nhlLogoService.getNhlTeamLogo(this.game.teams.away.team.id).then(data => {
-        let reader = new FileReader();
-        reader.addEventListener("load", () => {
-          this.awayTeamLogo = reader.result;
-          this.isAwayLogoLoaded = true;
-        }, false);
-        reader.readAsDataURL(data);
-        this.isAwayLogoLoading = false;
-      });
+      this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.game.teams.home.team.id);
+      this.isHomeLogoLoaded = true;
+      this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.game.teams.away.team.id);
+      this.isAwayLogoLoaded = true;
     }
   }
 

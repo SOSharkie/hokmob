@@ -15,6 +15,7 @@ import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {NhlStandingsModel} from "@shared/models/nhl-general/nhl-standings.model";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-team',
@@ -83,14 +84,7 @@ export class TeamComponent implements OnInit {
     if (!this.teamData) {
       return;
     }
-    this.teamLogo = 'assets/nhl_logo.png';
-    this.nhlImageService.getNhlTeamLogo(this.teamData.id).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.teamLogo = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
-    });
+    this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.teamData.id);
   }
 
   public backToPrevious(): void {

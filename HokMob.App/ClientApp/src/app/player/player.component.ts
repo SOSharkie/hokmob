@@ -11,6 +11,7 @@ import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsSplitModel} from "@shared/models/nhl-stats/nhl-stats-split.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-player',
@@ -96,15 +97,8 @@ export class PlayerComponent implements OnInit {
     if (!this.player) {
       return;
     }
-    this.teamLogo = 'assets/nhl_logo.png';
     this.playerHeadshot = 'assets/blank_headshot.png';
-    this.nhlImageService.getNhlTeamLogo(this.player.currentTeam.id).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.teamLogo = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
-    });
+    this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.player.currentTeam.id);
     this.nhlImageService.getNhlPlayerHeadshot(this.player.id).then(data => {
       let reader = new FileReader();
       reader.addEventListener("load", () => {

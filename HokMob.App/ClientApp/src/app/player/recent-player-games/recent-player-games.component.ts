@@ -5,6 +5,7 @@ import * as dayjs from "dayjs";
 import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-recent-player-games',
@@ -81,17 +82,8 @@ export class RecentPlayerGamesComponent implements OnChanges {
         return;
       }
       this.teamLogos = [];
-      for (let i = 0; i < 10; i++) {
-        this.teamLogos.push('assets/nhl_logo.png');
-      }
       this.lastTenGames.forEach((statSplit, index) => {
-        this.nhlImageService.getNhlTeamLogo(statSplit.opponent.id).then(data => {
-          let reader = new FileReader();
-          reader.addEventListener("load", () => {
-            this.teamLogos[index] = reader.result;
-          }, false);
-          reader.readAsDataURL(data);
-        });
+        this.teamLogos[index] = NhlTeamLogoUtils.getTeamPrimaryLogo(statSplit.opponent.id);
       });
       this.imagesLoaded = true;
     }

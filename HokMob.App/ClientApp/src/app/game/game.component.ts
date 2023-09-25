@@ -16,6 +16,7 @@ import {PlayerGameDialogComponent} from "@app/game/player-game-dialog/player-gam
 import {GamePlayerModel} from "@shared/models/game-player.model";
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-game',
@@ -40,10 +41,6 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public homeTeamGoals: GoalModel[] = [];
 
   public awayTeamGoals: GoalModel[] = [];
-
-  public isHomeLogoLoading: boolean;
-
-  public isAwayLogoLoading: boolean;
 
   public homeTeamLogo: any;
 
@@ -77,7 +74,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public get tvInfo(): string {
-    if (this.gameModel) {
+    if (this.gameModel && this.gameModel.broadcasts && this.gameModel.broadcasts[0]) {
       return "TV: " + this.gameModel.broadcasts[0].name;
     }
     return "";
@@ -346,24 +343,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadLogos(): void {
-    this.isHomeLogoLoading = true;
-    this.isAwayLogoLoading = true;
-    this.nhlLogoService.getNhlTeamLogo(this.gameBoxscore.teams.home.team.id).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.homeTeamLogo = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
-      this.isHomeLogoLoading = false;
-    });
-    this.nhlLogoService.getNhlTeamLogo(this.gameBoxscore.teams.away.team.id).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.awayTeamLogo = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
-      this.isAwayLogoLoading = false;
-    });
+    this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.gameBoxscore.teams.home.team.id);
+    this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.gameBoxscore.teams.away.team.id);
   }
 
   @HostListener('document:scroll')

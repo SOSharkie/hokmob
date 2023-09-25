@@ -2,6 +2,7 @@ import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlImageService} from "@shared/services/nhl-image.service";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-stat-leaderboard',
@@ -71,13 +72,7 @@ export class StatLeaderboardComponent implements OnChanges {
       this.playerHeadshots = ['assets/blank_headshot.png', 'assets/blank_headshot.png', 'assets/blank_headshot.png', 'assets/blank_headshot.png', 'assets/blank_headshot.png'];
       let teams = this.topPlayersList.slice(0, 5).map(player => player.person.currentTeam);
       teams.forEach((team, index) => {
-        this.nhlLogoService.getNhlTeamLogo(team.id).then(data => {
-          let reader = new FileReader();
-          reader.addEventListener("load", () => {
-            this.teamLogos[index] = reader.result;
-          }, false);
-          reader.readAsDataURL(data);
-        });
+        this.teamLogos[index] = NhlTeamLogoUtils.getTeamPrimaryLogo(team.id);
       });
       this.topPlayersList.slice(0, 5).forEach((player, index) => {
         this.nhlLogoService.getNhlPlayerHeadshot(player.person.id).then(data => {

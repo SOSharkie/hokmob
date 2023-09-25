@@ -7,6 +7,7 @@ import {GamePlayerModel} from "@shared/models/game-player.model";
 import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 import {Router} from "@angular/router";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-player-game-dialog',
@@ -70,15 +71,8 @@ export class PlayerGameDialogComponent implements OnInit {
     if (!this.player) {
       return;
     }
-    this.teamLogo = 'assets/nhl_logo.png';
     this.playerHeadshot = 'assets/blank_headshot.png';
-    this.nhlImageService.getNhlTeamLogo(this.playerTeam.id).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.teamLogo = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
-    });
+    this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.playerTeam.id);
     this.nhlImageService.getNhlPlayerHeadshot(this.player.person.id).then(data => {
       let reader = new FileReader();
       reader.addEventListener("load", () => {

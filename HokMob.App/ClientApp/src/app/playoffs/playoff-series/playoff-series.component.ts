@@ -6,6 +6,7 @@ import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-pl
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {MatDialog} from "@angular/material/dialog";
 import {PlayoffSeriesDialogComponent} from "@app/playoffs/playoff-series-dialog/playoff-series-dialog.component";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-playoff-series',
@@ -96,24 +97,12 @@ export class PlayoffSeriesComponent implements OnChanges {
         });
       }
       if (this.seriesData.matchupTeams[0]) {
-        this.nhlLogoService.getNhlTeamLogo(this.seriesData.matchupTeams[0].team.id).then(data => {
-          let reader = new FileReader();
-          reader.addEventListener("load", () => {
-            this.logoA = reader.result;
-            this.isLogoALoaded = true;
-          }, false);
-          reader.readAsDataURL(data);
-        });
+        this.logoA = NhlTeamLogoUtils.getTeamPrimaryLogo(this.seriesData.matchupTeams[0].team.id)
+        this.isLogoALoaded = true;
       }
       if (this.seriesData.matchupTeams[1]) {
-        this.nhlLogoService.getNhlTeamLogo(this.seriesData.matchupTeams[1].team.id).then(data => {
-          let reader = new FileReader();
-          reader.addEventListener("load", () => {
-            this.logoB = reader.result;
-            this.isLogoBLoaded = true;
-          }, false);
-          reader.readAsDataURL(data);
-        });
+        this.logoB = NhlTeamLogoUtils.getTeamPrimaryLogo(this.seriesData.matchupTeams[1].team.id)
+        this.isLogoBLoaded = true;
       }
     }
   }

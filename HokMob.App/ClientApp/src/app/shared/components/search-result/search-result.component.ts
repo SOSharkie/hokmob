@@ -2,6 +2,7 @@ import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {SearchResultModel} from "@shared/models/search-result.model";
 import {NhlImageService} from "@shared/services/nhl-image.service";
 import {SearchResultTypeEnum} from "@shared/enums/search-result-type.enum";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-search-result',
@@ -55,13 +56,6 @@ export class SearchResultComponent implements OnChanges {
   }
 
   public loadTeamLogo(): void {
-    this.teamLogo = 'assets/nhl_logo.png';
-    this.nhlImageService.getNhlTeamLogo(Number(this.searchResult.teamId)).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.teamLogo = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
-    });
+    this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(Number(this.searchResult.teamId));
   }
 }

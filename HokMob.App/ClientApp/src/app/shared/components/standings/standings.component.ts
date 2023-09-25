@@ -4,6 +4,7 @@ import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {NhlTeamRecordModel} from "@shared/models/nhl-general/nhl-team-record.model";
 import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 @Component({
   selector: 'app-standings',
@@ -70,13 +71,7 @@ export class StandingsComponent implements OnChanges {
         this.teamLogos.push('assets/nhl_logo.png');
       }
       this.standings[0].teamRecords.forEach((team, index) => {
-        this.nhlImageService.getNhlTeamLogo(team.team.id).then(data => {
-          let reader = new FileReader();
-          reader.addEventListener("load", () => {
-            this.teamLogos[index] = reader.result;
-          }, false);
-          reader.readAsDataURL(data);
-        });
+        this.teamLogos[index] = NhlTeamLogoUtils.getTeamPrimaryLogo(team.team.id);
       });
     }
   }
