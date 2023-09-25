@@ -39,7 +39,7 @@ export class StatsComponent implements OnInit {
 
   public winsList: NhlPlayerModel[];
 
-  public playoffsSelected: boolean = true;
+  public playoffsSelected: boolean = false;
 
   public filtersEnabled: boolean = true;
 
@@ -57,6 +57,7 @@ export class StatsComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.playoffsSelected = dayjs().month() >= 4 && dayjs() && dayjs().month() < 8;
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("gameType")) {
         this.playoffsSelected = params.get("gameType") === "P";
