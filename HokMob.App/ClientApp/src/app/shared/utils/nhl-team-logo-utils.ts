@@ -99,7 +99,7 @@ export class NhlTeamLogoUtils {
         imagePath += "vegas";
         break;
       case 55:
-        imagePath += "vegas";
+        imagePath += "seattle";
         break;
       default:
         imagePath += "team_fallback"
