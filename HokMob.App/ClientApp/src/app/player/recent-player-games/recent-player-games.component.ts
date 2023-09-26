@@ -61,7 +61,7 @@ export class RecentPlayerGamesComponent implements OnChanges {
   }
 
   public getRecentGameScore(index: number): string {
-    if (this.recentGames) {
+    if (this.recentGames && this.recentGames[index]) {
       let game = this.recentGames[index];
       if (game.teams.away.team.id === this.teamId) {
         return "(" + game.teams.away.score + " - " + game.teams.home.score + ")";

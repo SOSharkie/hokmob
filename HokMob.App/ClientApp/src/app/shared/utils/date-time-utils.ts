@@ -41,14 +41,14 @@ export class DateTimeUtils {
   }
 
   /**
-   * Gets the current NHL season string, like "20222023". New seasons pre-season generally start in September (index 7).
+   * Gets the current NHL season string, like "20222023". New seasons generally start around Oct 10th.
    */
   public static getCurrentNhlSeason(): string {
     let today = dayjs();
     let currentYear = today.get('year');
     let nextYear = today.add(1, 'year').get('year');
     let prevYear = today.subtract(1, 'year').get('year');
-    if (today.month() < 7) {
+    if (today.month() < 9 || (today.month() === 9 && today.date() < 10)) {
       return prevYear.toString() + currentYear.toString();
     } else {
       return currentYear.toString() + nextYear.toString();

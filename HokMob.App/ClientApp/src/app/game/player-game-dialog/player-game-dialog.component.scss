@@ -1,5 +1,9 @@
 @import "variables";
 
+.cdk-overlay-pane {
+  max-height: 95vh;
+}
+
 .mat-mdc-dialog-surface {
   border: none;
   border-radius: 25px !important;
@@ -15,6 +19,7 @@
     align-items: center;
     border-bottom: 1px solid $black-01;
     padding: $spacing-large;
+    min-height: 50px;
 
     .player-headshot-container {
       display: flex;
@@ -33,7 +38,7 @@
     }
     .team-logo {
       position: absolute;
-      width: 50px;
+      width: 30px;
     }
 
     .player-name {
@@ -81,6 +86,9 @@
     flex-direction: column;
     margin: $spacing-large;
     padding: $spacing-x-large;
+    min-height: 20px;
+    max-height: 30vh;
+    overflow: scroll;
 
     .stats-label {
       color: white;
@@ -97,7 +105,7 @@
         justify-content: space-between;
         align-items: center;
         color: white;
-        margin-top: $spacing-xx-large;
+        margin-top: $spacing-x-large;
 
         .game-stat-label {
           color: $gray-03;
@@ -118,6 +126,7 @@
     background-color: $black-03;
     padding: $spacing-large;
     border-top: 2px solid $gray-01;
+    min-height: 20px;
 
     .profile-container {
       display: flex;
@@ -158,8 +167,8 @@
     min-width: 350px;
 
     .team-logo {
-      left: 187px;
-      top: 52px;
+      left: 190px;
+      top: 57px;
     }
   }
 }
