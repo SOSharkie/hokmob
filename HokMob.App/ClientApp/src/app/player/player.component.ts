@@ -84,10 +84,17 @@ export class PlayerComponent implements OnInit {
         this.countryFlagPath =  "assets/flags/" + this.player.birthCountry + ".png";
         this.setCurrentStatModels();
         this.loadImages();
-        let yesterday = dayjs().subtract(1, 'day');
-        let sixtyDaysAgo = yesterday.subtract(60, 'days');
+        const yesterday = dayjs().subtract(1, 'day');
+        const sixtyDaysAgo = yesterday.subtract(60, 'days');
         this.nhlGameService.getTeamGames(sixtyDaysAgo.toDate(), yesterday.toDate(), this.player.currentTeam.id).then(games => {
           this.recentGames = games.dates.map(date => date.games[0]).reverse().slice(0, 10);
+
+          if (this.recentGames.length < 5) {
+            const twoHundredDaysAgo = yesterday.subtract(200, 'days');
+            this.nhlGameService.getTeamGames(twoHundredDaysAgo.toDate(), yesterday.toDate(), this.player.currentTeam.id).then(games => {
+              this.recentGames = games.dates.map(date => date.games[0]).reverse().slice(0, 10);
+            });
+          }
         });
       });
     });

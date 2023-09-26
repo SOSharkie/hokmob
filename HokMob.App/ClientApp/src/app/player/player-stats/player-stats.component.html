@@ -16,8 +16,8 @@
       <span class="item-value">{{stats.points}}</span>
     </div>
     <div class="stats-item">
-      <span class="item-title">Shots</span>
-      <span class="item-value">{{stats.shots}}</span>
+      <span class="item-title" [title]="'Games Played'">Games</span>
+      <span class="item-value">{{stats.games}}</span>
     </div>
     <div class="stats-item">
       <span class="item-title">+/-</span>
@@ -28,12 +28,12 @@
       <span class="item-value" [ngStyle]="{'color': faceOffColor}">{{formatFaceOffPercent(stats.faceOffPct)}}</span>
     </div>
     <div class="stats-item">
-      <span class="item-title">Hits</span>
-      <span class="item-value">{{stats.hits}}</span>
+      <span class="item-title">Shots</span>
+      <span class="item-value">{{stats.shots}}</span>
     </div>
     <div class="stats-item">
-      <span class="item-title">Blocks</span>
-      <span class="item-value">{{stats.blocked}}</span>
+      <span class="item-title">Hits</span>
+      <span class="item-value">{{stats.hits}}</span>
     </div>
   </div>
   <div *ngIf="isGoalie" class="stats-grid">
