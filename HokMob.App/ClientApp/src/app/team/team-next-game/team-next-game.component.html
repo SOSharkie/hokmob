@@ -1,0 +1,30 @@
+<div class="team-next-game">
+  <div class="team-next-game-header">
+    <span *ngIf="futureGame">Next Game</span>
+    <span *ngIf="liveGame">Ongoing Game</span>
+  </div>
+  <div class="score-container" >
+    <div class="home-team-header">
+      <span>{{homeTeamShortName}}</span>
+      <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="homeTeamLogo">
+    </div>
+    <div *ngIf="futureGame" class="game-day-time-container future-game">
+      <span class="game-time-label">{{gameTime}}</span>
+      <span class="game-day-label">{{gameDay}}</span>
+      <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
+    </div>
+    <div *ngIf="completedGame" class="game-score">
+      <span class="game-score-label">{{gameScore}}</span>
+      <span class="completed-status-label">{{completedGameStatus}}</span>
+      <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
+    </div>
+    <div *ngIf="liveGame" class="game-score">
+      <span class="game-score-label">{{gameScore}}</span>
+      <span class="live-status-label">{{liveGameStatus}}</span>
+    </div>
+    <div class="away-team-header">
+      <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="awayTeamLogo">
+      <span>{{awayTeamShortName}}</span>
+    </div>
+  </div>
+</div>

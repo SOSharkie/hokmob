@@ -1,0 +1,24 @@
+@import "variables";
+
+.team-schedule {
+  background-color: $black-02;
+  border-radius: 25px;
+  overflow: hidden;
+  color: white;
+
+  .team-schedule-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+  }
+
+
+  .future-game-container {
+    border-bottom: 1px solid $gray-01;
+  }
+
+  .last-scorecard {
+    border-bottom: none !important;
+  }
+}

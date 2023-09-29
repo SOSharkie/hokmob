@@ -28,11 +28,25 @@
       ></app-standings>
     </div>
     <div class="team-info-container">
+      <div *ngIf="nextGameLiveFeed" class="next-game-container">
+        <app-team-next-game
+            [team]="teamData"
+            [gameModel]="nextGame"
+            [gameLiveData]="nextGameLiveFeed"
+            [gameLinescore]="nextGameLiveFeed.liveData.linescore"
+        ></app-team-next-game>
+      </div>
       <div class="team-form-container">
-
+        <app-single-team-form
+          [team]="teamData"
+          [teamGames]="pastTeamGames"
+        ></app-single-team-form>
       </div>
       <div class="team-next-game-container">
-
+        <app-team-schedule
+          [team]="teamData"
+          [teamGames]="futureTeamGames"
+        ></app-team-schedule>
       </div>
     </div>
   </div>
