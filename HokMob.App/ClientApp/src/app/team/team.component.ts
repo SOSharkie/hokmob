@@ -16,6 +16,8 @@ import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-pl
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {NhlStandingsModel} from "@shared/models/nhl-general/nhl-standings.model";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
+import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 
 @Component({
   selector: 'app-team',
@@ -34,9 +36,15 @@ export class TeamComponent implements OnInit {
 
   public teamData: NhlTeamExtendedModel;
 
-  public recentGames: NhlGameModel[];
+  public pastTeamGames: NhlScheduleModel;
+
+  public futureTeamGames: NhlScheduleModel;
 
   public standings: NhlStandingsModel[];
+
+  public nextGame: NhlGameModel;
+
+  public nextGameLiveFeed: NhlLiveFeedModel;
 
   private readonly nhlLeagueId: number = 133;
 
@@ -64,7 +72,6 @@ export class TeamComponent implements OnInit {
     this.route.params.subscribe((params: Params) => {
       this.teamId = params['id'];
       this.nhlStatsService.getNhlTeamStats(this.teamId, DateTimeUtils.getCurrentNhlSeason()).then(teamData => {
-        console.log(teamData);
         this.teamData = teamData;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.teamData.id);
         this.loadImages();
@@ -74,7 +81,20 @@ export class TeamComponent implements OnInit {
           } else {
             this.standings = standings;
           }
-          console.log(standings);
+        });
+      });
+      let thirtyDaysFuture = dayjs().add(30, 'day');
+      let thirtyDaysAgo = dayjs().subtract(30, 'days');
+      this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), new Date(), Number(this.teamId)).then(past => {
+        this.pastTeamGames = past;
+      });
+      this.nhlGameService.getTeamGames(new Date(), thirtyDaysFuture.toDate(), Number(this.teamId)).then(schedule => {
+        this.futureTeamGames = schedule;
+        this.nhlGameService.getNhlGame(this.futureTeamGames.dates[0].games[0].gamePk.toString()).then(nextGame =>{
+          this.nextGame = nextGame;
+        });
+        this.nhlGameService.getNhlGameLiveFeed(this.futureTeamGames.dates[0].games[0].gamePk.toString()).then(nextGameLive => {
+          this.nextGameLiveFeed = nextGameLive;
         });
       });
     });

@@ -126,7 +126,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public get gameStreamLink(): string {
     if (this.gameLiveData) {
       let homeTeamLink = this.gameLiveData.gameData.teams.home.name.toLowerCase().replace(' ', '-');
-      return "http://hdtv.720pstream.me/live-" + homeTeamLink + "-stream";
+      return "https://720pstream.nu/nhl/live-" + homeTeamLink + "-stream";
     }
     return "N/A";
   }
@@ -185,7 +185,6 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.away.team.id).then(awayTeamGames => {
           this.awayTeamGames = awayTeamGames;
-
         });
       });
     });

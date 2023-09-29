@@ -1,0 +1,11 @@
+<div class="team-schedule">
+  <div class="team-schedule-header">
+    <span>Team Schedule</span>
+  </div>
+  <div *ngFor="let game of next5TeamGames let last = last" class="future-game-container" [ngClass]="{'last-scorecard': last}">
+    <app-scorecard
+        [game]="game"
+        [smallerScorecard]="true"
+    ></app-scorecard>
+  </div>
+</div>

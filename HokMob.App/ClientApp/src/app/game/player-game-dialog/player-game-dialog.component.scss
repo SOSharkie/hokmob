@@ -88,7 +88,7 @@
     padding: $spacing-x-large;
     min-height: 20px;
     max-height: 30vh;
-    overflow: scroll;
+    overflow: auto;
 
     .stats-label {
       color: white;
@@ -179,8 +179,8 @@
     min-width: 300px;
 
     .team-logo {
-      left: 158px;
-      top: 52px;
+      left: 162px;
+      top: 60px;
     }
   }
 }

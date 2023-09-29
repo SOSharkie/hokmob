@@ -148,7 +148,7 @@ export class ScorecardComponent implements OnChanges {
   }
 
   public get liveGameStatus(): string {
-    if (this.game) {
+    if (this.game && this.game.linescore) {
       if (this.game.linescore.hasShootout) {
         return "SO";
       } else if (this.game.linescore.currentPeriodTimeRemaining === "END") {
@@ -157,7 +157,7 @@ export class ScorecardComponent implements OnChanges {
         return this.game.linescore.currentPeriodOrdinal + " - " + this.formatTimeRemaining();
       }
     }
-    return "N/A"
+    return "Live"
   }
 
   constructor(private nhlLogoService: NhlImageService) {

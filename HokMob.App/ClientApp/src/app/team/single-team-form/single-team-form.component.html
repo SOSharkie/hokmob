@@ -1,0 +1,16 @@
+<div class="team-form-container">
+  <div class="team-form-header">
+    <span>Team Form</span>
+  </div>
+  <div class="previous-games-container">
+    <div *ngIf="teamGames" class="prev-games">
+      <div *ngFor="let gameDay of last5TeamGames; let isLast = last">
+        <app-previous-game
+            [team]="team"
+            [gameDay]="gameDay"
+            [isLast]="isLast"
+        ></app-previous-game>
+      </div>
+    </div>
+  </div>
+</div>

@@ -50,6 +50,9 @@ import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import { SearchResultComponent } from './shared/components/search-result/search-result.component';
 import { StandingsComponent } from './shared/components/standings/standings.component';
 import { LeagueStandingsComponent } from './league-standings/league-standings.component';
+import {SingleTeamFormComponent} from "@app/team/single-team-form/single-team-form.component";
+import { TeamScheduleComponent } from './team/team-schedule/team-schedule.component';
+import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
 
 @NgModule({
   declarations: [
@@ -87,7 +90,10 @@ import { LeagueStandingsComponent } from './league-standings/league-standings.co
     GoalsAgainstAveragePipe,
     SearchResultComponent,
     StandingsComponent,
-    LeagueStandingsComponent
+    LeagueStandingsComponent,
+    SingleTeamFormComponent,
+    TeamScheduleComponent,
+    TeamNextGameComponent
   ],
   imports: [
     BrowserModule,

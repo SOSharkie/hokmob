@@ -81,7 +81,7 @@
   .team-data-container {
     display: flex;
     justify-content: flex-start;
-    align-items: center;
+    align-items: flex-start;
 
     .team-standings {
       width: 65%;
@@ -92,12 +92,12 @@
     .team-info-container {
       display: flex;
       flex-direction: column;
-      width: 32%;
       min-width: 250px;
+      min-height: 700px;
       margin: $spacing-small;
 
-      .team-form-container, .team-next-game-container {
-        height: 240px;
+      .team-form-container, .team-next-game-container, .next-game-container {
+        margin-top: $spacing-large;
       }
     }
   }
@@ -139,6 +139,14 @@
       .team-division-label {
         font-size: large;
       }
+    }
+  }
+
+  .team-data-container {
+    flex-direction: row;
+
+    .team-info-container {
+      width: 32%;
     }
   }
 }
@@ -183,6 +191,14 @@
       .team-division-label {
         font-size: medium;
       }
+    }
+  }
+
+  .team-data-container {
+    flex-direction: column;
+
+    .team-info-container {
+      width: 100%;
     }
   }
 }
