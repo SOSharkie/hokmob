@@ -1,9 +1,31 @@
 <div class="league-standings-container">
+  <div class="standings-filters-container">
+    <div (click)="updateStandingsType(NhlStandingsTypeEnum.BY_LEAGUE)"
+         class="standings-type-filter"
+         [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_LEAGUE}">
+      League
+    </div>
+    <div (click)="updateStandingsType(NhlStandingsTypeEnum.BY_CONFERENCE)"
+         class="standings-type-filter"
+         [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_CONFERENCE}">
+     Conference
+    </div>
+    <div (click)="updateStandingsType(NhlStandingsTypeEnum.BY_DIVISION)"
+         class="standings-type-filter"
+         [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_DIVISION}">
+      Division
+    </div>
+    <div (click)="updateStandingsType(NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS)"
+         class="standings-type-filter"
+         [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS}">
+      Playoffs
+    </div>
+  </div>
   <div *ngIf="standings" class="main-standings">
     <app-standings
         [standings]="standings"
         [showFormAndNext]="true"
-        [defaultStandingsType]="NhlStandingsTypeEnum.BY_LEAGUE"
+        [defaultStandingsType]="currentStandingsType"
     ></app-standings>
   </div>
 </div>

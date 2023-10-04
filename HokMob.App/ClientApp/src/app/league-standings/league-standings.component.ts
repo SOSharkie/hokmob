@@ -3,6 +3,7 @@ import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-pl
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {NhlStandingsModel} from "@shared/models/nhl-general/nhl-standings.model";
+import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 
 @Component({
   selector: 'app-league-standings',
@@ -13,12 +14,53 @@ export class LeagueStandingsComponent implements OnInit {
 
   public standings: NhlStandingsModel[];
 
-  constructor(private nhlStandingAndPlayoffService: NhlStandingAndPlayoffService) {
+  public currentStandingsType: NhlStandingsTypeEnum = NhlStandingsTypeEnum.BY_LEAGUE;
+
+  constructor(private activatedRoute: ActivatedRoute,
+              private router: Router,
+              private nhlStandingAndPlayoffService: NhlStandingAndPlayoffService) {
   }
 
   public ngOnInit() {
-    this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), NhlStandingsTypeEnum.BY_LEAGUE).then(result => {
+    this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
+      if (params.has("standingsType")) {
+        switch (params.get("standingsType")) {
+          case (NhlStandingsTypeEnum.BY_LEAGUE.toString()):
+            this.currentStandingsType = NhlStandingsTypeEnum.BY_LEAGUE;
+            break;
+          case (NhlStandingsTypeEnum.BY_CONFERENCE.toString()):
+            this.currentStandingsType = NhlStandingsTypeEnum.BY_CONFERENCE;
+            break;
+          case (NhlStandingsTypeEnum.BY_DIVISION.toString()):
+            this.currentStandingsType = NhlStandingsTypeEnum.BY_DIVISION;
+            break;
+          case (NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS.toString()):
+            this.currentStandingsType = NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS;
+            break;
+        }
+      }
+
+      this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), this.currentStandingsType).then(result => {
+        this.standings = result;
+      });
+    });
+  }
+
+  public updateStandingsType(type: NhlStandingsTypeEnum): void {
+    this.currentStandingsType = type;
+    this.router.navigate([],
+        {
+          relativeTo: this.activatedRoute,
+          queryParams: {standingsType: this.currentStandingsType},
+        }
+    );
+    this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), this.currentStandingsType).then(result => {
       this.standings = result;
+      if (this.currentStandingsType === NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS) {
+        // this.standings = result.reverse();
+        // this.standings.splice(2,0, this.standings[this.standings.length - 2]);
+        // this.standings.splice(this.standings.length - 2, 1);
+      }
     });
   }
 

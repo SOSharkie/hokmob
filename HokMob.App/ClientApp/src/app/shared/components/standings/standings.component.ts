@@ -25,27 +25,9 @@ export class StandingsComponent implements OnChanges {
   @Input()
   public showFormAndNext: boolean = true;
 
-  public teamStandings: NhlTeamRecordModel[];
-
-  public teamLogos: any[];
+  public teamLogos: any[][];
 
   public imagesLoaded = false;
-
-  public get standingsTableTitle(): string {
-    if (this.standings[0]) {
-      switch (this.defaultStandingsType) {
-        case NhlStandingsTypeEnum.BY_LEAGUE:
-          return "NHL " + this.seasonString;
-        case NhlStandingsTypeEnum.BY_CONFERENCE:
-          return this.standings[0].conference.name + " Conference " + this.seasonString;
-        case NhlStandingsTypeEnum.BY_DIVISION:
-          return this.standings[0].division.name + this.seasonString;
-        case NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS:
-          return this.standings[0].division.name + " Wild Card " + this.seasonString;
-      }
-    }
-    return "NHL " + this.seasonString;
-  }
 
   public get seasonString(): string {
     if (this.standings[0].season) {
@@ -65,15 +47,37 @@ export class StandingsComponent implements OnChanges {
 
   public ngOnChanges(changes: SimpleChanges) {
     if (changes['standings'] && this.standings && this.standings[0]) {
-      this.teamStandings = this.standings[0].teamRecords;
       this.teamLogos = [];
-      for (let i = 0; i < this.standings[0].teamRecords.length; i++) {
-        this.teamLogos.push('assets/nhl_logo.png');
-      }
-      this.standings[0].teamRecords.forEach((team, index) => {
-        this.teamLogos[index] = NhlTeamLogoUtils.getTeamPrimaryLogo(team.team.id);
-      });
+      this.standings.forEach((division, divisionIndex) => {
+        this.teamLogos.push([]);
+        division.teamRecords.forEach((team, teamIndex) => {
+          this.teamLogos[divisionIndex].push([]);
+          this.teamLogos[divisionIndex][teamIndex] = NhlTeamLogoUtils.getTeamPrimaryLogo(team.team.id);
+        });
+      })
     }
+  }
+
+  public standingsTableTitle(standingModel: NhlStandingsModel): string {
+    if (standingModel) {
+      switch (this.defaultStandingsType) {
+        case NhlStandingsTypeEnum.BY_LEAGUE:
+          return "NHL " + this.seasonString;
+        case NhlStandingsTypeEnum.BY_CONFERENCE:
+          return (standingModel.conference ? standingModel.conference.name : "") + " Conference " + this.seasonString;
+        case NhlStandingsTypeEnum.BY_DIVISION:
+          return (standingModel.division ? standingModel.division.name : "") + " Division " + this.seasonString;
+        case NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS:
+          if (standingModel.division) {
+            return standingModel.division.name + " Leaders " + this.seasonString;
+          } else if (standingModel.conference) {
+            return standingModel.conference.name + " Wild Card " + this.seasonString;
+          } else {
+            return "Wild Card " + this.seasonString;
+          }
+      }
+    }
+    return "NHL " + this.seasonString;
   }
 
   public getTeamRank(teamRecord: NhlTeamRecordModel): string {
