@@ -3,7 +3,7 @@
     <span>Team Schedule</span>
   </div>
   <div *ngFor="let game of next5TeamGames let last = last" class="future-game-container" [ngClass]="{'last-scorecard': last}">
-    <app-scorecard
+    <app-scorecard *ngIf="game"
         [game]="game"
         [smallerScorecard]="true"
     ></app-scorecard>

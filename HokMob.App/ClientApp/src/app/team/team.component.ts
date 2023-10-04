@@ -75,7 +75,7 @@ export class TeamComponent implements OnInit {
         this.teamData = teamData;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.teamData.id);
         this.loadImages();
-        this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), NhlStandingsTypeEnum.BY_CONFERENCE).then(standings => {
+        this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), NhlStandingsTypeEnum.BY_LEAGUE).then(standings => {
           if (this.teamData.conference.id === 5) {
             this.standings = standings.reverse();
           } else {

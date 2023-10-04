@@ -5,6 +5,27 @@
   overflow-x: auto;
   margin-top: $spacing-medium;
 
+  .standings-filters-container {
+    display: flex;
+    align-items: center;
+    height: 70px;
+    margin-top: $spacing-large;
+    margin-bottom: $spacing-medium;
+
+    background-color: $black-02;
+    border-radius: 25px;
+
+    .standings-type-filter:hover {
+      cursor: pointer;
+      background-color: $gray-01;
+    }
+
+    .selected-filter {
+      color: black !important;
+      background-color: white !important;
+    }
+  }
+
   app-standings {
     width: 100%;
   }
@@ -12,6 +33,14 @@
 
 // Desktop Styling
 @media only screen and (min-width: $small-display-breakpoint) {
+  .standings-type-filter {
+    font-size: large;
+    color: white;
+    background-color: $black-04;
+    margin-left: $spacing-x-large;
+    padding: $spacing-x-large;
+    border-radius: 25px;
+  }
   .main-standings {
     display: flex;
     flex-direction: row;
@@ -20,8 +49,16 @@
   }
 }
 
-// Desktop Styling
+// small display Styling
 @media only screen and (min-width: $tiny-display-breakpoint) and (max-width: $small-display-breakpoint){
+  .standings-type-filter {
+    font-size: large;
+    color: white;
+    background-color: $black-04;
+    margin-left: $spacing-x-large;
+    padding: $spacing-x-large;
+    border-radius: 25px;
+  }
   .main-standings {
     display: flex;
     flex-direction: row;
@@ -32,5 +69,12 @@
 
 // Mobile Styling
 @media only screen and (max-width: $tiny-display-breakpoint) {
-
+  .standings-type-filter {
+    font-size: medium;
+    color: white;
+    background-color: $black-04;
+    margin-left: $spacing-large;
+    padding: $spacing-large;
+    border-radius: 25px;
+  }
 }
