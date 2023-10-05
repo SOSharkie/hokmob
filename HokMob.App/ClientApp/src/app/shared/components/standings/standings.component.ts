@@ -25,9 +25,10 @@ export class StandingsComponent implements OnChanges {
   @Input()
   public showFormAndNext: boolean = true;
 
-  public teamLogos: any[][];
+  @Input()
+  public miniStandings: boolean = false;
 
-  public imagesLoaded = false;
+  public teamLogos: any[][];
 
   public get seasonString(): string {
     if (this.standings[0].season) {

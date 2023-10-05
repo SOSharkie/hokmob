@@ -10,9 +10,9 @@ import {ActivatedRoute, Router} from "@angular/router";
 export class NavigationMenuComponent {
 
   public navMenuItems: NavMenuItemModel[] = [
-    {name: "Playoffs", iconName: "ballot"},
-    {name: "Stats", iconName: "leaderboard"},
+    // {name: "Playoffs", iconName: "ballot"},
     {name: "Standings", iconName: "table_rows"},
+    {name: "Stats", iconName: "leaderboard"},
     {name: "News", iconName: "newspaper"},
     {name: "Teams", iconName: "group"}
   ];
@@ -31,6 +31,12 @@ export class NavigationMenuComponent {
         break;
       case "Standings":
         this.router.navigate(['standings']);
+        break;
+      case "Teams":
+        this.router.navigate(['standings']);
+        break;
+      case "News":
+        window.location.href = 'https://www.reddit.com/r/hockey/';
         break;
     }
   }

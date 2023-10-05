@@ -1,13 +1,13 @@
 @import "variables";
 
-.playoff-summary-container {
+.standings-summary-container {
   background-color: $black-02;
   border-radius: 25px;
   margin-left: $spacing-medium;
   margin-right: $spacing-medium;
   margin-bottom: $spacing-large;
 
-  .playoffs-title {
+  .standings-title {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -17,17 +17,8 @@
     border-bottom: 1px solid $black-03;
   }
 
-  .playoffs-title:hover {
+  .standings-title:hover {
     cursor: pointer;
     text-decoration: underline;
-  }
-
-  .series-summaries-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-
-    .series-summary {
-    }
   }
 }
