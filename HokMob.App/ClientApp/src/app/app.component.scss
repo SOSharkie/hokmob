@@ -30,6 +30,10 @@
       align-items: center;
       height: 40px;
       color: $gray-03;
+
+      .mat-icon {
+        font-size: 22px;
+      }
     }
 
     .selected {
