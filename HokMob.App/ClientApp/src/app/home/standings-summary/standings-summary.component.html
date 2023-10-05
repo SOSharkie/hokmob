@@ -1,0 +1,13 @@
+<div class="standings-summary-container">
+  <div class="standings-title" [routerLink]="['/standings']">
+    <span>NHL Standings</span>
+  </div>
+  <div *ngIf="standings" class="mini-standings">
+    <app-standings
+        [standings]="standings"
+        [showFormAndNext]="false"
+        [miniStandings]="true"
+        [defaultStandingsType]="standingsType"
+    ></app-standings>
+  </div>
+</div>

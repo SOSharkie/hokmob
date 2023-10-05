@@ -53,6 +53,7 @@ import { LeagueStandingsComponent } from './league-standings/league-standings.co
 import {SingleTeamFormComponent} from "@app/team/single-team-form/single-team-form.component";
 import { TeamScheduleComponent } from './team/team-schedule/team-schedule.component';
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
+import { StandingsSummaryComponent } from './home/standings-summary/standings-summary.component';
 
 @NgModule({
   declarations: [
@@ -93,7 +94,8 @@ import { TeamNextGameComponent } from './team/team-next-game/team-next-game.comp
     LeagueStandingsComponent,
     SingleTeamFormComponent,
     TeamScheduleComponent,
-    TeamNextGameComponent
+    TeamNextGameComponent,
+    StandingsSummaryComponent
   ],
   imports: [
     BrowserModule,
