@@ -1,9 +1,10 @@
-import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
+import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
+import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 
 export class GamePlayerModel {
 
-  public playerId: number;
+  public playerInfo: NhlBoxscorePlayerModel;
 
-  public boxscore: NhlBoxscoreModel;
+  public playerTeam: NhlTeamModel;
 
 }

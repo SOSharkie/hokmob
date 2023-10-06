@@ -60,6 +60,13 @@
     </div>
   </div>
   <div *ngIf="!futureGame" class="game-container">
+    <app-game-top-players
+      [homePlayerStats]="homePlayerStats"
+      [awayPlayerStats]="awayPlayerStats"
+      (playerClicked)="openPlayerGameDialog($event)"
+    ></app-game-top-players>
+  </div>
+  <div *ngIf="!futureGame" class="game-container">
     <app-momentum
         [gameLiveData]="gameLiveData"
     ></app-momentum>

@@ -17,9 +17,8 @@ export class NhlBoxscorePlayerSkaterStatsModel {
 
   public penaltyMinutes: number;
 
-  /**
-   * Typo is in nhl api
-   */
+  public faceOffPct: number;
+
   public faceOffWins: number;
 
   /**
@@ -45,4 +44,8 @@ export class NhlBoxscorePlayerSkaterStatsModel {
 
   public shortHandedTimeOnIce: string;
 
+  /**
+   * Not provided by NHL API, calculated in frontend.
+   */
+  public hokmobRating: number;
 }

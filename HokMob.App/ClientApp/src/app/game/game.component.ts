@@ -17,6 +17,9 @@ import {GamePlayerModel} from "@shared/models/game-player.model";
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {NhlBoxscorePlayerStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-stats.model";
+import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
+import {StatsUtils} from "@shared/utils/stats-utils";
 
 @Component({
   selector: 'app-game',
@@ -41,6 +44,10 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public homeTeamGoals: GoalModel[] = [];
 
   public awayTeamGoals: GoalModel[] = [];
+
+  public homePlayerStats: NhlBoxscorePlayerModel[] = [];
+
+  public awayPlayerStats: NhlBoxscorePlayerModel[] = [];
 
   public homeTeamLogo: any;
 
@@ -170,6 +177,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         this.gameBoxscore = gameLiveData.liveData.boxscore;
         this.gameLinescore = gameLiveData.liveData.linescore;
         this.calculateGoals();
+        this.calculatePlayerStats();
         this.loadLogos();
         if (!this.completedGame && this.gameDay === "Today") {
           this.startContinuousNhlGameUpdates();
@@ -215,9 +223,16 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public openPlayerGameDialog(playerId: number): void {
+    let isHomePlayer = this.homePlayerStats.findIndex(player => player.person.id === playerId) > -1;
     let data = new GamePlayerModel();
-    data.boxscore = this.gameLiveData.liveData.boxscore;
-    data.playerId = playerId;
+    if (isHomePlayer) {
+      data.playerInfo = this.homePlayerStats.find(player => player.person.id === playerId);
+      data.playerTeam = this.gameLiveData.gameData.teams.home;
+    } else {
+      data.playerInfo = this.awayPlayerStats.find(player => player.person.id === playerId);
+      data.playerTeam = this.gameLiveData.gameData.teams.away;
+    }
+
     this.seriesDialog.open(PlayerGameDialogComponent, {
       maxWidth: "85vw",
       backdropClass: "dialog-backdrop",
@@ -339,6 +354,25 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         this.awayTeamGoals.push(goal);
       }
     });
+  }
+
+  private calculatePlayerStats(): void {
+    const homeTeam = this.gameLiveData.liveData.boxscore.teams.home;
+    const awayTeam = this.gameLiveData.liveData.boxscore.teams.away;
+    let homePlayerStats: NhlBoxscorePlayerModel[] = [];
+    let awayPlayerStats: NhlBoxscorePlayerModel[] = [];
+    let homePlayers = homeTeam.skaters.filter(player => !homeTeam.scratches.includes(player)).map(id => "ID" + id);
+    let awayPlayers = awayTeam.skaters.filter(player => !awayTeam.scratches.includes(player)).map(id => "ID" + id);
+    homePlayers.forEach((playerId: string) => {
+      homePlayerStats.unshift(homeTeam.players[playerId]);
+      homePlayerStats[0].stats.skaterStats.hokmobRating = StatsUtils.calculateSkaterHokmobRating(homePlayerStats[0].stats.skaterStats);
+    });
+    awayPlayers.forEach((playerId: string) => {
+      awayPlayerStats.unshift(awayTeam.players[playerId]);
+      awayPlayerStats[0].stats.skaterStats.hokmobRating = StatsUtils.calculateSkaterHokmobRating(awayPlayerStats[0].stats.skaterStats);
+    });
+    this.homePlayerStats = homePlayerStats.sort((a, b) => b.stats.skaterStats.hokmobRating - a.stats.skaterStats.hokmobRating);
+    this.awayPlayerStats = awayPlayerStats.sort((a, b) => b.stats.skaterStats.hokmobRating - a.stats.skaterStats.hokmobRating);
   }
 
   private loadLogos(): void {

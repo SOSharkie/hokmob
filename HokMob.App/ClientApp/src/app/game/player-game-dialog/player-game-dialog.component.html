@@ -31,16 +31,20 @@
     </div>
     <div class="player-game-stats">
       <div class="game-stat-item">
+        <span class="game-stat-label">HokMob Rating</span>
+        <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.stats.skaterStats.hokmobRating)}">{{player.stats.skaterStats.hokmobRating}}</span>
+      </div>
+      <div class="game-stat-item">
         <span class="game-stat-label">Time On Ice</span>
         <span>{{player.stats.skaterStats.timeOnIce}}</span>
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Goals</span>
-        <span class="game-stat-value" [ngStyle]="{'background-color': player.stats.skaterStats.goals > 0 ? teamColor : ''}">{{player.stats.skaterStats.goals}}</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.goals}}</span>
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Assists</span>
-        <span class="game-stat-value" [ngStyle]="{'background-color': player.stats.skaterStats.assists > 0 ? teamColor : ''}">{{player.stats.skaterStats.assists}}</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.assists}}</span>
       </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Shots</span>

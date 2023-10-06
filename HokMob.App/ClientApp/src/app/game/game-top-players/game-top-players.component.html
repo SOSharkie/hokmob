@@ -1,0 +1,51 @@
+<div class="game-top-players-container">
+  <div class="game-top-players-header">
+    <span>Top Players</span>
+  </div>
+  <div *ngIf="imagesLoaded" class="top-players-container">
+    <div class="home-players">
+      <div *ngFor="let player of homePlayerStats.slice(0, numPlayersToShow), let i = index" (click)="clickPlayer(player)" class="top-player">
+        <div class="player-headshot-container">
+          <img [src]="homePlayerHeadshots[i]" class="player-headshot">
+        </div>
+        <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(player)}">
+          <span>{{player.stats.skaterStats.hokmobRating}}</span>
+        </div>
+        <div class="player-goal-container" *ngIf="player.stats.skaterStats.goals > 0">
+          <img class="puck-icon" src="assets/puck.png">
+        </div>
+        <div class="player-goal-container goal-2" *ngIf="player.stats.skaterStats.goals > 1">
+          <img class="puck-icon" src="assets/puck.png">
+        </div>
+        <div class="player-goal-container goal-3" *ngIf="player.stats.skaterStats.goals > 2">
+          <img class="puck-icon" src="assets/puck.png">
+        </div>
+        <div class="player-name">
+          <span>{{player.person.fullName}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="away-players">
+      <div *ngFor="let player of awayPlayerStats.slice(0, numPlayersToShow), let i = index" (click)="clickPlayer(player)" class="top-player">
+        <div class="player-headshot-container">
+          <img [src]="awayPlayerHeadshots[i]" class="player-headshot">
+        </div>
+        <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(player)}">
+          <span>{{player.stats.skaterStats.hokmobRating}}</span>
+        </div>
+        <div class="player-goal-container" *ngIf="player.stats.skaterStats.goals > 0">
+          <img class="puck-icon" src="assets/puck.png">
+        </div>
+        <div class="player-goal-container goal-2" *ngIf="player.stats.skaterStats.goals > 1">
+          <img class="puck-icon" src="assets/puck.png">
+        </div>
+        <div class="player-goal-container goal-3" *ngIf="player.stats.skaterStats.goals > 2">
+          <img class="puck-icon" src="assets/puck.png">
+        </div>
+        <div class="player-name">
+          <span>{{player.person.fullName}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
