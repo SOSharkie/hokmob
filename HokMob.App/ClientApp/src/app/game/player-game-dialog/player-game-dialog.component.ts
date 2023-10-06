@@ -8,6 +8,7 @@ import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-p
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 import {Router} from "@angular/router";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {StatsUtils} from "../../shared/utils/stats-utils";
 
 @Component({
   selector: 'app-player-game-dialog',
@@ -16,8 +17,6 @@ import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
   encapsulation: ViewEncapsulation.None
 })
 export class PlayerGameDialogComponent implements OnInit {
-
-  public playerId: number;
 
   public player: NhlBoxscorePlayerModel;
 
@@ -52,16 +51,11 @@ export class PlayerGameDialogComponent implements OnInit {
               @Inject(MAT_DIALOG_DATA) public data: GamePlayerModel) {}
 
   public ngOnInit(): void {
-    this.playerId = this.data.playerId;
-    this.player = this.data.boxscore.teams.home.players["ID" + this.playerId];
-    this.playerTeam = this.data.boxscore.teams.home.team;
-    if (!this.player) {
-      this.player = this.data.boxscore.teams.away.players["ID" + this.playerId];
-      this.playerTeam = this.data.boxscore.teams.away.team;
-    }
+    this.player = this.data.playerInfo;
+    this.playerTeam = this.data.playerTeam;
     this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.playerTeam.id);
     this.loadImages();
-    this.nhlStatsService.getNhlPlayerStats(this.playerId.toString()).then(result => {
+    this.nhlStatsService.getNhlPlayerStats(this.player.person.id.toString()).then(result => {
       this.player.person = result;
       this.countryFlagPath = "assets/flags/" + this.player.person.birthCountry + ".png"
     });
@@ -93,4 +87,6 @@ export class PlayerGameDialogComponent implements OnInit {
   public closeDialog(): void {
     this.dialogRef.close();
   }
+
+  protected readonly StatsUtils = StatsUtils;
 }

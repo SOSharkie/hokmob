@@ -54,6 +54,7 @@ import {SingleTeamFormComponent} from "@app/team/single-team-form/single-team-fo
 import { TeamScheduleComponent } from './team/team-schedule/team-schedule.component';
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
 import { StandingsSummaryComponent } from './home/standings-summary/standings-summary.component';
+import { GameTopPlayersComponent } from './game/game-top-players/game-top-players.component';
 
 @NgModule({
   declarations: [
@@ -95,7 +96,8 @@ import { StandingsSummaryComponent } from './home/standings-summary/standings-su
     SingleTeamFormComponent,
     TeamScheduleComponent,
     TeamNextGameComponent,
-    StandingsSummaryComponent
+    StandingsSummaryComponent,
+    GameTopPlayersComponent
   ],
   imports: [
     BrowserModule,

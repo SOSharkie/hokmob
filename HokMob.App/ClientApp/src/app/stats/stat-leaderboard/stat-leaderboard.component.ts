@@ -40,7 +40,7 @@ export class StatLeaderboardComponent implements OnChanges {
     return [];
   }
 
-  constructor(private nhlLogoService: NhlImageService) {
+  constructor(private nhlImageService: NhlImageService) {
   }
 
   public getPlayerTeamColor(player: NhlPlayerModel): string {
@@ -75,7 +75,7 @@ export class StatLeaderboardComponent implements OnChanges {
         this.teamLogos[index] = NhlTeamLogoUtils.getTeamPrimaryLogo(team.id);
       });
       this.topPlayersList.slice(0, 5).forEach((player, index) => {
-        this.nhlLogoService.getNhlPlayerHeadshot(player.person.id).then(data => {
+        this.nhlImageService.getNhlPlayerHeadshot(player.person.id).then(data => {
           let reader = new FileReader();
           reader.addEventListener("load", () => {
             this.playerHeadshots[index] = reader.result;

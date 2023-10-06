@@ -1,0 +1,124 @@
+@import "variables";
+
+.game-top-players-container {
+  background-color: $black-02;
+  border-radius: 25px;
+  color: white;
+
+  .game-top-players-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+  }
+
+  .top-players-container {
+    display: flex;
+    flex-direction: row;
+
+    .home-players, .away-players {
+      width: 50%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .top-player {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 130px;
+      height: 75px;
+      margin-bottom: $spacing-large;
+
+      .player-headshot-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 45px;
+        width: 45px;
+        border-radius: 50%;
+        overflow: hidden;
+
+        .player-headshot {
+          height: 52px;
+          width: 52px;
+          margin-top: $spacing-medium;
+        }
+      }
+
+
+      .hokmob-score-container {
+        position: absolute;
+        width: 30px;
+        padding: $spacing-x-small $spacing-small;
+        text-align: center;
+        background-color: $green-01;
+        border-radius: 15px;
+      }
+
+      .player-goal-container {
+        position: absolute;
+        width: 17px;
+        height: 17px;
+        padding: $spacing-x-small;
+        border-radius: 50%;
+        border: 1px solid $gray-02;
+        background-color: $gray-01;
+
+        .puck-icon {
+          height: 17px;
+          width: 17px;
+        }
+      }
+      .goal-2 {
+        margin-left: 12px;
+      }
+      .goal-3 {
+        margin-left: 24px;
+      }
+
+      .player-name {
+        font-size: smaller;
+      }
+    }
+
+    .top-player:hover {
+      cursor: pointer;
+      opacity: 0.7;
+    }
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .top-players-container {
+
+    .hokmob-score-container {
+      left: 76px;
+      top: -5px;
+    }
+    .player-goal-container {
+      left: 76px;
+      top: 22px;
+    }
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .top-players-container {
+
+    .hokmob-score-container {
+      left: 78px;
+      top: -5px;
+    }
+    .player-goal-container {
+      left: 78px;
+      top: 22px;
+    }
+  }
+}

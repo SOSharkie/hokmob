@@ -1,5 +1,6 @@
 import {NhlBoxscoreTeamStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-team-stats.model";
 import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
+import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
 
 export class NhlBoxscoreTeamModel {
 
@@ -17,7 +18,7 @@ export class NhlBoxscoreTeamModel {
 
   public onIcePlus: any[];
 
-  public scratches: any[];
+  public scratches: number[];
 
   public penaltyBox: any[];
 
