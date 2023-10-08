@@ -80,13 +80,8 @@ $central-info-width: 205px;
       text-align: center;
       padding: $spacing-small;
 
-      :hover {
-        text-decoration: underline;
-        cursor: pointer;
-      }
-
       .home-team-logo {
-        height: 50px;
+        width: 50px;
         margin-left: $spacing-medium;
         margin-bottom: $spacing-x-small;
       }
@@ -99,17 +94,17 @@ $central-info-width: 205px;
       text-align: center;
       padding: $spacing-small;
 
-      :hover {
-        text-decoration: underline;
-        cursor: pointer;
-      }
-
       .away-team-logo {
-        height: 50px;
+        width: 50px;
         margin-right: $spacing-medium;
         margin-bottom: $spacing-x-small;
       }
     }
+  }
+
+  .score-container:hover {
+    cursor: pointer;
+    opacity: 0.7;
   }
 
   // Desktop Styling

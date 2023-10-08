@@ -1,5 +1,7 @@
 import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
 import {NhlBoxscorePlayerSkaterStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-skater-stats.model";
+import {NhlBoxscorePlayerGoalieStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-goalie-stats.model";
+import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
 
 export class StatsUtils {
 
@@ -25,6 +27,22 @@ export class StatsUtils {
     hokmobRating += (skaterStats.faceoffTaken < 3 ? 0 : (-0.5 + (skaterStats.faceOffWins / skaterStats.faceoffTaken)));
 
     return parseFloat(Math.min(10.0, hokmobRating).toFixed(1));
+  }
+
+  public static calculateGoalieHokMobRating(goalieStats: NhlBoxscorePlayerGoalieStatsModel): number {
+    const savePercentBreakpoint = 91;
+    let hokmobRating = 5;
+    if (goalieStats.savePercentage && goalieStats.shots > 5) {
+      if (goalieStats.savePercentage >= savePercentBreakpoint) {
+        hokmobRating += (goalieStats.savePercentage - savePercentBreakpoint);
+      } else {
+        hokmobRating += ((goalieStats.savePercentage - savePercentBreakpoint) / 3);
+      }
+      hokmobRating += (goalieStats.saves / 15);
+      return parseFloat(Math.max(0, Math.min(10.0, hokmobRating)).toFixed(1));
+    } else {
+      return 0;
+    }
   }
 
   public static getHokmobRatingColor(score: number): string {
@@ -53,5 +71,25 @@ export class StatsUtils {
     let fieldB: string = playerB.person.stats[0].splits[0].stat[field];
     let valueB = Number(fieldB.replace(":", "."));
     return valueB - valueA;
+  }
+
+  public static sortByGoalieTimeOnIce(playerA: NhlBoxscorePlayerModel, playerB: NhlBoxscorePlayerModel): number {
+    let fieldA: string = playerA.stats.goalieStats.timeOnIce;
+    let valueA = Number(fieldA.replace(":", "."));
+    let fieldB: string = playerB.stats.goalieStats.timeOnIce;
+    let valueB = Number(fieldB.replace(":", "."));
+    return valueB - valueA;
+  }
+
+  public static sortByHokMobRating(playerA: NhlBoxscorePlayerModel, playerB: NhlBoxscorePlayerModel): number {
+    if (playerB.stats.skaterStats && playerA.stats.skaterStats) {
+      return playerB.stats.skaterStats.hokmobRating - playerA.stats.skaterStats.hokmobRating;
+    } else if (playerB.stats.skaterStats) {
+      return playerB.stats.skaterStats.hokmobRating - playerA.stats.goalieStats.hokmobRating;
+    } else if (playerA.stats.skaterStats) {
+      return playerB.stats.goalieStats.hokmobRating - playerA.stats.skaterStats.hokmobRating;
+    } else {
+      return playerB.stats.goalieStats.hokmobRating - playerA.stats.goalieStats.hokmobRating;
+    }
   }
 }

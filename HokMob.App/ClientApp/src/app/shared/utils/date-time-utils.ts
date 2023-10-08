@@ -54,4 +54,12 @@ export class DateTimeUtils {
       return currentYear.toString() + nextYear.toString();
     }
   }
+
+  public static getCurrentNhlSeasonDisplayValue(): string {
+    return this.getCurrentNhlSeason().substring(0, 4) + "-" + this.getCurrentNhlSeason().substring(4);
+  }
+
+  public static getCurrentNhlPlayoffsDisplayValue(): string {
+    return this.getCurrentNhlSeason().substring(4);
+  }
 }

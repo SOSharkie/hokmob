@@ -3,7 +3,7 @@
     <span *ngIf="futureGame">Next Game</span>
     <span *ngIf="liveGame">Ongoing Game</span>
   </div>
-  <div class="score-container" >
+  <div class="score-container" [routerLink]="['/game', gameModel.gamePk]">
     <div class="home-team-header">
       <span>{{homeTeamShortName}}</span>
       <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="homeTeamLogo">

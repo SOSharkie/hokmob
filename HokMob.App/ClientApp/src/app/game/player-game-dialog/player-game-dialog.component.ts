@@ -89,4 +89,5 @@ export class PlayerGameDialogComponent implements OnInit {
   }
 
   protected readonly StatsUtils = StatsUtils;
+  protected readonly Math = Math;
 }

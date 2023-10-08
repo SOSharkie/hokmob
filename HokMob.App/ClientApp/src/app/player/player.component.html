@@ -38,7 +38,7 @@
     </div>
     <div *ngIf="currentPlayoffStats" class="playoff-stats">
       <app-player-stats
-          [statTitle]="'2023 NHL Playoffs Stats'"
+          [statTitle]="currentPlayoffs + ' NHL Playoffs Stats'"
           [player]="player"
           [stats]="currentPlayoffStats"
           [teamColor]="teamColor"
@@ -47,7 +47,7 @@
     </div>
     <div *ngIf="currentYearStats" class="regular-season-stats">
       <app-player-stats
-          [statTitle]="'2022-2023 NHL Regular Season Stats'"
+          [statTitle]="currentSeason + ' NHL Regular Season Stats'"
           [player]="player"
           [stats]="currentYearStats"
           [teamColor]="teamColor"

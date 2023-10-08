@@ -20,6 +20,7 @@ import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlBoxscorePlayerStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-stats.model";
 import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
+import {NhlBoxscorePlayerSkaterStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-skater-stats.model";
 
 @Component({
   selector: 'app-game',
@@ -151,6 +152,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         return "Playoffs";
       } else if (this.previousUrl.includes("player")) {
         return "Player";
+      } else if (this.previousUrl.includes("team")) {
+        return "Team";
       }
     }
     return "Games";
@@ -374,16 +377,27 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     let awayPlayerStats: NhlBoxscorePlayerModel[] = [];
     let homePlayers = homeTeam.skaters.filter(player => !homeTeam.scratches.includes(player)).map(id => "ID" + id);
     let awayPlayers = awayTeam.skaters.filter(player => !awayTeam.scratches.includes(player)).map(id => "ID" + id);
+    homePlayers = homePlayers.concat(homeTeam.goalies.map(id => "ID" + id));
+    awayPlayers = awayPlayers.concat(awayTeam.goalies.map(id => "ID" + id));
+
     homePlayers.forEach((playerId: string) => {
       homePlayerStats.unshift(homeTeam.players[playerId]);
-      homePlayerStats[0].stats.skaterStats.hokmobRating = StatsUtils.calculateSkaterHokmobRating(homePlayerStats[0].stats.skaterStats);
+      if (homePlayerStats[0].stats.skaterStats) {
+        homePlayerStats[0].stats.skaterStats.hokmobRating = StatsUtils.calculateSkaterHokmobRating(homePlayerStats[0].stats.skaterStats);
+      } else {
+        homePlayerStats[0].stats.goalieStats.hokmobRating = StatsUtils.calculateGoalieHokMobRating(homePlayerStats[0].stats.goalieStats);
+      }
     });
     awayPlayers.forEach((playerId: string) => {
       awayPlayerStats.unshift(awayTeam.players[playerId]);
-      awayPlayerStats[0].stats.skaterStats.hokmobRating = StatsUtils.calculateSkaterHokmobRating(awayPlayerStats[0].stats.skaterStats);
+      if (awayPlayerStats[0].stats.skaterStats) {
+        awayPlayerStats[0].stats.skaterStats.hokmobRating = StatsUtils.calculateSkaterHokmobRating(awayPlayerStats[0].stats.skaterStats);
+      } else {
+        awayPlayerStats[0].stats.goalieStats.hokmobRating = StatsUtils.calculateGoalieHokMobRating(awayPlayerStats[0].stats.goalieStats);
+      }
     });
-    this.homePlayerStats = homePlayerStats.sort((a, b) => b.stats.skaterStats.hokmobRating - a.stats.skaterStats.hokmobRating);
-    this.awayPlayerStats = awayPlayerStats.sort((a, b) => b.stats.skaterStats.hokmobRating - a.stats.skaterStats.hokmobRating);
+    this.homePlayerStats = homePlayerStats.sort((a, b) => StatsUtils.sortByHokMobRating(a,b));
+    this.awayPlayerStats = awayPlayerStats.sort((a, b) => StatsUtils.sortByHokMobRating(a,b));
   }
 
   private loadLogos(): void {
