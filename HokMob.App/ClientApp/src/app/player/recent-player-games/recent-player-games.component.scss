@@ -17,6 +17,7 @@
 
   .recent-games-table {
     width: 100%;
+    border-collapse: collapse;
 
     .player-game-header {
       text-align: left;
@@ -29,10 +30,11 @@
     }
 
     .player-game-row {
+      border-bottom: 1px solid $black-04;
+
       td {
         font-weight: lighter;
         padding: $spacing-x-large;
-        border-bottom: 1px solid $black-04;
       }
 
       .date-cell {
@@ -54,6 +56,7 @@
 
       .opponent-logo {
         width: 30px;
+        height: 30px;
         translate: -6px 4px;
       }
 
@@ -69,9 +72,7 @@
     }
 
     .last-row {
-      td {
-        border-bottom: none !important;
-      }
+      border-bottom: none !important;
     }
 
     .stat-cell {

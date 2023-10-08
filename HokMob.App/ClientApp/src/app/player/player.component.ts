@@ -44,6 +44,10 @@ export class PlayerComponent implements OnInit {
 
   public recentGames: NhlGameModel[];
 
+  public currentSeason: string;
+
+  public currentPlayoffs: string;
+
   private readonly nhlLeagueId: number = 133;
 
   public get backButtonLabel(): string {
@@ -89,7 +93,7 @@ export class PlayerComponent implements OnInit {
         this.nhlGameService.getTeamGames(sixtyDaysAgo.toDate(), yesterday.toDate(), this.player.currentTeam.id).then(games => {
           this.recentGames = games.dates.map(date => date.games[0]).reverse().slice(0, 10);
 
-          if (this.recentGames.length < 5) {
+          if (this.recentGames.length < 10) {
             const twoHundredDaysAgo = yesterday.subtract(200, 'days');
             this.nhlGameService.getTeamGames(twoHundredDaysAgo.toDate(), yesterday.toDate(), this.player.currentTeam.id).then(games => {
               this.recentGames = games.dates.map(date => date.games[0]).reverse().slice(0, 10);
@@ -130,6 +134,8 @@ export class PlayerComponent implements OnInit {
     this.regularSeasonGames = [];
     this.recentGames = [];
     this.playerId = params['id'];
+    this.currentSeason = DateTimeUtils.getCurrentNhlSeasonDisplayValue();
+    this.currentPlayoffs = DateTimeUtils.getCurrentNhlPlayoffsDisplayValue();
   }
 
   private setCurrentStatModels(): void {

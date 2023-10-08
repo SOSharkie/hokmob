@@ -1,4 +1,31 @@
+@import "variables";
 
-.about-header {
-  color: white;
+.about-container {
+  padding: $spacing-large;
+
+  .about-header {
+    color: white;
+  }
+
+  .about-text {
+    padding: $spacing-small;
+    width: 95%;
+    color: white;
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .about-text {
+    font-size: 20px;
+    line-height: 26px;
+  }
+}
+
+// Mobile Styling
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .about-text {
+    font-size: 15px;
+    line-height: 20px;
+  }
 }

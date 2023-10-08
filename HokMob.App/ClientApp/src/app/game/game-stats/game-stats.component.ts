@@ -1,6 +1,5 @@
 import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import { Chart, registerables } from 'chart.js';
-import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 Chart.register(...registerables);

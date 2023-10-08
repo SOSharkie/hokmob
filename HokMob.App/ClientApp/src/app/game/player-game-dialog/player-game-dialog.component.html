@@ -29,7 +29,7 @@
     <div class="stats-label">
       <span>Top Stats</span>
     </div>
-    <div class="player-game-stats">
+    <div *ngIf="player.stats.skaterStats" class="player-game-stats">
       <div class="game-stat-item">
         <span class="game-stat-label">HokMob Rating</span>
         <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.stats.skaterStats.hokmobRating)}">{{player.stats.skaterStats.hokmobRating}}</span>
@@ -62,18 +62,36 @@
         <span class="game-stat-label">Face Offs</span>
         <span class="game-stat-value">{{player.stats.skaterStats.faceOffWins}}/{{player.stats.skaterStats.faceoffTaken}}</span>
       </div>
-<!--      <div class="game-stat-item">-->
-<!--        <span class="game-stat-label">Plus/Minus</span>-->
-<!--        <span class="game-stat-value">{{player.stats.skaterStats.plusMinus}}</span>-->
-<!--      </div>-->
+      <div class="game-stat-item">
+        <span class="game-stat-label">Plus/Minus</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.plusMinus}}</span>
+      </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Penalty Minutes</span>
         <span class="game-stat-value" [ngStyle]="{'color': player.stats.skaterStats.penaltyMinutes > 0 ? '#e34d53' : ''}">{{player.stats.skaterStats.penaltyMinutes}}</span>
       </div>
-<!--      <div class="game-stat-item">-->
-<!--        <span class="game-stat-label">Giveaways</span>-->
-<!--        <span class="game-stat-value">{{player.stats.skaterStats.giveaways}}</span>-->
-<!--      </div>-->
+    </div>
+    <div *ngIf="player.stats.goalieStats" class="player-game-stats">
+      <div class="game-stat-item">
+        <span class="game-stat-label">HokMob Rating</span>
+        <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.stats.goalieStats.hokmobRating)}">{{player.stats.goalieStats.hokmobRating}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Time On Ice</span>
+        <span class="game-stat-value">{{player.stats.goalieStats.timeOnIce}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Save %</span>
+        <span class="game-stat-value">{{player.stats.goalieStats.savePercentage / 100 | savePercentage}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Saves</span>
+        <span class="game-stat-value">{{player.stats.goalieStats.saves}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Shots Against</span>
+        <span class="game-stat-value">{{player.stats.goalieStats.shots}}</span>
+      </div>
     </div>
   </div>
   <footer class="player-footer-container">

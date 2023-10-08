@@ -80,6 +80,19 @@
       .goal-3 {
         margin-left: 24px;
       }
+      .goalie-icon-container {
+        position: absolute;
+        width: 21px;
+        height: 21px;
+        border-radius: 50%;
+        border: 1px solid $gray-02;
+        background-color: white;
+
+        .goalie-icon {
+          height: 21px;
+          width: 21px;
+        }
+      }
 
       .player-name {
         font-size: smaller;
@@ -105,6 +118,10 @@
       left: 76px;
       top: 22px;
     }
+    .goalie-icon-container {
+      left: 30px;
+      top: -5px;
+    }
   }
 }
 
@@ -119,6 +136,10 @@
     .player-goal-container {
       left: 78px;
       top: 22px;
+    }
+    .goalie-icon-container {
+      left: 30px;
+      top: -5px;
     }
   }
 }

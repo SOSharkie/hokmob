@@ -8,7 +8,6 @@
     display: flex;
     align-items: center;
     height: 100px;
-    margin: $spacing-medium $spacing-medium $spacing-x-small $spacing-medium;
     background-color: $black-02;
     border-radius: 25px;
     position: relative;
@@ -83,18 +82,11 @@
     justify-content: flex-start;
     align-items: flex-start;
 
-    .team-standings {
-      width: 65%;
-      min-width: 375px;
-      margin: $spacing-small;
-    }
-
     .team-info-container {
       display: flex;
       flex-direction: column;
       min-width: 250px;
       min-height: 700px;
-      margin: $spacing-small;
 
       .team-form-container, .team-next-game-container, .next-game-container {
         margin-top: $spacing-large;
@@ -103,41 +95,45 @@
   }
 }
 
-// Small Desktop Styling
+// Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
-  .back-container {
-    width: 80px;
-    margin-left: $spacing-x-large;
+  .team-header {
+    margin: $spacing-medium $spacing-medium $spacing-x-small $spacing-medium;
 
-    .games-back-button {
-      font-size: large;
+    .back-container {
+      width: 80px;
+      margin-left: $spacing-x-large;
 
-      .back-icon {
-        height: 25px;
-        width: 25px;
-        margin-right: $spacing-large;
+      .games-back-button {
+        font-size: large;
+
+        .back-icon {
+          height: 25px;
+          width: 25px;
+          margin-right: $spacing-large;
+        }
       }
     }
-  }
-  .team-logo-container {
-    margin-left: $spacing-large;
+    .team-logo-container {
+      margin-left: $spacing-large;
 
-    .team-logo {
-      height: 85px;
+      .team-logo {
+        height: 85px;
+      }
     }
-  }
-  .team-info {
-    margin-left: $spacing-large;
-    margin-bottom: $spacing-medium;
-    padding-right: $spacing-medium;
+    .team-info {
+      margin-left: $spacing-large;
+      margin-bottom: $spacing-medium;
+      padding-right: $spacing-medium;
 
-    .team-name {
-      font-size: x-large;
-    }
+      .team-name {
+        font-size: x-large;
+      }
 
-    .team-division {
-      .team-division-label {
-        font-size: large;
+      .team-division {
+        .team-division-label {
+          font-size: large;
+        }
       }
     }
   }
@@ -148,57 +144,71 @@
     .team-info-container {
       width: 32%;
     }
+    .team-standings {
+      width: 65%;
+      min-width: 375px;
+      margin: $spacing-small;
+    }
   }
 }
 
 // Mobile Display
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .back-container {
-    width: 60px;
-    margin-left: $spacing-large;
+  .team-header {
+    margin: $spacing-small $spacing-x-small 0 $spacing-x-small;
 
-    .games-back-button {
-      font-size: medium;
+    .back-container {
+      width: 70px;
+      margin-left: $spacing-large;
 
-      .back-icon {
-        height: 20px;
-        width: 20px;
-        margin-right: $spacing-large;
+      .games-back-button {
+        font-size: medium;
 
-        .material-icons {
-          font-size: 20px;
+        .back-icon {
+          height: 20px;
+          width: 20px;
+          margin-right: $spacing-large;
+
+          .material-icons {
+            font-size: 20px;
+          }
         }
       }
     }
-  }
-  .team-logo-container {
-    margin-left: $spacing-medium;
+    .team-logo-container {
+      margin-left: $spacing-medium;
 
-    .team-logo {
-      height: 75px;
+      .team-logo {
+        height: 75px;
+      }
     }
-  }
-  .team-info {
-    margin-left: $spacing-medium;
-    margin-bottom: $spacing-small;
-    padding-right: $spacing-small;
+    .team-info {
+      margin-left: $spacing-medium;
+      margin-bottom: $spacing-small;
+      padding-right: $spacing-small;
 
-    .team-name {
-      font-size: larger;
-    }
+      .team-name {
+        font-size: larger;
+      }
 
-    .team-division {
-      .team-division-label {
-        font-size: medium;
+      .team-division {
+        .team-division-label {
+          font-size: medium;
+        }
       }
     }
   }
 
   .team-data-container {
-    flex-direction: column;
+    flex-direction: column-reverse;
+    margin: $spacing-x-small;
 
     .team-info-container {
       width: 100%;
+    }
+    .team-standings {
+      margin-top: $spacing-small;
+      width: 100%
     }
   }
 }
