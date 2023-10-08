@@ -17,6 +17,13 @@
       padding: $spacing-x-small;
     }
 
+    .goal-icon-container {
+      padding: $spacing-x-small;
+      border-radius: 50%;
+      border: 1px solid $gray-03;
+      background-color: $gray-01;
+    }
+
     .event-text {
       display: flex;
       flex-direction: column;
@@ -106,6 +113,15 @@
         }
       }
     }
+    .goal-icon-container {
+      width: 25px;
+      height: 25px;
+
+      .puck-icon {
+        height: 25px;
+        width: 25px;
+      }
+    }
     .event-icon {
       width: 25px;
       height: 25px;
@@ -148,6 +164,15 @@
 
       .event-secondary-label {
         display: none;
+      }
+    }
+    .goal-icon-container {
+      width: 20px;
+      height: 20px;
+
+      .puck-icon {
+        height: 20px;
+        width: 20px;
       }
     }
 

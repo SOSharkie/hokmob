@@ -1,0 +1,29 @@
+<div class="mini-event-timeline-container">
+  <div class="mini-event-timeline-header">
+    <div *ngIf="homeTeamLogo" class="">
+      <img [src]="homeTeamLogo" alt="" class="team-logo">
+    </div>
+    <span>Event Timeline</span>
+    <div *ngIf="awayTeamLogo" class="">
+      <img [src]="awayTeamLogo" alt="" class="team-logo">
+    </div>
+  </div>
+  <div *ngFor="let period of periodEvents, let i = index">
+    <ng-container *ngIf="hasPeriod(i)">
+      <div class="period-start-container">
+        <span class="period-label">{{getPeriodLabel(i)}}</span>
+      </div>
+      <ng-container *ngFor="let event of period">
+        <app-mini-event
+            [event]="event"
+            [homeTeamId]="gameLiveData.gameData.teams.home.id"
+            [awayTeamId]="gameLiveData.gameData.teams.away.id"
+            (playerClicked)="onPlayerClicked($event)"
+        ></app-mini-event>
+      </ng-container>
+    </ng-container>
+  </div>
+  <div *ngIf="isGameFinal" class="period-start-container">
+    <span class="period-label">End</span>
+  </div>
+</div>

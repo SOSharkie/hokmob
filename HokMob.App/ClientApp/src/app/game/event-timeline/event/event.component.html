@@ -24,7 +24,10 @@
         <span class="event-secondary-label">{{penaltyType}}</span>
       </div>
     </div>
-    <mat-icon *ngIf="isHomeEvent" [fontIcon]="fontIcon" class="event-icon"></mat-icon>
+    <mat-icon *ngIf="isHomeEvent && !isEventGoal" [fontIcon]="fontIcon" class="event-icon"></mat-icon>
+    <div class="goal-icon-container" *ngIf="isHomeEvent && isEventGoal">
+      <img class="puck-icon" src="assets/puck.png">
+    </div>
   </div>
   <div class="event-time">
     <span>{{periodTime}}</span>

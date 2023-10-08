@@ -55,6 +55,8 @@ import { TeamScheduleComponent } from './team/team-schedule/team-schedule.compon
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
 import { StandingsSummaryComponent } from './home/standings-summary/standings-summary.component';
 import { GameTopPlayersComponent } from './game/game-top-players/game-top-players.component';
+import { MiniEventTimelineComponent } from './game/mini-event-timeline/mini-event-timeline.component';
+import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-event.component';
 
 @NgModule({
   declarations: [
@@ -97,7 +99,9 @@ import { GameTopPlayersComponent } from './game/game-top-players/game-top-player
     TeamScheduleComponent,
     TeamNextGameComponent,
     StandingsSummaryComponent,
-    GameTopPlayersComponent
+    GameTopPlayersComponent,
+    MiniEventTimelineComponent,
+    MiniEventComponent
   ],
   imports: [
     BrowserModule,
