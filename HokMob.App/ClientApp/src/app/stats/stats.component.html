@@ -1,5 +1,5 @@
 <div class="stats-container">
-  <div class="stat-filters-container">
+  <div *ngIf="showFilters" class="stat-filters-container">
     <div (click)="updateGameType(true)"
          class="stat-filter-button"
          [ngClass]="{'selected-filter': playoffsSelected}">

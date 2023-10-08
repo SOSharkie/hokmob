@@ -3,7 +3,7 @@
     <span>{{statTitle}}</span>
   </div>
   <div *ngIf="topPlayersList" class="stat-players">
-    <div class="stat-leader stat-player" [routerLink]="['/player', statLeader.person.id]">
+    <div *ngIf="statLeader" class="stat-leader stat-player" [routerLink]="['/player', statLeader.person.id]">
       <div class="player-container">
         <div class="leader-headshot-container">
           <img [src]="playerHeadshots[0]" class="leader-headshot">
