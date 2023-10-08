@@ -87,6 +87,13 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "";
   }
 
+  public get liveGame(): boolean {
+    if (this.gameLiveData) {
+      return NhlGameInfoUtils.isLiveGame(this.gameLiveData.gameData.status);
+    }
+    return false;
+  }
+
   public get completedGame(): boolean {
     if (this.gameLiveData) {
       return NhlGameInfoUtils.isCompletedGame(this.gameLiveData.gameData.status);
@@ -156,6 +163,10 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
           + " till " + this.nextPeriod;
     }
     return "";
+  }
+
+  public get showTopPlayers(): boolean {
+    return this.completedGame || (this.liveGame && this.gameLiveData.liveData.linescore.currentPeriod > 1);
   }
 
   private previousUrl: string;

@@ -2,6 +2,12 @@
 
 $central-info-width: 130px;
 
+.game-page-container {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+}
+
 .main-game {
   margin-top: $spacing-small;
   display: flex;
@@ -159,6 +165,13 @@ $central-info-width: 130px;
   }
 }
 
+.side-game {
+  margin-top: $spacing-small;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .dialog-backdrop {
   background: rgba(0, 0, 0, 0.65);
 }
@@ -181,10 +194,20 @@ $central-info-width: 130px;
   .game-container {
     width: 900px;
   }
+  .mobile-only {
+    display: none;
+  }
 }
 
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
+  .game-page-container {
+    flex-direction: column;
+  }
+  .side-game {
+    display: none;
+  }
+
   .game-header {
     width: 99%;
 

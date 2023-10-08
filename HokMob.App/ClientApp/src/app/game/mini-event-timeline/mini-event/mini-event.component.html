@@ -1,0 +1,40 @@
+<div class="mini-event-container">
+  <div *ngIf="isEventGoal" class="goal-event" [ngClass]="isHomeEvent ? 'home-event' : 'away-event'">
+    <div class="period-time-container">
+      <span>{{periodTime}}</span>
+    </div>
+    <div class="goal-icon-container" *ngIf="isEventGoal">
+      <img class="puck-icon" src="assets/puck.png">
+    </div>
+    <div class="event-details">
+      <div class="event-main-label" (click)="onMainPlayerClicked()">
+        <span class="color-green">{{eventPlayerName}}</span>
+        <span class="score-update">
+          <span> (</span>
+          <span class="color-green">{{goalEventHomeScore}}</span>
+          <span> - </span>
+          <span>{{goalEventAwayScore}}</span>
+          <span>)</span>
+        </span>
+      </div>
+      <div>
+        <span *ngIf="goalEventAssists.length > 0" class="event-secondary-label">Assists: </span>
+        <span *ngIf="goalEventAssists.length === 0" class="event-secondary-label">Unassisted</span>
+        <span *ngFor="let assist of goalEventAssists, let i = index" class="event-secondary-label assist-name"
+              (click)="onAssistClicked(i)">{{assist}}</span>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="!isEventGoal" class="penalty-event" [ngClass]="isHomeEvent ? 'home-event' : 'away-event'">
+    <div class="period-time-container">
+      <span>{{periodTime}}</span>
+    </div>
+    <div class="penalty-icon-container">
+      <mat-icon [fontIcon]="'front_hand'"  class="penalty-icon"></mat-icon>
+    </div>
+    <div class="event-details">
+      <span class="event-main-label penalty" (click)="onMainPlayerClicked()">{{eventPlayerName}}</span>
+      <span class="event-secondary-label">{{penaltyType}}</span>
+    </div>
+  </div>
+</div>

@@ -11,13 +11,20 @@ export class StatsUtils {
     hokmobRating += (skaterStats.hits * 0.2);
     hokmobRating += (skaterStats.takeaways * 0.2);
 
-    hokmobRating -= (skaterStats.penaltyMinutes ? skaterStats.penaltyMinutes * 0.25 : 0);
+    if (skaterStats.penaltyMinutes) {
+      let penaltyDeduction = skaterStats.penaltyMinutes;
+      if (skaterStats.penaltyMinutes === 5 || skaterStats.penaltyMinutes === 7 || skaterStats.penaltyMinutes === 9 || skaterStats.penaltyMinutes === 11) {
+        penaltyDeduction -= 5;
+      }
+      hokmobRating -= Math.min(3, penaltyDeduction * 0.25);
+    }
+
     hokmobRating -= (skaterStats.plusMinus > 0 ? 0 : skaterStats.plusMinus * 0.5);
     hokmobRating -= (skaterStats.giveaways * 0.2);
 
     hokmobRating += (skaterStats.faceoffTaken < 3 ? 0 : (-0.5 + (skaterStats.faceOffWins / skaterStats.faceoffTaken)));
 
-    return parseFloat(hokmobRating.toFixed(1));
+    return parseFloat(Math.min(10.0, hokmobRating).toFixed(1));
   }
 
   public static getHokmobRatingColor(score: number): string {
@@ -30,6 +37,10 @@ export class StatsUtils {
     } else {
       return "#e55b5b";
     }
+  }
+
+  public static getPlayerLastName(fullName: string): string {
+    return fullName.substring(fullName.lastIndexOf(' '));
   }
 
   public static sortByField(playerA: NhlPlayerModel, playerB: NhlPlayerModel, field: string): number {

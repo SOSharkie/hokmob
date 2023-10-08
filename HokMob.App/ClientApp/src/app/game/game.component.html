@@ -1,33 +1,8 @@
-<div class="main-game">
-  <div class="dropdown-header" id="dropdownHeader">
-    <app-game-header
-        [isDropdownHeader]="true"
-        [gameLiveData]="gameLiveData"
-        [gameLinescore]="gameLinescore"
-        [gameModel]="gameModel"
-        [intermissionTimeRemaining]="intermissionTimeRemaining"
-        [homeTeamLogo]="homeTeamLogo"
-        [awayTeamLogo]="awayTeamLogo"
-        [isIntermission]="isIntermission"
-    ></app-game-header>
-  </div>
-  <div class="game-header" *ngIf="gameLiveData">
-    <div class="league-info">
-      <div class="games-back-button" (click)="backToPrevious()">
-        <div class="back-icon">
-          <mat-icon fontIcon="chevron_left"></mat-icon>
-        </div>
-        <span class="games-label">{{backButtonLabel}}</span>
-      </div>
-      <div class="league-info-container" [routerLink]="['/playoffs']">
-        <img class="nhl-logo" src="assets/nhl_logo.png">
-        <span class="league-info-label">{{gameInfoLabel}}</span>
-      </div>
-      <span class="info-label">{{tvInfo}}</span>
-    </div>
-    <div class="expanded-scorecard-container">
+<div class="game-page-container">
+  <div class="main-game">
+    <div class="dropdown-header" id="dropdownHeader">
       <app-game-header
-          [isDropdownHeader]="false"
+          [isDropdownHeader]="true"
           [gameLiveData]="gameLiveData"
           [gameLinescore]="gameLinescore"
           [gameModel]="gameModel"
@@ -36,60 +11,95 @@
           [awayTeamLogo]="awayTeamLogo"
           [isIntermission]="isIntermission"
       ></app-game-header>
-      <app-goal-scorers
-          *ngIf="haveGoalsBeenScored"
-          [numPeriods]="gameLinescore.periods.length"
-          [homeTeamGoals]="homeTeamGoals"
-          [awayTeamGoals]="awayTeamGoals"
-          (scorerClicked)="openPlayerGameDialog($event)">
-      </app-goal-scorers>
     </div>
-    <div class="game-info-container">
-      <div class="game-info-item game-date-time">
-        <mat-icon fontIcon="calendar_today"></mat-icon>
-        <span>{{gameDateTime}}</span>
+    <div class="game-header" *ngIf="gameLiveData">
+      <div class="league-info">
+        <div class="games-back-button" (click)="backToPrevious()">
+          <div class="back-icon">
+            <mat-icon fontIcon="chevron_left"></mat-icon>
+          </div>
+          <span class="games-label">{{backButtonLabel}}</span>
+        </div>
+        <div class="league-info-container" [routerLink]="['/playoffs']">
+          <img class="nhl-logo" src="assets/nhl_logo.png">
+          <span class="league-info-label">{{gameInfoLabel}}</span>
+        </div>
+        <span class="info-label">{{tvInfo}}</span>
       </div>
-      <div class="game-info-item game-venue-container">
-        <mat-icon fontIcon="stadium"></mat-icon>
-        <span>{{gameVenue}}</span>
+      <div class="expanded-scorecard-container">
+        <app-game-header
+            [isDropdownHeader]="false"
+            [gameLiveData]="gameLiveData"
+            [gameLinescore]="gameLinescore"
+            [gameModel]="gameModel"
+            [intermissionTimeRemaining]="intermissionTimeRemaining"
+            [homeTeamLogo]="homeTeamLogo"
+            [awayTeamLogo]="awayTeamLogo"
+            [isIntermission]="isIntermission"
+        ></app-game-header>
+        <app-goal-scorers
+            *ngIf="haveGoalsBeenScored"
+            [numPeriods]="gameLinescore.periods.length"
+            [homeTeamGoals]="homeTeamGoals"
+            [awayTeamGoals]="awayTeamGoals"
+            (scorerClicked)="openPlayerGameDialog($event)">
+        </app-goal-scorers>
       </div>
-      <div class="game-info-item game-tv-container">
-        <mat-icon fontIcon="tv"></mat-icon>
-        <a class="stream-link" [href]="gameStreamLink">Game Stream</a>
+      <div class="game-info-container">
+        <div class="game-info-item game-date-time">
+          <mat-icon fontIcon="calendar_today"></mat-icon>
+          <span>{{gameDateTime}}</span>
+        </div>
+        <div class="game-info-item game-venue-container">
+          <mat-icon fontIcon="stadium"></mat-icon>
+          <span>{{gameVenue}}</span>
+        </div>
+        <div class="game-info-item game-tv-container">
+          <mat-icon fontIcon="tv"></mat-icon>
+          <a class="stream-link" [href]="gameStreamLink">Game Stream</a>
+        </div>
       </div>
     </div>
-  </div>
-  <div *ngIf="!futureGame" class="game-container">
-    <app-game-top-players
-      [homePlayerStats]="homePlayerStats"
-      [awayPlayerStats]="awayPlayerStats"
-      (playerClicked)="openPlayerGameDialog($event)"
-    ></app-game-top-players>
-  </div>
-  <div *ngIf="!futureGame" class="game-container">
-    <app-momentum
-        [gameLiveData]="gameLiveData"
-    ></app-momentum>
-  </div>
-  <div *ngIf="!futureGame" class="game-container">
-    <app-event-timeline
-        [gameLiveData]="gameLiveData"
+    <div *ngIf="showTopPlayers" class="game-container">
+      <app-game-top-players
+        [homePlayerStats]="homePlayerStats"
+        [awayPlayerStats]="awayPlayerStats"
         (playerClicked)="openPlayerGameDialog($event)"
-    ></app-event-timeline>
+      ></app-game-top-players>
+    </div>
+    <div *ngIf="!futureGame" class="game-container">
+      <app-momentum
+          [gameLiveData]="gameLiveData"
+      ></app-momentum>
+    </div>
+    <div *ngIf="!futureGame" class="game-container mobile-only">
+      <app-mini-event-timeline
+          [gameLiveData]="gameLiveData"
+          (playerClicked)="openPlayerGameDialog($event)"
+      ></app-mini-event-timeline>
+    </div>
+    <div *ngIf="!futureGame" class="game-container">
+      <app-game-stats
+          [homeTeamLogo]="homeTeamLogo"
+          [awayTeamLogo]="awayTeamLogo"
+          [gameLiveData]="gameLiveData"
+      ></app-game-stats>
+    </div>
+    <div *ngIf="gameModel && !completedGame" class="game-container">
+      <app-team-form
+          [homeTeam]="gameModel.teams.home.team"
+          [awayTeam]="gameModel.teams.away.team"
+          [homeTeamGames]="homeTeamGames"
+          [awayTeamGames]="awayTeamGames"
+      ></app-team-form>
+    </div>
   </div>
-  <div *ngIf="!futureGame" class="game-container">
-    <app-game-stats
+  <div *ngIf="!futureGame" class="side-game">
+    <app-mini-event-timeline
+        [gameLiveData]="gameLiveData"
         [homeTeamLogo]="homeTeamLogo"
         [awayTeamLogo]="awayTeamLogo"
-        [gameLiveData]="gameLiveData"
-    ></app-game-stats>
-  </div>
-  <div *ngIf="gameModel && !completedGame" class="game-container">
-    <app-team-form
-        [homeTeam]="gameModel.teams.home.team"
-        [awayTeam]="gameModel.teams.away.team"
-        [homeTeamGames]="homeTeamGames"
-        [awayTeamGames]="awayTeamGames"
-    ></app-team-form>
+        (playerClicked)="openPlayerGameDialog($event)"
+    ></app-mini-event-timeline>
   </div>
 </div>
