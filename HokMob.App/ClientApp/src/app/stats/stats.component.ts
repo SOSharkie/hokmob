@@ -59,7 +59,6 @@ export class StatsComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.showFilters = true;
     this.playoffsSelected = dayjs().month() >= 4 && dayjs() && dayjs().month() < 8;
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("gameType")) {
