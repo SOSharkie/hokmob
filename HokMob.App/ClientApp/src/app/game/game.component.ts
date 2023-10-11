@@ -60,6 +60,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public isIntermission: boolean = false
 
+  public leagueRouterLink: string = "/standings";
+
   private intermissionTimeRemainingMs: number;
 
   private periodEndEvent: NhlLiveFeedPlayModel;
@@ -190,6 +192,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         this.gameLiveData = gameLiveData;
         this.gameBoxscore = gameLiveData.liveData.boxscore;
         this.gameLinescore = gameLiveData.liveData.linescore;
+        this.leagueRouterLink = this.gameLiveData.gameData.game.type === 'P' ? "/playoffs" : "/standings";
         this.calculateGoals();
         this.calculatePlayerStats();
         this.loadLogos();

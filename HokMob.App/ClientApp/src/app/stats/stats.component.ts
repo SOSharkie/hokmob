@@ -47,9 +47,9 @@ export class StatsComponent implements OnInit {
 
   public isLoading: boolean = false;
 
-  private readonly minimumGoalieSavesPlayoffs = 20;
+  private minimumGoalieSavesPlayoffs = 20;
 
-  private readonly minimumGoalieSavesRegularSeason = 100;
+  private minimumGoalieSavesRegularSeason = 100;
 
   private readonly topNumberOfPlayers = 25;
 
@@ -59,7 +59,7 @@ export class StatsComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.playoffsSelected = dayjs().month() >= 4 && dayjs() && dayjs().month() < 8;
+    this.setDateDependentFields();
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("gameType")) {
         this.playoffsSelected = params.get("gameType") === "P";
@@ -85,6 +85,19 @@ export class StatsComponent implements OnInit {
         leaderboard.imagesLoaded = false;
       });
       this.updateStats();
+    }
+  }
+
+  private setDateDependentFields(): void {
+    this.showFilters = DateTimeUtils.isPlayoffMode();
+    this.playoffsSelected = DateTimeUtils.isPlayoffMode();
+
+    if (dayjs().month() === 9) {
+      this.minimumGoalieSavesRegularSeason = dayjs().date();
+    } else if (dayjs().month() === 10) {
+      this.minimumGoalieSavesRegularSeason = 50;
+    } else {
+      this.minimumGoalieSavesRegularSeason = 100;
     }
   }
 

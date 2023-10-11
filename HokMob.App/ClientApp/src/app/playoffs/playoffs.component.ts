@@ -12,13 +12,15 @@ import {DateTimeUtils} from "@shared/utils/date-time-utils";
 })
 export class PlayoffsComponent implements OnInit {
 
+  public playoffSeason: string = "20222023";
+
   public playoffsData: NhlPlayoffModel;
 
   constructor(private nhlPlayoffService: NhlStandingAndPlayoffService) {
   }
 
   public ngOnInit(): void {
-    this.nhlPlayoffService.getNhlPlayoffs(DateTimeUtils.getCurrentNhlSeason()).then(result => {
+    this.nhlPlayoffService.getNhlPlayoffs(this.playoffSeason).then(result => {
       result.rounds.forEach((round, roundNum) => {
         round.series.forEach((series, seriesNum) => {
           // Handle the case where a series is finished but the NHL API has not updated the next round with the winners

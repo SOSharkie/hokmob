@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import * as dayjs from "dayjs";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
   selector: 'app-home',
@@ -11,10 +12,13 @@ export class HomeComponent implements OnInit {
 
   public selectedDayString: string;
 
+  public isPlayoffs: boolean = false;
+
   constructor(private activatedRoute: ActivatedRoute,
               private router: Router){}
 
   public ngOnInit(): void {
+    this.isPlayoffs = DateTimeUtils.isPlayoffMode();
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("date") && params.get("date").length === 8) {
         this.selectedDayString = params.get("date");
