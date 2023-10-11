@@ -2,8 +2,8 @@
   <div class="game-top-players-header">
     <span>Top Players</span>
   </div>
-  <div *ngIf="imagesLoaded" class="top-players-container">
-    <div class="home-players">
+  <div class="top-players-container">
+    <div *ngIf="homeImagesLoaded" class="home-players">
       <div *ngFor="let player of topHomePlayers, let i = index" (click)="clickPlayer(player)" class="top-player">
         <div class="player-headshot-container">
           <img [src]="homePlayerHeadshots[i]" class="player-headshot">
@@ -35,7 +35,7 @@
         </div>
       </div>
     </div>
-    <div class="away-players">
+    <div *ngIf="awayImagesLoaded" class="away-players">
       <div *ngFor="let player of topAwayPlayers, let i = index" (click)="clickPlayer(player)" class="top-player">
         <div class="player-headshot-container">
           <img [src]="awayPlayerHeadshots[i]" class="player-headshot">

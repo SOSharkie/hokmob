@@ -20,19 +20,21 @@ export class GameTopPlayersComponent implements OnChanges {
   @Output()
   public playerClicked = new EventEmitter<number>();
 
-  public topHomePlayers: NhlBoxscorePlayerModel[];
+  public topHomePlayers: NhlBoxscorePlayerModel[] = [];
 
-  public topAwayPlayers: NhlBoxscorePlayerModel[];
+  public topAwayPlayers: NhlBoxscorePlayerModel[] = [];
 
-  public homeGoalies: NhlBoxscorePlayerModel[];
+  public homeGoalies: NhlBoxscorePlayerModel[] = [];
 
-  public awayGoalies: NhlBoxscorePlayerModel[];
+  public awayGoalies: NhlBoxscorePlayerModel[] = [];
 
   public homePlayerHeadshots: any[];
 
   public awayPlayerHeadshots: any[];
 
-  public imagesLoaded = false;
+  public homeImagesLoaded: boolean = false;
+
+  public awayImagesLoaded: boolean = false;
 
   public readonly numSkatersToShow = 6;
 
@@ -40,32 +42,74 @@ export class GameTopPlayersComponent implements OnChanges {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['homePlayerStats'] && !this.imagesLoaded) {
-      if (!this.homePlayerStats || this.homePlayerStats.length < 1) {
-        return;
-      }
-      this.topHomePlayers = this.homePlayerStats.slice(0, this.numSkatersToShow);
-      this.topAwayPlayers = this.awayPlayerStats.slice(0, this.numSkatersToShow);
-      this.homeGoalies = this.homePlayerStats.filter(player => player.position.code === 'G')
-          .sort((a, b) => StatsUtils.sortByGoalieTimeOnIce(a, b));
-      this.awayGoalies = this.awayPlayerStats.filter(player => player.position.code === 'G')
-          .sort((a, b) => StatsUtils.sortByGoalieTimeOnIce(a, b));
-      if (this.topHomePlayers.findIndex(player => player.position.code === 'G') === -1) {
-        this.topHomePlayers[this.numSkatersToShow - 1] = this.homeGoalies[0];
-      }
-      if (this.topAwayPlayers.findIndex(player => player.position.code === 'G') === -1) {
-        this.topAwayPlayers[this.numSkatersToShow - 1] = this.awayGoalies[0];
-      }
-      this.loadImages();
+    if (changes['homePlayerStats']) {
+      this.handleHomePlayers();
+    }
+    if (changes['awayPlayerStats']) {
+      this.handleAwayPlayers();
     }
   }
 
-  public loadImages(): void {
+  public handleHomePlayers(): void {
+    if (!this.homePlayerStats || this.homePlayerStats.length < 1) {
+      return;
+    }
+    let homeTopPlayers = this.homePlayerStats.slice(0, this.numSkatersToShow);
+    this.homeGoalies = this.homePlayerStats.filter(player => player.position.code === 'G')
+        .sort((a, b) => StatsUtils.sortByGoalieTimeOnIce(a, b));
+    if (homeTopPlayers.findIndex(player => player.position.code === 'G') === -1) {
+      homeTopPlayers[this.numSkatersToShow - 1] = this.homeGoalies[0];
+    }
+    let imagesChanged = false;
+    if (this.topHomePlayers.length === this.numSkatersToShow || this.topAwayPlayers.length === this.numSkatersToShow) {
+      for (let i = 0; i < 6; i++) {
+        if (!imagesChanged) {
+          if (homeTopPlayers[i].person.id !== this.topHomePlayers[i].person.id) {
+            imagesChanged = true;
+          }
+        }
+      }
+    } else {
+      imagesChanged = true;
+    }
+    this.topHomePlayers = homeTopPlayers;
+    if (imagesChanged) {
+      this.loadHomeImages();
+    }
+  }
+
+  public handleAwayPlayers(): void {
+    if (!this.awayPlayerStats || this.awayPlayerStats.length < 1) {
+      return;
+    }
+    let awayTopPlayers = this.awayPlayerStats.slice(0, this.numSkatersToShow);
+    this.awayGoalies = this.awayPlayerStats.filter(player => player.position.code === 'G')
+        .sort((a, b) => StatsUtils.sortByGoalieTimeOnIce(a, b));
+    if (awayTopPlayers.findIndex(player => player.position.code === 'G') === -1) {
+      awayTopPlayers[this.numSkatersToShow - 1] = this.awayGoalies[0];
+    }
+    let imagesChanged = false;
+    if (this.topAwayPlayers.length === this.numSkatersToShow) {
+      for (let i = 0; i < 6; i++) {
+        if (!imagesChanged) {
+          if (awayTopPlayers[i].person.id !== this.topAwayPlayers[i].person.id) {
+            imagesChanged = true;
+          }
+        }
+      }
+    } else {
+      imagesChanged = true;
+    }
+    this.topAwayPlayers = awayTopPlayers;
+    if (imagesChanged) {
+      this.loadAwayImages();
+    }
+  }
+
+  public loadHomeImages(): void {
     this.homePlayerHeadshots = [];
-    this.awayPlayerHeadshots = [];
     for (let i = 0; i < this.numSkatersToShow; i++){
       this.homePlayerHeadshots.push('assets/blank_headshot.png');
-      this.awayPlayerHeadshots.push('assets/blank_headshot.png')
     }
     this.homePlayerStats.slice(0, this.numSkatersToShow).forEach((player, index) => {
       this.nhlImageService.getNhlPlayerHeadshot(player.person.id).then(data => {
@@ -76,6 +120,14 @@ export class GameTopPlayersComponent implements OnChanges {
         reader.readAsDataURL(data);
       });
     });
+    this.homeImagesLoaded = true;
+  }
+
+  public loadAwayImages(): void {
+    this.awayPlayerHeadshots = [];
+    for (let i = 0; i < this.numSkatersToShow; i++){
+      this.awayPlayerHeadshots.push('assets/blank_headshot.png')
+    }
     this.awayPlayerStats.slice(0, this.numSkatersToShow).forEach((player, index) => {
       this.nhlImageService.getNhlPlayerHeadshot(player.person.id).then(data => {
         let reader = new FileReader();
@@ -85,7 +137,7 @@ export class GameTopPlayersComponent implements OnChanges {
         reader.readAsDataURL(data);
       });
     });
-    this.imagesLoaded = true;
+    this.awayImagesLoaded = true;
   }
 
   public getHokmobScoreColor(player: NhlBoxscorePlayerModel): string {
