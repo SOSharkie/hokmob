@@ -169,7 +169,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public get showTopPlayers(): boolean {
-    return this.completedGame || (this.liveGame && this.gameLiveData.liveData.linescore.currentPeriod > 1);
+    return this.completedGame || (this.liveGame && this.gameLiveData.liveData.plays.allPlays.length > 10);
   }
 
   private previousUrl: string;
@@ -266,6 +266,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
           this.gameBoxscore = gameLiveData.liveData.boxscore;
           this.gameLinescore = gameLiveData.liveData.linescore;
           this.calculateGoals();
+          this.calculatePlayerStats();
           this.calculateIntermission();
         } else {
           console.log("Problem updating NHL game with ID", this.gameId);
@@ -320,7 +321,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
           this.nextPeriod = (this.gameLinescore.currentPeriod - 3) + "OT";
           break;
       }
-      let intermissionTimeMs = 18.5 * 60 * 1000;
+      let intermissionTimeMs = 19 * 60 * 1000;
       if (this.nextPeriod === "OT" && this.gameModel.gameType !== "P") {
         intermissionTimeMs =  3 * 60 * 1000;
       } else if (this.nextPeriod.includes("OT") && this.gameModel.gameType === "P") {

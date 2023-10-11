@@ -21,7 +21,14 @@ export class StatsUtils {
       hokmobRating -= Math.min(3, penaltyDeduction * 0.25);
     }
 
-    hokmobRating -= (skaterStats.plusMinus > 0 ? 0 : skaterStats.plusMinus * 0.5);
+    let realPlusMinus = (skaterStats.plusMinus - skaterStats.goals + skaterStats.powerPlayGoals
+        - skaterStats.assists + skaterStats.powerPlayAssists);
+    if (skaterStats.plusMinus > 0) {
+      hokmobRating += (realPlusMinus * 0.3);
+    } else {
+      hokmobRating += (skaterStats.plusMinus * 0.5);
+    }
+
     hokmobRating -= (skaterStats.giveaways * 0.2);
 
     hokmobRating += (skaterStats.faceoffTaken < 3 ? 0 : (-0.5 + (skaterStats.faceOffWins / skaterStats.faceoffTaken)));
@@ -30,15 +37,12 @@ export class StatsUtils {
   }
 
   public static calculateGoalieHokMobRating(goalieStats: NhlBoxscorePlayerGoalieStatsModel): number {
-    const savePercentBreakpoint = 91;
     let hokmobRating = 5;
-    if (goalieStats.savePercentage && goalieStats.shots > 5) {
-      if (goalieStats.savePercentage >= savePercentBreakpoint) {
-        hokmobRating += (goalieStats.savePercentage - savePercentBreakpoint);
-      } else {
-        hokmobRating += ((goalieStats.savePercentage - savePercentBreakpoint) / 3);
-      }
-      hokmobRating += (goalieStats.saves / 15);
+    if (goalieStats.savePercentage) {
+      hokmobRating += (goalieStats.evenSaves / 6);
+      hokmobRating += (goalieStats.powerPlaySaves / 5)
+      hokmobRating -= (goalieStats.shots - goalieStats.saves);
+
       return parseFloat(Math.max(0, Math.min(10.0, hokmobRating)).toFixed(1));
     } else {
       return 0;
