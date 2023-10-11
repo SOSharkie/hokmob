@@ -62,4 +62,15 @@ export class DateTimeUtils {
   public static getCurrentNhlPlayoffsDisplayValue(): string {
     return this.getCurrentNhlSeason().substring(4);
   }
+
+  public static isPlayoffMode(): boolean {
+    let today = dayjs();
+    if (today.month() < 4 || today.month() > 8) {
+      return false;
+    } else if (today.month() === 4 && today.date() < 21) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 }

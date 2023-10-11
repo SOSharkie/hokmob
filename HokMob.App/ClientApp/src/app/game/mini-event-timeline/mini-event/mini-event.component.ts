@@ -8,6 +8,7 @@ import {StatsUtils} from "@shared/utils/stats-utils";
   styleUrls: ['./mini-event.component.scss']
 })
 export class MiniEventComponent {
+
   @Input()
   public event: NhlLiveFeedPlayModel;
 
@@ -68,6 +69,9 @@ export class MiniEventComponent {
 
   public get penaltyType(): string {
     if (!this.isEventGoal) {
+      if (this.event.result.secondaryType.includes("Missing key")) {
+        return this.event.result.penaltySeverity;
+      }
       return this.event.result.secondaryType;
     }
     return "";
