@@ -11,6 +11,7 @@
         <div *ngIf="player.stats.skaterStats">
           <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(player)}">
             <span>{{player.stats.skaterStats.hokmobRating}}</span>
+            <mat-icon *ngIf="player.stats.skaterStats.isGameMvp" class="star-icon">star</mat-icon>
           </div>
           <div class="player-goal-container" *ngIf="player.stats.skaterStats.goals > 0">
             <img class="puck-icon" src="assets/puck.png">
@@ -25,6 +26,7 @@
         <div *ngIf="player.stats.goalieStats">
           <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(player)}">
             <span>{{player.stats.goalieStats.hokmobRating}}</span>
+            <mat-icon *ngIf="player.stats.goalieStats.isGameMvp" class="star-icon">star</mat-icon>
           </div>
           <div class="goalie-icon-container">
             <img class="goalie-icon" src="assets/goalie_mask.png">
@@ -43,6 +45,7 @@
         <div *ngIf="player.stats.skaterStats">
           <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(player)}">
             <span>{{player.stats.skaterStats.hokmobRating}}</span>
+            <mat-icon *ngIf="player.stats.skaterStats.isGameMvp" class="star-icon">star</mat-icon>
           </div>
           <div class="player-goal-container" *ngIf="player.stats.skaterStats.goals > 0">
             <img class="puck-icon" src="assets/puck.png">
@@ -57,6 +60,7 @@
         <div *ngIf="player.stats.goalieStats">
           <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(player)}">
             <span>{{player.stats.goalieStats.hokmobRating}}</span>
+            <mat-icon *ngIf="player.stats.goalieStats.isGameMvp" class="star-icon">star</mat-icon>
           </div>
           <div class="goalie-icon-container">
             <img class="goalie-icon" src="assets/goalie_mask.png">

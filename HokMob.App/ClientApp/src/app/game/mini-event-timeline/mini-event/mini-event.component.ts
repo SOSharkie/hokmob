@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
 
@@ -7,7 +7,7 @@ import {StatsUtils} from "@shared/utils/stats-utils";
   templateUrl: './mini-event.component.html',
   styleUrls: ['./mini-event.component.scss']
 })
-export class MiniEventComponent {
+export class MiniEventComponent implements OnChanges {
 
   @Input()
   public event: NhlLiveFeedPlayModel;
@@ -20,6 +20,43 @@ export class MiniEventComponent {
 
   @Output()
   public playerClicked = new EventEmitter<number>();
+
+  private eventTime: string = "";
+
+  private eventAssists: string[] = [];
+
+  private eventPenalty: string = "";
+
+  public ngOnChanges(changes: SimpleChanges) {
+    if (changes["event"]) {
+
+      // Event time
+      if (this.event.about.periodTime.startsWith('0')) {
+        this.eventTime = this.event.about.periodTime.substring(1);
+      }
+      this.eventTime = this.event.about.periodTime;
+
+      // Goal event assists
+      if (this.isEventGoal) {
+        if (this.event.players.length === 4) {
+          this.eventAssists = [StatsUtils.getPlayerLastName(this.event.players[1].player.fullName) + ", ", StatsUtils.getPlayerLastName(this.event.players[2].player.fullName)];
+        } else if (this.event.players.length === 3) {
+          this.eventAssists = [StatsUtils.getPlayerLastName(this.event.players[1].player.fullName)];
+        } else {
+          this.eventAssists = [];
+        }
+      }
+
+      // Penalty type
+      if (!this.isEventGoal) {
+        if (this.event.result.secondaryType.includes("Missing key")) {
+          this.eventPenalty = this.event.result.penaltySeverity;
+        } else {
+          this.eventPenalty = this.event.result.secondaryType;
+        }
+      }
+    }
+  }
 
   public get isHomeEvent(): boolean {
     if (this.event) {
@@ -36,10 +73,7 @@ export class MiniEventComponent {
   }
 
   public get periodTime(): string {
-    if (this.event.about.periodTime.startsWith('0')) {
-      return this.event.about.periodTime.substring(1);
-    }
-    return this.event.about.periodTime;
+    return this.eventTime;
   }
 
   public get goalEventHomeScore(): string {
@@ -55,37 +89,11 @@ export class MiniEventComponent {
   }
 
   public get goalEventAssists(): string[] {
-    if (this.isEventGoal) {
-      if (this.event.players.length === 4) {
-        return [StatsUtils.getPlayerLastName(this.event.players[1].player.fullName) + ", ", StatsUtils.getPlayerLastName(this.event.players[2].player.fullName)];
-      } else if (this.event.players.length === 3) {
-        return [StatsUtils.getPlayerLastName(this.event.players[1].player.fullName)];
-      } else {
-        return [];
-      }
-    }
-    return [];
+    return this.eventAssists;
   }
 
   public get penaltyType(): string {
-    if (!this.isEventGoal) {
-      if (this.event.result.secondaryType.includes("Missing key")) {
-        return this.event.result.penaltySeverity;
-      }
-      return this.event.result.secondaryType;
-    }
-    return "";
-  }
-
-  public get fontIcon(): string {
-    switch (this.event.result.eventTypeId) {
-      case "GOAL":
-        return "sports_hockey";
-      case "PENALTY":
-        return "front_hand";
-      default:
-        return "";
-    }
+    return this.eventPenalty;
   }
 
   public onMainPlayerClicked(): void {

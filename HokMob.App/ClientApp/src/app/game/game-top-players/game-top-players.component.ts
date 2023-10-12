@@ -60,6 +60,7 @@ export class GameTopPlayersComponent implements OnChanges {
     if (homeTopPlayers.findIndex(player => player.position.code === 'G') === -1) {
       homeTopPlayers[this.numSkatersToShow - 1] = this.homeGoalies[0];
     }
+
     let imagesChanged = false;
     if (this.topHomePlayers.length === this.numSkatersToShow || this.topAwayPlayers.length === this.numSkatersToShow) {
       for (let i = 0; i < 6; i++) {
@@ -73,6 +74,7 @@ export class GameTopPlayersComponent implements OnChanges {
       imagesChanged = true;
     }
     this.topHomePlayers = homeTopPlayers;
+    this.setGameMvp();
     if (imagesChanged) {
       this.loadHomeImages();
     }
@@ -88,6 +90,7 @@ export class GameTopPlayersComponent implements OnChanges {
     if (awayTopPlayers.findIndex(player => player.position.code === 'G') === -1) {
       awayTopPlayers[this.numSkatersToShow - 1] = this.awayGoalies[0];
     }
+
     let imagesChanged = false;
     if (this.topAwayPlayers.length === this.numSkatersToShow) {
       for (let i = 0; i < 6; i++) {
@@ -101,8 +104,30 @@ export class GameTopPlayersComponent implements OnChanges {
       imagesChanged = true;
     }
     this.topAwayPlayers = awayTopPlayers;
+    this.setGameMvp();
     if (imagesChanged) {
       this.loadAwayImages();
+    }
+  }
+
+  private setGameMvp(): void {
+    if (!this.awayPlayerStats || this.awayPlayerStats.length < 1 || !this.homePlayerStats || this.homePlayerStats.length < 1) {
+      return;
+    }
+    let homeBestStats = this.homePlayerStats[0].stats
+    let awayBestStats = this.awayPlayerStats[0].stats
+
+    let homeBestRating = homeBestStats.skaterStats ? homeBestStats.skaterStats.hokmobRating : homeBestStats.goalieStats.hokmobRating;
+    let awayBestRating = awayBestStats.skaterStats ? awayBestStats.skaterStats.hokmobRating : awayBestStats.goalieStats.hokmobRating;
+    if (homeBestStats.skaterStats) {
+      this.homePlayerStats[0].stats.skaterStats.isGameMvp = homeBestRating >= awayBestRating;
+    } else {
+      this.homePlayerStats[0].stats.goalieStats.isGameMvp = homeBestRating >= awayBestRating;
+    }
+    if (awayBestStats.skaterStats) {
+      this.awayPlayerStats[0].stats.skaterStats.isGameMvp = awayBestRating > homeBestRating;
+    } else {
+      this.awayPlayerStats[0].stats.goalieStats.isGameMvp = awayBestRating > homeBestRating;
     }
   }
 

@@ -48,4 +48,9 @@ export class NhlBoxscorePlayerSkaterStatsModel {
    * Not provided by NHL API, calculated in frontend.
    */
   public hokmobRating: number;
+
+  /**
+   * Not provided by NHL API, calculated in frontend.
+   */
+  public isGameMvp: boolean;
 }
