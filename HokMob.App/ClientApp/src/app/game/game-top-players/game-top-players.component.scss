@@ -23,12 +23,14 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
+      padding-top: $spacing-large;
     }
 
     .top-player {
       position: relative;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
       width: 130px;
       height: 75px;
@@ -52,12 +54,23 @@
 
 
       .hokmob-score-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
         position: absolute;
-        width: 30px;
+        min-width: 30px;
         padding: $spacing-x-small $spacing-small;
         text-align: center;
         background-color: $green-01;
         border-radius: 15px;
+
+        .star-icon {
+          margin-left: $spacing-x-small;
+          font-size: 16px;
+          height: 16px;
+          width: 16px;
+        }
       }
 
       .player-goal-container {
@@ -95,6 +108,7 @@
       }
 
       .player-name {
+        text-align: center;
         font-size: smaller;
       }
     }
@@ -112,15 +126,15 @@
 
     .hokmob-score-container {
       left: 76px;
-      top: -5px;
+      top: 2px;
     }
     .player-goal-container {
       left: 76px;
-      top: 22px;
+      top: 29px;
     }
     .goalie-icon-container {
       left: 30px;
-      top: -5px;
+      top: 2px;
     }
   }
 }
@@ -131,15 +145,15 @@
 
     .hokmob-score-container {
       left: 78px;
-      top: -5px;
+      top: 2px;
     }
     .player-goal-container {
       left: 78px;
-      top: 22px;
+      top: 29px;
     }
     .goalie-icon-container {
       left: 30px;
-      top: -5px;
+      top: 2px;
     }
   }
 }

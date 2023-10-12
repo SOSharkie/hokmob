@@ -23,6 +23,10 @@ export class MomentumComponent implements OnInit, OnChanges {
 
   public momentumData: number[];
 
+  public goalData: number[];
+
+  public goalDataStyle: string[];
+
   public chartLabels: any[];
 
   private momentumChart: Chart<"line">;
@@ -82,10 +86,6 @@ export class MomentumComponent implements OnInit, OnChanges {
           }
         },
         elements: {
-          point: {
-            hoverRadius: 0,
-            radius: 0
-          },
           line: {
             tension: 0.4
           }
@@ -116,6 +116,13 @@ export class MomentumComponent implements OnInit, OnChanges {
         target: "origin"
       };
       this.generateChartData();
+
+      let goalImage = new Image(20, 22);
+      goalImage.src = "assets/cropped_puck.png";
+      this.momentumChart.data.datasets[0].pointRadius = this.goalData;
+      this.momentumChart.data.datasets[0].pointHoverRadius = this.goalData;
+      this.momentumChart.data.datasets[0].pointStyle = this.goalData.map(value => value > 0 ? goalImage : "false");
+
       this.momentumChart.data.datasets[0].data = this.momentumData;
       this.momentumChart.data.labels = this.chartLabels;
       this.momentumChart.update();
@@ -128,6 +135,8 @@ export class MomentumComponent implements OnInit, OnChanges {
       "2nd", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
       "3rd", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
     this.momentumData = [];
+    this.goalData = [];
+    this.goalDataStyle = [];
     let numDataPoints = 62;
     if (this.hasOvertime) {
       let overtimeTime = Number(this.gameLiveData.liveData.plays.currentPlay.about.periodTime.slice(0, 2)) + 1;
@@ -140,6 +149,8 @@ export class MomentumComponent implements OnInit, OnChanges {
     this.chartLabels.push("End");
     for (let i = 0; i < numDataPoints; i++) {
       this.momentumData.push(0);
+      this.goalData.push(0);
+      this.goalDataStyle.push("false");
     }
     this.gameLiveData.liveData.plays.allPlays.forEach(play => {
       let index = this.calculateMomentumIndex(play);
@@ -147,8 +158,10 @@ export class MomentumComponent implements OnInit, OnChanges {
         case 'GOAL':
           if (play.team.id === homeTeamId) {
             this.momentumData[index] += 9;
+            this.goalData[index] = 7;
           } else {
             this.momentumData[index] -= 9;
+            this.goalData[index] = 7;
           }
           break;
         case 'SHOT':
@@ -179,7 +192,7 @@ export class MomentumComponent implements OnInit, OnChanges {
     });
   }
 
-  private calculateMomentumIndex(play: NhlLiveFeedPlayModel) {
+  private calculateMomentumIndex(play: NhlLiveFeedPlayModel): number {
     let index = Number(play.about.periodTime.slice(0, 2)) + 1;
 
     if (play.about.period === 2) {
