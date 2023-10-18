@@ -2,15 +2,20 @@ import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
 import {NhlBoxscorePlayerSkaterStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-skater-stats.model";
 import {NhlBoxscorePlayerGoalieStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-goalie-stats.model";
 import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
+import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
 
 export class StatsUtils {
 
+  /**
+   * Calculates hokmob rating for single live/past game for skater.
+   */
   public static calculateSkaterHokmobRating(skaterStats: NhlBoxscorePlayerSkaterStatsModel): number {
     let hokmobRating = 5;
     hokmobRating += (skaterStats.goals * 1.1);
     hokmobRating += (skaterStats.assists * 0.5);
     hokmobRating += ((skaterStats.shots - skaterStats.goals) * 0.3);
     hokmobRating += (skaterStats.hits * 0.2);
+    hokmobRating += (skaterStats.blocked * 0.2);
     hokmobRating += (skaterStats.takeaways * 0.2);
 
     if (skaterStats.penaltyMinutes) {
@@ -36,12 +41,67 @@ export class StatsUtils {
     return parseFloat(Math.min(10.0, hokmobRating).toFixed(1));
   }
 
+  /**
+   * Calculates hokmob rating for historical skater stats. Does not include takeaways or giveaways.
+   */
+  public static calculatePlayerHokmobRating(skaterStats: NhlPlayerStatsModel): number {
+    let hokmobRating = 5;
+    hokmobRating += (skaterStats.goals * 1.1);
+    hokmobRating += (skaterStats.assists * 0.5);
+    hokmobRating += ((skaterStats.shots - skaterStats.goals) * 0.3);
+    hokmobRating += (skaterStats.hits * 0.2);
+    hokmobRating += (skaterStats.blocked * 0.2);
+    // hokmobRating += (skaterStats.takeaways * 0.2);
+
+    if (skaterStats.pim) {
+      let penaltyDeduction = skaterStats.pim;
+      if (skaterStats.pim === 5 || skaterStats.pim === 7 || skaterStats.pim === 9 || skaterStats.pim === 11) {
+        penaltyDeduction -= 5;
+      }
+      hokmobRating -= Math.min(3, penaltyDeduction * 0.25);
+    }
+
+    let realPlusMinus = (skaterStats.plusMinus - skaterStats.goals - skaterStats.assists + skaterStats.powerPlayPoints);
+    if (skaterStats.plusMinus > 0) {
+      hokmobRating += (realPlusMinus * 0.3);
+    } else {
+      hokmobRating += (skaterStats.plusMinus * 0.5);
+    }
+
+    // hokmobRating -= (skaterStats.giveaways * 0.2);
+
+    if (skaterStats.faceOffPct) {
+      hokmobRating += (-0.5 + (skaterStats.faceOffPct / 100));
+    }
+
+    return parseFloat(Math.min(10.0, hokmobRating).toFixed(1));
+  }
+
+  /**
+   * Calculate hokmob rating for single live/past game for goalie.
+   */
   public static calculateGoalieHokMobRating(goalieStats: NhlBoxscorePlayerGoalieStatsModel): number {
     let hokmobRating = 5;
     if (goalieStats.savePercentage) {
       hokmobRating += (goalieStats.evenSaves / 6);
       hokmobRating += (goalieStats.powerPlaySaves / 5)
       hokmobRating -= (goalieStats.shots - goalieStats.saves);
+
+      return parseFloat(Math.max(0, Math.min(10.0, hokmobRating)).toFixed(1));
+    } else {
+      return 0;
+    }
+  }
+
+  /**
+   * Calculate hokmob rating for historical goalie stats.
+   */
+  public static calculatePlayerGoalieHokMobRating(goalieStats: NhlPlayerStatsModel): number {
+    let hokmobRating = 5;
+    if (goalieStats.savePercentage) {
+      hokmobRating += (goalieStats.evenSaves / 6);
+      hokmobRating += (goalieStats.powerPlaySaves / 5)
+      hokmobRating -= (goalieStats.shotsAgainst - goalieStats.saves);
 
       return parseFloat(Math.max(0, Math.min(10.0, hokmobRating)).toFixed(1));
     } else {

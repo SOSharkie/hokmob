@@ -6,6 +6,8 @@ import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {StatsUtils} from "@shared/utils/stats-utils";
+import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
 
 @Component({
   selector: 'app-recent-player-games',
@@ -32,28 +34,29 @@ export class RecentPlayerGamesComponent implements OnChanges {
   @Input()
   public isGoalie: boolean;
 
+  public lastTenGames: NhlStatsSplitModel[] = [];
+
   public teamLogos: any[];
 
   public imagesLoaded: boolean = false;
 
-  public get lastTenGames(): NhlStatsSplitModel[] {
-    if (this.playoffGames) {
-      if (this.playoffGames.length > 9) {
-        return this.playoffGames.slice(0, 10);
-      } else {
-        return this.playoffGames.slice(0, this.playoffGames.length).concat(this.regularSeasonGames.slice(0, 10 - this.playoffGames.length));
-      }
-    } else if (this.regularSeasonGames) {
-      return this.regularSeasonGames.slice(0, 10);
-    }
-    return [];
-  }
+  private readonly numGamesToShow = 10;
 
   public getPlusMinusColor(stat: NhlPlayerStatsModel): string {
     return stat.plusMinus > 0 ? '#84dc7b' : stat.plusMinus < 0 ? '#e34d53' : 'white';
   }
 
-  constructor(private nhlImageService: NhlImageService) {
+  public ngOnChanges(changes: SimpleChanges): void {
+    if ((changes['regularSeasonGames'] || changes['playoffGames'])) {
+      this.calculateLastTenGames();
+    }
+    if ((changes['regularSeasonGames'] || changes['playoffGames']) && !this.imagesLoaded) {
+      this.teamLogos = [];
+      this.lastTenGames.forEach((statSplit, index) => {
+        this.teamLogos[index] = NhlTeamLogoUtils.getTeamPrimaryLogo(statSplit.opponent.id);
+      });
+      this.imagesLoaded = true;
+    }
   }
 
   public getDateString(date: string): string {
@@ -76,16 +79,28 @@ export class RecentPlayerGamesComponent implements OnChanges {
     return ((gameStats.goalsAgainst * 60) / Number(gameStats.timeOnIce.replace(":", ".")));
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    if ((changes['regularSeasonGames'] || changes['playoffGames']) && !this.imagesLoaded) {
-      if (!this.regularSeasonGames) {
-        return;
+  public getHokmobScoreColor(playerStats: NhlPlayerStatsModel): string {
+    return StatsUtils.getHokmobRatingColor(playerStats.hokmobRating);
+  }
+
+  private calculateLastTenGames(): void {
+    if (this.playoffGames) {
+      if (this.playoffGames.length > 9) {
+        this.lastTenGames = this.playoffGames.slice(0, this.numGamesToShow);
+      } else {
+        this.lastTenGames = this.playoffGames.slice(0, this.playoffGames.length).concat(this.regularSeasonGames.slice(0, this.numGamesToShow - this.playoffGames.length));
       }
-      this.teamLogos = [];
-      this.lastTenGames.forEach((statSplit, index) => {
-        this.teamLogos[index] = NhlTeamLogoUtils.getTeamPrimaryLogo(statSplit.opponent.id);
-      });
-      this.imagesLoaded = true;
+    } else if (this.regularSeasonGames) {
+      this.lastTenGames = this.regularSeasonGames.slice(0, this.numGamesToShow);
+    } else {
+      this.lastTenGames = [];
     }
+    this.lastTenGames.forEach(game => {
+      if (this.isGoalie) {
+        game.stat.hokmobRating = StatsUtils.calculatePlayerGoalieHokMobRating(game.stat);
+      } else {
+        game.stat.hokmobRating = StatsUtils.calculatePlayerHokmobRating(game.stat);
+      }
+    });
   }
 }

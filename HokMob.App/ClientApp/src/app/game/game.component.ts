@@ -142,7 +142,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public get gameStreamLink(): string {
     if (this.gameLiveData) {
-      let homeTeamLink = this.gameLiveData.gameData.teams.home.name.toLowerCase().replace(' ', '-');
+      let homeTeamLink = this.gameLiveData.gameData.teams.home.name.toLowerCase().replaceAll(' ', '-');
       return "https://720pstream.nu/nhl/live-" + homeTeamLink + "-stream";
     }
     return "N/A";

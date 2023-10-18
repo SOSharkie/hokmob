@@ -167,6 +167,23 @@ export class GameHeaderComponent {
     return "N/A"
   }
 
+  public get homeTeamPP(): boolean {
+    if (this.gameLinescore) {
+      return false;
+      // return this.gameLinescore.powerPlayInfo
+    }
+    return false;
+  }
+
+  public get awayTeamPP(): boolean {
+    if (this.gameLinescore) {
+      // console.log("live data", this.gameLiveData);
+      return false;
+      // return this.gameLinescore.powerPlayInfo
+    }
+    return false;
+  }
+
   private formatTimeRemaining(): string {
     if (this.gameLinescore.currentPeriodTimeRemaining.startsWith("0")) {
       return this.gameLinescore.currentPeriodTimeRemaining.substring(1);

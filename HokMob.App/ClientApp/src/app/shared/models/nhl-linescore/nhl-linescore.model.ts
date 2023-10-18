@@ -1,5 +1,6 @@
 import {NhlLinescorePeriodModel} from "@shared/models/nhl-linescore/nhl-linescore-period.model";
 import {NhlHomeAwayLinescoreTeamModel} from "@shared/models/nhl-linescore/nhl-home-away-linescore-team.model";
+import {NhlLinescoreIntermissionModel} from "@shared/models/nhl-linescore/nhl-linescore-intermission.model";
 
 export class NhlLinescoreModel {
 
@@ -19,7 +20,7 @@ export class NhlLinescoreModel {
 
   public hasShootout: boolean;
 
-  public intermissionInfo: Object;
+  public intermissionInfo: NhlLinescoreIntermissionModel;
 
   public powerPlayInfo: Object;
 }
