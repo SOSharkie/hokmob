@@ -65,8 +65,9 @@
         margin-left: $spacing-large;
       }
 
-      .point-cell {
+      .rating-cell {
         padding: $spacing-medium $spacing-large;
+        text-align: center;
         border-radius: 15px;
       }
     }
@@ -85,28 +86,34 @@
 @media only screen and (min-width: $tiny-display-breakpoint) {
   .player-game-header {
     .date-header {
-      width: 15%;
+      width: 12%;
     }
     .vs-header {
-      width: 25%;
+      width: 20%;
     }
     .toi-header {
-      width: 10%;
+      width: 9%;
     }
     .goals-header {
-      width: 10%;
+      width: 9%;
     }
     .assists-header {
-      width: 10%;
+      width: 9%;
     }
     .shots-header {
-      width: 10%;
+      width: 9%;
     }
     .hits-header {
-      width: 10%;
+      width: 9%;
     }
     .plus-minus-header {
-      width: 10%;
+      width: 9%;
+    }
+    .pim-header {
+      width: 9%;
+    }
+    .rating-header {
+      width: 9%;
     }
   }
 }
@@ -119,16 +126,16 @@
       width: 20%;
     }
     .vs-header {
-      width: 35%;
+      width: 40%;
     }
     .toi-header {
-      width: 10%;
+      width: 9%;
     }
     .goals-header {
-      width: 10%;
+      width: 9%;
     }
     .assists-header {
-      width: 10%;
+      width: 9%;
     }
     .shots-header {
       display: none;
@@ -139,8 +146,16 @@
     .plus-minus-header {
       display: none;
     }
+    .pim-header {
+      display: none;
+    }
+    .rating-header {
+      width: 12%;
+    }
   }
   th {
+    font-size: smaller;
+    font-weight: lighter !important;
     padding: $spacing-medium !important;
   }
   td {

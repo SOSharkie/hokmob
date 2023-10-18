@@ -13,6 +13,8 @@
         <th class="shots-header stat-cell"><span>Shots</span></th>
         <th class="hits-header stat-cell"><span>Hits</span></th>
         <th class="plus-minus-header stat-cell"><span>+/-</span></th>
+        <th class="pim-header stat-cell"><span [title]="'Penalty Minutes'">PIM</span></th>
+        <th class="rating-header stat-cell"><span [title]="'HokMob Rating'">Rating</span></th>
       </tr>
     </thead>
     <tbody>
@@ -24,11 +26,13 @@
           <span class="game-score">{{getRecentGameScore(i)}}</span>
         </td>
         <td><span>{{game.stat.timeOnIce}}</span></td>
-        <td class="stat-cell"><span class="point-cell" [ngStyle]="{'background-color': game.stat.goals > 0 ? teamColor : ''}">{{game.stat.goals}}</span></td>
-        <td class="stat-cell"><span class="point-cell" [ngStyle]="{'background-color': game.stat.assists > 0 ? teamColor : ''}">{{game.stat.assists}}</span></td>
+        <td class="stat-cell"><span [ngStyle]="{'color': game.stat.goals > 0 ? '#84dc7b' : ''}">{{game.stat.goals}}</span></td>
+        <td class="stat-cell"><span [ngStyle]="{'color': game.stat.assists > 0 ? '#84dc7b' : ''}">{{game.stat.assists}}</span></td>
         <td class="stat-cell hide-mobile"><span>{{game.stat.shots}}</span></td>
         <td class="stat-cell hide-mobile"><span>{{game.stat.hits}}</span></td>
         <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': getPlusMinusColor(game.stat)}">{{game.stat.plusMinus}}</span></td>
+        <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': game.stat.pim > 0 ? '#e34d53' : ''}">{{game.stat.pim}}</span></td>
+        <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': getHokmobScoreColor(game.stat)}">{{game.stat.hokmobRating}}</span></td>
       </tr>
     </tbody>
   </table>
@@ -43,6 +47,7 @@
       <th class="assists-header stat-cell"><span [title]="'Goals Against Average'">GAA</span></th>
       <th class="shots-header stat-cell"><span [title]="'Shots Against'">Shots Against</span></th>
       <th class="hits-header stat-cell"><span [title]="'Goals Against'">Goals Against</span></th>
+      <th class="rating-header stat-cell"><span [title]="'HokMob Rating'">Rating</span></th>
     </tr>
     </thead>
     <tbody>
@@ -54,10 +59,11 @@
         <span class="game-score">{{getRecentGameScore(i)}}</span>
       </td>
       <td><span>{{game.stat.timeOnIce}}</span></td>
-      <td class="stat-cell"><span class="point-cell" [ngStyle]="{'background-color': teamColor}">{{game.stat.savePercentage | savePercentage}}</span></td>
-      <td class="stat-cell hide-mobile"><span class="point-cell" [ngStyle]="{'background-color': teamColor}">{{getRecentGameGoalsAgainstAverage(game.stat) | goalsAgainstAverage}}</span></td>
+      <td class="stat-cell"><span>{{game.stat.savePercentage | savePercentage}}</span></td>
+      <td class="stat-cell hide-mobile"><span>{{getRecentGameGoalsAgainstAverage(game.stat) | goalsAgainstAverage}}</span></td>
       <td class="stat-cell hide-mobile"><span>{{game.stat.shotsAgainst}}</span></td>
       <td class="stat-cell"><span>{{game.stat.goalsAgainst}}</span></td>
+      <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': getHokmobScoreColor(game.stat)}">{{game.stat.hokmobRating}}</span></td>
     </tr>
     </tbody>
   </table>

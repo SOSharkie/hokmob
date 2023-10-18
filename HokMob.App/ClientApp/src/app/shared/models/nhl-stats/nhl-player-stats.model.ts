@@ -97,4 +97,9 @@ export class NhlPlayerStatsModel {
   public timeOnIce: string;
 
   public timeOnIcePerGame: string;
+
+  /**
+   * Not provided by NHL API, calculated in frontend.
+   */
+  public hokmobRating: number;
 }
