@@ -136,7 +136,7 @@ export class GameTopPlayersComponent implements OnChanges {
     for (let i = 0; i < this.numSkatersToShow; i++){
       this.homePlayerHeadshots.push('assets/blank_headshot.png');
     }
-    this.homePlayerStats.slice(0, this.numSkatersToShow).forEach((player, index) => {
+    this.topHomePlayers.forEach((player, index) => {
       this.nhlImageService.getNhlPlayerHeadshot(player.person.id).then(data => {
         let reader = new FileReader();
         reader.addEventListener("load", () => {
@@ -153,7 +153,7 @@ export class GameTopPlayersComponent implements OnChanges {
     for (let i = 0; i < this.numSkatersToShow; i++){
       this.awayPlayerHeadshots.push('assets/blank_headshot.png')
     }
-    this.awayPlayerStats.slice(0, this.numSkatersToShow).forEach((player, index) => {
+    this.topAwayPlayers.forEach((player, index) => {
       this.nhlImageService.getNhlPlayerHeadshot(player.person.id).then(data => {
         let reader = new FileReader();
         reader.addEventListener("load", () => {

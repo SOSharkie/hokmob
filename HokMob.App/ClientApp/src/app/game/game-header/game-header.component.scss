@@ -20,18 +20,14 @@ $central-info-width: 130px;
     justify-content: center;
     align-items: center;
     align-content: center;
-    width: $central-info-width;
     padding: $spacing-medium;
 
     .game-day-label {
       margin-top: $spacing-small;
       font-size: large;
       color: $gray-04;
+      text-align: center;
     }
-  }
-
-  .future-game {
-    width: 170px !important;
   }
 
   .game-score {
@@ -40,9 +36,6 @@ $central-info-width: 130px;
     justify-content: center;
     align-items: center;
     align-content: center;
-    width: $central-info-width;
-    padding-right: $spacing-x-small;
-    padding-left: $spacing-x-small;
 
     .completed-status-label {
       margin-top: $spacing-small;
@@ -90,7 +83,6 @@ $central-info-width: 130px;
     }
 
     .home-team-logo {
-      height: 60px;
       margin-left: $spacing-medium;
       margin-bottom: $spacing-x-small;
     }
@@ -122,7 +114,6 @@ $central-info-width: 130px;
     }
 
     .away-team-logo {
-      height: 60px;
       margin-right: $spacing-medium;
       margin-bottom: $spacing-x-small;
     }
@@ -149,15 +140,39 @@ $central-info-width: 130px;
     flex-direction: row;
     font-size: x-large;
     width: 380px;
+
+    .home-team-logo {
+      width: 60px;
+    }
   }
 
   .away-team-header {
     flex-direction: row;
     font-size: x-large;
     width: 380px;
+
+    .away-team-logo {
+      width: 60px;
+    }
+  }
+
+  .game-day-time-container {
+    width: $central-info-width;
+  }
+
+  .game-score {
+    width: $central-info-width;
+    padding-right: $spacing-small;
+    padding-left: $spacing-small;
+  }
+
+  .future-game {
+    width: 170px !important;
   }
 
   .game-time-label, .game-score-label {
+    min-width: 80px;
+    text-align: center;
     font-size: xx-large;
   }
 }
@@ -172,16 +187,35 @@ $central-info-width: 130px;
     flex-direction: column-reverse;
     font-size: large;
     width: 40%;
+
+    .home-team-logo {
+      width: 50px;
+    }
   }
 
   .away-team-header {
     flex-direction: column;
-    font-size: large;
+    font-size: medium;
     width: 40%;
+
+    .away-team-logo {
+      width: 50px;
+    }
+  }
+
+  .game-day-time-container {
+    max-width: $central-info-width;
+  }
+
+  .game-score {
+    max-width: $central-info-width;
+    padding-right: $spacing-medium;
+    padding-left: $spacing-medium;
   }
 
   .game-time-label, .game-score-label {
+    min-width: 70px;
     text-align: center;
-    font-size: x-large;
+    font-size: large;
   }
 }
