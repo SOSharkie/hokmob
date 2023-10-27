@@ -48,12 +48,15 @@ $central-info-width: 130px;
       margin-top: $spacing-small;
       font-size: large;
       color: $green-01;
+      min-width: 80px;
+      text-align: center;
     }
 
     .intermission-countdown {
       margin-top: $spacing-small;
       margin-bottom: $spacing-small;
       color: $gray-04;
+      text-align: center;
     }
   }
 
@@ -214,7 +217,7 @@ $central-info-width: 130px;
   }
 
   .game-time-label, .game-score-label {
-    min-width: 70px;
+    min-width: 80px;
     text-align: center;
     font-size: large;
   }
