@@ -70,6 +70,14 @@
         <span class="game-stat-label">Penalty Minutes</span>
         <span class="game-stat-value" [ngStyle]="{'color': player.stats.skaterStats.penaltyMinutes > 0 ? '#e34d53' : ''}">{{player.stats.skaterStats.penaltyMinutes}}</span>
       </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Takeaways</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.takeaways}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Giveaways</span>
+        <span class="game-stat-value">{{player.stats.skaterStats.giveaways}}</span>
+      </div>
     </div>
     <div *ngIf="player.stats.goalieStats" class="player-game-stats">
       <div class="game-stat-item">
@@ -91,6 +99,10 @@
       <div class="game-stat-item">
         <span class="game-stat-label">Shots Against</span>
         <span class="game-stat-value">{{player.stats.goalieStats.shots}}</span>
+      </div>
+      <div class="game-stat-item">
+        <span class="game-stat-label">Penalty Minutes</span>
+        <span class="game-stat-value">{{player.stats.goalieStats.pim}}</span>
       </div>
     </div>
   </div>

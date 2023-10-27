@@ -39,10 +39,7 @@ export class LeagueStandingsComponent implements OnInit {
             break;
         }
       }
-
-      this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), this.currentStandingsType).then(result => {
-        this.standings = result;
-      });
+      this.updateStandings();
     });
   }
 
@@ -54,15 +51,19 @@ export class LeagueStandingsComponent implements OnInit {
           queryParams: {standingsType: this.currentStandingsType},
         }
     );
-    this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), this.currentStandingsType).then(result => {
-      this.standings = result;
-      if (this.currentStandingsType === NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS) {
-        // this.standings = result.reverse();
-        // this.standings.splice(2,0, this.standings[this.standings.length - 2]);
-        // this.standings.splice(this.standings.length - 2, 1);
-      }
-    });
+    this.updateStandings();
   }
 
   protected readonly NhlStandingsTypeEnum = NhlStandingsTypeEnum;
+
+  private updateStandings(): void {
+    this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), this.currentStandingsType).then(result => {
+      this.standings = result;
+      if (this.currentStandingsType === NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS) {
+        this.standings = result.reverse();
+        this.standings.splice(2,0, this.standings[this.standings.length - 2]);
+        this.standings.splice(this.standings.length - 2, 1);
+      }
+    });
+  }
 }
