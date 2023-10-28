@@ -2,12 +2,10 @@ import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {NhlStatsSplitModel} from "@shared/models/nhl-stats/nhl-stats-split.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import * as dayjs from "dayjs";
-import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {StatsUtils} from "@shared/utils/stats-utils";
-import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
 
 @Component({
   selector: 'app-recent-player-games',
@@ -50,7 +48,8 @@ export class RecentPlayerGamesComponent implements OnChanges {
     if ((changes['regularSeasonGames'] || changes['playoffGames'])) {
       this.calculateLastTenGames();
     }
-    if ((changes['regularSeasonGames'] || changes['playoffGames']) && !this.imagesLoaded) {
+    if ((changes['regularSeasonGames'] || changes['playoffGames']) && !this.imagesLoaded &&
+        ((this.regularSeasonGames && this.regularSeasonGames.length > 1) || (this.playoffGames && this.playoffGames.length > 1))) {
       this.teamLogos = [];
       this.lastTenGames.forEach((statSplit, index) => {
         this.teamLogos[index] = NhlTeamLogoUtils.getTeamPrimaryLogo(statSplit.opponent.id);

@@ -57,6 +57,7 @@ import { StandingsSummaryComponent } from './home/standings-summary/standings-su
 import { GameTopPlayersComponent } from './game/game-top-players/game-top-players.component';
 import { MiniEventTimelineComponent } from './game/mini-event-timeline/mini-event-timeline.component';
 import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-event.component';
+import { PlayerCareerComponent } from './player/player-career/player-career.component';
 
 @NgModule({
   declarations: [
@@ -101,7 +102,8 @@ import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-e
     StandingsSummaryComponent,
     GameTopPlayersComponent,
     MiniEventTimelineComponent,
-    MiniEventComponent
+    MiniEventComponent,
+    PlayerCareerComponent
   ],
   imports: [
     BrowserModule,

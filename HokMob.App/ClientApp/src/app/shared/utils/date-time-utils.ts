@@ -63,6 +63,10 @@ export class DateTimeUtils {
     return this.getCurrentNhlSeason().substring(4);
   }
 
+  public static getNhlSeasonDisplayValue(season: string): string {
+    return season.substring(0, 4) + "-" + season.substring(4);
+  }
+
   public static isPlayoffMode(): boolean {
     let today = dayjs();
     if (today.month() < 4 || today.month() > 8) {

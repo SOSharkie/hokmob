@@ -188,7 +188,7 @@ $central-info-width: 130px;
 
   .home-team-header {
     flex-direction: column-reverse;
-    font-size: large;
+    font-size: medium;
     width: 40%;
 
     .home-team-logo {
@@ -216,8 +216,14 @@ $central-info-width: 130px;
     padding-left: $spacing-medium;
   }
 
-  .game-time-label, .game-score-label {
+  .game-score-label {
     min-width: 80px;
+    text-align: center;
+    font-size: x-large;
+  }
+
+  .game-time-label {
+    min-width: 85px;
     text-align: center;
     font-size: large;
   }

@@ -125,13 +125,13 @@
     }
   }
 
-  .player-info-container, .player-games-container {
+  .player-info-container, .player-games-and-career-container {
     display: flex;
     justify-content: flex-start;
-    align-items: center;
+    align-items: flex-start;
 
     .player-bio-container, .regular-season-stats, .playoff-stats, .career-totals {
-      height: 240px;
+      min-height: 240px;
       width: 32%;
       min-width: 375px;
       margin: $spacing-small;
@@ -150,6 +150,9 @@
   .player-header {
     padding-left: $spacing-small;
     padding-right: $spacing-xx-large;
+  }
+  .shift-career-up {
+    margin-top: -244px !important;
   }
   .games-back-button-mobile {
     display: none;
@@ -196,7 +199,7 @@
       font-size: large !important;
     }
   }
-  .player-info-container, .player-games-container{
+  .player-info-container, .player-games-and-career-container{
     flex-direction: column;
 
     .player-header {
@@ -205,9 +208,6 @@
     }
     .player-bio-container, .regular-season-stats, .playoff-stats {
       width: 98% !important;
-    }
-    .career-totals {
-      display: none;
     }
     .career-totals, .match-stats-container {
       width: 98% !important;

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, QueryList, ViewChild, ViewChildren} from '@angular/core';
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import * as dayjs from "dayjs";
@@ -12,6 +12,9 @@ import {NhlStatsSplitModel} from "@shared/models/nhl-stats/nhl-stats-split.model
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {StatLeaderboardComponent} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
+import {RecentPlayerGamesComponent} from "@app/player/recent-player-games/recent-player-games.component";
+import {PlayerCareerComponent} from "@app/player/player-career/player-career.component";
 
 @Component({
   selector: 'app-player',
@@ -34,6 +37,8 @@ export class PlayerComponent implements OnInit {
 
   public countryFlagPath: string;
 
+  public careerRegularSeasonStats: NhlStatsSplitModel[];
+
   public currentYearStats: NhlPlayerStatsModel;
 
   public currentPlayoffStats: NhlPlayerStatsModel;
@@ -47,6 +52,12 @@ export class PlayerComponent implements OnInit {
   public currentSeason: string;
 
   public currentPlayoffs: string;
+
+  @ViewChild('recentPlayerGamesComponent')
+  public recentPlayerGamesComponent: RecentPlayerGamesComponent;
+
+  @ViewChild('playerCareerComponent')
+  public playerCareerComponent: PlayerCareerComponent;
 
   private readonly nhlLeagueId: number = 133;
 
@@ -81,7 +92,7 @@ export class PlayerComponent implements OnInit {
       this.previousUrl = null;
     }
     this.route.params.subscribe((params: Params) => {
-      this.initProperties(params);
+      this.initProperties(params['id']);
       this.nhlStatsService.getNhlPlayerStats(this.playerId).then(result => {
         this.player = result;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.player.currentTeam.id);
@@ -127,15 +138,20 @@ export class PlayerComponent implements OnInit {
     }
   }
 
-  private initProperties(params: Params): void {
+  private initProperties(playerId: string): void {
     this.currentPlayoffStats = null;
     this.currentYearStats = null;
+    this.careerRegularSeasonStats = [];
     this.playoffGames = [];
     this.regularSeasonGames = [];
     this.recentGames = [];
-    this.playerId = params['id'];
+    this.playerId = playerId;
     this.currentSeason = DateTimeUtils.getCurrentNhlSeasonDisplayValue();
     this.currentPlayoffs = DateTimeUtils.getCurrentNhlPlayoffsDisplayValue();
+    if (this.recentPlayerGamesComponent && this.playerCareerComponent) {
+      this.recentPlayerGamesComponent.imagesLoaded = false;
+      this.playerCareerComponent.imagesLoaded = false;
+    }
   }
 
   private setCurrentStatModels(): void {
@@ -166,5 +182,8 @@ export class PlayerComponent implements OnInit {
     // Current season game by game breakdowns
     this.regularSeasonGames = this.player.stats[3].splits;
     this.playoffGames = this.player.stats[4].splits;
+
+    // Career Regular Season
+    this.careerRegularSeasonStats = this.player.stats[0].splits.reverse().filter(season => season.league.id === 133);
   }
 }
