@@ -1,4 +1,4 @@
-<div class="team-next-game">
+<div *ngIf="gameModel" class="team-next-game">
   <div class="team-next-game-header">
     <span *ngIf="futureGame">Next Game</span>
     <span *ngIf="liveGame">Ongoing Game</span>

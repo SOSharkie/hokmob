@@ -1,0 +1,92 @@
+@import "variables";
+
+.player-career {
+  background-color: $black-02;
+  border-radius: 25px;
+  overflow: hidden;
+  color: white;
+
+  .player-career-header {
+    font-size: larger;
+    text-align: center;
+    padding: 15px;
+    border-bottom: 1px solid #272727;
+    color: white;
+  }
+
+  .career-seasons-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    .player-seasons-header {
+      th {
+        text-align: left;
+        padding: $spacing-large;
+        color: $gray-03;
+        font-weight: normal;
+      }
+
+      .season-header {
+        width: 52%;
+      }
+      .games-header {
+        width: 12%;
+      }
+      .goals-header {
+        width: 12%;
+      }
+      .assists-header {
+        width: 12%;
+      }
+      .points-header {
+        width: 12%;
+      }
+    }
+
+    .career-season-row {
+      border-bottom: 1px solid $black-04;
+
+      td {
+        font-weight: lighter;
+        padding: $spacing-x-large;
+      }
+
+      .season-info {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        .player-team-logo {
+          width: 40px;
+          margin-right: $spacing-medium;
+        }
+
+        .season-name {
+          color: $gray-03;
+        }
+      }
+
+      .stat-cell {
+        text-align: center;
+      }
+    }
+
+    .last-row {
+      border-bottom: none !important;
+    }
+  }
+}
+
+
+// Mobile Display
+@media only screen and (max-width: $tiny-display-breakpoint) {
+  th {
+    font-size: smaller;
+    font-weight: lighter !important;
+    padding: $spacing-medium !important;
+  }
+  td {
+    padding: $spacing-medium !important;
+    font-size: smaller;
+  }
+}

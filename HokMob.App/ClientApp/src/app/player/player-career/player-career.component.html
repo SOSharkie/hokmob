@@ -1,0 +1,32 @@
+<div class="player-career">
+  <div class="player-career-header">
+    <span>Career</span>
+  </div>
+  <table *ngIf="!isGoalie" class="career-seasons-table">
+    <thead>
+      <tr class="player-seasons-header">
+        <th class="season-header"><span>Season</span></th>
+        <th class="games-header"><span>Games Played</span></th>
+        <th class="goals-header"><span>Goals</span></th>
+        <th class="assists-header"><span>Assists</span></th>
+        <th class="assists-header"><span>Points</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let season of careerRegularSeasonStats, let i = index, let isLast = last" class="career-season-row" [ngClass]="{'last-row': isLast}">
+        <td class="season-cell">
+          <div class="season-info">
+            <img [src]="careerTeamLogos[i]" class="player-team-logo">
+            <div class="season-name">
+              <span>{{DateTimeUtils.getNhlSeasonDisplayValue(season.season)}}</span>
+            </div>
+          </div>
+        </td>
+        <td class="stat-cell"><span>{{season.stat.games}}</span></td>
+        <td class="stat-cell"><span>{{season.stat.goals}}</span></td>
+        <td class="stat-cell"><span>{{season.stat.assists}}</span></td>
+        <td class="stat-cell"><span [ngStyle]="{'color': season.stat.points > 0 ? '#84dc7b' : ''}">{{season.stat.points}}</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -75,17 +75,18 @@ export class TeamComponent implements OnInit {
         this.teamData = teamData;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.teamData.id);
         this.loadImages();
-        this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), NhlStandingsTypeEnum.BY_LEAGUE).then(standings => {
+        this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), NhlStandingsTypeEnum.BY_CONFERENCE).then(standings => {
           if (this.teamData.conference.id === 5) {
-            this.standings = standings.reverse();
+            this.standings = [standings[1]];
           } else {
-            this.standings = standings;
+            this.standings = [standings[0]];
           }
         });
       });
       let thirtyDaysFuture = dayjs().add(30, 'day');
       let thirtyDaysAgo = dayjs().subtract(30, 'days');
-      this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), new Date(), Number(this.teamId)).then(past => {
+      let yesterday = dayjs().subtract(1, 'day');
+      this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), Number(this.teamId)).then(past => {
         this.pastTeamGames = past;
       });
       this.nhlGameService.getTeamGames(new Date(), thirtyDaysFuture.toDate(), Number(this.teamId)).then(schedule => {

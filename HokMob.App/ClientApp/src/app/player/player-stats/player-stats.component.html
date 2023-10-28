@@ -5,15 +5,17 @@
   <div *ngIf="!isGoalie" class="stats-grid">
     <div class="stats-item">
       <span class="item-title">Goals</span>
-      <span class="item-value" [ngStyle]="{'background-color':  teamColor}">{{stats.goals}}</span>
+<!--      <span class="item-value" [ngStyle]="{'background-color':  teamColor}">{{stats.goals}}</span>-->
+      <span class="item-value">{{stats.goals}}</span>
     </div>
     <div class="stats-item">
       <span class="item-title">Assists</span>
-      <span class="item-value" [ngStyle]="{'background-color':  teamColor}">{{stats.assists}}</span>
+<!--      <span class="item-value" [ngStyle]="{'background-color':  teamColor}">{{stats.assists}}</span>-->
+      <span class="item-value">{{stats.assists}}</span>
     </div>
     <div class="stats-item">
       <span class="item-title">Points</span>
-      <span class="item-value">{{stats.points}}</span>
+      <span class="item-value" [ngStyle]="{'color': stats.points > 0 ? '#84dc7b' : ''}">{{stats.points}}</span>
     </div>
     <div class="stats-item">
       <span class="item-title" [title]="'Games Played'">Games</span>
@@ -21,11 +23,13 @@
     </div>
     <div class="stats-item">
       <span class="item-title">+/-</span>
-      <span class="item-value" [ngStyle]="{'color': plusMinusColor}">{{stats.plusMinus}}</span>
+<!--      <span class="item-value" [ngStyle]="{'color': plusMinusColor}">{{stats.plusMinus}}</span>-->
+      <span class="item-value">{{stats.plusMinus}}</span>
     </div>
     <div class="stats-item">
       <span class="item-title">Faceoff %</span>
-      <span class="item-value" [ngStyle]="{'color': faceOffColor}">{{formatFaceOffPercent(stats.faceOffPct)}}</span>
+<!--      <span class="item-value" [ngStyle]="{'color': faceOffColor}">{{formatFaceOffPercent(stats.faceOffPct)}}</span>-->
+      <span class="item-value">{{formatFaceOffPercent(stats.faceOffPct)}}</span>
     </div>
     <div class="stats-item">
       <span class="item-title">Shots</span>
