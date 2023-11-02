@@ -169,17 +169,16 @@ export class GameHeaderComponent {
 
   public get homeTeamPP(): boolean {
     if (this.gameLinescore) {
+      // TODO: Implement
       return false;
-      // return this.gameLinescore.powerPlayInfo
     }
     return false;
   }
 
   public get awayTeamPP(): boolean {
     if (this.gameLinescore) {
-      // console.log("live data", this.gameLiveData);
+      // TODO: Implement
       return false;
-      // return this.gameLinescore.powerPlayInfo
     }
     return false;
   }

@@ -20,10 +20,14 @@
     <tbody>
       <tr *ngFor="let game of lastTenGames, let i = index, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
         <td class="date-cell"><span>{{getDateString(game.date)}}</span></td>
-        <td class="opponent-cell" [routerLink]="['/game', game.game.gamePk]">
-          <img class="opponent-logo" [src]="teamLogos[i]">
-          <span>{{game.opponent.abbreviation}}</span>
-          <span class="game-score">{{getRecentGameScore(i)}}</span>
+        <td [routerLink]="['/game', game.game.gamePk]">
+          <div class="opponent-cell">
+            <div class="logo-container">
+              <img class="opponent-logo" [src]="teamLogos[i]">
+            </div>
+            <span>{{game.opponent.abbreviation}}</span>
+            <span class="game-score">{{getRecentGameScore(i)}}</span>
+          </div>
         </td>
         <td><span>{{game.stat.timeOnIce}}</span></td>
         <td class="stat-cell"><span [ngStyle]="{'color': game.stat.goals > 0 ? '#84dc7b' : ''}">{{game.stat.goals}}</span></td>
@@ -53,10 +57,14 @@
     <tbody>
     <tr *ngFor="let game of lastTenGames, let i = index, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
       <td class="date-cell"><span>{{getDateString(game.date)}}</span></td>
-      <td class="opponent-cell" [routerLink]="['/game', game.game.gamePk]">
-        <img class="opponent-logo" [src]="teamLogos[i]">
-        <span>{{game.opponent.abbreviation}}</span>
-        <span class="game-score">{{getRecentGameScore(i)}}</span>
+      <td [routerLink]="['/game', game.game.gamePk]">
+        <div class="opponent-cell">
+          <div class="logo-container">
+            <img class="opponent-logo" [src]="teamLogos[i]">
+          </div>
+          <span>{{game.opponent.abbreviation}}</span>
+          <span class="game-score">{{getRecentGameScore(i)}}</span>
+        </div>
       </td>
       <td><span>{{game.stat.timeOnIce}}</span></td>
       <td class="stat-cell"><span>{{game.stat.savePercentage | savePercentage}}</span></td>

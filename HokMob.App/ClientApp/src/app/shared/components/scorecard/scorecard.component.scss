@@ -61,9 +61,16 @@
     text-align: right;
     padding-left: $spacing-medium;
 
-    .home-team-logo {
-      height: 30px;
-      margin-left: $spacing-medium;
+    .logo-container {
+      min-width: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: $spacing-small;
+
+      .home-team-logo {
+        height: 35px;
+      }
     }
   }
 
@@ -73,9 +80,16 @@
     align-items: center;
     padding-right: $spacing-medium;
 
-    .away-team-logo {
-      height: 30px;
-      margin-right: $spacing-medium;
+    .logo-container {
+      min-width: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: $spacing-small;
+
+      .away-team-logo {
+        height: 35px;
+      }
     }
   }
 }
@@ -96,7 +110,7 @@
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .central-info {
-    width: 90px;
+    min-width: 60px;
   }
   .home-team {
     width: 280px;
