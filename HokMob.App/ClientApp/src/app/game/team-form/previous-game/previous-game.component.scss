@@ -10,16 +10,41 @@
   padding-bottom: $spacing-large;
   padding-top: $spacing-large;
 
+  .home-team {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    width: 45%;
+  }
+
+  .away-team {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    width: 45%;
+  }
+
   .team-name {
     min-width: 65px;
-    width: 42%;
   }
 
   .home {
     text-align: right;
   }
 
+  .logo-container {
+    width: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .home-team-logo, .away-team-logo {
+      height: 30px;
+    }
+  }
+
   .score-container {
+    width: 10%;
     min-width: 32px;
     padding: $spacing-medium;
     margin-left: $spacing-large;

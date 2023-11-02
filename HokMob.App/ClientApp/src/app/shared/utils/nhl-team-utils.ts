@@ -1,13 +1,15 @@
-import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
+import {NhlTeamCustomModel} from "@shared/models/nhl-general/nhl-team-custom.model";
 
 export class NhlTeamUtils {
 
-  public static getTeam(teamId: number): NhlTeamModel {
+  public static getTeam(teamId: number): NhlTeamCustomModel {
     switch (teamId) {
       case 1:
         return {
           id: 1,
           name: "New Jersey Devils",
+          shortName: "New Jersey",
+          teamName: "Devils",
           triCode: "NJD",
           link: "/api/v1/teams/1"
         }
@@ -15,6 +17,8 @@ export class NhlTeamUtils {
         return {
           id: 2,
           name: "New York Islanders",
+          shortName: "NY Islanders",
+          teamName: "Islanders",
           triCode: "NYI",
           link: "/api/v1/teams/2"
         }
@@ -22,6 +26,8 @@ export class NhlTeamUtils {
         return {
           id: 3,
           name: "New York Rangers",
+          shortName: "NY Rangers",
+          teamName: "Rangers",
           triCode: "NYR",
           link: "/api/v1/teams/3"
         }
@@ -29,6 +35,8 @@ export class NhlTeamUtils {
         return {
           id: 4,
           name: "Philadelphia Flyers",
+          shortName: "Philadelphia",
+          teamName: "Flyers",
           triCode: "PHI",
           link: "/api/v1/teams/4"
         }
@@ -36,6 +44,8 @@ export class NhlTeamUtils {
         return {
           id: 5,
           name: "Pittsburgh Penguins",
+          shortName: "Pittsburgh",
+          teamName: "Penguins",
           triCode: "PIT",
           link: "/api/v1/teams/5"
         }
@@ -43,6 +53,8 @@ export class NhlTeamUtils {
         return {
           id: 6,
           name: "Boston Bruins",
+          shortName: "Boston",
+          teamName: "Bruins",
           triCode: "BOS",
           link: "/api/v1/teams/6"
         }
@@ -50,6 +62,8 @@ export class NhlTeamUtils {
         return {
           id: 7,
           name: "Buffalo Sabres",
+          shortName: "Buffalo",
+          teamName: "Sabres",
           triCode: "BUF",
           link: "/api/v1/teams/7"
         }
@@ -57,6 +71,8 @@ export class NhlTeamUtils {
         return {
           id: 8,
           name: "Montréal Canadiens",
+          shortName: "Montreal",
+          teamName: "Canadiens",
           triCode: "MTL",
           link: "/api/v1/teams/8"
         }
@@ -64,6 +80,8 @@ export class NhlTeamUtils {
         return {
           id: 9,
           name: "Ottawa Senators",
+          shortName: "Ottawa",
+          teamName: "Senators",
           triCode: "OTT",
           link: "/api/v1/teams/9"
         }
@@ -71,6 +89,8 @@ export class NhlTeamUtils {
         return {
           id: 10,
           name: "Toronto Maple Leafs",
+          shortName: "Toronto",
+          teamName: "Maple Leafs",
           triCode: "TOR",
           link: "/api/v1/teams/10"
         }
@@ -78,6 +98,8 @@ export class NhlTeamUtils {
         return {
           id: 12,
           name: "Carolina Hurricanes",
+          shortName: "Carolina",
+          teamName: "Hurricanes",
           triCode: "CAR",
           link: "/api/v1/teams/12"
         }
@@ -85,6 +107,8 @@ export class NhlTeamUtils {
         return {
           id: 13,
           name: "Florida Panthers",
+          shortName: "Florida",
+          teamName: "Panthers",
           triCode: "FLA",
           link: "/api/v1/teams/13"
         }
@@ -92,6 +116,8 @@ export class NhlTeamUtils {
         return {
           id: 14,
           name: "Tampa Bay Lightning",
+          shortName: "Tampa Bay",
+          teamName: "Lightning",
           triCode: "TBL",
           link: "/api/v1/teams/14"
         }
@@ -99,6 +125,8 @@ export class NhlTeamUtils {
         return {
           id: 15,
           name: "Washington Capitals",
+          shortName: "Washington",
+          teamName: "Capitals",
           triCode: "WSH",
           link: "/api/v1/teams/15"
         }
@@ -106,6 +134,8 @@ export class NhlTeamUtils {
         return {
           id: 16,
           name: "Chicago Blackhawks",
+          shortName: "Chicago",
+          teamName: "Blackhawks",
           triCode: "CHI",
           link: "/api/v1/teams/16"
         }
@@ -113,6 +143,8 @@ export class NhlTeamUtils {
         return {
           id: 17,
           name: "Detroit Red Wings",
+          shortName: "Detroit",
+          teamName: "Red Wings",
           triCode: "DET",
           link: "/api/v1/teams/17"
         }
@@ -120,6 +152,8 @@ export class NhlTeamUtils {
         return {
           id: 18,
           name: "Nashville Predators",
+          shortName: "Nashville",
+          teamName: "Predators",
           triCode: "NSH",
           link: "/api/v1/teams/18"
         }
@@ -127,6 +161,8 @@ export class NhlTeamUtils {
         return {
           id: 19,
           name: "St. Louis Blues",
+          shortName: "St. Louis",
+          teamName: "Blues",
           triCode: "STL",
           link: "/api/v1/teams/19"
         }
@@ -134,6 +170,8 @@ export class NhlTeamUtils {
         return {
           id: 20,
           name: "Calgary Flames",
+          shortName: "Calgary",
+          teamName: "Flames",
           triCode: "CGY",
           link: "/api/v1/teams/20"
         }
@@ -141,6 +179,8 @@ export class NhlTeamUtils {
         return {
           id: 21,
           name: "Colorado Avalanche",
+          shortName: "Colorado",
+          teamName: "Avalanche",
           triCode: "COL",
           link: "/api/v1/teams/21"
         }
@@ -148,6 +188,8 @@ export class NhlTeamUtils {
         return {
           id: 22,
           name: "Edmonton Oilers",
+          shortName: "Edmonton",
+          teamName: "Oilers",
           triCode: "EDM",
           link: "/api/v1/teams/22"
         }
@@ -155,6 +197,8 @@ export class NhlTeamUtils {
         return {
           id: 23,
           name: "Vancouver Canucks",
+          shortName: "Vancouver",
+          teamName: "Canucks",
           triCode: "VAN",
           link: "/api/v1/teams/23"
         }
@@ -162,6 +206,8 @@ export class NhlTeamUtils {
         return {
           id: 24,
           name: "Anaheim Ducks",
+          shortName: "Anaheim",
+          teamName: "Ducks",
           triCode: "ANA",
           link: "/api/v1/teams/24"
         }
@@ -169,6 +215,8 @@ export class NhlTeamUtils {
         return {
           id: 25,
           name: "Dallas Stars",
+          shortName: "Dallas",
+          teamName: "Stars",
           triCode: "DAL",
           link: "/api/v1/teams/25"
         }
@@ -176,6 +224,8 @@ export class NhlTeamUtils {
         return {
           id: 26,
           name: "Los Angeles Kings",
+          shortName: "Los Angeles",
+          teamName: "Kings",
           triCode: "LAK",
           link: "/api/v1/teams/26"
         }
@@ -183,6 +233,8 @@ export class NhlTeamUtils {
         return {
           id: 28,
           name: "San Jose Sharks",
+          shortName: "San Jose",
+          teamName: "Sharks",
           triCode: "SJS",
           link: "/api/v1/teams/28"
         }
@@ -190,6 +242,8 @@ export class NhlTeamUtils {
         return {
           id: 29,
           name: "Columbus Blue Jackets",
+          shortName: "Columbus",
+          teamName: "Blue Jackets",
           triCode: "CBJ",
           link: "/api/v1/teams/29"
         }
@@ -197,6 +251,8 @@ export class NhlTeamUtils {
         return {
           id: 30,
           name: "Minnesota Wild",
+          shortName: "Minnesota",
+          teamName: "Wild",
           triCode: "MIN",
           link: "/api/v1/teams/30"
         }
@@ -204,6 +260,8 @@ export class NhlTeamUtils {
         return {
           id: 53,
           name: "Arizona Coyotes",
+          shortName: "Arizon",
+          teamName: "Coyotes",
           triCode: "ARI",
           link: "/api/v1/teams/53"
         }
@@ -211,6 +269,8 @@ export class NhlTeamUtils {
         return {
           id: 54,
           name: "Vegas Golden Knights",
+          shortName: "Vegas",
+          teamName: "Golden Knights",
           triCode: "VGK",
           link: "/api/v1/teams/54"
         }
@@ -218,6 +278,8 @@ export class NhlTeamUtils {
         return {
           id: 55,
           name: "Seattle Kraken",
+          shortName: "Seattle",
+          teamName: "Kraken",
           triCode: "SEA",
           link: "/api/v1/teams/55"
         }
@@ -225,6 +287,8 @@ export class NhlTeamUtils {
         return {
           id: 100,
           name: "Unknown",
+          shortName: "Unknown",
+          teamName: "Unknown",
           triCode: "-",
           link: ""
         }

@@ -16,7 +16,9 @@
       <tr *ngFor="let season of careerRegularSeasonStats, let i = index, let isLast = last" class="career-season-row" [ngClass]="{'last-row': isLast}">
         <td class="season-cell">
           <div class="season-info">
-            <img [src]="careerTeamLogos[i]" class="player-team-logo">
+            <div class="logo-container">
+              <img [src]="careerTeamLogos[i]" class="player-team-logo">
+            </div>
             <div class="season-name">
               <span>{{DateTimeUtils.getNhlSeasonDisplayValue(season.season)}}</span>
             </div>
@@ -27,6 +29,36 @@
         <td class="stat-cell"><span>{{season.stat.assists}}</span></td>
         <td class="stat-cell"><span [ngStyle]="{'color': season.stat.points > 0 ? '#84dc7b' : ''}">{{season.stat.points}}</span></td>
       </tr>
+    </tbody>
+  </table>
+
+  <table *ngIf="isGoalie" class="career-seasons-table">
+    <thead>
+    <tr class="player-seasons-header">
+      <th class="season-header"><span>Season</span></th>
+      <th class="games-header"><span>Games Played</span></th>
+      <th class="goals-header"><span>Shutouts</span></th>
+      <th class="assists-header"><span [title]="'Goals Against Average'">GAA</span></th>
+      <th class="points-header"><span [title]="'Save Percentage'">SV %</span></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let season of careerRegularSeasonStats, let i = index, let isLast = last" class="career-season-row" [ngClass]="{'last-row': isLast}">
+      <td class="season-cell">
+        <div class="season-info">
+          <div class="logo-container">
+            <img [src]="careerTeamLogos[i]" class="player-team-logo">
+          </div>
+          <div class="season-name">
+            <span>{{DateTimeUtils.getNhlSeasonDisplayValue(season.season)}}</span>
+          </div>
+        </div>
+      </td>
+      <td class="stat-cell"><span>{{season.stat.games}}</span></td>
+      <td class="stat-cell"><span>{{season.stat.shutouts}}</span></td>
+      <td class="stat-cell"><span>{{season.stat.goalAgainstAverage | goalsAgainstAverage}}</span></td>
+      <td class="stat-cell"><span [ngStyle]="{'color': season.stat.shotsAgainst > 0 ? '#84dc7b' : ''}">{{season.stat.savePercentage | savePercentage}}</span></td>
+    </tr>
     </tbody>
   </table>
 </div>

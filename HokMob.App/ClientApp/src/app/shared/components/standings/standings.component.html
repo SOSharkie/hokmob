@@ -13,7 +13,7 @@
       <th *ngIf="!miniStandings" class="ot-header stat-cell"><span [title]="'Overtime Losses'">OT</span></th>
       <th *ngIf="!miniStandings" class="rw-header stat-cell"><span [title]="'Regulation Wins'">RW</span></th>
       <th *ngIf="!miniStandings" class="gd-header stat-cell"><span [title]="'Goal Differential'">GD</span></th>
-      <th *ngIf="showFormAndNext" class="form-header"><span>Form</span></th>
+      <th *ngIf="showFormAndNext" class="form-header stat-cell"><span>Form</span></th>
       <th class="points-header stat-cell"><span [title]="'Points'">PTS</span></th>
 <!--      <th *ngIf="showFormAndNext" class="next-game-header"><span>Next</span></th>-->
     </tr>
@@ -37,7 +37,7 @@
       <td *ngIf="!miniStandings" class="ot-cell stat-cell"><span>{{team.leagueRecord.ot}}</span></td>
       <td *ngIf="!miniStandings" class="rw-cell stat-cell"><span>{{team.regulationWins}}</span></td>
       <td *ngIf="!miniStandings" class="gd-cell stat-cell hide-mobile"><span>{{team.goalsScored - team.goalsAgainst}}</span></td>
-      <td *ngIf="showFormAndNext" class="form-cell hide-mobile"><span>{{team.streak.steakNumber}}{{team.streak.streakCode}}</span></td>
+      <td *ngIf="showFormAndNext" class="form-cell stat-cell hide-mobile"><span>{{team.streak.steakNumber}}{{team.streak.streakCode}}</span></td>
       <td class="points-cell stat-cell">
         <span class="points-value" [ngStyle]="{'background-color': team.team.id === selectedTeamId ? selectedTeamColor : ''}">
           {{team.points}}

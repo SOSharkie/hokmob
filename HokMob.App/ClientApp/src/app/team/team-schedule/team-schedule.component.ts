@@ -16,8 +16,6 @@ export class TeamScheduleComponent {
   @Input()
   public teamGames: NhlScheduleModel;
 
-  public ng
-
   public get next5TeamGames(): NhlGameModel[] {
     if (this.teamGames) {
       return this.teamGames.dates.slice(0, Math.min(5, this.teamGames.dates.length)).map(item => item.games[0]);

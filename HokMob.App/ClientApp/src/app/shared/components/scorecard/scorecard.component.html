@@ -4,7 +4,9 @@
      [routerLink]="['/game', game.gamePk]">
   <div class="home-team" [ngClass]="{'smaller-text': smallerScorecard}">
     <span>{{homeTeamName}}</span>
-    <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="isHomeLogoLoaded">
+    <div class="logo-container">
+      <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="isHomeLogoLoaded">
+    </div>
   </div>
   <div class="central-info">
     <span *ngIf="isPlayoffGame" class="playoff-series">{{playoffSeriesDetails}}</span>
@@ -26,7 +28,9 @@
     </div>
   </div>
   <div class="away-team" [ngClass]="{'smaller-text': smallerScorecard}">
-    <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="isAwayLogoLoaded">
+    <div class="logo-container">
+      <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="isAwayLogoLoaded">
+    </div>
     <span>{{awayTeamName}}</span>
   </div>
 </div>
