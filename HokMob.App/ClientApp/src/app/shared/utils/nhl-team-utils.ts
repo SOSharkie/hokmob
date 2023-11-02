@@ -256,6 +256,15 @@ export class NhlTeamUtils {
           triCode: "MIN",
           link: "/api/v1/teams/30"
         }
+      case 52:
+        return {
+          id: 52,
+          name: "Winnipeg Jets",
+          shortName: "Winnipeg",
+          teamName: "Jets",
+          triCode: "WPG",
+          link: "/api/v1/teams/52"
+        }
       case 53:
         return {
           id: 53,
