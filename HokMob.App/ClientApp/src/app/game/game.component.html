@@ -59,20 +59,22 @@
         </div>
       </div>
     </div>
-    <!-- TODO: The sections below aren't migrated yet (phases 5-7, see the TODO in game.component.ts) -->
+    <!-- TODO: Top players isn't migrated yet (phase 6, see the TODO in game.component.ts) -->
     <div *ngIf="unmigratedSectionsEnabled && showTopPlayers" class="game-container">
       <app-game-top-players
         (playerClicked)="openPlayerGameDialog($event)"
       ></app-game-top-players>
     </div>
-    <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="game-container">
-      <app-momentum></app-momentum>
+    <div *ngIf="!futureGame && playByPlay" class="game-container">
+      <app-momentum [playByPlay]="playByPlay"></app-momentum>
     </div>
-    <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="game-container mobile-only">
+    <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
       <app-mini-event-timeline
+          [playByPlay]="playByPlay"
           (playerClicked)="openPlayerGameDialog($event)"
       ></app-mini-event-timeline>
     </div>
+    <!-- TODO: Game stats and team form aren't migrated yet (phases 6-7, see the TODO in game.component.ts) -->
     <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="game-container">
       <app-game-stats
           [homeTeamLogo]="homeTeamLogo"
@@ -83,8 +85,9 @@
       <app-team-form></app-team-form>
     </div>
   </div>
-  <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="side-game">
+  <div *ngIf="!futureGame && playByPlay" class="side-game">
     <app-mini-event-timeline
+        [playByPlay]="playByPlay"
         [homeTeamLogo]="homeTeamLogo"
         [awayTeamLogo]="awayTeamLogo"
         (playerClicked)="openPlayerGameDialog($event)"

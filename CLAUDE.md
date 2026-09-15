@@ -11,7 +11,7 @@ has field mappings, what's done, decisions and known risks. Update its status, t
 change a phase.
 
 - Unmigrated pages (team, player, playoffs bracket, search) still call dead APIs, and the game page hides its phase
-  5–7 sections until they migrate. Their `ERR_NAME_NOT_RESOLVED` / `statsapi.web.nhl.com` console errors are
+  6–7 sections until they migrate. Their `ERR_NAME_NOT_RESOLVED` / `statsapi.web.nhl.com` console errors are
   expected noise, not regressions.
 - Out-of-scope code that breaks because a shared component changed gets the smallest compile fix plus a `// TODO:`
   comment pointing at the plan (see `team.component.ts` for the format).

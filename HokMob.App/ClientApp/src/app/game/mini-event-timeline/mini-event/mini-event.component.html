@@ -11,17 +11,18 @@
         <span class="color-green">{{eventPlayerName}}</span>
         <span class="score-update">
           <span> (</span>
-          <span class="color-green">{{goalEventHomeScore}}</span>
+          <span [class.color-green]="isHomeEvent">{{goalEventHomeScore}}</span>
           <span> - </span>
-          <span>{{goalEventAwayScore}}</span>
+          <span [class.color-green]="!isHomeEvent">{{goalEventAwayScore}}</span>
           <span>)</span>
         </span>
       </div>
       <div>
-        <span *ngIf="goalEventAssists.length > 0" class="event-secondary-label">Assists: </span>
-        <span *ngIf="goalEventAssists.length === 0" class="event-secondary-label">Unassisted</span>
-        <span *ngFor="let assist of goalEventAssists, let i = index" class="event-secondary-label assist-name"
-              (click)="onAssistClicked(i)">{{assist}}</span>
+        <span *ngIf="assistPlayerIds.length > 0" class="event-secondary-label">Assists: </span>
+        <span *ngIf="assistPlayerIds.length === 0" class="event-secondary-label">Unassisted</span>
+        <ng-container *ngFor="let assistId of assistPlayerIds; let isLast = last">
+          <span class="event-secondary-label assist-name" (click)="onAssistClicked(assistId)">{{getAssistName(assistId)}}</span><span *ngIf="!isLast" class="event-secondary-label">, </span>
+        </ng-container>
       </div>
     </div>
   </div>

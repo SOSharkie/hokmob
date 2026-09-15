@@ -224,6 +224,23 @@ export function derivedIntermissionLanding(): GameLanding {
 }
 
 /**
+ * Derived: the regulation final (STL @ WPG) play-by-play at the same moment as derivedLiveLanding (2nd period, 5:32
+ * left, WPG leading 2-0): only the plays up to 14:28 of the 2nd, and no game outcome.
+ */
+export function derivedLivePlayByPlay(): PlayByPlay {
+  const playByPlay = mockGamePlayByPlay(2025021057);
+  playByPlay.gameState = NhlGameStateEnum.LIVE;
+  playByPlay.homeTeam.score = 2;
+  playByPlay.awayTeam.score = 0;
+  playByPlay.periodDescriptor = {...playByPlay.periodDescriptor, number: 2};
+  playByPlay.clock = {timeRemaining: '05:32', secondsRemaining: 332, running: true, inIntermission: false};
+  delete playByPlay.gameOutcome;
+  playByPlay.plays = playByPlay.plays.filter(play => play.periodDescriptor.number === 1 ||
+      (play.periodDescriptor.number === 2 && play.timeInPeriod <= '14:28'));
+  return playByPlay;
+}
+
+/**
  * Derived: the regulation final (VGK 0 @ PIT 5) as if live in the 2nd period with 5:32 left. The live shape is based
  * on the model and not yet verified against a live game (see the migration plan's risks).
  */

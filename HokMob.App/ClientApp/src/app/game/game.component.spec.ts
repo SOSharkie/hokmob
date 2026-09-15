@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
@@ -120,15 +121,37 @@ describe('GameComponent', () => {
     expect(scoring.map(period => period.goals.length)).toEqual([2, 0, 3]);
   });
 
-  it('should keep the other gamecenter responses but hide the unmigrated sections', async () => {
+  it('should pass the play-by-play to the momentum chart and event timelines', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
-    expect(component.playByPlay.plays.length).toBe(270);
+    expect(element('app-momentum').playByPlay.plays.length).toBe(270);
+
+    // One timeline in the main column for mobile, one beside it for desktop
+    const timelines = fixture.nativeElement.querySelectorAll('app-mini-event-timeline');
+    expect(timelines.length).toBe(2);
+    timelines.forEach((timeline: any) => expect(timeline.playByPlay.id).toBe(2025021057));
+    expect(element('.side-game app-mini-event-timeline').homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    expect(element('.side-game app-mini-event-timeline').awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
+  });
+
+  it('should open the player dialog for a player clicked in an event timeline', async () => {
+    const openDialog = spyOn(GameComponent.prototype, 'openPlayerGameDialog');
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    fixture.debugElement.query(By.css('.side-game app-mini-event-timeline')).triggerEventHandler('playerClicked', 8478398);
+    expect(openDialog).toHaveBeenCalledWith(8478398);
+  });
+
+  it('should keep the boxscore and right-rail but hide the sections not migrated yet', async () => {
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
     expect(component.boxscore.id).toBe(2025021057);
     expect(component.rightRail.teamGameStats.length).toBeGreaterThan(0);
     expect(component.showTopPlayers).toBeTrue();
-    ['app-game-top-players', 'app-momentum', 'app-mini-event-timeline', 'app-game-stats', 'app-team-form']
+    ['app-game-top-players', 'app-game-stats', 'app-team-form']
         .forEach(selector => expect(element(selector)).withContext(selector).toBeNull());
   });
 
@@ -176,6 +199,8 @@ describe('GameComponent', () => {
     expect(component.playByPlay).toBeUndefined();
     expect(component.boxscore).toBeUndefined();
     expect(text('.game-load-error')).toBeUndefined();
+    expect(element('app-momentum')).toBeNull();
+    expect(element('app-mini-event-timeline')).toBeNull();
   });
 
   it('should show an error instead of the game when the landing fails', async () => {
@@ -195,6 +220,8 @@ describe('GameComponent', () => {
     expect(text('.game-venue-container')).toContain('TD Garden');
     expect(element('app-goal-scorers')).toBeNull();
     expect(component.showTopPlayers).toBeFalse();
+    expect(element('app-momentum')).toBeNull();
+    expect(element('app-mini-event-timeline')).toBeNull();
   });
 
   it('should refresh a future game scheduled today', fakeAsync(() => {

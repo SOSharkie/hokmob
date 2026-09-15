@@ -1,6 +1,8 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
+import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
+import { MockGamecenterGameId, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { MiniEventComponent } from './mini-event.component';
 
@@ -18,11 +20,92 @@ describe('MiniEventComponent', () => {
 
     fixture = TestBed.createComponent(MiniEventComponent);
     component = fixture.componentInstance;
-    // Not rendered: the template needs input data in the old NHL API models. Render it with test data once
-    // this component is migrated (see docs/nhl-api-migration-plan.md).
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  /** Shows a real play of a captured game with that game's home team and roster. */
+  function show(gameId: MockGamecenterGameId, eventId: number): void {
+    const playByPlay = mockGamePlayByPlay(gameId);
+    fixture.componentRef.setInput('play', playByPlay.plays.find(play => play.eventId === eventId));
+    fixture.componentRef.setInput('homeTeamId', playByPlay.homeTeam.id);
+    fixture.componentRef.setInput('rosterSpots', PlayByPlayUtils.getRosterSpotMap(playByPlay));
+    fixture.detectChanges();
+  }
+
+  /** The normalized text of the first element matching the selector, or undefined if there is none. */
+  function text(selector: string): string {
+    return fixture.nativeElement.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim();
+  }
+
+  function texts(selector: string): string[] {
+    return Array.from<Element>(fixture.nativeElement.querySelectorAll(selector)).map(element => element.textContent.trim());
+  }
+
+  it('should show a real home goal with the assists by last name', () => {
+    // WPG (home) vs STL: Connor from Barron and Fleury at 11:53 of the 3rd, 3-1
+    show(2025021057, 892);
+    expect(fixture.nativeElement.querySelector('.goal-event.home-event')).not.toBeNull();
+    expect(text('.period-time-container')).toBe('11:53');
+    expect(text('.event-main-label')).toBe('Kyle Connor (3 - 1)');
+    expect(texts('.assist-name')).toEqual(['Barron', 'Fleury']);
+    expect(text('.event-details')).toContain('Assists: Barron, Fleury');
+    expect(fixture.nativeElement.querySelector('.score-update .color-green').textContent).toBe('3');
+  });
+
+  it('should show a real away goal on the away side', () => {
+    // STL (away): Holloway from Mailloux and Snuggerud at 19:09 of the 3rd, 3-2
+    show(2025021057, 989);
+    expect(fixture.nativeElement.querySelector('.goal-event.away-event')).not.toBeNull();
+    expect(text('.period-time-container')).toBe('19:09');
+    expect(text('.event-main-label')).toBe('Dylan Holloway (3 - 2)');
+    expect(texts('.assist-name')).toEqual(['Mailloux', 'Snuggerud']);
+    expect(fixture.nativeElement.querySelector('.score-update .color-green').textContent).toBe('2');
+  });
+
+  it('should show an unassisted goal', () => {
+    show(2025030414, 215);
+    expect(text('.event-details')).toContain('Unassisted');
+    expect(texts('.assist-name')).toEqual([]);
+  });
+
+  it('should show a real penalty with the leading zero removed from its time', () => {
+    // Holl (STL, away) tripping at 3:12 of the 1st
+    show(2025021057, 92);
+    expect(fixture.nativeElement.querySelector('.penalty-event.away-event')).not.toBeNull();
+    expect(text('.period-time-container')).toBe('3:12');
+    expect(text('.penalty')).toBe('Justin Holl');
+    expect(text('.penalty-event .event-secondary-label')).toBe('Tripping');
+    expect(fixture.nativeElement.querySelector('.goal-event')).toBeNull();
+  });
+
+  it('should show a bench minor', () => {
+    show(2025030414, 444);
+    expect(fixture.nativeElement.querySelector('.penalty-event.home-event')).not.toBeNull();
+    expect(text('.penalty')).toBe('Ivan Barbashev (served)');
+    expect(text('.penalty-event .event-secondary-label')).toBe('Too many men on the ice (bench minor)');
+  });
+
+  it('should emit the player IDs when clicked', () => {
+    const clickedIds: number[] = [];
+    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+    show(2025021057, 892);
+    fixture.nativeElement.querySelector('.event-main-label').click();
+    fixture.nativeElement.querySelectorAll('.assist-name')[1].click();
+    show(2025021057, 92);
+    fixture.nativeElement.querySelector('.penalty').click();
+    expect(clickedIds).toEqual([8478398, 8477938, 8475718]);
+  });
+
+  it('should not emit for a penalty without a player', () => {
+    const clickedIds: number[] = [];
+    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+    const playByPlay = mockGamePlayByPlay(2025030414);
+    const benchMinor = playByPlay.plays.find(play => play.eventId === 444);
+    delete benchMinor.details.servedByPlayerId;
+    fixture.componentRef.setInput('play', benchMinor);
+    fixture.componentRef.setInput('homeTeamId', playByPlay.homeTeam.id);
+    fixture.detectChanges();
+    expect(text('.penalty')).toBe('Team penalty');
+    fixture.nativeElement.querySelector('.penalty').click();
+    expect(clickedIds).toEqual([]);
   });
 });

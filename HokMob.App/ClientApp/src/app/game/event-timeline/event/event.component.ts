@@ -1,5 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
+import {Play, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
+import {PeriodUtils} from "@shared/utils/period-utils";
+import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 
 @Component({
   selector: 'app-event',
@@ -8,88 +10,81 @@ import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-p
 })
 export class EventComponent {
 
+  /**
+   * A goal or penalty play.
+   */
   @Input()
-  public event: NhlLiveFeedPlayModel;
+  public play: Play;
 
   @Input()
   public homeTeamId: number;
 
+  /**
+   * The game's roster spots by player ID, for player names.
+   */
   @Input()
-  public awayTeamId: number;
+  public rosterSpots: Map<number, RosterSpot>;
 
   @Output()
   public playerClicked = new EventEmitter<number>();
 
   public get isHomeEvent(): boolean {
-    if (this.event) {
-      return this.event.team.id === this.homeTeamId;
-    }
-    return true;
+    return this.play?.details?.eventOwnerTeamId === this.homeTeamId;
   }
 
   public get isEventGoal(): boolean {
-    if (this.event) {
-      return this.event.result.eventTypeId === "GOAL";
-    }
-    return false;
+    return PlayByPlayUtils.isGoal(this.play);
   }
 
   public get periodTime(): string {
-    if (this.event.about.periodTime.startsWith('0')) {
-      return this.event.about.periodTime.substring(1);
-    }
-    return this.event.about.periodTime;
+    return PeriodUtils.formatTimeRemaining(this.play?.timeInPeriod) ?? "";
   }
 
   public get goalEventHomeScore(): string {
-    return this.event.about.goals.home.toString();
+    return String(this.play?.details?.homeScore ?? "");
   }
 
   public get goalEventAwayScore(): string {
-    return this.event.about.goals.away.toString();
+    return String(this.play?.details?.awayScore ?? "");
   }
 
+  /**
+   * The scorer's or penalized player's full name.
+   */
   public get eventPlayerName(): string {
-    return this.event.players[0].player.fullName;
+    return PlayByPlayUtils.getMainPlayerLabel(this.play, this.rosterSpots);
   }
 
-  public get goalEventAssists(): string[] {
-    if (this.isEventGoal) {
-      if (this.event.players.length === 4) {
-        return [this.event.players[1].player.fullName + ", ", this.event.players[2].player.fullName];
-      } else if (this.event.players.length === 3) {
-        return [this.event.players[1].player.fullName];
-      } else {
-        return [];
-      }
-    }
-    return [];
+  public get assistPlayerIds(): number[] {
+    return this.isEventGoal ? PlayByPlayUtils.getAssistPlayerIds(this.play.details) : [];
   }
 
   public get penaltyType(): string {
-    if (!this.isEventGoal) {
-      return this.event.result.secondaryType;
+    return this.isEventGoal ? "" : PlayByPlayUtils.getPenaltyLabel(this.play?.details);
+  }
+
+  public get fontIcon(): string {
+    if (PlayByPlayUtils.isGoal(this.play)) {
+      return "sports_hockey";
+    } else if (PlayByPlayUtils.isPenalty(this.play)) {
+      return "front_hand";
     }
     return "";
   }
 
-  public get fontIcon(): string {
-    switch (this.event.result.eventTypeId) {
-      case "GOAL":
-        return "sports_hockey";
-      case "PENALTY":
-        return "front_hand";
-      default:
-        return "";
-    }
+  public getAssistName(playerId: number): string {
+    return PlayByPlayUtils.getFullName(this.rosterSpots?.get(playerId));
   }
 
   public onMainPlayerClicked(): void {
-    this.playerClicked.emit(this.event.players[0].player.id);
+    let playerId = PlayByPlayUtils.getMainPlayerId(this.play);
+    if (playerId) {
+      this.playerClicked.emit(playerId);
+    }
   }
 
-  public onAssistClicked(index: number): void {
-    this.playerClicked.emit(this.event.players[index + 1].player.id);
+  public onAssistClicked(playerId: number): void {
+    this.playerClicked.emit(playerId);
   }
 
 }

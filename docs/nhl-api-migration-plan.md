@@ -1,6 +1,6 @@
 # NHL API Migration Plan: Home Page & Game Page
 
-Status: **In progress** · Phases 0–4 done with unit tests (2026-09-15), phases 5–8 to do.
+Status: **In progress** · Phases 0–5 done with unit tests (2026-09-15), phases 6–8 to do.
 Scope: home page (scoreboard, standings summary, playoff summary and series dialog) and game page (header, goals, stats,
 momentum, event timelines, top players, player dialog, team form). Player and team pages are out of scope.
 
@@ -77,8 +77,7 @@ The old code was a string: `"PR"` / `"R"` / `"P"`. The new `gameType` is a numbe
 - `PeriodUtils.getNextPeriodLabel(periodDescriptor, gameType)`: "2nd", "OT", "2OT" in the playoffs, "SO" after
   regular season or preseason overtime. Used for the intermission countdown.
 
-The scorecard, game header and goal scorers use it. Copies of the old logic remain in event-timeline and
-mini-event-timeline until phase 5.
+The scorecard, game header, goal scorers, momentum chart and event timelines use it.
 
 ### Playoff series status
 `NhlGameInfoUtils.getSeriesStatusShort(seriesStatus)` builds "CAR leads 3-1", "Tied 2-2", "CAR wins 4-2", or "(0-0)"
@@ -189,7 +188,7 @@ but its team data still comes from the dead API (see its TODO).
 `DateTimeUtils.isPlayoffMode()` is still hard-coded to dates (May 21 to end of September). Optionally drive it from the
 `schedule/{date}` response instead (`regularSeasonEndDate`, `playoffEndDate`).
 
-## 5. Game page (phase 4 done, phases 5–7 to do)
+## 5. Game page (phases 4–5 done, phases 6–7 to do)
 
 ### 5.1 Data loading (`game.component.ts`): done (phase 4)
 The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team page still does). It loads:
@@ -213,10 +212,12 @@ The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team pag
   is cached 10s on the backend). Once the game is over, the refresh stops and the series status is reloaded. A failed
   refresh keeps the data shown, and a failed optional response keeps the previous one.
 - A route change loads the new game and ignores late responses for the previous one.
-- The phase 5–7 sections (top players, momentum, event timelines, game stats, team form) are hidden behind
+- The momentum chart and both event timelines (phase 5) show for games that aren't in the future, once the
+  play-by-play has loaded. They're hidden when it fails.
+- The phase 6–7 sections (top players, game stats, team form) are hidden behind
   `GameComponent.unmigratedSectionsEnabled` (`false`) and lost their old-model bindings. The component already keeps
-  `playByPlay`, `boxscore` and `rightRail` for them. Clicking a scorer calls `openPlayerGameDialog`, which does
-  nothing until phase 6. Remove the flag after phase 7.
+  `boxscore` and `rightRail` for them. Clicking a scorer or a timeline player calls `openPlayerGameDialog`, which
+  does nothing until phase 6. Remove the flag after phase 7.
 - **Scratches** no longer need filtering. `boxscore.playerByGameStats.{homeTeam,awayTeam}.{forwards,defense,goalies}`
   only lists dressed players.
 
@@ -240,12 +241,13 @@ The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team pag
 `NhlGameInfoUtils.getNhlGameDescription` (old `NhlSeriesSummaryModel`) was replaced by `getGameDescription`.
 `landing` has no `gameOutcome`, so final labels fall back to `periodDescriptor.periodType` (`SO`, `OT`).
 
-### 5.3 Intermission countdown: built in phase 4, verify live
+### 5.3 Intermission countdown: built in phase 4, verify live in phase 8
 The old code timed from the `PERIOD_END` play's wall-clock `about.dateTime`.
 **New plays have no wall-clock timestamp**, so that approach can't be ported.
 - `isIntermission` is `landing.clock.inIntermission` for a live game. The countdown starts from
   `clock.secondsRemaining`, which is expected to count down the intermission, and a 1s timer moves it between
-  refreshes ("16:40 till 2nd"). **Verify during a live game** (phase 5 or 8).
+  refreshes ("16:40 till 2nd"). **Not verified yet:** there are no live games before the preseason starts on
+  2026-09-29, so phase 5 couldn't check it. Verify it during a live game in phase 8.
 - The next-period label is `PeriodUtils.getNextPeriodLabel(periodDescriptor, gameType)`.
 
 ### 5.4 Goal scorers (`goal-scorers`): done (phase 4)
@@ -278,7 +280,7 @@ Source: `right-rail.teamGameStats[]` (`{ category, awayValue, homeValue }`). Con
 | Takeaways | `takeaways` | `takeaways` |
 | (new) | none | `giveaways`, `faceoffWins` |
 
-### 5.6 Momentum chart (`momentum`)
+### 5.6 Momentum chart (`momentum`): done (phase 5)
 Source: `play-by-play.plays[]`.
 
 | Old | New |
@@ -287,13 +289,22 @@ Source: `play-by-play.plays[]`.
 | `play.team.id` | `details.eventOwnerTeamId` |
 | `about.period`, `about.periodTime` | `periodDescriptor.number`, `timeInPeriod` |
 | `linescore.periods.length > 3` | Max `periodDescriptor.number` > 3 (exclude SO) |
-| OT length: `currentPlay.about.periodTime` | Last play's `timeInPeriod` |
-| Team colors: `gameData.teams.home/away.id` | `landing.homeTeam.id` / `awayTeam.id` |
+| OT length: `currentPlay.about.periodTime` | Last play's `timeInPeriod` in each overtime (a full regular season OT ends with `period-end` at `05:00`) |
+| Team colors: `gameData.teams.home/away.id` | `playByPlay.homeTeam.id` / `awayTeam.id` (same IDs as the landing) |
 
-**Verify:** whether `eventOwnerTeamId` on `blocked-shot` is the shooting team or the blocking team.
-The old logic credits the team that took the shot.
+- Input: `playByPlay`. The unused logo inputs were removed.
+- **Blocked shots:** `eventOwnerTeamId` is the **shooting** team. That held for all 89 blocked shots in the three
+  captured finished games, so crediting it matches the old logic.
+- X-axis: one point per minute. The regulation periods are always shown (20 minutes each, even before they're
+  played). Each overtime is added from its plays and lasts until its last play (up to 20 minutes), so every playoff
+  overtime gets its own segment ("OT", "2OT"). The old chart only handled one overtime. Each period's label is at its
+  first point, and "End" is at the last point.
+- Shootout plays aren't counted. Weights are unchanged: goal 9, shot on goal 7, missed shot 5, blocked shot 4, capped
+  at ±30 per minute.
+- The chart is created on a `@ViewChild` canvas in `ngAfterViewInit` (the old code looked it up by a global `id`) and
+  destroyed with the component.
 
-### 5.7 Event timelines (`event-timeline`, `mini-event-timeline`, `event`, `mini-event`)
+### 5.7 Event timelines (`event-timeline`, `mini-event-timeline`, `event`, `mini-event`): done (phase 5)
 Source: `play-by-play.plays` filtered to `typeDescKey` `goal` or `penalty`, grouped by `periodDescriptor.number`.
 This replaces the `scoringPlays` / `penaltyPlays` index arrays and `playsByPeriod`.
 Build a `playerId → rosterSpot` map from `rosterSpots` for names and headshots.
@@ -309,7 +320,24 @@ Build a `playerId → rosterSpot` map from `rosterSpots` for names and headshots
 | Penalty text | `result.secondaryType` / `penaltySeverity` | `details.descKey` (`"interference-goalkeeper"`, so humanize it) / `details.typeCode` (`MIN`, `MAJ`) |
 | Game final | `gameData.status` | `gameState` |
 
-`landing.summary.penalties` has nicer text but **no player IDs**, so use play-by-play to keep click-to-open-dialog working.
+`landing.summary.penalties` has the same `descKey` text and **no player IDs**, so the timelines use play-by-play.
+
+- **Shared helpers:** `PlayByPlayUtils` (`shared/utils/play-by-play-utils.ts`), with play types in `NhlPlayTypeEnum`.
+  - `getKeyEventPeriods` returns `KeyEventPeriod[]`. It lists every period with plays, in `sortOrder`, including
+    periods without goals or penalties, but never the shootout.
+  - Also `getRosterSpotMap`, `getMainPlayerId` / `getMainPlayerLabel`, `getAssistPlayerIds` and `getPenaltyLabel`.
+- **Inputs:** the timelines take `playByPlay` (the mini timeline also takes the logos). `app-event` and `app-mini-event`
+  take `play`, `homeTeamId` and `rosterSpots` (a `Map` by player ID), and emit the clicked player ID.
+- **Names:** scorers and penalized players show full names. Assists show full names in `event` and last names in
+  `mini-event`.
+- **Penalty text:** the humanized `descKey` ("Holding the stick"; `interference-goalkeeper` becomes "Goalkeeper
+  interference"), with the severity unless it's a minor ("Too many men on the ice (bench minor)"). Without a
+  `descKey`, the severity ("Minor") or "Penalty".
+- **Bench minors** have no `committedByPlayerId`, only `servedByPlayerId` (real example: VGK's too many men in
+  `2025030414`). They show "Ivan Barbashev (served)", and clicking opens that player. Without any player, the label is
+  "Team penalty".
+- "End" shows once `playByPlay.gameState` is final. The game page doesn't use the full `app-event-timeline`, but it
+  was migrated with the same inputs.
 
 ### 5.8 Top players, HokMob rating, player dialog (`game-top-players`, `player-game-dialog`, `StatsUtils`)
 Source: `boxscore.playerByGameStats.{homeTeam,awayTeam}.{forwards,defense,goalies}`.
@@ -375,7 +403,7 @@ Headshots: `NhlImageService.getNhlPlayerHeadshot` (dead host, blob + FileReader)
   1 min otherwise (including `playoff-bracket`).
 - **Shared components used by unmigrated pages.** When a migrated shared component breaks an out-of-scope caller, make the
   caller compile with the smallest change (a `$any` cast, or the new service call) and leave a TODO that points here.
-- **Unit tests (done for phases 0–4).** `npm run test:ci` runs all specs. See section 7 for what each phase must add.
+- **Unit tests (done for phases 0–5).** `npm run test:ci` runs all specs. See section 7 for what each phase must add.
   - Real API responses live in `shared/testing/nhl-api-mocks/` as JSON files (captured 2026-09-15; only item counts
     trimmed). `nhl-api-mocks.ts` returns fresh copies (`mockScoreResponse()`, `mockStandingsTeams()`,
     `mockRankedCarouselSeries('A')`, `mockGameBundle(2025021057)`, ...).
@@ -414,10 +442,10 @@ A phase is done only when all of these are true:
 | 2 | Standings summary + shared standings component + full standings page | Done | `nhl-standing-and-playoff.service.ts`, `home/standings-summary`, `shared/components/standings`, `league-standings` | `standings/now` | Done: service grouping, `standings`, `standings-summary`, `league-standings` specs; fixture `standings-now` |
 | 3 | Playoff summary + playoff-series component + series dialog; playoffs page compiles | Done | same service, `home/playoff-summary`, `playoffs/playoff-series`, `playoffs/playoff-series-dialog`, `playoffs` | 2025-26 carousel (force `isPlayoffMode` true to test), 2022-23 on the playoffs page | Done: service carousel/bracket merge and series schedule, `playoff-summary`, `playoff-series`, `playoff-series-dialog` specs; fixtures carousel, bracket, series A and O |
 | 4 | Game page core: loading, header, info bar, goal scorers | Done | `nhl-game.service.ts`, `game.component`, `game-header`, `goal-scorers`, `period-utils`, `nhl-game-info-utils` | `2025021057` (reg), `2025020952` (SO), `2025030414` (playoff), `2026020056` (future), an unknown ID (error state) | Done: service bundle and series status, `PeriodUtils.getNextPeriodLabel`, `NhlGameInfoUtils.getGameDescription`, `game` (loading, errors, refresh, intermission, route change), `game-header`, `goal-scorers` specs; fixtures `gamecenter-{id}-{landing,play-by-play,boxscore,right-rail}` for the 4 games |
-| 5 | Play-by-play: momentum, event timelines; verify the intermission countdown | To do | `momentum`, `event-timeline`, `mini-event-timeline`, `event`, `mini-event` | same games; intermission during a live preseason game | Real specs replacing the `event` and `mini-event` placeholders; `momentum`, `event-timeline`, `mini-event-timeline` specs; blocked-shot ownership and penalty text edge cases |
+| 5 | Play-by-play: momentum, event timelines | Done | `momentum`, `event-timeline`, `mini-event-timeline`, `event`, `mini-event`, `play-by-play-utils`, `nhl-play-type.enum`, `game.component` | `2025021057` (reg), `2025020952` (OT + SO), `2025030414` (playoff, bench minor), `2026020056` (future). The intermission check moved to phase 8 (no live games yet) | Done: `PlayByPlayUtils` (grouping, names, bench minors, penalty text), `momentum` (layout, weights, blocked-shot ownership, cap, OT and multi-OT, shootout, refresh), `event-timeline`, `mini-event-timeline`, real `event` and `mini-event` specs, `game` wiring; `derivedLivePlayByPlay` helper |
 | 6 | Boxscore + right-rail: game stats, top players, rating, player dialog, headshots | To do | `game-stats`, `game-top-players`, `player-game-dialog`, `stats-utils`, `nhl-image.service` | same games | `StatsUtils` rating (skater, goalie, missing stats); `game-stats`, `game-top-players` specs; real spec replacing the `player-game-dialog` placeholder; `player/{id}/landing` fixture |
 | 7 | Team form | To do | `team-form`, `previous-game` | a future game | `club-schedule-season` fixture; `team-form` spec (last 5 finished games before the game) and a real spec replacing the `previous-game` placeholder |
-| 8 | Live validation + cleanup: run through a live preseason game (from 2026-09-29), remove `testNewNhlApi` and its call in `HomeComponent`, remove the deprecated old-status overload in `NhlGameInfoUtils`, delete unused old models | To do | — | live game | Capture live score and gamecenter responses (in period, intermission, `CRIT`) and replace the `derived*` live helpers; remove tests for the deprecated overload |
+| 8 | Live validation + cleanup: run through a live preseason game (from 2026-09-29), verify the intermission countdown (5.3) and the live momentum chart and timelines, remove `testNewNhlApi` and its call in `HomeComponent`, remove the deprecated old-status overload in `NhlGameInfoUtils`, delete unused old models | To do | — | live game | Capture live score and gamecenter responses (in period, intermission, `CRIT`) and replace the `derived*` live helpers; remove tests for the deprecated overload |
 
 ## 8. Decisions
 
@@ -444,6 +472,10 @@ A phase is done only when all of these are true:
 9. **Unmigrated game page sections are hidden** (`unmigratedSectionsEnabled`) until their phase, instead of rendering
    old-model components without data. Scorer clicks don't open the player dialog until phase 6.
 10. **Goal scorers read the landing's scoring summary directly** instead of converting goals into `GoalModel`.
+11. **Event timelines skip the shootout**, like the goal scorers. Bench minors show the player who served them.
+    Penalty text is built from `descKey`, since no response has nicer text.
+12. **Each overtime's length on the momentum chart comes from its last play**, so every playoff overtime is shown,
+    not only the first.
 
 ## 9. Risks
 
@@ -452,7 +484,8 @@ A phase is done only when all of these are true:
   `situationCode` for power plays.
 - **Live game page assumptions:** `landing.summary.scoring` is assumed to list the current period before it has a
   goal, and the intermission countdown assumes `clock.secondsRemaining` counts down the intermission. The derived
-  live and intermission landings encode both.
+  live and intermission landings encode both. The derived live play-by-play assumes a live game lists only the plays
+  so far, in the same shape as a finished game.
 - **Untested in-progress playoff series.** All 2025-26 series were finished when phase 3 was tested, so the next game
   date on series cards and unplayed games in the series dialog (no per-game `seriesStatus`) haven't run against real
   data. Check during the 2027 playoffs.

@@ -1,7 +1,8 @@
 import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
-import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
-import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
+import {KeyEventPeriod, Play, PlayByPlay, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {PeriodUtils} from "@shared/utils/period-utils";
+import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 
 @Component({
   selector: 'app-mini-event-timeline',
@@ -10,8 +11,11 @@ import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 })
 export class MiniEventTimelineComponent implements OnChanges {
 
+  /**
+   * The game's play-by-play. The timeline lists its goals and penalties by period.
+   */
   @Input()
-  public gameLiveData: NhlLiveFeedModel;
+  public playByPlay: PlayByPlay;
 
   @Input()
   public homeTeamLogo: any;
@@ -22,49 +26,34 @@ export class MiniEventTimelineComponent implements OnChanges {
   @Output()
   public playerClicked = new EventEmitter<number>();
 
-  public periodEvents: NhlLiveFeedPlayModel[][];
+  public periods: KeyEventPeriod[] = [];
+
+  public rosterSpots = new Map<number, RosterSpot>();
+
+  public get homeTeamId(): number {
+    return this.playByPlay?.homeTeam?.id;
+  }
 
   public get isGameFinal(): boolean {
-    if (this.gameLiveData) {
-      return NhlGameInfoUtils.isCompletedGame(this.gameLiveData.gameData.status);
-    }
-    return false;
-  }
-
-  public hasPeriod(periodIndex: number): boolean {
-    if (this.gameLiveData && this.gameLiveData.liveData.plays.playsByPeriod &&
-        this.gameLiveData.liveData.plays.playsByPeriod[periodIndex]) {
-      return this.gameLiveData.liveData.plays.playsByPeriod[periodIndex].plays.length > 0;
-    }
-    return false;
-  }
-
-  public getPeriodLabel(periodIndex: number): string {
-    switch (periodIndex) {
-      case 0:
-        return "1st";
-      case 1:
-        return "2nd";
-      case 2:
-        return "3rd";
-      case 3:
-        return "OT";
-      default:
-        return (periodIndex - 2) + "OT";
-    }
+    return NhlGameInfoUtils.isCompletedGame(this.playByPlay?.gameState);
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['gameLiveData'] && this.gameLiveData) {
-      this.periodEvents = [[], [], [], [], [], [], [], []];
-      let keyPlayIndices = this.gameLiveData.liveData.plays.scoringPlays
-          .concat(this.gameLiveData.liveData.plays.penaltyPlays);
-      keyPlayIndices.sort((a, b) => a - b);
-      keyPlayIndices.forEach(keyPlayIndex => {
-        let periodIndex = this.gameLiveData.liveData.plays.allPlays[keyPlayIndex].about.period - 1;
-        this.periodEvents[periodIndex].push(this.gameLiveData.liveData.plays.allPlays[keyPlayIndex]);
-      });
+    if (changes['playByPlay']) {
+      this.periods = PlayByPlayUtils.getKeyEventPeriods(this.playByPlay);
+      this.rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
     }
+  }
+
+  public getPeriodLabel(period: KeyEventPeriod): string {
+    return PeriodUtils.getLabel(period.periodDescriptor);
+  }
+
+  /**
+   * Keeps the rendered events when the play-by-play refreshes.
+   */
+  public trackPlay(index: number, play: Play): number {
+    return play.eventId;
   }
 
   public onPlayerClicked(playerId: number): void {

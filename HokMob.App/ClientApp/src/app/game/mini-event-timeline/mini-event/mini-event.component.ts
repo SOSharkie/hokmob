@@ -1,106 +1,83 @@
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
-import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
-import {StatsUtils} from "@shared/utils/stats-utils";
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Play, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
+import {PeriodUtils} from "@shared/utils/period-utils";
+import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 
 @Component({
   selector: 'app-mini-event',
   templateUrl: './mini-event.component.html',
   styleUrls: ['./mini-event.component.scss']
 })
-export class MiniEventComponent implements OnChanges {
+export class MiniEventComponent {
 
+  /**
+   * A goal or penalty play.
+   */
   @Input()
-  public event: NhlLiveFeedPlayModel;
+  public play: Play;
 
   @Input()
   public homeTeamId: number;
 
+  /**
+   * The game's roster spots by player ID, for player names.
+   */
   @Input()
-  public awayTeamId: number;
+  public rosterSpots: Map<number, RosterSpot>;
 
   @Output()
   public playerClicked = new EventEmitter<number>();
 
-  private eventTime: string = "";
-
-  private eventAssists: string[] = [];
-
-  private eventPenalty: string = "";
-
-  public ngOnChanges(changes: SimpleChanges) {
-    if (changes["event"]) {
-
-      // Event time
-      if (this.event.about.periodTime.startsWith('0')) {
-        this.eventTime = this.event.about.periodTime.substring(1);
-      }
-      this.eventTime = this.event.about.periodTime;
-
-      // Goal event assists
-      if (this.isEventGoal) {
-        if (this.event.players.length === 4) {
-          this.eventAssists = [StatsUtils.getPlayerLastName(this.event.players[1].player.fullName) + ", ", StatsUtils.getPlayerLastName(this.event.players[2].player.fullName)];
-        } else if (this.event.players.length === 3) {
-          this.eventAssists = [StatsUtils.getPlayerLastName(this.event.players[1].player.fullName)];
-        } else {
-          this.eventAssists = [];
-        }
-      }
-
-      // Penalty type
-      if (!this.isEventGoal) {
-        if (this.event.result.secondaryType.includes("Missing key")) {
-          this.eventPenalty = this.event.result.penaltySeverity;
-        } else {
-          this.eventPenalty = this.event.result.secondaryType;
-        }
-      }
-    }
-  }
-
   public get isHomeEvent(): boolean {
-    if (this.event) {
-      return this.event.team.id === this.homeTeamId;
-    }
-    return true;
+    return this.play?.details?.eventOwnerTeamId === this.homeTeamId;
   }
 
   public get isEventGoal(): boolean {
-    if (this.event) {
-      return this.event.result.eventTypeId === "GOAL";
-    }
-    return false;
+    return PlayByPlayUtils.isGoal(this.play);
   }
 
   public get periodTime(): string {
-    return this.eventTime;
+    return PeriodUtils.formatTimeRemaining(this.play?.timeInPeriod) ?? "";
   }
 
   public get goalEventHomeScore(): string {
-    return this.event.about.goals.home.toString();
+    return String(this.play?.details?.homeScore ?? "");
   }
 
   public get goalEventAwayScore(): string {
-    return this.event.about.goals.away.toString();
+    return String(this.play?.details?.awayScore ?? "");
   }
 
+  /**
+   * The scorer's or penalized player's full name.
+   */
   public get eventPlayerName(): string {
-    return this.event.players[0].player.fullName;
+    return PlayByPlayUtils.getMainPlayerLabel(this.play, this.rosterSpots);
   }
 
-  public get goalEventAssists(): string[] {
-    return this.eventAssists;
+  public get assistPlayerIds(): number[] {
+    return this.isEventGoal ? PlayByPlayUtils.getAssistPlayerIds(this.play.details) : [];
   }
 
   public get penaltyType(): string {
-    return this.eventPenalty;
+    return this.isEventGoal ? "" : PlayByPlayUtils.getPenaltyLabel(this.play?.details);
+  }
+
+  /**
+   * Assists show last names only, to fit the narrow timeline.
+   */
+  public getAssistName(playerId: number): string {
+    return PlayByPlayUtils.getLastName(this.rosterSpots?.get(playerId));
   }
 
   public onMainPlayerClicked(): void {
-    this.playerClicked.emit(this.event.players[0].player.id);
+    let playerId = PlayByPlayUtils.getMainPlayerId(this.play);
+    if (playerId) {
+      this.playerClicked.emit(playerId);
+    }
   }
 
-  public onAssistClicked(index: number): void {
-    this.playerClicked.emit(this.event.players[index + 1].player.id);
+  public onAssistClicked(playerId: number): void {
+    this.playerClicked.emit(playerId);
   }
 }

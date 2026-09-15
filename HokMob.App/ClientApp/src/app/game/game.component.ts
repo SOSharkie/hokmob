@@ -17,10 +17,10 @@ import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 
-// TODO: Phases 5-7 of docs/nhl-api-migration-plan.md. Top players, momentum, event timelines, game stats and team form
-//  still take old API models, so their sections are hidden (unmigratedSectionsEnabled), and clicking a player doesn't
-//  open the player dialog yet (phase 6). The bundle already loads the play-by-play, boxscore and right-rail responses
-//  they need: pass them to each component as it migrates, and remove the flag after phase 7.
+// TODO: Phases 6-7 of docs/nhl-api-migration-plan.md. Top players, game stats and team form still take old API models,
+//  so their sections are hidden (unmigratedSectionsEnabled), and clicking a player doesn't open the player dialog yet
+//  (phase 6). The bundle already loads the boxscore and right-rail responses they need: pass them to each component
+//  as it migrates, and remove the flag after phase 7.
 @Component({
   selector: 'app-game',
   templateUrl: './game.component.html',
