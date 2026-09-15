@@ -2,6 +2,7 @@ import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.mod
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
+import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
 
 export class NhlGameInfoUtils {
 
@@ -53,6 +54,30 @@ export class NhlGameInfoUtils {
     let trailerWins = Math.min(topSeedWins, bottomSeedWins);
     let verb = leaderWins >= seriesStatus.neededToWin ? " wins " : " leads ";
     return leaderAbbrev + verb + leaderWins + "-" + trailerWins;
+  }
+
+  /**
+   * Returns a team's last finished games before a game, most recent first, for the team form. Preseason games only
+   * count for a preseason game.
+   *
+   * @param games - Games from the team's club schedule, in any order.
+   * @param game - The game the form is shown for, like its landing.
+   * @param count - The maximum number of games to return.
+   */
+  public static getTeamFormGames(games: ClubScheduleGame[],
+                                 game: Pick<ClubScheduleGame, "id" | "gameType" | "startTimeUTC">,
+                                 count: number = 5): ClubScheduleGame[] {
+    if (!game) {
+      return [];
+    }
+    const gameStart = Date.parse(game.startTimeUTC);
+    const includePreseason = game.gameType === NhlGameTypeEnum.PRESEASON;
+    return (games ?? [])
+        .filter(item => item.id !== game.id && NhlGameInfoUtils.isCompletedGame(item.gameState) &&
+            (includePreseason || item.gameType !== NhlGameTypeEnum.PRESEASON) &&
+            Date.parse(item.startTimeUTC) < gameStart)
+        .sort((a, b) => Date.parse(b.startTimeUTC) - Date.parse(a.startTimeUTC))
+        .slice(0, count);
   }
 
   // The NhlGameStatusModel argument is deprecated. It's only kept for pages not yet migrated to the new NHL API

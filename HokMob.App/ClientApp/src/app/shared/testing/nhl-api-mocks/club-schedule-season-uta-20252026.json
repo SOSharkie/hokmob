@@ -1,0 +1,1047 @@
+{
+  "previousSeason": 20242025,
+  "currentSeason": 20252026,
+  "nextSeason": 20262027,
+  "clubTimezone": "America/Denver",
+  "clubUTCOffset": "-06:00",
+  "games": [
+    {
+      "id": 2025021297,
+      "season": 20252026,
+      "gameType": 2,
+      "gameDate": "2026-04-14",
+      "venue": {
+        "default": "Delta Center"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-15T01:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-06:00",
+      "venueTimezone": "America/Denver",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 558,
+          "market": "H",
+          "countryCode": "US",
+          "network": "Utah16",
+          "sequenceNumber": 381
+        },
+        {
+          "id": 292,
+          "market": "A",
+          "countryCode": "CA",
+          "network": "TSN3",
+          "sequenceNumber": 134
+        }
+      ],
+      "awayTeam": {
+        "id": 52,
+        "commonName": {
+          "default": "Jets"
+        },
+        "placeName": {
+          "default": "Winnipeg"
+        },
+        "placeNameWithPreposition": {
+          "default": "Winnipeg",
+          "fr": "de Winnipeg"
+        },
+        "abbrev": "WPG",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/WPG_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/WPG_dark.svg",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 5
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8478872,
+        "firstInitial": {
+          "default": "K."
+        },
+        "lastName": {
+          "default": "Vejmelka"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8482175,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Peterka"
+        }
+      },
+      "threeMinRecap": "/video/wpg-at-uta-recap-6393134535112",
+      "threeMinRecapFr": "/fr/video/wpg-vs-uta-14-04-2026-resume-6393135396112",
+      "condensedGame": "/video/wpg-at-uta-condensed-game-6393134543112",
+      "condensedGameFr": "/fr/video/match-condense-jets-mammoth-14-04-2026-6393135783112",
+      "gameCenterLink": "/gamecenter/wpg-vs-uta/2026/04/14/2025021297"
+    },
+    {
+      "id": 2025021309,
+      "season": 20252026,
+      "gameType": 2,
+      "gameDate": "2026-04-16",
+      "venue": {
+        "default": "Delta Center"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-16T23:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-06:00",
+      "venueTimezone": "America/Denver",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 309,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN",
+          "sequenceNumber": 10
+        },
+        {
+          "id": 287,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SNE",
+          "sequenceNumber": 30
+        }
+      ],
+      "awayTeam": {
+        "id": 19,
+        "commonName": {
+          "default": "Blues"
+        },
+        "placeName": {
+          "default": "St. Louis"
+        },
+        "placeNameWithPreposition": {
+          "default": "St. Louis",
+          "fr": "de St. Louis"
+        },
+        "abbrev": "STL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/STL_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 5
+      },
+      "homeTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 3
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8480981,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Hofer"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8482733,
+        "firstInitial": {
+          "default": "L."
+        },
+        "lastName": {
+          "default": "Mailloux"
+        }
+      },
+      "threeMinRecap": "/video/stl-at-uta-recap-6393272281112",
+      "threeMinRecapFr": "/fr/video/stl-vs-uta-16-04-2026-resume-6393271297112",
+      "gameCenterLink": "/gamecenter/stl-vs-uta/2026/04/16/2025021309"
+    },
+    {
+      "id": 2025030171,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-19",
+      "venue": {
+        "default": "T-Mobile Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-20T02:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-07:00",
+      "venueTimezone": "US/Pacific",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 309,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN",
+          "sequenceNumber": 10
+        },
+        {
+          "id": 4,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "CBC",
+          "sequenceNumber": 101
+        },
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 107
+        },
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120
+        },
+        {
+          "id": 558,
+          "market": "A",
+          "countryCode": "US",
+          "network": "Utah16",
+          "sequenceNumber": 381
+        },
+        {
+          "id": 521,
+          "market": "H",
+          "countryCode": "US",
+          "network": "SCRIPPS",
+          "sequenceNumber": 657
+        }
+      ],
+      "awayTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 2
+      },
+      "homeTeam": {
+        "id": 54,
+        "commonName": {
+          "default": "Golden Knights"
+        },
+        "placeName": {
+          "default": "Vegas"
+        },
+        "placeNameWithPreposition": {
+          "default": "Vegas",
+          "fr": "de Vegas"
+        },
+        "abbrev": "VGK",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg",
+        "homeSplitSquad": false,
+        "score": 4
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8479394,
+        "firstInitial": {
+          "default": "C."
+        },
+        "lastName": {
+          "default": "Hart"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8475343,
+        "firstInitial": {
+          "default": "N."
+        },
+        "lastName": {
+          "default": "Dowd"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "G",
+        "neededToWin": 4,
+        "topSeedWins": 1,
+        "bottomSeedWins": 0,
+        "gameNumberOfSeries": 1
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-g/goldenknights-vs-mammoth",
+      "threeMinRecap": "/video/uta-at-vgk-recap-6393456897112",
+      "threeMinRecapFr": "/fr/video/uta-vs-vgk-19-04-2026-resume-6393455433112",
+      "condensedGameFr": "/fr/video/match-condense-mammoth-golden-knights-19-04-2026-6393457871112",
+      "gameCenterLink": "/gamecenter/uta-vs-vgk/2026/04/19/2025030171"
+    },
+    {
+      "id": 2025030172,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-21",
+      "venue": {
+        "default": "T-Mobile Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-22T01:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-07:00",
+      "venueTimezone": "US/Pacific",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 307,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN2",
+          "sequenceNumber": 12
+        },
+        {
+          "id": 4,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "CBC",
+          "sequenceNumber": 101
+        },
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 107
+        },
+        {
+          "id": 291,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS2",
+          "sequenceNumber": 121
+        },
+        {
+          "id": 558,
+          "market": "A",
+          "countryCode": "US",
+          "network": "Utah16",
+          "sequenceNumber": 381
+        },
+        {
+          "id": 521,
+          "market": "H",
+          "countryCode": "US",
+          "network": "SCRIPPS",
+          "sequenceNumber": 657
+        }
+      ],
+      "awayTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 54,
+        "commonName": {
+          "default": "Golden Knights"
+        },
+        "placeName": {
+          "default": "Vegas"
+        },
+        "placeNameWithPreposition": {
+          "default": "Vegas",
+          "fr": "de Vegas"
+        },
+        "abbrev": "VGK",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg",
+        "homeSplitSquad": false,
+        "score": 2
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8478872,
+        "firstInitial": {
+          "default": "K."
+        },
+        "lastName": {
+          "default": "Vejmelka"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8483431,
+        "firstInitial": {
+          "default": "L."
+        },
+        "lastName": {
+          "default": "Cooley"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "G",
+        "neededToWin": 4,
+        "topSeedWins": 1,
+        "bottomSeedWins": 1,
+        "gameNumberOfSeries": 2
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-g/goldenknights-vs-mammoth",
+      "threeMinRecap": "/video/uta-at-vgk-recap-6393600775112",
+      "threeMinRecapFr": "/fr/video/uta-vs-vgk-21-04-2026-resume-6393603528112",
+      "condensedGame": "/video/uta-at-vgk-condensed-game-6393600777112",
+      "condensedGameFr": "/fr/video/match-condense-mammoth-golden-knights-21-04-2026-6393603125112",
+      "gameCenterLink": "/gamecenter/uta-vs-vgk/2026/04/21/2025030172"
+    },
+    {
+      "id": 2025030173,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-24",
+      "venue": {
+        "default": "Delta Center"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-25T01:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-06:00",
+      "venueTimezone": "America/Denver",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 403,
+          "market": "N",
+          "countryCode": "US",
+          "network": "TBS",
+          "sequenceNumber": 13
+        },
+        {
+          "id": 578,
+          "market": "N",
+          "countryCode": "US",
+          "network": "HBO MAX",
+          "sequenceNumber": 19
+        },
+        {
+          "id": 283,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN360",
+          "sequenceNumber": 114
+        },
+        {
+          "id": 291,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS2",
+          "sequenceNumber": 121
+        },
+        {
+          "id": 558,
+          "market": "H",
+          "countryCode": "US",
+          "network": "Utah16",
+          "sequenceNumber": 381
+        },
+        {
+          "id": 521,
+          "market": "A",
+          "countryCode": "US",
+          "network": "SCRIPPS",
+          "sequenceNumber": 657
+        }
+      ],
+      "awayTeam": {
+        "id": 54,
+        "commonName": {
+          "default": "Golden Knights"
+        },
+        "placeName": {
+          "default": "Vegas"
+        },
+        "placeNameWithPreposition": {
+          "default": "Vegas",
+          "fr": "de Vegas"
+        },
+        "abbrev": "VGK",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg",
+        "awaySplitSquad": false,
+        "score": 2
+      },
+      "homeTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 4
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8478872,
+        "firstInitial": {
+          "default": "K."
+        },
+        "lastName": {
+          "default": "Vejmelka"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8478474,
+        "firstInitial": {
+          "default": "L."
+        },
+        "lastName": {
+          "default": "Crouse"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "G",
+        "neededToWin": 4,
+        "topSeedWins": 1,
+        "bottomSeedWins": 2,
+        "gameNumberOfSeries": 3
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-g/mammoth-vs-goldenknights",
+      "threeMinRecap": "/video/vgk-at-uta-recap-6393847925112",
+      "threeMinRecapFr": "/fr/video/vgk-vs-uta-24-04-2026-resume-6393846368112",
+      "condensedGame": "/video/vgk-at-uta-condensed-game-6393845589112",
+      "condensedGameFr": "/fr/video/match-condense-golden-knights-mammoth-24-04-2026-6393847632112",
+      "gameCenterLink": "/gamecenter/vgk-vs-uta/2026/04/24/2025030173"
+    },
+    {
+      "id": 2025030174,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-27",
+      "venue": {
+        "default": "Delta Center"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-28T01:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-06:00",
+      "venueTimezone": "America/Denver",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 309,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN",
+          "sequenceNumber": 10
+        },
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 107
+        },
+        {
+          "id": 283,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN360",
+          "sequenceNumber": 114
+        },
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120
+        },
+        {
+          "id": 558,
+          "market": "H",
+          "countryCode": "US",
+          "network": "Utah16",
+          "sequenceNumber": 381
+        },
+        {
+          "id": 521,
+          "market": "A",
+          "countryCode": "US",
+          "network": "SCRIPPS",
+          "sequenceNumber": 657
+        }
+      ],
+      "awayTeam": {
+        "id": 54,
+        "commonName": {
+          "default": "Golden Knights"
+        },
+        "placeName": {
+          "default": "Vegas"
+        },
+        "placeNameWithPreposition": {
+          "default": "Vegas",
+          "fr": "de Vegas"
+        },
+        "abbrev": "VGK",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg",
+        "awaySplitSquad": false,
+        "score": 5
+      },
+      "homeTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 4
+      },
+      "periodDescriptor": {
+        "number": 4,
+        "periodType": "OT",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "OT"
+      },
+      "winningGoalie": {
+        "playerId": 8479394,
+        "firstInitial": {
+          "default": "C."
+        },
+        "lastName": {
+          "default": "Hart"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8477447,
+        "firstInitial": {
+          "default": "S."
+        },
+        "lastName": {
+          "default": "Theodore"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "G",
+        "neededToWin": 4,
+        "topSeedWins": 2,
+        "bottomSeedWins": 2,
+        "gameNumberOfSeries": 4
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-g/mammoth-vs-goldenknights",
+      "threeMinRecap": "/video/vgk-at-uta-recap-6394048294112",
+      "threeMinRecapFr": "/fr/video/vgk-vs-uta-27-04-2026-resume-6394049733112",
+      "condensedGame": "/video/vgk-at-uta-condensed-game-6394049275112",
+      "condensedGameFr": "/fr/video/match-condense-golden-knights-mammoth-27-04-2026-6394048383112",
+      "gameCenterLink": "/gamecenter/vgk-vs-uta/2026/04/27/2025030174"
+    },
+    {
+      "id": 2025030175,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-29",
+      "venue": {
+        "default": "T-Mobile Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-30T02:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-07:00",
+      "venueTimezone": "US/Pacific",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 385,
+          "market": "N",
+          "countryCode": "US",
+          "network": "TNT",
+          "sequenceNumber": 11
+        },
+        {
+          "id": 501,
+          "market": "N",
+          "countryCode": "US",
+          "network": "truTV",
+          "sequenceNumber": 14
+        },
+        {
+          "id": 578,
+          "market": "N",
+          "countryCode": "US",
+          "network": "HBO MAX",
+          "sequenceNumber": 19
+        },
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 107
+        },
+        {
+          "id": 283,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN360",
+          "sequenceNumber": 114
+        },
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120
+        },
+        {
+          "id": 558,
+          "market": "A",
+          "countryCode": "US",
+          "network": "Utah16",
+          "sequenceNumber": 381
+        },
+        {
+          "id": 521,
+          "market": "H",
+          "countryCode": "US",
+          "network": "SCRIPPS",
+          "sequenceNumber": 657
+        }
+      ],
+      "awayTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 4
+      },
+      "homeTeam": {
+        "id": 54,
+        "commonName": {
+          "default": "Golden Knights"
+        },
+        "placeName": {
+          "default": "Vegas"
+        },
+        "placeNameWithPreposition": {
+          "default": "Vegas",
+          "fr": "de Vegas"
+        },
+        "abbrev": "VGK",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg",
+        "homeSplitSquad": false,
+        "score": 5
+      },
+      "periodDescriptor": {
+        "number": 5,
+        "periodType": "OT",
+        "otPeriods": 2,
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "OT"
+      },
+      "winningGoalie": {
+        "playerId": 8479394,
+        "firstInitial": {
+          "default": "C."
+        },
+        "lastName": {
+          "default": "Hart"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8479353,
+        "firstInitial": {
+          "default": "B."
+        },
+        "lastName": {
+          "default": "Howden"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "G",
+        "neededToWin": 4,
+        "topSeedWins": 3,
+        "bottomSeedWins": 2,
+        "gameNumberOfSeries": 5
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-g/goldenknights-vs-mammoth",
+      "threeMinRecap": "/video/uta-at-vgk-recap-6394230503112",
+      "threeMinRecapFr": "/fr/video/uta-vs-vgk-29-04-2026-resume-6394230100112",
+      "condensedGame": "/video/uta-at-vgk-condensed-game-6394233145112",
+      "condensedGameFr": "/fr/video/match-condense-mammoth-golden-knights-29-04-2026-6394230991112",
+      "gameCenterLink": "/gamecenter/uta-vs-vgk/2026/04/29/2025030175"
+    },
+    {
+      "id": 2025030176,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-05-01",
+      "venue": {
+        "default": "Delta Center"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-05-02T02:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-06:00",
+      "venueTimezone": "America/Denver",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 309,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN",
+          "sequenceNumber": 10
+        },
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 107
+        },
+        {
+          "id": 283,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN360",
+          "sequenceNumber": 114
+        },
+        {
+          "id": 291,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS2",
+          "sequenceNumber": 121
+        },
+        {
+          "id": 558,
+          "market": "H",
+          "countryCode": "US",
+          "network": "Utah16",
+          "sequenceNumber": 381
+        },
+        {
+          "id": 521,
+          "market": "A",
+          "countryCode": "US",
+          "network": "SCRIPPS",
+          "sequenceNumber": 657
+        }
+      ],
+      "awayTeam": {
+        "id": 54,
+        "commonName": {
+          "default": "Golden Knights"
+        },
+        "placeName": {
+          "default": "Vegas"
+        },
+        "placeNameWithPreposition": {
+          "default": "Vegas",
+          "fr": "de Vegas"
+        },
+        "abbrev": "VGK",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg",
+        "awaySplitSquad": false,
+        "score": 5
+      },
+      "homeTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 1
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8479394,
+        "firstInitial": {
+          "default": "C."
+        },
+        "lastName": {
+          "default": "Hart"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8478483,
+        "firstInitial": {
+          "default": "M."
+        },
+        "lastName": {
+          "default": "Marner"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "G",
+        "neededToWin": 4,
+        "topSeedWins": 4,
+        "bottomSeedWins": 2,
+        "gameNumberOfSeries": 6
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-g/mammoth-vs-goldenknights",
+      "threeMinRecap": "/video/vgk-at-uta-recap-6394397632112",
+      "threeMinRecapFr": "/fr/video/vgk-vs-uta-01-05-2026-resume-6394398121112",
+      "condensedGame": "/video/vgk-at-uta-condensed-game-6394397530112",
+      "condensedGameFr": "/fr/video/match-condense-golden-knights-mammoth-01-05-2026-6394397361112",
+      "gameCenterLink": "/gamecenter/vgk-vs-uta/2026/05/01/2025030176"
+    }
+  ]
+}

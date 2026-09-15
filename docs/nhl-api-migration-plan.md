@@ -1,6 +1,6 @@
 # NHL API Migration Plan: Home Page & Game Page
 
-Status: **In progress** · Phases 0–6 done with unit tests (2026-09-15), phases 7–8 to do.
+Status: **In progress** · Phases 0–7 done with unit tests (2026-09-15), phase 8 to do.
 Scope: home page (scoreboard, standings summary, playoff summary and series dialog) and game page (header, goals, stats,
 momentum, event timelines, top players, player dialog, team form). Player and team pages are out of scope.
 
@@ -37,7 +37,7 @@ All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-w
 | Playoff series games | `statsapi /schedule?teamId=a,b&gameType=P` | `schedule/playoff-series/{season}/{letter}/` |
 | Game live feed | `statsapi /game/{id}/feed/live` | `gamecenter/{id}/landing`, `…/play-by-play`, `…/boxscore`, `…/right-rail` |
 | Game model (broadcasts, series summary) | `statsapi /schedule?gamePk=…` | `landing.tvBroadcasts`; for playoffs, `seriesStatus` from `score/{gameDate}` (it's only in `score`, not `landing` or `right-rail`) |
-| Team form | `statsapi /schedule?teamId=…&startDate&endDate` | `club-schedule-season/{abbrev}/now` |
+| Team form | `statsapi /schedule?teamId=…&startDate&endDate` | `club-schedule-season/{abbrev}/{season}` (the game's season, plus the previous one early in a season) |
 | Player dialog bio | `statsapi /people/{id}` (via `nhl-stats.service`) | `player/{id}/landing` |
 | Headshots | `cms.nhl.bamgrid.com/images/headshots/…jpg` | `headshot` URL from `rosterSpots`, `player/{id}/landing`, or `https://assets.nhle.com/mugs/nhl/{season}/{abbrev}/{id}.png` |
 
@@ -188,7 +188,7 @@ but its team data still comes from the dead API (see its TODO).
 `DateTimeUtils.isPlayoffMode()` is still hard-coded to dates (May 21 to end of September). Optionally drive it from the
 `schedule/{date}` response instead (`regularSeasonEndDate`, `playoffEndDate`).
 
-## 5. Game page (phases 4–6 done, phase 7 to do)
+## 5. Game page (phases 4–7 done)
 
 ### 5.1 Data loading (`game.component.ts`): done (phase 4)
 The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team page still does). It loads:
@@ -200,7 +200,7 @@ The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team pag
 | `gamecenter/{id}/boxscore` | Per-player stats → top players, HokMob ratings, player dialog |
 | `gamecenter/{id}/right-rail` | Team stats (`teamGameStats`), shots/goals by period, season series |
 | `score/{gameDate}` (playoffs only) | `seriesStatus` for the header and league label |
-| `club-schedule-season/{abbrev}/now` (non-final only) | Team form |
+| `club-schedule-season/{abbrev}/{season}` per team (non-final only; the previous season too when needed) | Team form |
 
 - Service: `NhlGameService.getGameBundle(gameId)` requests landing, play-by-play, boxscore and right-rail in parallel
   and returns a `GameBundle` (`models/nhl-web-api/game-bundle.model.ts`). The landing is required: if it fails, the
@@ -219,8 +219,9 @@ The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team pag
   with more than 10 plays. Game stats show for games that aren't in the future, once the right-rail has
   `teamGameStats`. Clicking a scorer, timeline player or top player opens the player dialog, or does nothing for a
   player without boxscore stats.
-- The phase 7 section (team form) is hidden behind `GameComponent.unmigratedSectionsEnabled` (`false`) and lost its
-  old-model bindings. Remove the flag after phase 7.
+- Phase 7: for a game that isn't over, the team form of both teams loads once (not on refresh) after the first bundle.
+  A team whose request fails gets no games. The section shows while the game isn't over and at least one team has
+  games. The `unmigratedSectionsEnabled` flag was removed.
 - **Scratches** no longer need filtering. `boxscore.playerByGameStats.{homeTeam,awayTeam}.{forwards,defense,goalies}`
   only lists dressed players.
 
@@ -406,12 +407,31 @@ Put this call in the game service so it doesn't depend on the out-of-scope playe
 Headshots: `NhlImageService.getNhlPlayerHeadshot` (dead host, blob + FileReader) → use the `headshot` URL directly as the
 `<img src>`, from `rosterSpots` or player landing, with `assets/blank_headshot.png` as the `onerror` fallback.
 
-### 5.9 Team form (`team-form`, `previous-game`)
-- Service: `getTeamGames(from, to, teamId)` → `GET /api/nhl/club-schedule-season/{abbrev}/now` → `games[]`.
-  Filter `gameState` in `OFF`/`FINAL` with `startTimeUTC` before the current game, then take the last 5.
-- The component inputs change from `NhlScheduleModel` (dates → games[0]) to a plain `ClubScheduleGame[]`.
-- Field mapping: `gameDay.games[0].gamePk` → `id`, `teams.home.team.id` → `homeTeam.id`, `teams.home.score` → `homeTeam.score`.
-- `SingleTeamFormComponent` (team page) also uses `app-previous-game`; its TODO describes the matching fix.
+### 5.9 Team form (`team-form`, `previous-game`): done (phase 7)
+- Service: `NhlGameService.getTeamFormGames(teamAbbrev, landing)` → `GET /api/nhl/club-schedule-season/{abbrev}/{landing.season}`.
+  It loads the game's season instead of `now`, so the form belongs to the game. When that season has fewer than 5
+  form games (before and early in the preseason), it also loads the response's `previousSeason` and fills in from it.
+  If only that second request fails, the games found so far are returned. The old `getTeamGames(from, to, teamId)`
+  stays for the unmigrated team and player pages.
+- Filter: `NhlGameInfoUtils.getTeamFormGames(games, game, count = 5)` keeps finished games (`OFF`/`FINAL`, via
+  `isCompletedGame`) other than the game itself with `startTimeUTC` before the game, most recent first. Preseason games
+  (`gameType` 1) only count for a preseason game.
+- Facts from the captured schedules: on 2026-09-15, `now` and `20262027` return the same 88 games, all `FUT`. Finished
+  preseason games have `gameState` `FINAL`; finished regular season and playoff games have `OFF`. Only a past season's
+  response has `nextSeason`.
+- `app-team-form` inputs: `homeTeamId`, `awayTeamId`, `homeTeamGames`, `awayTeamGames` (`ClubScheduleGame[]`, most
+  recent first, rendered as given). A team without games shows "No recent games". The old version checked
+  `homeTeamGames` for both columns.
+
+| Previous game field | Old (`NhlGameDayModel`) | New (`ClubScheduleGame`) |
+|---|---|---|
+| Route | `gameDay.games[0].gamePk` | `id` |
+| Team IDs / logos | `teams.home.team.id` | `homeTeam.id` (`NhlTeamLogoUtils`, fallback logo for unknown IDs) |
+| Short name | `NhlTeamUtils.getTeam(id).teamName` | `homeTeam.commonName.default`, falling back to `NhlTeamUtils.getTeam(id).teamName` |
+| Score | `teams.home.score` | `homeTeam.score`; "N/A" without scores |
+| Result color | `team` input (`NhlTeamModel`) | `teamId` input: green for a win (OT and SO included), red for a loss, none without scores or if the team didn't play |
+
+- `SingleTeamFormComponent` (team page) passes its old game days with `$any` so it compiles; its TODO describes the fix.
 
 ## 6. Implementation approach
 
@@ -434,7 +454,7 @@ Headshots: `NhlImageService.getNhlPlayerHeadshot` (dead host, blob + FileReader)
   1 min otherwise (including `playoff-bracket`).
 - **Shared components used by unmigrated pages.** When a migrated shared component breaks an out-of-scope caller, make the
   caller compile with the smallest change (a `$any` cast, or the new service call) and leave a TODO that points here.
-- **Unit tests (done for phases 0–6).** `npm run test:ci` runs all specs. See section 7 for what each phase must add.
+- **Unit tests (done for phases 0–7).** `npm run test:ci` runs all specs. See section 7 for what each phase must add.
   - Real API responses live in `shared/testing/nhl-api-mocks/` as JSON files (captured 2026-09-15; only item counts
     trimmed). `nhl-api-mocks.ts` returns fresh copies (`mockScoreResponse()`, `mockStandingsTeams()`,
     `mockRankedCarouselSeries('A')`, `mockGameBundle(2025021057)`, ...).
@@ -475,7 +495,7 @@ A phase is done only when all of these are true:
 | 4 | Game page core: loading, header, info bar, goal scorers | Done | `nhl-game.service.ts`, `game.component`, `game-header`, `goal-scorers`, `period-utils`, `nhl-game-info-utils` | `2025021057` (reg), `2025020952` (SO), `2025030414` (playoff), `2026020056` (future), an unknown ID (error state) | Done: service bundle and series status, `PeriodUtils.getNextPeriodLabel`, `NhlGameInfoUtils.getGameDescription`, `game` (loading, errors, refresh, intermission, route change), `game-header`, `goal-scorers` specs; fixtures `gamecenter-{id}-{landing,play-by-play,boxscore,right-rail}` for the 4 games |
 | 5 | Play-by-play: momentum, event timelines | Done | `momentum`, `event-timeline`, `mini-event-timeline`, `event`, `mini-event`, `play-by-play-utils`, `nhl-play-type.enum`, `game.component` | `2025021057` (reg), `2025020952` (OT + SO), `2025030414` (playoff, bench minor), `2026020056` (future). The intermission check moved to phase 8 (no live games yet) | Done: `PlayByPlayUtils` (grouping, names, bench minors, penalty text), `momentum` (layout, weights, blocked-shot ownership, cap, OT and multi-OT, shootout, refresh), `event-timeline`, `mini-event-timeline`, real `event` and `mini-event` specs, `game` wiring; `derivedLivePlayByPlay` helper |
 | 6 | Boxscore + right-rail: game stats, top players, rating, player dialog, headshots | Done | `game-stats`, `game-top-players`, `player-game-dialog`, `stats-utils`, `nhl-player-headshot-utils`, `nhl-image.service` (TODO only), `nhl-game.service.ts`, `game.component` | `2025021057` (reg; goalie swapped into STL's top 6), `2025030414` (playoff; star to the away team), `2026020056` (future: sections hidden) | Done: `StatsUtils` (skater and goalie rating, faceoff term, penalties, caps, missing stats, `getGamePlayers`, sorting), `NhlPlayerHeadshotUtils`, service `getPlayerLanding`, `game-stats`, `game-top-players`, real `player-game-dialog` spec, `game` wiring and dialog; fixtures `player-8476460-landing` (Scheifele), `player-8477480-landing` (Comrie) |
-| 7 | Team form | To do | `team-form`, `previous-game` | a future game | `club-schedule-season` fixture; `team-form` spec (last 5 finished games before the game) and a real spec replacing the `previous-game` placeholder |
+| 7 | Team form | Done | `team-form`, `previous-game`, `nhl-game.service.ts`, `nhl-game-info-utils`, `game.component`, `single-team-form` (compile fix) | `2026020056` (future, UTA @ BOS: filled in from 2025-26), a finished game (section hidden) | Done: `NhlGameInfoUtils.getTeamFormGames` (order, unfinished and preseason games, count, missing data), service `getTeamFormGames` (previous-season fill-in, failures), `team-form`, real `previous-game` spec, `game` wiring (fill-in, one team failing, late responses, no reload on refresh); fixtures `club-schedule-season-{bos,uta}-{20252026,20262027}` |
 | 8 | Live validation + cleanup: run through a live preseason game (from 2026-09-29), verify the intermission countdown (5.3) and the live momentum chart and timelines, remove `testNewNhlApi` and its call in `HomeComponent`, remove the deprecated old-status overload in `NhlGameInfoUtils`, delete unused old models | To do | — | live game | Capture live score and gamecenter responses (in period, intermission, `CRIT`) and replace the `derived*` live helpers; remove tests for the deprecated overload |
 
 ## 8. Decisions
@@ -483,8 +503,7 @@ A phase is done only when all of these are true:
 1. **HokMob rating:** use approach A (simple) for now. The exact version (B) comes later. See the TODO in
    `StatsUtils.calculateSkaterHokmobRating`.
 2. **Out-of-scope pages that share components:** they stay broken until migrated. TODO comments with a short fix note
-   are on `TeamComponent`, `TeamScheduleComponent`, `SingleTeamFormComponent`, `PlayoffsComponent` and
-   `GameComponent` (its phase 7 section).
+   are on `TeamComponent`, `TeamScheduleComponent`, `SingleTeamFormComponent` and `PlayoffsComponent`.
    `LeagueStandingsComponent` was migrated in phase 2, and `PlayoffSeriesDialogComponent` in phase 3.
 3. **Header search:** out of scope. TODO comments are on `SearchInputComponent` and `NhlSearchService`
    (replacement: `search.d3.nhle.com`, which needs backend proxy support for another host). Its failing
@@ -500,8 +519,8 @@ A phase is done only when all of these are true:
    games already shown.
 8. **Game bundle:** only the landing is required. Failed play-by-play, boxscore or right-rail requests resolve as
    `undefined`, so a partial outage still shows the header and goal scorers.
-9. **Unmigrated game page sections are hidden** (`unmigratedSectionsEnabled`) until their phase, instead of rendering
-   old-model components without data. Only team form is left (phase 7).
+9. **Unmigrated game page sections were hidden** (`unmigratedSectionsEnabled`) until their phase, instead of rendering
+   old-model components without data. Team form was the last one; the flag was removed in phase 7.
 10. **Goal scorers read the landing's scoring summary directly** instead of converting goals into `GoalModel`.
 11. **Event timelines skip the shootout**, like the goal scorers. Bench minors show the player who served them.
     Penalty text is built from `descKey`, since no response has nicer text.
@@ -513,6 +532,12 @@ A phase is done only when all of these are true:
     which is only used for the bio (country, age).
 15. **Faceoffs in the player dialog are a percentage** until approach B derives counts from play-by-play. Centers
     always show it; other skaters only with a percentage above 0.
+16. **Team form fills in from the previous season.** `club-schedule-season/{abbrev}/now` has no finished games until
+    the preseason starts, so a form limited to the current season would be empty or short for the first games. It uses
+    the game's season and adds last season's games when there are fewer than 5, like 2026020056's form showing BOS's
+    and UTA's 2026 playoff losses.
+17. **Preseason games only count toward a preseason game's form.** Exhibition lineups say little about a regular season
+    or playoff team, so early regular season games fill in from last season instead.
 
 ## 9. Risks
 
@@ -532,6 +557,9 @@ A phase is done only when all of these are true:
   gets the same -0.5 as one who lost them all. Approach B fixes it.
 - **Live boxscore and right-rail:** it's unverified that a live game's right-rail has `teamGameStats` and its boxscore
   has `playerByGameStats`. Without them, game stats and top players stay hidden. Check in phase 8.
+- **Team form across seasons:** filling in from the previous season only goes back one season, and assumes the team
+  had the same abbreviation then. A renamed or relocated team gets fewer games (the failed request is ignored). The rows
+  show no dates, so April games next to October games aren't marked as last season's.
 - **Request volume:** the game page makes up to 4 requests per poll (was 1). The 10s backend cache keeps upstream load flat.
 - **Derived test data.** The live game, TBD/postponed game and in-progress series fixtures are real responses edited to
   match the models, not captured states. Tests built on them can pass while the real live shape differs. Replace them

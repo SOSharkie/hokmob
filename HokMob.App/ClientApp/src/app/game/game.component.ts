@@ -23,9 +23,8 @@ import {
   PlayerGameDialogComponent,
   PlayerGameDialogData
 } from "@app/game/player-game-dialog/player-game-dialog.component";
+import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
 
-// TODO: Phase 7 of docs/nhl-api-migration-plan.md. Team form still takes old API models, so its section is hidden
-//  (unmigratedSectionsEnabled). Pass it the club schedules when it migrates, and remove the flag.
 @Component({
   selector: 'app-game',
   templateUrl: './game.component.html',
@@ -72,9 +71,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public leagueRouterLink: string = "/standings";
 
   /**
-   * Shows the sections whose components aren't migrated yet. See the TODO above.
+   * The home team's last finished games before this game, most recent first. Only loaded for games that aren't over.
    */
-  public readonly unmigratedSectionsEnabled = false;
+  public homeTeamFormGames: ClubScheduleGame[] = [];
+
+  public awayTeamFormGames: ClubScheduleGame[] = [];
 
   private intermissionSecondsRemaining: number;
 
@@ -183,6 +184,10 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return !this.futureGame && this.rightRail?.teamGameStats?.length > 0;
   }
 
+  public get showTeamForm(): boolean {
+    return !this.completedGame && (this.homeTeamFormGames.length > 0 || this.awayTeamFormGames.length > 0);
+  }
+
   private previousUrl: string;
 
   constructor(public seriesDialog: MatDialog,
@@ -257,6 +262,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.homeTeam.id);
       this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.awayTeam.id);
       this.loadSeriesStatus();
+      this.loadTeamForm();
       if (!this.completedGame && (this.liveGame || this.gameDay === "Today")) {
         this.startContinuousNhlGameUpdates();
       }
@@ -275,6 +281,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.seriesStatus = undefined;
     this.homePlayers = [];
     this.awayPlayers = [];
+    this.homeTeamFormGames = [];
+    this.awayTeamFormGames = [];
     this.homeTeamLogo = undefined;
     this.awayTeamLogo = undefined;
     this.isIntermission = false;
@@ -311,6 +319,26 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     }).catch(() => {
       // Already logged by the service
     });
+  }
+
+  /**
+   * Loads each team's last 5 games before this game for the team form, unless the game is over. It's loaded once, not
+   * on refresh. A team whose games can't be loaded gets none, and the section is hidden when neither team has games.
+   */
+  private loadTeamForm(): void {
+    if (this.completedGame) {
+      return;
+    }
+    const gameId = this.gameId;
+    const teamFormGames = (teamAbbrev: string): Promise<ClubScheduleGame[]> =>
+        this.nhlGameService.getTeamFormGames(teamAbbrev, this.landing).catch((): ClubScheduleGame[] => []);
+    Promise.all([teamFormGames(this.landing.homeTeam.abbrev), teamFormGames(this.landing.awayTeam.abbrev)])
+        .then(([homeGames, awayGames]) => {
+          if (gameId === this.gameId) {
+            this.homeTeamFormGames = homeGames;
+            this.awayTeamFormGames = awayGames;
+          }
+        });
   }
 
   /**

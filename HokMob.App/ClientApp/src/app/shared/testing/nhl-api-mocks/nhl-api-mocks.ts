@@ -41,12 +41,17 @@ import gamecenter2026020056RightRail from './gamecenter-2026020056-right-rail.js
 import playerLanding8476460 from './player-8476460-landing.json';
 import playerLanding8477480 from './player-8477480-landing.json';
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
+import {ClubScheduleSeason} from "@shared/models/nhl-web-api/club-schedule.model";
+import clubScheduleBos20252026 from './club-schedule-season-bos-20252026.json';
+import clubScheduleBos20262027 from './club-schedule-season-bos-20262027.json';
+import clubScheduleUta20252026 from './club-schedule-season-uta-20252026.json';
+import clubScheduleUta20262027 from './club-schedule-season-uta-20262027.json';
 
 /*
  * Real api-web.nhle.com responses for unit tests, captured on 2026-09-15. The JSON files are unchanged responses, except
- * score-2026-03-01 (trimmed to 3 games) and score-2026-10-08 (trimmed to 2 games). The gamecenter-* responses are
- * unchanged. To refresh one, download it again
- * with curl and re-check the values the specs assert.
+ * score-2026-03-01 (trimmed to 3 games), score-2026-10-08 (trimmed to 2 games) and the club-schedule-season-* responses
+ * (trimmed games, see mockClubScheduleSeason). The gamecenter-* responses are unchanged. To refresh one, download it
+ * again with curl and re-check the values the specs assert.
  *
  * Every function returns a fresh deep copy, so tests can change the data. "derived" helpers turn real data into states
  * that couldn't be captured (live games, postponed games, series in progress). Keep those changes minimal.
@@ -210,6 +215,28 @@ export type MockPlayerId = 8476460 | 8477480;
  */
 export function mockPlayerLanding(playerId: MockPlayerId): PlayerLanding {
   return copy(playerId === 8476460 ? playerLanding8476460 : playerLanding8477480);
+}
+
+/** Teams with captured club-schedule-season responses: the teams of the future game 2026020056 (UTA @ BOS). */
+export type MockClubScheduleTeam = 'BOS' | 'UTA';
+
+export type MockClubScheduleSeasonId = 20252026 | 20262027;
+
+const clubScheduleResponses = {
+  BOS: {20252026: clubScheduleBos20252026, 20262027: clubScheduleBos20262027},
+  UTA: {20252026: clubScheduleUta20252026, 20262027: clubScheduleUta20262027}
+};
+
+/**
+ * club-schedule-season/{abbrev}/{season} for BOS and UTA:
+ * - 20262027 (same games as .../now on 2026-09-15), trimmed to the first 10 games: 4 preseason games, then regular
+ *   season games up to 2026020056 and the one after it. None has been played (all FUT), and previousSeason is 20252026.
+ * - 20252026, BOS trimmed to its first 8 games (6 preseason games with gameState FINAL, then 2025020005 and 2025020008)
+ *   and its last 8 (2025021278 and 2025021292, then the 6-game 1st round loss to BUF, game 5 won in OT). UTA trimmed to
+ *   its last 8 (2 regular season games, then the 6-game 1st round loss to VGK, games 4 and 5 lost in OT).
+ */
+export function mockClubScheduleSeason(teamAbbrev: MockClubScheduleTeam, season: MockClubScheduleSeasonId): ClubScheduleSeason {
+  return copy(clubScheduleResponses[teamAbbrev][season]);
 }
 
 /**

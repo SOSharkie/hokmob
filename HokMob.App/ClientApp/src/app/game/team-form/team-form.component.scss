@@ -23,5 +23,11 @@
     .away-games {
       width: 45%;
     }
+
+    .no-games {
+      text-align: center;
+      padding: $spacing-large;
+      color: $gray-01;
+    }
   }
 }

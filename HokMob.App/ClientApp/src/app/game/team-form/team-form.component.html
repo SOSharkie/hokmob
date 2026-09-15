@@ -3,23 +3,25 @@
     <span>Team Form</span>
   </div>
   <div class="previous-games-container">
-    <div *ngIf="homeTeamGames" class="home-games">
-      <div *ngFor="let gameDay of last5HomeTeamGames; let isLast = last">
+    <div class="home-games">
+      <div *ngFor="let game of homeTeamGames; let isLast = last">
         <app-previous-game
-            [team]="homeTeam"
-            [gameDay]="gameDay"
+            [game]="game"
+            [teamId]="homeTeamId"
             [isLast]="isLast"
         ></app-previous-game>
       </div>
+      <div *ngIf="!homeTeamGames?.length" class="no-games">No recent games</div>
     </div>
-    <div *ngIf="homeTeamGames" class="away-games">
-      <div *ngFor="let gameDay of last5AwayTeamGames; let isLast = last">
+    <div class="away-games">
+      <div *ngFor="let game of awayTeamGames; let isLast = last">
         <app-previous-game
-            [team]="awayTeam"
-            [gameDay]="gameDay"
+            [game]="game"
+            [teamId]="awayTeamId"
             [isLast]="isLast"
         ></app-previous-game>
       </div>
+      <div *ngIf="!awayTeamGames?.length" class="no-games">No recent games</div>
     </div>
   </div>
 </div>

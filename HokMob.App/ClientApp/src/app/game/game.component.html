@@ -84,9 +84,13 @@
           [awayTeamLogo]="awayTeamLogo"
       ></app-game-stats>
     </div>
-    <!-- TODO: Team form isn't migrated yet (phase 7, see the TODO in game.component.ts) -->
-    <div *ngIf="unmigratedSectionsEnabled && landing && !completedGame" class="game-container">
-      <app-team-form></app-team-form>
+    <div *ngIf="landing && showTeamForm" class="game-container">
+      <app-team-form
+          [homeTeamId]="landing.homeTeam.id"
+          [awayTeamId]="landing.awayTeam.id"
+          [homeTeamGames]="homeTeamFormGames"
+          [awayTeamGames]="awayTeamFormGames"
+      ></app-team-form>
     </div>
   </div>
   <div *ngIf="!futureGame && playByPlay" class="side-game">

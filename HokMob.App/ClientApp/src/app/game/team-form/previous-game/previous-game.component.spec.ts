@@ -1,11 +1,15 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { RouterLink } from '@angular/router';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
+import { ClubScheduleGame } from '@shared/models/nhl-web-api/club-schedule.model';
+import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
+import { mockClubScheduleSeason } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { PreviousGameComponent } from './previous-game.component';
 
 describe('PreviousGameComponent', () => {
-  let component: PreviousGameComponent;
   let fixture: ComponentFixture<PreviousGameComponent>;
 
   beforeEach(async () => {
@@ -17,12 +21,100 @@ describe('PreviousGameComponent', () => {
     .compileComponents();
 
     fixture = TestBed.createComponent(PreviousGameComponent);
-    component = fixture.componentInstance;
-    // Not rendered: the template needs input data in the old NHL API models. Render it with test data once
-    // this component is migrated (see docs/nhl-api-migration-plan.md).
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  afterEach(() => {
+    fixture.destroy();
+  });
+
+  /** A finished game from the real BOS 2025-26 schedule. */
+  function bostonGame(gameId: number): ClubScheduleGame {
+    return mockClubScheduleSeason('BOS', 20252026).games.find(game => game.id === gameId);
+  }
+
+  function show(game: ClubScheduleGame, teamId: number, isLast = false): void {
+    fixture.componentRef.setInput('game', game);
+    fixture.componentRef.setInput('teamId', teamId);
+    fixture.componentRef.setInput('isLast', isLast);
+    fixture.detectChanges();
+  }
+
+  function element(selector: string): HTMLElement {
+    return fixture.nativeElement.querySelector(selector);
+  }
+
+  function text(selector: string): string {
+    return element(selector)?.textContent.replace(/\s+/g, ' ').trim();
+  }
+
+  function logos(): string[] {
+    return Array.from<HTMLImageElement>(fixture.nativeElement.querySelectorAll('img')).map(img => img.getAttribute('src'));
+  }
+
+  function scoreClasses(): string[] {
+    return Array.from(element('.score-container').classList).filter(name => name === 'green' || name === 'red');
+  }
+
+  it('should show a real home win with both teams, the score and a link to the game', () => {
+    // NJD 0 @ BOS 4
+    show(bostonGame(2025021292), 6);
+    expect(text('.home.team-name')).toBe('Bruins');
+    expect(text('.away.team-name')).toBe('Devils');
+    expect(text('.score-container')).toBe('4 - 0');
+    expect(scoreClasses()).toEqual(['green']);
+    expect(logos()).toEqual([NhlTeamLogoUtils.getTeamPrimaryLogo(6), NhlTeamLogoUtils.getTeamPrimaryLogo(1)]);
+    const routerLink = fixture.debugElement.query(By.directive(RouterLink)).injector.get(RouterLink);
+    expect(routerLink.urlTree.toString()).toBe('/game/2025021292');
+    expect(element('.previous-game-container').classList).not.toContain('last-previous-game');
+  });
+
+  it('should color the result for the team whose form it is', () => {
+    // BOS 3 @ BUF 4
+    show(bostonGame(2025030111), 6);
+    expect(text('.home.team-name')).toBe('Sabres');
+    expect(text('.away.team-name')).toBe('Bruins');
+    expect(text('.score-container')).toBe('4 - 3');
+    expect(scoreClasses()).toEqual(['red']);
+
+    show(bostonGame(2025030111), 7);
+    expect(scoreClasses()).toEqual(['green']);
+  });
+
+  it('should show an overtime win as a win', () => {
+    // BOS 2 @ BUF 1 in overtime
+    show(bostonGame(2025030115), 6);
+    expect(text('.score-container')).toBe('1 - 2');
+    expect(scoreClasses()).toEqual(['green']);
+  });
+
+  it('should mark the last game of the form', () => {
+    show(bostonGame(2025030116), 6, true);
+    expect(element('.previous-game-container').classList).toContain('last-previous-game');
+  });
+
+  it('should not color a game without a score, or a game of another team', () => {
+    const futureGame = mockClubScheduleSeason('BOS', 20262027).games.find(game => game.id === 2026020056);
+    show(futureGame, 6);
+    expect(text('.score-container')).toBe('N/A');
+    expect(scoreClasses()).toEqual([]);
+
+    show(bostonGame(2025021292), 10);
+    expect(text('.score-container')).toBe('4 - 0');
+    expect(scoreClasses()).toEqual([]);
+  });
+
+  it('should fall back to the team utils for a missing name and an unknown team logo', () => {
+    const game = bostonGame(2025021292);
+    delete game.homeTeam.commonName;
+    game.awayTeam.id = 999;
+    show(game, 6);
+    expect(text('.home.team-name')).toBe('Bruins');
+    expect(text('.away.team-name')).toBe('Devils');
+    expect(logos()[1]).toBe('assets/logos/team_fallback.png');
+  });
+
+  it('should render nothing without a game', () => {
+    fixture.detectChanges();
+    expect(element('.previous-game-container')).toBeNull();
   });
 });

@@ -6,8 +6,8 @@
     <div *ngIf="teamGames" class="prev-games">
       <div *ngFor="let gameDay of last5TeamGames; let isLast = last">
         <app-previous-game
-            [team]="team"
-            [gameDay]="gameDay"
+            [teamId]="team?.id"
+            [game]="$any(gameDay)"
             [isLast]="isLast"
         ></app-previous-game>
       </div>
