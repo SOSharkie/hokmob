@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hokmob",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["HokMob.App/ClientApp/dev.js"],
+      "port": 4200,
+      "url": "http://localhost:4200"
+    }
+  ]
+}

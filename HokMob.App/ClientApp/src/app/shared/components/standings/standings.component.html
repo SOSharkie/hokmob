@@ -19,27 +19,27 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let team of standingDivision.teamRecords, let j = index, let isLast = last"
+    <tr *ngFor="let team of standingDivision.teams, let j = index, let isLast = last"
         class="standings-row"
-        [ngClass]="{'last-row': isLast, 'selected-row': team.team.id === selectedTeamId}">
+        [ngClass]="{'last-row': isLast, 'selected-row': teamIds[i][j] === selectedTeamId}">
       <td class="rank-cell stat-cell" [ngClass]="{'playoffPosition' : isPlayoffPosition(team)}">
         <span>{{getTeamRank(team)}}</span>
       </td>
-      <td class="team-name-cell" [routerLink]="['/team', team.team.id]">
+      <td class="team-name-cell" [routerLink]="['/team', teamIds[i][j]]">
         <img class="team-logo" [src]="teamLogos[i][j]">
-        <span *ngIf="!miniStandings" class="team-name-text hide-mobile">{{team.team.name}}</span>
-        <span *ngIf="miniStandings" class="team-name-text hide-mobile">{{getTeamShortName(team.team.name)}}</span>
-        <span class="team-name-text show-mobile">{{getTeamShortName(team.team.name)}}</span>
+        <span *ngIf="!miniStandings" class="team-name-text hide-mobile">{{team.teamName.default}}</span>
+        <span *ngIf="miniStandings" class="team-name-text hide-mobile">{{team.teamCommonName.default}}</span>
+        <span class="team-name-text show-mobile">{{team.teamCommonName.default}}</span>
       </td>
       <td class="gp-cell stat-cell"><span>{{team.gamesPlayed}}</span></td>
-      <td *ngIf="!miniStandings" class="wins-cell stat-cell"><span>{{team.leagueRecord.wins}}</span></td>
-      <td *ngIf="!miniStandings" class="losses-cell stat-cell"><span>{{team.leagueRecord.losses}}</span></td>
-      <td *ngIf="!miniStandings" class="ot-cell stat-cell"><span>{{team.leagueRecord.ot}}</span></td>
+      <td *ngIf="!miniStandings" class="wins-cell stat-cell"><span>{{team.wins}}</span></td>
+      <td *ngIf="!miniStandings" class="losses-cell stat-cell"><span>{{team.losses}}</span></td>
+      <td *ngIf="!miniStandings" class="ot-cell stat-cell"><span>{{team.otLosses}}</span></td>
       <td *ngIf="!miniStandings" class="rw-cell stat-cell"><span>{{team.regulationWins}}</span></td>
-      <td *ngIf="!miniStandings" class="gd-cell stat-cell hide-mobile"><span>{{team.goalsScored - team.goalsAgainst}}</span></td>
-      <td *ngIf="showFormAndNext" class="form-cell stat-cell hide-mobile"><span>{{team.streak.steakNumber}}{{team.streak.streakCode}}</span></td>
+      <td *ngIf="!miniStandings" class="gd-cell stat-cell hide-mobile"><span>{{team.goalDifferential}}</span></td>
+      <td *ngIf="showFormAndNext" class="form-cell stat-cell hide-mobile"><span>{{team.streakCount}}{{team.streakCode}}</span></td>
       <td class="points-cell stat-cell">
-        <span class="points-value" [ngStyle]="{'background-color': team.team.id === selectedTeamId ? selectedTeamColor : ''}">
+        <span class="points-value" [ngStyle]="{'background-color': teamIds[i][j] === selectedTeamId ? selectedTeamColor : ''}">
           {{team.points}}
         </span>
       </td>

@@ -53,6 +53,18 @@ Then open `https://localhost:7157`. The first run installs npm packages and star
 You can also run the Angular dev server on its own (`cd HokMob.App/ClientApp`, then `npm start`), but
 `/api/nhl/...` calls only work while the backend is also running.
 
+### One command over HTTP
+
+From `HokMob.App/ClientApp`, `npm run dev` starts the backend (`https://localhost:7157`) and an Angular dev server
+on plain HTTP together. Open `http://localhost:4200`. Use this when a browser doesn't trust the dev certificate,
+such as the Claude Code in-app browser, which uses the `hokmob` config in `.claude/launch.json`. Output is prefixed
+with `[api]` and `[web]`, and Ctrl+C stops both. The backend runs on a newer .NET runtime if .NET 7 isn't installed.
+
+```
+cd HokMob.App/ClientApp
+npm run dev
+```
+
 To test the backend on its own, open `https://localhost:7157/api/nhl/score/now` in the browser.
 
 ### Troubleshooting: "Unable to configure HTTPS endpoint"

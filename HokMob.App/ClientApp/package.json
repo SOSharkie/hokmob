@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
+    "dev": "node dev.js",
     "prestart": "node aspnetcore-https",
     "start": "run-script-os",
     "start:windows": "ng serve --port 44424 --ssl --ssl-cert \"%APPDATA%\\ASP.NET\\https\\%npm_package_name%.pem\" --ssl-key \"%APPDATA%\\ASP.NET\\https\\%npm_package_name%.key\"",

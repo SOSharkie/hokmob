@@ -14,15 +14,15 @@ import {NhlTeamExtendedModel} from "@shared/models/nhl-general/nhl-team-extended
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
-import {NhlStandingsModel} from "@shared/models/nhl-general/nhl-standings.model";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
+import {StandingsGroup} from "@shared/models/nhl-web-api/standings.model";
 
 // TODO: Team page is not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). Its shared components
-//  (app-standings, app-scorecard via team-schedule, app-previous-game via single-team-form) now expect new API models.
-//  Fix: load team data from club-schedule-season/{abbrev}/now, standings/now and roster/{abbrev}/current, and pass the
-//  new models to those components.
+//  (app-scorecard via team-schedule, app-previous-game via single-team-form) now expect new API models, and team data
+//  still comes from the dead stats API, so the migrated standings never load. Fix: load team data from
+//  club-schedule-season/{abbrev}/now and roster/{abbrev}/current, and pass the new models to those components.
 @Component({
   selector: 'app-team',
   templateUrl: './team.component.html',
@@ -44,7 +44,7 @@ export class TeamComponent implements OnInit {
 
   public futureTeamGames: NhlScheduleModel;
 
-  public standings: NhlStandingsModel[];
+  public standings: StandingsGroup[];
 
   public nextGame: NhlGameModel;
 
@@ -79,7 +79,8 @@ export class TeamComponent implements OnInit {
         this.teamData = teamData;
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.teamData.id);
         this.loadImages();
-        this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), NhlStandingsTypeEnum.BY_CONFERENCE).then(standings => {
+        this.nhlStandingAndPlayoffService.getNhlStandings(NhlStandingsTypeEnum.BY_CONFERENCE).then(standings => {
+          // Conference groups are ordered Eastern, then Western (conference ID 5)
           if (this.teamData.conference.id === 5) {
             this.standings = [standings[1]];
           } else {
