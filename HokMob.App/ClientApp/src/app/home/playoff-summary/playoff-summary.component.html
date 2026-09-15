@@ -6,6 +6,7 @@
     <div *ngFor="let series of currentSeries" class="series-summary">
       <app-playoff-series
           [seriesData]="series"
+          [season]="playoffsData.seasonId"
           [smallerVersion]="true"
       ></app-playoff-series>
     </div>

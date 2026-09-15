@@ -117,6 +117,9 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
   private retrieveNhlGames(): void {
     this.nhlGameService.getNhlGames(this.selectedDay).then(games => {
       this.currentDayGames = games;
+    }).catch(() => {
+      // The service logs the error. Show no games rather than another day's games
+      this.currentDayGames = [];
     });
   }
 
@@ -138,6 +141,8 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
             existingGame.gameOutcome = updatedGame.gameOutcome;
           }
         });
+      }).catch(() => {
+        // The service logs the error. Keep the shown games until the next refresh
       });
     }, this.nhlGameRefreshTime);
   }

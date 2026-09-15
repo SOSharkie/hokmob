@@ -20,6 +20,8 @@ export class StandingsSummaryComponent implements OnInit{
   public ngOnInit() {
     this.nhlStandingAndPlayoffService.getNhlStandings(this.standingsType).then(result => {
         this.standings = result;
+    }).catch(() => {
+      // The service logs the error. Show only the title
     });
   }
 }

@@ -58,6 +58,9 @@ export class LeagueStandingsComponent implements OnInit {
   private updateStandings(): void {
     this.nhlStandingAndPlayoffService.getNhlStandings(this.currentStandingsType).then(result => {
       this.standings = result;
+    }).catch(() => {
+      // The service logs the error. Show no standings rather than those of another standings type
+      this.standings = undefined;
     });
   }
 }

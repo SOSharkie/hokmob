@@ -1,4 +1,6 @@
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AppTestingModule } from '@shared/testing/app-testing.module';
 
 import { GameHeaderComponent } from './game-header.component';
 
@@ -8,7 +10,9 @@ describe('DropdownHeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ GameHeaderComponent ]
+      imports: [ AppTestingModule ],
+      declarations: [ GameHeaderComponent ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
 

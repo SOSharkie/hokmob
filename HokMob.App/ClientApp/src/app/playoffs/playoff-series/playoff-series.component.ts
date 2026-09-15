@@ -1,12 +1,15 @@
 import {Component, Input, OnChanges, SimpleChanges, ViewEncapsulation} from '@angular/core';
-import {NhlPlayoffSeriesModel} from "@shared/models/nhl-playoffs/nhl-playoff-series.model";
-import {NhlImageService} from "@shared/services/nhl-image.service";
 import * as dayjs from "dayjs";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
-import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {MatDialog} from "@angular/material/dialog";
-import {PlayoffSeriesDialogComponent} from "@app/playoffs/playoff-series-dialog/playoff-series-dialog.component";
+import {
+  PlayoffSeriesDialogComponent,
+  PlayoffSeriesDialogData
+} from "@app/playoffs/playoff-series-dialog/playoff-series-dialog.component";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {PlayoffCarouselSeed, PlayoffCarouselSeries, PlayoffSeriesGame} from "@shared/models/nhl-web-api/playoffs.model";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {NhlGameScheduleStateEnum} from "@shared/enums/nhl-game-schedule-state.enum";
 
 @Component({
   selector: 'app-playoff-series',
@@ -17,7 +20,11 @@ import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 export class PlayoffSeriesComponent implements OnChanges {
 
   @Input()
-  public seriesData: NhlPlayoffSeriesModel;
+  public seriesData: PlayoffCarouselSeries;
+
+  /** The season of the series, like 20252026. Needed to load the next game date. */
+  @Input()
+  public season: number;
 
   @Input()
   public smallerVersion: boolean = false;
@@ -30,79 +37,68 @@ export class PlayoffSeriesComponent implements OnChanges {
 
   public logoB: any = "assets/team_fallback.png";
 
-  public seriesGames: NhlScheduleModel;
+  public nextGame: PlayoffSeriesGame;
 
-  public get teamAName() : string {
-    if (this.seriesData && this.seriesData.names.teamAbbreviationA.length > 0) {
-      return this.seriesData.names.teamAbbreviationA;
-    }
-    return "";
+  public get teamAName(): string {
+    return this.seriesData?.topSeed?.abbrev ?? "";
   }
 
-  public get teamBName() : string {
-    if (this.seriesData && this.seriesData.names.teamAbbreviationB.length > 0) {
-      return this.seriesData.names.teamAbbreviationB;
-    }
-    return "";
+  public get teamBName(): string {
+    return this.seriesData?.bottomSeed?.abbrev ?? "";
   }
 
-  public get teamARank() : string {
-    if (this.seriesData && this.seriesData.matchupTeams && this.seriesData.matchupTeams[0]) {
-      return "  " + this.seriesData.matchupTeams[0].seed.rank;
-    }
-    return " ";
+  public get teamARank(): string {
+    return this.getRankText(this.seriesData?.topSeed);
   }
 
-  public get teamBRank() : string {
-    if (this.seriesData && this.seriesData.matchupTeams && this.seriesData.matchupTeams[1]) {
-      return  "  " + this.seriesData.matchupTeams[1].seed.rank.toString();
-    }
-    return " ";
+  public get teamBRank(): string {
+    return this.getRankText(this.seriesData?.bottomSeed);
   }
 
   public get teamAWins(): number {
-    if (this.seriesData && this.seriesData.matchupTeams && this.seriesData.matchupTeams[0]) {
-      return this.seriesData.matchupTeams[0].seriesRecord.wins;
-    }
-    return 0;
+    return this.seriesData?.topSeed?.wins ?? 0;
   }
 
   public get teamBWins(): number {
-    if (this.seriesData && this.seriesData.matchupTeams && this.seriesData.matchupTeams[1]) {
-      return this.seriesData.matchupTeams[1].seriesRecord.wins;
-    }
-    return 0;
+    return this.seriesData?.bottomSeed?.wins ?? 0;
+  }
+
+  public get teamALost(): boolean {
+    return this.hasLost(this.seriesData?.topSeed, this.seriesData?.bottomSeed);
+  }
+
+  public get teamBLost(): boolean {
+    return this.hasLost(this.seriesData?.bottomSeed, this.seriesData?.topSeed);
   }
 
   public get nextGameDay(): string {
-    if (this.seriesData && this.seriesData.currentGame.seriesSummary.gameTime) {
-      return dayjs(this.seriesData.currentGame.seriesSummary.gameTime).format("MMM D");
+    if (this.nextGame && this.nextGame.gameScheduleState !== NhlGameScheduleStateEnum.TBD) {
+      return dayjs(this.nextGame.startTimeUTC).format("MMM D");
     }
-    return "TBD";
+    return this.seriesData?.winningTeamId ? "Final" : "TBD";
   }
 
   constructor(public seriesDialog: MatDialog,
-              private nhlLogoService: NhlImageService,
               private nhlPlayoffService: NhlStandingAndPlayoffService) {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['seriesData'] && !this.isLogoALoaded && !this.isLogoBLoaded) {
-      if (!this.seriesData.matchupTeams) {
-        return;
-      }
-      if (this.seriesData.matchupTeams[0] && this.seriesData.matchupTeams[1]) {
-        this.nhlPlayoffService.getNhlPlayoffSeriesGames(this.seriesData.matchupTeams[0].team.id, this.seriesData.matchupTeams[1].team.id).then(result => {
-          this.seriesGames = result;
-        });
-      }
-      if (this.seriesData.matchupTeams[0]) {
-        this.logoA = NhlTeamLogoUtils.getTeamPrimaryLogo(this.seriesData.matchupTeams[0].team.id)
+    if (changes['seriesData'] && this.seriesData && !this.isLogoALoaded && !this.isLogoBLoaded) {
+      if (this.seriesData.topSeed) {
+        this.logoA = NhlTeamLogoUtils.getTeamPrimaryLogo(this.seriesData.topSeed.id);
         this.isLogoALoaded = true;
       }
-      if (this.seriesData.matchupTeams[1]) {
-        this.logoB = NhlTeamLogoUtils.getTeamPrimaryLogo(this.seriesData.matchupTeams[1].team.id)
+      if (this.seriesData.bottomSeed) {
+        this.logoB = NhlTeamLogoUtils.getTeamPrimaryLogo(this.seriesData.bottomSeed.id);
         this.isLogoBLoaded = true;
+      }
+      // The next game date is only shown in the full-size version
+      if (!this.smallerVersion && this.season && !this.seriesData.winningTeamId) {
+        this.nhlPlayoffService.getNhlPlayoffSeriesSchedule(this.season, this.seriesData.seriesLetter).then(result => {
+          this.nextGame = result.games?.find(game => !NhlGameInfoUtils.isCompletedGame(game.gameState));
+        }).catch(() => {
+          // The service logs the error. The next game date stays TBD
+        });
       }
     }
   }
@@ -111,7 +107,24 @@ export class PlayoffSeriesComponent implements OnChanges {
     this.seriesDialog.open(PlayoffSeriesDialogComponent, {
       maxWidth: "85vw",
       backdropClass: "dialog-backdrop",
-      data: this.seriesData
+      data: {series: this.seriesData, season: this.season} as PlayoffSeriesDialogData
     });
+  }
+
+  private getRankText(seed: PlayoffCarouselSeed): string {
+    return seed?.rank ? "  " + seed.rank : " ";
+  }
+
+  /**
+   * Whether the series is over and the given seed lost it.
+   */
+  private hasLost(seed: PlayoffCarouselSeed, opponent: PlayoffCarouselSeed): boolean {
+    if (!seed || !opponent) {
+      return false;
+    }
+    if (this.seriesData.winningTeamId) {
+      return this.seriesData.winningTeamId === opponent.id;
+    }
+    return opponent.wins >= this.seriesData.neededToWin;
   }
 }

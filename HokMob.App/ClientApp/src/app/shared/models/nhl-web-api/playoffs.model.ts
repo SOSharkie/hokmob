@@ -43,6 +43,8 @@ export interface PlayoffCarouselSeed {
   wins: number;
   logo: string;
   darkLogo: string;
+  /** Seed rank, like 1 for D1 or WC1. Not in the carousel response; merged in from playoff-bracket/{year}. */
+  rank?: number;
 }
 
 /**
