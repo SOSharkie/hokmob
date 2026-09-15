@@ -65,6 +65,9 @@ change a phase.
 
 ## Building and testing
 
+- **CI:** `.github/workflows/pr-tests.yml` runs on every pull request: job "Client tests" (production `ng build`,
+  which enforces the `angular.json` budgets, then `npm run test:ci`) and job "Backend build" (`dotnet build -c
+  Release`). Both are meant to be required status checks for merging into `master`.
 - **Type-check:** from `HokMob.App/ClientApp`, run `npx ng build --configuration development` (~10–20s). This catches
   template type errors that `tsc` alone misses. Run it after every change.
 - **Unit tests:** from `HokMob.App/ClientApp`, run `npm run test:ci` (Karma + headless Chrome, single run, ~30s).
