@@ -1,0 +1,597 @@
+{
+  "prevDate": "2026-06-06",
+  "currentDate": "2026-06-09",
+  "nextDate": "2026-06-11",
+  "gameWeek": [
+    {
+      "date": "2026-06-06",
+      "dayAbbrev": "SAT",
+      "numberOfGames": 1
+    },
+    {
+      "date": "2026-06-07",
+      "dayAbbrev": "SUN",
+      "numberOfGames": 0
+    },
+    {
+      "date": "2026-06-08",
+      "dayAbbrev": "MON",
+      "numberOfGames": 0
+    },
+    {
+      "date": "2026-06-09",
+      "dayAbbrev": "TUE",
+      "numberOfGames": 1
+    },
+    {
+      "date": "2026-06-10",
+      "dayAbbrev": "WED",
+      "numberOfGames": 0
+    },
+    {
+      "date": "2026-06-11",
+      "dayAbbrev": "THU",
+      "numberOfGames": 1
+    },
+    {
+      "date": "2026-06-12",
+      "dayAbbrev": "FRI",
+      "numberOfGames": 0
+    }
+  ],
+  "oddsPartners": [
+    {
+      "partnerId": 2,
+      "country": "SE",
+      "name": "Unibet",
+      "imageUrl": "https://assets.nhle.com/betting_partner/unibet.svg",
+      "siteUrl": "https://www.unibet.se/betting/sports/filter/ice_hockey/nhl/all/matches",
+      "bgColor": "#14805E",
+      "textColor": "#FFFFFF",
+      "accentColor": "#3AAA35"
+    },
+    {
+      "partnerId": 3,
+      "country": "CZ",
+      "name": "Tipsport",
+      "imageUrl": "https://assets.nhle.com/betting_partner/tipsport.svg",
+      "siteUrl": "https://www.tipsport.cz/PartnerRedirectAction.do?pid=16961&sid=20360&bid=34954&tid=11268",
+      "bgColor": "#2497F2",
+      "textColor": "#FFFFFF",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "partnerId": 6,
+      "country": "FI",
+      "name": "Veikkaus",
+      "imageUrl": "https://assets.nhle.com/betting_partner/veikkaus.svg",
+      "siteUrl": "https://www.veikkaus.fi/fi/vedonlyonti/pitkaveto?t=3-2-1_NHL",
+      "bgColor": "#0025F5",
+      "textColor": "#FFFFFF",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "partnerId": 7,
+      "country": "CA",
+      "name": "FanDuel",
+      "imageUrl": "https://assets.nhle.com/betting_partner/fanduel.svg",
+      "siteUrl": "https://fanduel.com",
+      "bgColor": "#0078ff",
+      "textColor": "#FFFFFF",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "partnerId": 8,
+      "country": "DE",
+      "name": "Sportradar",
+      "imageUrl": "https://assets.nhle.com/betting_partner/sportsradar.svg",
+      "siteUrl": "https://sportradar.com",
+      "bgColor": "#000000",
+      "textColor": "#FFFFFF",
+      "accentColor": "#E6E6E6"
+    },
+    {
+      "partnerId": 9,
+      "country": "US",
+      "name": "DraftKings",
+      "imageUrl": "https://assets.nhle.com/betting_partner/draftkings.svg",
+      "siteUrl": "https://dksb.sng.link/As9kz/3i4d?_dl=https%3A%2F%2Fsportsbook.draftkings.com%2Fgateway%3Fs%3D333653091&pcid=427326&psn=1320&pcn=NHL&pscn=OddsWidget&pcrn=NoOffer&pscid=SP&wpcid=427326&wpsrc=1320&wpcn=NHL&wpscn=OddsWidget&wpcrn=NoOffer&wpscid=SP&_forward_params=1",
+      "bgColor": "#000000",
+      "textColor": "#FFFFFF",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "partnerId": 10,
+      "country": "SK",
+      "name": "Doxxbet",
+      "imageUrl": "https://assets.nhle.com/betting_partner/doxxbet.svg",
+      "siteUrl": "https://www.doxxbet.sk/sk/sportove-tipovanie-online/kurzy/ladovy-hokej/usa/nhl/?msID=21&mbID=27",
+      "bgColor": "#f30d31",
+      "textColor": "#202020",
+      "accentColor": "#ffffff"
+    }
+  ],
+  "games": [
+    {
+      "id": 2025030414,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-06-09",
+      "venue": {
+        "default": "T-Mobile Arena"
+      },
+      "startTimeUTC": "2026-06-10T00:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-07:00",
+      "tvBroadcasts": [
+        {
+          "id": 384,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ABC",
+          "sequenceNumber": 1,
+          "logoUrls": {
+            "light": "https://assets.nhle.com/logos/broadcast/384-light.svg",
+            "dark": "https://assets.nhle.com/logos/broadcast/384-dark.svg"
+          }
+        },
+        {
+          "id": 4,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "CBC",
+          "sequenceNumber": 101,
+          "logoUrls": {
+            "light": "https://assets.nhle.com/logos/broadcast/4-light.svg",
+            "dark": "https://assets.nhle.com/logos/broadcast/4-dark.svg"
+          }
+        },
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 107,
+          "parentId": 282,
+          "logoUrls": {
+            "light": "https://assets.nhle.com/logos/broadcast/282-light.svg",
+            "dark": "https://assets.nhle.com/logos/broadcast/282-dark.svg"
+          }
+        },
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120,
+          "logoUrls": {
+            "light": "https://assets.nhle.com/logos/broadcast/281-light.svg",
+            "dark": "https://assets.nhle.com/logos/broadcast/281-dark.svg"
+          }
+        }
+      ],
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 12,
+        "name": {
+          "default": "Hurricanes"
+        },
+        "abbrev": "CAR",
+        "score": 5,
+        "sog": 28,
+        "logo": "https://assets.nhle.com/logos/nhl/svg/CAR_light.svg"
+      },
+      "homeTeam": {
+        "id": 54,
+        "name": {
+          "default": "Golden Knights"
+        },
+        "abbrev": "VGK",
+        "score": 3,
+        "sog": 21,
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg"
+      },
+      "seriesStatus": {
+        "round": 4,
+        "seriesAbbrev": "SCF",
+        "seriesTitle": "Stanley Cup Final",
+        "seriesLetter": "O",
+        "neededToWin": 4,
+        "topSeedTeamAbbrev": "CAR",
+        "topSeedWins": 2,
+        "bottomSeedTeamAbbrev": "VGK",
+        "bottomSeedWins": 2,
+        "gameNumberOfSeries": 4
+      },
+      "gameCenterLink": "/gamecenter/car-vs-vgk/2026/06/09/2025030414",
+      "seriesUrl": "/schedule/playoff-series/2026/series-o/goldenknights-vs-hurricanes",
+      "threeMinRecap": "/video/car-at-vgk-recap-6398034433112",
+      "threeMinRecapFr": "/fr/video/car-vs-vgk-09-06-2026-resume-6398035936112",
+      "condensedGame": "/video/car-at-vgk-condensed-game-6398034955112",
+      "condensedGameFr": "/fr/video/match-condense-hurricanes-golden-knights-09-06-2026-6398035942112",
+      "clock": {
+        "timeRemaining": "00:00",
+        "secondsRemaining": 0,
+        "running": false,
+        "inIntermission": false
+      },
+      "neutralSite": false,
+      "venueTimezone": "US/Pacific",
+      "period": 3,
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "goals": [
+        {
+          "period": 1,
+          "periodDescriptor": {
+            "number": 1,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "01:06",
+          "playerId": 8482702,
+          "name": {
+            "default": "L. Stankoven"
+          },
+          "firstName": {
+            "default": "Logan"
+          },
+          "lastName": {
+            "default": "Stankoven"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8478970,
+              "name": {
+                "default": "J. Chatfield"
+              },
+              "assistsToDate": 7
+            },
+            {
+              "playerId": 8482809,
+              "name": {
+                "default": "J. Blake"
+              },
+              "assistsToDate": 12
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20252026/CAR/8482702.png",
+          "teamAbbrev": "CAR",
+          "goalsToDate": 11,
+          "awayScore": 1,
+          "homeScore": 0,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/car-vgk-stankoven-scores-goal-against-carter-hart-6398023402112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/car-vgk-stankoven-marque-un-but-contre-carter-hart-6398022521112",
+          "highlightClip": 6398023402112,
+          "highlightClipFr": 6398022521112,
+          "discreteClip": 6398023877112,
+          "discreteClipFr": 6398021838112
+        },
+        {
+          "period": 1,
+          "periodDescriptor": {
+            "number": 1,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "03:28",
+          "playerId": 8482809,
+          "name": {
+            "default": "J. Blake"
+          },
+          "firstName": {
+            "default": "Jackson"
+          },
+          "lastName": {
+            "default": "Blake"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8475791,
+              "name": {
+                "default": "T. Hall"
+              },
+              "assistsToDate": 12
+            },
+            {
+              "playerId": 8477940,
+              "name": {
+                "default": "N. Ehlers"
+              },
+              "assistsToDate": 6
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20252026/CAR/8482809.png",
+          "teamAbbrev": "CAR",
+          "goalsToDate": 6,
+          "awayScore": 2,
+          "homeScore": 0,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/car-vgk-blake-scores-goal-against-carter-hart-6398024183112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/car-vgk-blake-marque-un-but-contre-carter-hart-6398024190112",
+          "highlightClip": 6398024183112,
+          "highlightClipFr": 6398024190112,
+          "discreteClip": 6398021926112,
+          "discreteClipFr": 6398023220112
+        },
+        {
+          "period": 1,
+          "periodDescriptor": {
+            "number": 1,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "07:22",
+          "playerId": 8475913,
+          "name": {
+            "default": "M. Stone"
+          },
+          "firstName": {
+            "default": "Mark"
+          },
+          "lastName": {
+            "default": "Stone"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8477447,
+              "name": {
+                "default": "S. Theodore"
+              },
+              "assistsToDate": 11
+            },
+            {
+              "playerId": 8475188,
+              "name": {
+                "default": "B. McNabb"
+              },
+              "assistsToDate": 9
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20252026/VGK/8475913.png",
+          "teamAbbrev": "VGK",
+          "goalsToDate": 7,
+          "awayScore": 2,
+          "homeScore": 1,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/car-vgk-stone-scores-goal-against-brandon-bussi-6398024290112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/car-vgk-stone-marque-un-but-contre-brandon-bussi-6398024097112",
+          "highlightClip": 6398024290112,
+          "highlightClipFr": 6398024097112,
+          "discreteClip": 6398022643112,
+          "discreteClipFr": 6398024687112
+        },
+        {
+          "period": 1,
+          "periodDescriptor": {
+            "number": 1,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "12:48",
+          "playerId": 8473533,
+          "name": {
+            "default": "J. Staal"
+          },
+          "firstName": {
+            "default": "Jordan"
+          },
+          "lastName": {
+            "default": "Staal"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8476906,
+              "name": {
+                "default": "S. Gostisbehere"
+              },
+              "assistsToDate": 7
+            },
+            {
+              "playerId": 8478427,
+              "name": {
+                "default": "S. Aho"
+              },
+              "assistsToDate": 7
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20252026/CAR/8473533.png",
+          "teamAbbrev": "CAR",
+          "goalsToDate": 6,
+          "awayScore": 3,
+          "homeScore": 1,
+          "strength": "pp",
+          "highlightClipSharingUrl": "https://nhl.com/video/car-vgk-staal-scores-ppg-against-carter-hart-6398022859112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/car-vgk-staal-marque-un-but-en-a-n-contre-carter-hart-6398024218112",
+          "highlightClip": 6398022859112,
+          "highlightClipFr": 6398024218112,
+          "discreteClip": 6398024414112,
+          "discreteClipFr": 6398023844112
+        },
+        {
+          "period": 2,
+          "periodDescriptor": {
+            "number": 2,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "04:22",
+          "playerId": 8476448,
+          "name": {
+            "default": "W. Karlsson"
+          },
+          "firstName": {
+            "default": "William"
+          },
+          "lastName": {
+            "default": "Karlsson"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8478397,
+              "name": {
+                "default": "R. Andersson"
+              },
+              "assistsToDate": 6
+            },
+            {
+              "playerId": 8478483,
+              "name": {
+                "default": "M. Marner"
+              },
+              "assistsToDate": 19
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20252026/VGK/8476448.png",
+          "teamAbbrev": "VGK",
+          "goalsToDate": 3,
+          "awayScore": 3,
+          "homeScore": 2,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/car-vgk-karlsson-scores-goal-against-brandon-bussi-6398026272112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/car-vgk-karlsson-marque-un-but-contre-brandon-bussi-6398025888112",
+          "highlightClip": 6398026272112,
+          "highlightClipFr": 6398025888112,
+          "discreteClip": 6398026185112,
+          "discreteClipFr": 6398027052112
+        },
+        {
+          "period": 2,
+          "periodDescriptor": {
+            "number": 2,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "17:08",
+          "playerId": 8479353,
+          "name": {
+            "default": "B. Howden"
+          },
+          "firstName": {
+            "default": "Brett"
+          },
+          "lastName": {
+            "default": "Howden"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8476925,
+              "name": {
+                "default": "C. Sissons"
+              },
+              "assistsToDate": 6
+            },
+            {
+              "playerId": 8476448,
+              "name": {
+                "default": "W. Karlsson"
+              },
+              "assistsToDate": 6
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20252026/VGK/8479353.png",
+          "teamAbbrev": "VGK",
+          "goalsToDate": 14,
+          "awayScore": 3,
+          "homeScore": 3,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/car-vgk-howden-scores-goal-against-brandon-bussi-6398028367112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/car-vgk-howden-marque-un-but-contre-brandon-bussi-6398028839112",
+          "highlightClip": 6398028367112,
+          "highlightClipFr": 6398028839112,
+          "discreteClip": 6398028642112,
+          "discreteClipFr": 6398028556112
+        },
+        {
+          "period": 3,
+          "periodDescriptor": {
+            "number": 3,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "06:32",
+          "playerId": 8473533,
+          "name": {
+            "default": "J. Staal"
+          },
+          "firstName": {
+            "default": "Jordan"
+          },
+          "lastName": {
+            "default": "Staal"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8477940,
+              "name": {
+                "default": "N. Ehlers"
+              },
+              "assistsToDate": 7
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20252026/CAR/8473533.png",
+          "teamAbbrev": "CAR",
+          "goalsToDate": 7,
+          "goalInGame": 2,
+          "awayScore": 4,
+          "homeScore": 3,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/car-vgk-staal-scores-goal-against-carter-hart-6398034086112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/car-vgk-staal-marque-un-but-contre-carter-hart-6398032634112",
+          "highlightClip": 6398034086112,
+          "highlightClipFr": 6398032634112,
+          "discreteClip": 6398032556112,
+          "discreteClipFr": 6398032630112
+        },
+        {
+          "period": 3,
+          "periodDescriptor": {
+            "number": 3,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "19:05",
+          "playerId": 8477940,
+          "name": {
+            "default": "N. Ehlers"
+          },
+          "firstName": {
+            "default": "Nikolaj"
+          },
+          "lastName": {
+            "default": "Ehlers"
+          },
+          "goalModifier": "empty-net",
+          "assists": [],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20252026/CAR/8477940.png",
+          "teamAbbrev": "CAR",
+          "goalsToDate": 7,
+          "awayScore": 5,
+          "homeScore": 3,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/car-vgk-ehlers-scores-empty-net-goal-6398033953112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/car-vgk-ehlers-car-marque-un-but-dans-un-filet-desert-6398034415112",
+          "highlightClip": 6398033953112,
+          "highlightClipFr": 6398034415112,
+          "discreteClip": 6398033950112,
+          "discreteClipFr": 6398034618112
+        }
+      ]
+    }
+  ]
+}

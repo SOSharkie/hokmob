@@ -1,25 +1,29 @@
 # NHL API Migration Plan: Home Page & Game Page
 
-Status: **Plan** · Scope: home page (scoreboard, standings summary, playoff summary) and game page (header, goals, stats,
+Status: **In progress** · Phases 0–3 done with unit tests (2026-09-15), phases 4–8 to do.
+Scope: home page (scoreboard, standings summary, playoff summary and series dialog) and game page (header, goals, stats,
 momentum, event timelines, top players, player dialog, team form). Player and team pages are out of scope.
 
 Reference: [Zmalski/NHL-API-Reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md).
-All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-web.nhle.com/v1/<path>`.
+All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-web.nhle.com/v1/<path>`
+(`HokMob.App/Controllers/NhlController.cs`, cached by `HokMob.App/Services/NhlApiClient.cs`).
 
 ## 1. Key findings
 
 - **Every old host is gone**, not just deprecated. `statsapi.web.nhl.com`, `cms.nhl.bamgrid.com` (headshots) and
-  `suggest.svc.nhl.com` (search) no longer resolve in DNS. Nothing on these pages works today.
+  `suggest.svc.nhl.com` (search) no longer resolve in DNS. Unmigrated pages don't work.
 - **No 1:1 replacement.** The old `/game/{id}/feed/live` returned everything in one response. The new API splits it
   across four gamecenter endpoints: `landing`, `play-by-play`, `boxscore` and `right-rail`.
 - **The shapes are completely different.** Old models under `shared/models/nhl-*` can't be reused for these pages.
-  Plan on new models, not tweaks.
+  New models live under `shared/models/nhl-web-api/`.
 - **What stays the same:**
   - Game IDs use the same format (`2025021057`), so `/game/:id` routes keep working.
   - Team IDs are unchanged, so logo, color and team utils keyed by ID still work, with two exceptions:
     Utah Mammoth `UTA` is new as **ID 68**, and Arizona `ARI` (ID 53) no longer exists.
   - Country codes are still 3 letters (`CAN`), so the `assets/flags` images still work.
 - **Localized strings.** Most names are now objects like `{ "default": "Jets", "fr": "..." }`, so read `.default`.
+- **Trailing slashes don't matter.** The proxy drops empty path segments, and upstream accepts paths with or without
+  the trailing `/` shown in the reference.
 - **Live-game fields are unverified.** Every sample so far is a finished (`OFF`) or future (`FUT`) game.
   The preseason starts 2026-09-29. `clock` and intermission behavior must be checked against a real live game.
 
@@ -29,7 +33,7 @@ All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-w
 |---|---|---|
 | Home scoreboard | `statsapi /schedule?date=…&hydrate=linescore,broadcasts,seriesSummary` | `score/{YYYY-MM-DD}` |
 | Mini standings | `statsapi /standings?season=…&standingsType=byLeague` | `standings/now` (or `standings/{date}`) |
-| Playoff summary | `statsapi /tournaments/playoffs?expand=round.series…` | `playoff-series/carousel/{season}/`, plus `playoff-bracket/{year}` for seed ranks and round titles |
+| Playoff summary | `statsapi /tournaments/playoffs?expand=round.series…` | `playoff-series/carousel/{season}/`, plus `playoff-bracket/{year}` for seed ranks |
 | Playoff series games | `statsapi /schedule?teamId=a,b&gameType=P` | `schedule/playoff-series/{season}/{letter}/` |
 | Game live feed | `statsapi /game/{id}/feed/live` | `gamecenter/{id}/landing`, `…/play-by-play`, `…/boxscore`, `…/right-rail` |
 | Game model (broadcasts, series summary) | `statsapi /schedule?gamePk=…` | `landing.tvBroadcasts`; for playoffs, `seriesStatus` from `score/{gameDate}` (it's only in `score`, not `landing` or `right-rail`) |
@@ -37,7 +41,7 @@ All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-w
 | Player dialog bio | `statsapi /people/{id}` (via `nhl-stats.service`) | `player/{id}/landing` |
 | Headshots | `cms.nhl.bamgrid.com/images/headshots/…jpg` | `headshot` URL from `rosterSpots`, `player/{id}/landing`, or `https://assets.nhle.com/mugs/nhl/{season}/{abbrev}/{id}.png` |
 
-## 3. Cross-cutting changes
+## 3. Cross-cutting changes (done in phase 0)
 
 ### Game state
 | Old `status.abstractGameState` / `detailedState` | New |
@@ -45,13 +49,16 @@ All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-w
 | `Preview` | `gameState` = `FUT` or `PRE` |
 | `Live` (`In Progress`, `In Progress - Critical`) | `gameState` = `LIVE` or `CRIT` |
 | `Final` (`Game Over`, `Final`) | `gameState` = `FINAL` or `OFF` |
-| `Scheduled (Time TBD)` / `Postponed` | `gameScheduleState` = `TBD` / `PPD` (`OK` otherwise) |
+| `Scheduled (Time TBD)` / `Postponed` | `gameScheduleState` = `TBD` / `PPD` (`OK` otherwise; also `SUSP`, `CNCL`) |
 
-Replace `NhlGameInfoUtils.isFutureGame/isLiveGame/isCompletedGame(status)` with versions that take a `gameState` string.
-Replace `NhlGameStateEnum` with the new values.
+- `NhlGameStateEnum` now holds the new values. New enums: `NhlGameScheduleStateEnum`, `NhlGameTypeEnum`,
+  `NhlPeriodTypeEnum`.
+- `NhlGameInfoUtils.isFutureGame/isLiveGame/isCompletedGame` take a `gameState`. They still accept the old status model
+  (deprecated) so unmigrated pages compile. Remove that overload in phase 8.
 
 ### Game type
-The old code was a string: `"PR"` / `"R"` / `"P"`. The new `gameType` is a number: `1` preseason, `2` regular season, `3` playoffs.
+The old code was a string: `"PR"` / `"R"` / `"P"`. The new `gameType` is a number (`NhlGameTypeEnum`): `1` preseason,
+`2` regular season, `3` playoffs.
 
 ### Period and clock (replaces `linescore`)
 | Old | New |
@@ -62,23 +69,34 @@ The old code was a string: `"PR"` / `"R"` / `"P"`. The new `gameType` is a numbe
 | `linescore.hasShootout` | `periodDescriptor.periodType === "SO"` or `gameOutcome.lastPeriodType === "SO"` |
 | Final OT/SO label | `gameOutcome.lastPeriodType` (`REG`/`OT`/`SO`); multi-OT when `periodDescriptor.number > 4` and type `OT` |
 
-Add one shared `PeriodUtils.getLabel(periodDescriptor)` for "1st", "OT", "2OT", "SO". The same logic is copied today
-in scorecard, game-header, goal-scorers, event-timeline and mini-event-timeline.
+`shared/utils/period-utils.ts` has the shared logic:
+- `PeriodUtils.getLabel(periodDescriptor)`: "1st", "OT", "2OT", "SO".
+- `PeriodUtils.getFinalLabel(gameOutcome, periodDescriptor)`: "Final", "OT", "2OT", "SO".
+- `PeriodUtils.getLiveLabel(periodDescriptor, clock)`: "2nd - 5:32", "End 1st", "SO".
+
+The scorecard uses it. Copies of the old logic remain in game-header, goal-scorers, event-timeline and
+mini-event-timeline until phases 4–5.
+
+### Playoff series status
+`NhlGameInfoUtils.getSeriesStatusShort(seriesStatus)` builds "CAR leads 3-1", "Tied 2-2", "CAR wins 4-2", or "(0-0)"
+before the series starts, from `topSeedTeamAbbrev/topSeedWins/bottomSeedTeamAbbrev/bottomSeedWins/neededToWin`.
 
 ### Team names
 - `score`: `homeTeam.name.default` is the **common name only** ("Jets").
 - `landing` and `boxscore`: `placeName.default` + `commonName.default` ("Winnipeg" + "Jets").
 - `standings`: `teamName.default` is the full name, but **rows have no team ID**, only `teamAbbrev.default`.
-- Action: extend `NhlTeamUtils` with an abbreviation-to-ID lookup, and add Utah (68) to the team, logo and color utils.
-  The full name for scorecards can come from `NhlTeamUtils.getTeam(id).name`.
+- `schedule/playoff-series`: series teams have `name` (common name); game teams have `commonName` and `placeName`.
+- Done: `NhlTeamUtils.getTeamIdByAbbrev(abbrev)`, and Utah (68) in the team, logo and color utils. Utah's logo is the
+  NHL-hosted SVG until a local `assets/logos/utah.png` is added (TODO in `NhlTeamLogoUtils`).
+  The full name for scorecards comes from `NhlTeamUtils.getTeam(id).name`.
 
 ### Times
 The old `gameDate` was a UTC datetime. Use `startTimeUTC` now. The new `gameDate` is a date-only local string.
 
 ## 4. Home page
 
-### 4.1 Scoreboard (`home/scoreboard`) and scorecard (`shared/components/scorecard`)
-- Service: `getNhlGames(date)` → `GET /api/nhl/score/{YYYY-MM-DD}` → `games[]`.
+### 4.1 Scoreboard (`home/scoreboard`) and scorecard (`shared/components/scorecard`): done (phase 1)
+- Service: `NhlGameService.getNhlGames(date)` → `GET /api/nhl/score/{YYYY-MM-DD}` → `games[]`.
   `score/now` jumps ahead to the next game day, so keep the explicit date.
 - The 10s poll matches games by `id` instead of `gamePk`, and copies `homeTeam`, `awayTeam`, `clock`,
   `periodDescriptor`, `gameState` and `gameOutcome`.
@@ -87,28 +105,36 @@ The old `gameDate` was a UTC datetime. Use `startTimeUTC` now. The new `gameDate
 |---|---|---|
 | Route | `game.gamePk` | `game.id` |
 | Team IDs / logos | `teams.home.team.id` | `homeTeam.id` |
-| Team name | `teams.home.team.name` | `NhlTeamUtils.getTeam(homeTeam.id).name` (API only gives "Jets") |
+| Team name | `teams.home.team.name` | `NhlTeamUtils.getTeam(homeTeam.id).name`, falling back to `homeTeam.name.default` |
 | Score | `teams.home.score` | `homeTeam.score` |
 | Time / date | `gameDate` | `startTimeUTC` |
 | TBD / postponed | `status.detailedState` | `gameScheduleState` |
 | Playoff game | `gameType === "P" && seriesSummary` | `gameType === 3 && seriesStatus` |
-| Series text | `seriesSummary.seriesStatusShort` | Build from `seriesStatus.topSeedTeamAbbrev/topSeedWins/bottomSeedTeamAbbrev/bottomSeedWins` (e.g. "CAR 2-2") |
-| Final label | `linescore.currentPeriod`, `hasShootout` | `gameOutcome.lastPeriodType`, `periodDescriptor.number` |
-| Live label | `currentPeriodOrdinal`, `currentPeriodTimeRemaining` | `PeriodUtils.getLabel(periodDescriptor)` + `clock.timeRemaining`; "End 1st" / intermission when `clock.inIntermission` |
+| Series text | `seriesSummary.seriesStatusShort` | `NhlGameInfoUtils.getSeriesStatusShort(seriesStatus)` |
+| Final label | `linescore.currentPeriod`, `hasShootout` | `PeriodUtils.getFinalLabel(gameOutcome, periodDescriptor)` |
+| Live label | `currentPeriodOrdinal`, `currentPeriodTimeRemaining` | `PeriodUtils.getLiveLabel(periodDescriptor, clock)` |
 
-The scorecard is also used by team and player pages. Those pages are already broken and will stay broken until they're migrated.
+The scorecard is also used by the team page's schedule, which casts its old models with `$any` so it compiles. It
+stays broken until the team page is migrated.
 
-### 4.2 Standings summary (`home/standings-summary`) and shared `standings` component
-- Service: `getNhlStandings()` → `GET /api/nhl/standings/now` → `standings[]`, a **flat list of 32 teams**.
-  The old API returned records grouped by standings type.
-- Group and rank on the client: by league (`leagueSequence`), conference (`conferenceName` + `conferenceSequence`),
-  division (`divisionName` + `divisionSequence`), or wild card (`wildcardSequence`).
-  Return the same grouped `[{ title, teams[] }]` array the component already loops over.
+`HomeComponent` still calls the temporary `NhlGameService.testNewNhlApi()`. Remove it in phase 8.
+
+### 4.2 Standings summary (`home/standings-summary`) and shared `standings` component: done (phase 2)
+- Service: `NhlStandingAndPlayoffService.getNhlStandings(standingsType)` → `GET /api/nhl/standings/now` →
+  `standings[]`, a **flat list of 32 teams**. Between seasons it returns the last season's final standings.
+- The service groups and ranks on the client and returns `StandingsGroup[]` (`{ title, teams[] }`):
+  - `BY_LEAGUE` (default): one "NHL" group sorted by `leagueSequence`.
+  - `BY_CONFERENCE`: "Eastern Conference", "Western Conference", sorted by `conferenceSequence`.
+  - `BY_DIVISION`: one group per division (grouped by conference first, then divisions alphabetically), sorted by
+    `divisionSequence`.
+  - `WILD_CARD_WITH_LEADERS`: per conference, "<Division> Leaders" groups (teams with `wildcardSequence === 0`,
+    sorted by `divisionSequence`), then "<Conference> Wild Card" (sorted by `wildcardSequence`).
+- The component adds the season to the title (from `seasonId`). The old client-side wild card reordering was removed.
 
 | Standings field | Old | New |
 |---|---|---|
-| Team ID (logo, `/team/:id` link) | `team.team.id` | Look up by `teamAbbrev.default` |
-| Name | `team.team.name` | `teamName.default` (use `teamCommonName.default` for the short name instead of string slicing) |
+| Team ID (logo, `/team/:id` link) | `team.team.id` | `NhlTeamUtils.getTeamIdByAbbrev(teamAbbrev.default)` |
+| Name | `team.team.name` | `teamName.default`; `teamCommonName.default` for the short name |
 | GP / W / L / OT | `gamesPlayed`, `leagueRecord.wins/losses/ot` | `gamesPlayed`, `wins`, `losses`, `otLosses` |
 | RW | `regulationWins` | `regulationWins` |
 | GD | `goalsScored - goalsAgainst` | `goalDifferential` |
@@ -118,30 +144,49 @@ The scorecard is also used by team and player pages. Those pages are already bro
 | Clinch | `clinchIndicator` (`x`,`y`,`z`,`p`) | `clinchIndicator` (`x`,`y`,`z`,`p`,`e`); `e` = eliminated |
 | Season title | `standings[0].season` | `seasonId` (number) |
 
-The shared component is also used by the full standings page, which gets these changes for free.
+The full standings page (`LeagueStandingsComponent`) was migrated with it. The team page compiles against the new call,
+but its team data still comes from the dead API (see its TODO).
 
-### 4.3 Playoff summary (`home/playoff-summary`) and shared `playoff-series` component
-- Service: `getNhlPlayoffs(season)` → `GET /api/nhl/playoff-series/carousel/{season}/`
-  → `{ currentRound, rounds[{ roundNumber, roundLabel, roundAbbrev, series[] }] }`.
-- Title: `rounds[currentRound - 1]`. `roundLabel` is a slug like `conference-finals`, so map it to display text,
-  or use `seriesTitle` from `playoff-bracket/{year}`.
-- Seed ranks aren't in the carousel. If they're wanted, merge `topSeedRank`/`bottomSeedRank` from
-  `playoff-bracket/{year}`, matching on `seriesLetter`.
+### 4.3 Playoff summary (`home/playoff-summary`), shared `playoff-series` and series dialog: done (phase 3)
+- Service: `NhlStandingAndPlayoffService.getNhlPlayoffs(season)` loads `playoff-series/carousel/{season}/` and
+  `playoff-bracket/{season end year}` in parallel. It returns the `PlayoffCarousel` with each seed's `rank` set from the
+  bracket, matching series by `seriesLetter` and teams by ID. If the bracket fails, the series come back without ranks.
+- Service: `getNhlPlayoffSeriesSchedule(season, seriesLetter)` → `schedule/playoff-series/{season}/{letter}/`. The old
+  `getNhlPlayoffSeriesGames(teamId1, teamId2)` was removed.
+- Summary title: the round whose `roundNumber === currentRound`. `roundLabel` slugs are humanized
+  (`1st-round` → "1st Round", `stanley-cup-final` → "Stanley Cup Final").
 
-| Series field | Old | New (carousel) |
+| Series card field | Old | New (carousel) |
 |---|---|---|
 | Team abbrevs | `names.teamAbbreviationA/B` | `topSeed.abbrev`, `bottomSeed.abbrev` |
 | Team IDs / logos | `matchupTeams[i].team.id` | `topSeed.id`, `bottomSeed.id` |
 | Wins | `matchupTeams[i].seriesRecord.wins` | `topSeed.wins`, `bottomSeed.wins` |
-| Series over | `wins === 4` | `winningTeamId` set (or `wins === neededToWin`) |
-| Rank | `matchupTeams[i].seed.rank` | Bracket `topSeedRank` / `bottomSeedRank` |
-| Next game date | `currentGame.seriesSummary.gameTime` | First non-final game's `startTimeUTC` in `schedule/playoff-series/{season}/{letter}/` |
-| Series games | `getNhlPlayoffSeriesGames(teamA, teamB)` | `schedule/playoff-series/{season}/{seriesLetter}/` → `games[]` |
+| Loser (dimmed) | other team's `wins === 4` | `winningTeamId` is the opponent (or opponent `wins >= neededToWin`) |
+| Rank | `matchupTeams[i].seed.rank` | `topSeed.rank` / `bottomSeed.rank`, merged from the bracket's `topSeedRank` / `bottomSeedRank` |
+| Next game date | `currentGame.seriesSummary.gameTime` | First non-final game's `startTimeUTC` from the series schedule; "TBD" if not scheduled, "Final" once won |
+| Series games | `getNhlPlayoffSeriesGames(teamA, teamB)` | `getNhlPlayoffSeriesSchedule(season, seriesLetter)` → `games[]` |
 
-`DateTimeUtils.isPlayoffMode()` is hard-coded to dates. Optionally drive it from the `schedule/{date}` response instead
-(`regularSeasonEndDate`, `playoffEndDate`).
+- `app-playoff-series` has a new `season` input. The next game date is only loaded for full-size cards (not
+  `smallerVersion`), and only for series that aren't won.
+- **Series dialog** (`PlayoffSeriesDialogComponent`), moved into scope because the home cards open it:
+  - Dialog data is `PlayoffSeriesDialogData { series, season }`.
+  - Games come from the series schedule and are converted to `ScoreGame` for `app-scorecard`. Each game's
+    `seriesStatus` is the status **after** that game. Unplayed games fall back to the current wins.
+  - Title: "East Round 1" / "West Semifinals" / "East Finals" / "Stanley Cup Finals" + ": " + the series status
+    ("BUF vs BOS" before any game). The conference comes from the schedule's `topSeedTeam.conference.name`, so it
+    appears once the schedule loads.
+- **Playoffs page** (`PlayoffsComponent`, out of scope) now compiles against the carousel. The old winner-backfill
+  workaround was removed and the template uses `rounds[n]?.series[m]`. It still hard-codes season `20222023` and
+  can't show series whose teams aren't known yet (see its TODO).
+- Carousel facts: series `A`–`D` are East round 1, `E`–`H` West round 1, `I`/`J` East round 2, `K`/`L` West round 2,
+  `M` East final, `N` West final, `O` Stanley Cup Final. Carousel and bracket agree on which team is the top seed.
+  Bracket `topSeedRankAbbrev` looks like `D1` (division) or `WC1` (wild card), and `topSeedRank` is the number
+  shown on the card. Both wild cards can have the same rank: BOS (`WC1`) and LAK (`WC2`) are both rank 4.
 
-## 5. Game page
+`DateTimeUtils.isPlayoffMode()` is still hard-coded to dates (May 21 to end of September). Optionally drive it from the
+`schedule/{date}` response instead (`regularSeasonEndDate`, `playoffEndDate`).
+
+## 5. Game page (phases 4–7, to do)
 
 ### 5.1 Data loading (`game.component.ts`)
 Replace `getNhlGameLiveFeed` and `getNhlGame` with:
@@ -171,11 +216,14 @@ Replace `getNhlGameLiveFeed` and `getNhlGame` with:
 | Venue | `gameData.venue.name` | `landing.venue.default` |
 | TV | `gameModel.broadcasts[0].name` | `landing.tvBroadcasts[0].network` |
 | Game type | `gameData.game.type` | `landing.gameType` |
-| League label | Round from `gameId.charAt(7)` + `teams.home.conference.name` + `seriesSummary.seriesStatus` | `seriesStatus.seriesTitle` + wins text (no conference in `landing`) |
+| League label | Round from `gameId.charAt(7)` + `teams.home.conference.name` + `seriesSummary.seriesStatus` | `seriesStatus.seriesTitle` + `NhlGameInfoUtils.getSeriesStatusShort` (no conference in `landing`) |
 | Playoff series | `gameModel.seriesSummary.gameNumber/seriesStatusShort` | `seriesStatus.gameNumberOfSeries`, `topSeedWins`, `bottomSeedWins` |
-| Final / live labels | `linescore.*` | Same as the scorecard (section 4.1) |
+| Final / live labels | `linescore.*` | `PeriodUtils.getFinalLabel` / `getLiveLabel`, same as the scorecard |
 | Stream link | `gameData.teams.home.name` | `placeName` + `commonName` |
 | Power play badge (TODO) | not implemented | Optional: derive from the latest play's `situationCode` |
+
+`NhlGameInfoUtils.getNhlGameDescription` still takes the old `NhlSeriesSummaryModel` and is only used by the game page.
+Replace or remove it in this phase.
 
 ### 5.3 Intermission countdown
 The old code timed from the `PERIOD_END` play's wall-clock `about.dateTime`.
@@ -287,50 +335,105 @@ Headshots: `NhlImageService.getNhlPlayerHeadshot` (dead host, blob + FileReader)
   Filter `gameState` in `OFF`/`FINAL` with `startTimeUTC` before the current game, then take the last 5.
 - The component inputs change from `NhlScheduleModel` (dates → games[0]) to a plain `ClubScheduleGame[]`.
 - Field mapping: `gameDay.games[0].gamePk` → `id`, `teams.home.team.id` → `homeTeam.id`, `teams.home.score` → `homeTeam.score`.
+- `SingleTeamFormComponent` (team page) also uses `app-previous-game`; its TODO describes the matching fix.
 
 ## 6. Implementation approach
 
-- **New models.** Add typed interfaces under `shared/models/nhl-web-api/` that mirror the new responses
-  (`ScoreResponse`, `ScoreGame`, `StandingsTeam`, `PlayoffCarousel`, `GameLanding`, `PlayByPlay`, `Boxscore`,
-  `RightRail`, `ClubScheduleGame`, `PlayerLanding`, and shared `LocalizedString`, `PeriodDescriptor`, `GameClock`).
-  Don't adapt the new data into the old models; too many fields have no equivalent.
+- **New models (done).** Typed interfaces under `shared/models/nhl-web-api/` mirror the new responses:
+  `score.model.ts`, `standings.model.ts` (plus `StandingsGroup`), `playoffs.model.ts` (carousel, bracket, series
+  schedule; `PlayoffCarouselSeed.rank` is merged in by the service), `gamecenter-landing.model.ts`,
+  `play-by-play.model.ts`, `boxscore.model.ts`, `right-rail.model.ts`, `club-schedule.model.ts`,
+  `player-landing.model.ts`, and shared `common.model.ts` (`LocalizedString`, `PeriodDescriptor`, `GameClock`,
+  `GameOutcome`, `TvBroadcast`, `GamecenterTeam`, `SeriesStatus`).
+  Don't adapt the new data into the old models; too many fields have no equivalent. Converting between new models is
+  fine when a shared component needs it (the series dialog converts series schedule games to `ScoreGame`).
 - **Keep the old models** for now. Player and team pages still import them, and they get removed when those pages migrate.
-- **Services.** Update URLs in `NhlGameService` and `NhlStandingAndPlayoffService` to `/api/nhl/...`.
-  Keep the existing Promise-based style.
-- **Backend.** Add `playoff-bracket` to `AllowedRoots` in `NhlController.cs`. `score`, `schedule`, `standings`,
-  `playoff-series`, `gamecenter`, `club-schedule-season` and `player` are already allowed.
-- **Test fixtures (optional).** Commit a few captured responses (regular, OT/SO and playoff games; standings; carousel)
-  under `ClientApp/src/assets/test-data/` for unit tests and offline development.
+- **Services.** Use relative `/api/nhl/...` URLs and keep the Promise-based style. `NhlStandingAndPlayoffService` has a
+  private `get<T>(url)` helper that wraps `HttpClient` the same way.
+- **Backend (done).** `AllowedRoots` in `NhlController.cs` already allows `score`, `scoreboard`, `schedule`,
+  `club-schedule`, `club-schedule-season`, `standings`, `gamecenter`, `player`, `roster`, `club-stats`,
+  `playoff-series`, `playoff-bracket`, `skater-stats-leaders` and `goalie-stats-leaders`. Cache: 10s for
+  `score`/`scoreboard`/`gamecenter`; 5 min for schedules, standings and `playoff-series`; 30 min for player and stats;
+  1 min otherwise (including `playoff-bracket`).
+- **Shared components used by unmigrated pages.** When a migrated shared component breaks an out-of-scope caller, make the
+  caller compile with the smallest change (a `$any` cast, or the new service call) and leave a TODO that points here.
+- **Unit tests (done for phases 0–3).** `npm run test:ci` runs all specs. See section 7 for what each phase must add.
+  - Real API responses live in `shared/testing/nhl-api-mocks/` as JSON files (captured 2026-09-15; only item counts
+    trimmed). `nhl-api-mocks.ts` returns fresh copies (`mockScoreResponse()`, `mockStandingsTeams()`,
+    `mockRankedCarouselSeries('A')`, ...).
+  - `derived*` helpers change real data into states that can't be captured yet: a live game, TBD/postponed games, and a
+    series in progress. They're assumptions; replace them with captured responses when possible (phase 8).
+  - Component specs use `AppTestingModule` (`shared/testing/app-testing.module.ts`) and `HttpTestingController`.
+  - Specs for unmigrated components still skip rendering. Give them real tests when their phase migrates them.
+- **Error handling.** Migrated components `.catch()` service promises (the service already logs), and show an empty
+  or fallback state instead of stale data. Without it, a failed request is an unhandled promise rejection: an
+  "Uncaught (in promise)" console error in the app, and a crashed Karma run in tests.
 
 ## 7. Phases
 
-Each phase ends with the app compiling and the affected UI checked in the browser.
+A phase is done only when all of these are true:
+1. The app compiles (`ng build`, which runs strict template checks).
+2. The affected UI is checked in the browser.
+3. The phase's unit tests are added or updated and `npm run test:ci` passes.
 
-| # | Phase | Files | Check against |
-|---|---|---|---|
-| 0 | Foundation: new models, `PeriodUtils`, game-state utils, abbrev→ID map + Utah (68) in team/logo/color utils, backend allowlist | `shared/models/nhl-web-api/*`, `shared/utils/*`, `NhlController.cs` | `tsc` passes |
-| 1 | Scoreboard + scorecard | `nhl-game.service.ts`, `home/scoreboard`, `shared/components/scorecard` | 2026-03-15 (final), a date with OT/SO, playoff date 2026-06-09, today (future) |
-| 2 | Standings summary + shared standings component | `nhl-standing-and-playoff.service.ts`, `home/standings-summary`, `shared/components/standings` | `standings/now` |
-| 3 | Playoff summary + playoff-series component | same service, `home/playoff-summary`, `playoffs/playoff-series` | 2025-26 carousel (force `isPlayoffMode` true to test) |
-| 4 | Game page core: loading, header, info bar, goal scorers | `game.component`, `game-header`, `goal-scorers` | `2025021057` (reg), `2025020952` (SO), `2025030414` (playoff) |
-| 5 | Play-by-play: momentum, event timelines, intermission | `momentum`, `event-timeline`, `mini-event-timeline`, `event`, `mini-event` | same games; intermission during a live preseason game |
-| 6 | Boxscore + right-rail: game stats, top players, rating, player dialog, headshots | `game-stats`, `game-top-players`, `player-game-dialog`, `stats-utils`, `nhl-image.service` | same games |
-| 7 | Team form | `team-form`, `previous-game` | a future game |
-| 8 | Live validation + cleanup: run through a live preseason game (from 2026-09-29), remove the test call in `HomeComponent`, delete unused old models | — | live game |
+### Testing requirements (every phase)
+- **Real data.** Capture real responses for every endpoint the phase uses into `shared/testing/nhl-api-mocks/` with
+  curl. Keep objects unchanged; only trim the number of items. Add accessors to `nhl-api-mocks.ts`. Use `derived*`
+  helpers only for states that can't be captured, and keep their changes minimal.
+- **Services:** with `HttpTestingController`, test the requested URL, the happy path, missing optional fields or empty
+  lists, and that an HTTP error rejects.
+- **Utils:** test with real data plus the edge cases the phase's mapping tables call out (multi-OT, shootout, missing
+  fields, unknown teams).
+- **Components:** render with fixture data via `setInput`. Test the happy path, empty data, a failed service call
+  (the component handles the rejection and shows a sensible state), and the important edge cases. Replace the
+  "Not rendered" placeholder spec of every component the phase migrates.
+- **Existing tests:** update any spec whose component, service or model changed.
+
+| # | Phase | Status | Files | Check against | Tests |
+|---|---|---|---|---|---|
+| 0 | Foundation: new models, enums, `PeriodUtils`, game-state utils, abbrev→ID map + Utah (68) in team/logo/color utils, backend proxy + allowlist | Done | `shared/models/nhl-web-api/*`, `shared/enums/*`, `shared/utils/*`, `NhlController.cs`, `NhlApiClient.cs` | `ng build` passes | Done: `period-utils`, `nhl-game-info-utils`, `nhl-team-utils`, `nhl-team-logo-utils`, `nhl-team-color-utils` specs |
+| 1 | Scoreboard + scorecard | Done | `nhl-game.service.ts`, `home/scoreboard`, `shared/components/scorecard` | 2026-03-15 (final), a date with OT/SO, playoff date 2026-06-09, today (future) | Done: `nhl-game.service`, `scorecard`, `scoreboard` (incl. 10s refresh) specs; fixtures `score-2026-03-01`, `-06-09`, `-10-08` |
+| 2 | Standings summary + shared standings component + full standings page | Done | `nhl-standing-and-playoff.service.ts`, `home/standings-summary`, `shared/components/standings`, `league-standings` | `standings/now` | Done: service grouping, `standings`, `standings-summary`, `league-standings` specs; fixture `standings-now` |
+| 3 | Playoff summary + playoff-series component + series dialog; playoffs page compiles | Done | same service, `home/playoff-summary`, `playoffs/playoff-series`, `playoffs/playoff-series-dialog`, `playoffs` | 2025-26 carousel (force `isPlayoffMode` true to test), 2022-23 on the playoffs page | Done: service carousel/bracket merge and series schedule, `playoff-summary`, `playoff-series`, `playoff-series-dialog` specs; fixtures carousel, bracket, series A and O |
+| 4 | Game page core: loading, header, info bar, goal scorers | To do | `game.component`, `game-header`, `goal-scorers` | `2025021057` (reg), `2025020952` (SO), `2025030414` (playoff) | Capture landing, play-by-play, boxscore and right-rail for the 3 games; game service (bundle, errors), `game`, `game-header`, `goal-scorers` specs; period label logic moved to `PeriodUtils` |
+| 5 | Play-by-play: momentum, event timelines, intermission | To do | `momentum`, `event-timeline`, `mini-event-timeline`, `event`, `mini-event` | same games; intermission during a live preseason game | Real specs replacing the `event` and `mini-event` placeholders; `momentum`, `event-timeline`, `mini-event-timeline` specs; blocked-shot ownership and penalty text edge cases |
+| 6 | Boxscore + right-rail: game stats, top players, rating, player dialog, headshots | To do | `game-stats`, `game-top-players`, `player-game-dialog`, `stats-utils`, `nhl-image.service` | same games | `StatsUtils` rating (skater, goalie, missing stats); `game-stats`, `game-top-players` specs; real spec replacing the `player-game-dialog` placeholder; `player/{id}/landing` fixture |
+| 7 | Team form | To do | `team-form`, `previous-game` | a future game | `club-schedule-season` fixture; `team-form` spec (last 5 finished games before the game) and a real spec replacing the `previous-game` placeholder |
+| 8 | Live validation + cleanup: run through a live preseason game (from 2026-09-29), remove `testNewNhlApi` and its call in `HomeComponent`, remove the deprecated old-status overload in `NhlGameInfoUtils`, delete unused old models | To do | — | live game | Capture live score and gamecenter responses (in period, intermission, `CRIT`) and replace the `derived*` live helpers; remove tests for the deprecated overload |
 
 ## 8. Decisions
 
 1. **HokMob rating:** use approach A (simple) for now. The exact version (B) comes later. See the TODO in
    `StatsUtils.calculateSkaterHokmobRating`.
 2. **Out-of-scope pages that share components:** they stay broken until migrated. TODO comments with a short fix note
-   are on `TeamComponent`, `TeamScheduleComponent`, `SingleTeamFormComponent`, `LeagueStandingsComponent`,
-   `PlayoffsComponent` and `PlayoffSeriesDialogComponent`.
+   are on `TeamComponent`, `TeamScheduleComponent`, `SingleTeamFormComponent` and `PlayoffsComponent`.
+   `LeagueStandingsComponent` was migrated in phase 2, and `PlayoffSeriesDialogComponent` in phase 3.
 3. **Header search:** out of scope. TODO comments are on `SearchInputComponent` and `NhlSearchService`
-   (replacement: `search.d3.nhle.com`, which needs backend proxy support for another host).
+   (replacement: `search.d3.nhle.com`, which needs backend proxy support for another host). Its failing
+   `statsapi.web.nhl.com` requests show up as console errors on every page.
+4. **Series dialog moved into scope (phase 3).** Home series cards open it, so leaving it broken would break a home page
+   feature.
+5. **Next game date on series cards** is only loaded for full-size cards, since the home cards don't show it. That
+   avoids 8 extra requests on the home page.
+6. **Unit tests use real API responses.** Tests assert values from captured responses rather than hand-written
+   objects, so a wrong assumption about the API shape fails a test. Each phase adds tests for what it migrates.
+7. **Components handle service errors.** Every migrated component catches service rejections and shows an empty or
+   fallback state. Loading a new day or standings type clears the old data; a failed scoreboard refresh keeps the
+   games already shown.
 
 ## 9. Risks
 
 - **Undocumented API.** It can change without notice. The typed models plus backend proxy keep changes in one place.
 - **Unverified live fields:** `clock.inIntermission`, `clock.secondsRemaining` during intermission, `CRIT` state, and
   `situationCode` for power plays.
+- **Untested in-progress playoff series.** All 2025-26 series were finished when phase 3 was tested, so the next game
+  date on series cards and unplayed games in the series dialog (no per-game `seriesStatus`) haven't run against real
+  data. Check during the 2027 playoffs.
+- **Carousel coverage.** It's unverified whether the carousel lists series before both teams are known. The home summary
+  only shows known series; the playoffs page needs `playoff-bracket` for a full bracket.
 - **Request volume:** the game page makes up to 4 requests per poll (was 1). The 10s backend cache keeps upstream load flat.
+- **Derived test data.** The live game, TBD/postponed game and in-progress series fixtures are real responses edited to
+  match the models, not captured states. Tests built on them can pass while the real live shape differs. Replace them
+  with captured responses in phase 8 or the 2027 playoffs.
+- **Stale fixtures.** Captured responses can drift from the live API. When a phase finds a changed field, re-capture
+  the affected fixtures and fix the specs.

@@ -1,13 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
-import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
-import {NhlStandingsModel} from "@shared/models/nhl-general/nhl-standings.model";
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
+import {StandingsGroup} from "@shared/models/nhl-web-api/standings.model";
 
-// TODO: Standings page is not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). The shared
-//  app-standings component now expects grouped new API standings. Fix: use the migrated getNhlStandings (standings/now)
-//  and group client-side by league/conference/division/wild card using the *Sequence fields.
 @Component({
   selector: 'app-league-standings',
   templateUrl: './league-standings.component.html',
@@ -15,7 +11,7 @@ import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 })
 export class LeagueStandingsComponent implements OnInit {
 
-  public standings: NhlStandingsModel[];
+  public standings: StandingsGroup[];
 
   public currentStandingsType: NhlStandingsTypeEnum = NhlStandingsTypeEnum.BY_LEAGUE;
 
@@ -60,13 +56,11 @@ export class LeagueStandingsComponent implements OnInit {
   protected readonly NhlStandingsTypeEnum = NhlStandingsTypeEnum;
 
   private updateStandings(): void {
-    this.nhlStandingAndPlayoffService.getNhlStandings(DateTimeUtils.getCurrentNhlSeason(), this.currentStandingsType).then(result => {
+    this.nhlStandingAndPlayoffService.getNhlStandings(this.currentStandingsType).then(result => {
       this.standings = result;
-      if (this.currentStandingsType === NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS) {
-        this.standings = result.reverse();
-        this.standings.splice(2,0, this.standings[this.standings.length - 2]);
-        this.standings.splice(this.standings.length - 2, 1);
-      }
+    }).catch(() => {
+      // The service logs the error. Show no standings rather than those of another standings type
+      this.standings = undefined;
     });
   }
 }

@@ -1,4 +1,6 @@
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AppTestingModule } from '@shared/testing/app-testing.module';
 
 import { TeamComponent } from './team.component';
 
@@ -8,7 +10,9 @@ describe('TeamComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ TeamComponent ]
+      imports: [ AppTestingModule ],
+      declarations: [ TeamComponent ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
 

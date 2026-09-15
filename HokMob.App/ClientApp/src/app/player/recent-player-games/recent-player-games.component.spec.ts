@@ -1,4 +1,6 @@
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AppTestingModule } from '@shared/testing/app-testing.module';
 
 import { RecentPlayerGamesComponent } from './recent-player-games.component';
 
@@ -8,7 +10,9 @@ describe('RecentPlayerGamesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ RecentPlayerGamesComponent ]
+      imports: [ AppTestingModule ],
+      declarations: [ RecentPlayerGamesComponent ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
 

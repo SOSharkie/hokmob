@@ -1,4 +1,6 @@
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AppTestingModule } from '@shared/testing/app-testing.module';
 
 import { PlayerCareerComponent } from './player-career.component';
 
@@ -8,7 +10,9 @@ describe('PlayerCareerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PlayerCareerComponent ]
+      imports: [ AppTestingModule ],
+      declarations: [ PlayerCareerComponent ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
 

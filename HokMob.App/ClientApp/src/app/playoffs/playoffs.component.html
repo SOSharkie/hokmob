@@ -4,7 +4,8 @@
       <div class="first-round">
         <div class="first-round-spacer">
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[4]"
+              [seriesData]="playoffsData.rounds[0]?.series[4]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-top"></div>
@@ -13,7 +14,8 @@
         </div>
         <div class="first-round-spacer">
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[5]"
+              [seriesData]="playoffsData.rounds[0]?.series[5]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-top west-bottom-connection"></div>
@@ -22,7 +24,8 @@
         </div>
         <div class="first-round-spacer">
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[6]"
+              [seriesData]="playoffsData.rounds[0]?.series[6]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-top"></div>
@@ -31,7 +34,8 @@
         </div>
         <div class="first-round-spacer">
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[7]"
+              [seriesData]="playoffsData.rounds[0]?.series[7]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-top west-bottom-connection"></div>
@@ -46,7 +50,8 @@
             <div class="connector-bottom"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[1].series[2]"
+              [seriesData]="playoffsData.rounds[1]?.series[2]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-top"></div>
@@ -59,7 +64,8 @@
             <div class="connector-bottom"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[1].series[3]"
+              [seriesData]="playoffsData.rounds[1]?.series[3]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-top west-bottom-connection"></div>
@@ -73,7 +79,8 @@
           <div class="connector-bottom"></div>
         </div>
         <app-playoff-series
-            [seriesData]="playoffsData.rounds[2].series[1]"
+            [seriesData]="playoffsData.rounds[2]?.series[1]"
+            [season]="playoffsData.seasonId"
         ></app-playoff-series>
         <div class="connector-container">
           <div class="connector-top single-line"></div>
@@ -83,7 +90,8 @@
     </div>
     <div class="stanley-cup-final">
       <app-playoff-series
-          [seriesData]="playoffsData.rounds[3].series[0]"
+          [seriesData]="playoffsData.rounds[3]?.series[0]"
+          [season]="playoffsData.seasonId"
       ></app-playoff-series>
     </div>
     <div class="east-playoff-tree">
@@ -93,7 +101,8 @@
           <div class="connector-bottom"></div>
         </div>
         <app-playoff-series
-            [seriesData]="playoffsData.rounds[2].series[0]"
+            [seriesData]="playoffsData.rounds[2]?.series[0]"
+            [season]="playoffsData.seasonId"
         ></app-playoff-series>
         <div class="connector-container">
           <div class="connector-top single-line"></div>
@@ -107,7 +116,8 @@
             <div class="connector-bottom east-top-connection"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[1].series[0]"
+              [seriesData]="playoffsData.rounds[1]?.series[0]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-top single-line"></div>
@@ -120,7 +130,8 @@
             <div class="connector-bottom"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[1].series[1]"
+              [seriesData]="playoffsData.rounds[1]?.series[1]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-top single-line"></div>
@@ -135,7 +146,8 @@
             <div class="connector-bottom east-top-connection"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[0]"
+              [seriesData]="playoffsData.rounds[0]?.series[0]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
         </div>
         <div class="first-round-spacer">
@@ -144,7 +156,8 @@
             <div class="connector-bottom"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[1]"
+              [seriesData]="playoffsData.rounds[0]?.series[1]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
         </div>
         <div class="first-round-spacer">
@@ -153,7 +166,8 @@
             <div class="connector-bottom east-top-connection"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[2]"
+              [seriesData]="playoffsData.rounds[0]?.series[2]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
         </div>
         <div class="first-round-spacer">
@@ -162,7 +176,8 @@
             <div class="connector-bottom"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[3]"
+              [seriesData]="playoffsData.rounds[0]?.series[3]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
         </div>
       </div>
@@ -174,7 +189,8 @@
       <div class="first-round">
         <div class="first-round-spacer">
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[4]"
+              [seriesData]="playoffsData.rounds[0]?.series[4]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-left"></div>
@@ -183,7 +199,8 @@
         </div>
         <div class="first-round-spacer">
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[5]"
+              [seriesData]="playoffsData.rounds[0]?.series[5]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-left west-right-connection"></div>
@@ -192,7 +209,8 @@
         </div>
         <div class="first-round-spacer">
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[6]"
+              [seriesData]="playoffsData.rounds[0]?.series[6]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-left"></div>
@@ -201,7 +219,8 @@
         </div>
         <div class="first-round-spacer">
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[7]"
+              [seriesData]="playoffsData.rounds[0]?.series[7]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-left west-right-connection"></div>
@@ -216,7 +235,8 @@
             <div class="connector-right"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[1].series[2]"
+              [seriesData]="playoffsData.rounds[1]?.series[2]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-left"></div>
@@ -229,7 +249,8 @@
             <div class="connector-right"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[1].series[3]"
+              [seriesData]="playoffsData.rounds[1]?.series[3]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-right west-right-connection"></div>
@@ -243,7 +264,8 @@
           <div class="connector-bottom"></div>
         </div>
         <app-playoff-series
-            [seriesData]="playoffsData.rounds[2].series[1]"
+            [seriesData]="playoffsData.rounds[2]?.series[1]"
+            [season]="playoffsData.seasonId"
         ></app-playoff-series>
         <div class="connector-container">
           <div class="connector-top single-line"></div>
@@ -253,7 +275,8 @@
     </div>
     <div class="stanley-cup-final">
       <app-playoff-series
-          [seriesData]="playoffsData.rounds[3].series[0]"
+          [seriesData]="playoffsData.rounds[3]?.series[0]"
+          [season]="playoffsData.seasonId"
       ></app-playoff-series>
     </div>
     <div class="east-playoff-tree">
@@ -263,7 +286,8 @@
           <div class="connector-bottom"></div>
         </div>
         <app-playoff-series
-            [seriesData]="playoffsData.rounds[2].series[0]"
+            [seriesData]="playoffsData.rounds[2]?.series[0]"
+            [season]="playoffsData.seasonId"
         ></app-playoff-series>
         <div class="connector-container">
           <div class="connector-top single-line"></div>
@@ -277,7 +301,8 @@
             <div class="connector-right east-left-connection"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[1].series[0]"
+              [seriesData]="playoffsData.rounds[1]?.series[0]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-left single-line"></div>
@@ -290,7 +315,8 @@
             <div class="connector-right"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[1].series[1]"
+              [seriesData]="playoffsData.rounds[1]?.series[1]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
           <div class="connector-container">
             <div class="connector-left single-line"></div>
@@ -305,7 +331,8 @@
             <div class="connector-right east-left-connection"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[0]"
+              [seriesData]="playoffsData.rounds[0]?.series[0]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
         </div>
         <div class="first-round-spacer">
@@ -314,7 +341,8 @@
             <div class="connector-right"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[1]"
+              [seriesData]="playoffsData.rounds[0]?.series[1]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
         </div>
         <div class="first-round-spacer">
@@ -323,7 +351,8 @@
             <div class="connector-right east-left-connection"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[2]"
+              [seriesData]="playoffsData.rounds[0]?.series[2]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
         </div>
         <div class="first-round-spacer">
@@ -332,7 +361,8 @@
             <div class="connector-right"></div>
           </div>
           <app-playoff-series
-              [seriesData]="playoffsData.rounds[0].series[3]"
+              [seriesData]="playoffsData.rounds[0]?.series[3]"
+              [season]="playoffsData.seasonId"
           ></app-playoff-series>
         </div>
       </div>

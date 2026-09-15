@@ -11,6 +11,16 @@ export interface StandingsResponse {
 }
 
 /**
+ * A titled group of standings rows (league, conference, division, division leaders or wild card), built on the client
+ * from the flat standings list.
+ */
+export interface StandingsGroup {
+  /** Like "Pacific Division" or "Western Wild Card". The standings component adds the season. */
+  title: string;
+  teams: StandingsTeam[];
+}
+
+/**
  * A standings row. Has no team ID, so look it up from teamAbbrev.default.
  */
 export interface StandingsTeam {
@@ -29,6 +39,7 @@ export interface StandingsTeam {
   leagueSequence: number;
   conferenceSequence: number;
   divisionSequence: number;
+  /** 0 for the top 3 teams in each division, otherwise the team's wild card rank in its conference. */
   wildcardSequence: number;
   gamesPlayed: number;
   wins: number;
