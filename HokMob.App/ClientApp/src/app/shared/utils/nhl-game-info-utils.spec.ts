@@ -1,10 +1,11 @@
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
-import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
+import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
 import {
   derivedLiveGame,
+  mockClubScheduleSeason,
   mockFutureGame,
   mockGameLanding,
   mockPlayoffGame,
@@ -38,12 +39,6 @@ describe('NhlGameInfoUtils', () => {
       expect(NhlGameInfoUtils.isFutureGame(undefined)).toBeFalse();
       expect(NhlGameInfoUtils.isLiveGame(null)).toBeFalse();
       expect(NhlGameInfoUtils.isCompletedGame('Final' as NhlGameStateEnum)).toBeFalse();
-    });
-
-    it('should still accept the deprecated old status model', () => {
-      const status = {abstractGameState: 'Live'} as NhlGameStatusModel;
-      expect(NhlGameInfoUtils.isLiveGame(status)).toBeTrue();
-      expect(NhlGameInfoUtils.isCompletedGame(status)).toBeFalse();
     });
   });
 
@@ -108,6 +103,56 @@ describe('NhlGameInfoUtils', () => {
     it('should show NHL for other or missing game types', () => {
       expect(NhlGameInfoUtils.getGameDescription(4 as NhlGameTypeEnum, undefined)).toBe('NHL');
       expect(NhlGameInfoUtils.getGameDescription(undefined, undefined)).toBe('NHL');
+    });
+  });
+
+  describe('getTeamFormGames', () => {
+    function bostonGames(): ClubScheduleGame[] {
+      return mockClubScheduleSeason('BOS', 20252026).games;
+    }
+
+    function gameById(games: ClubScheduleGame[], gameId: number): ClubScheduleGame {
+      return games.find(game => game.id === gameId);
+    }
+
+    function ids(games: ClubScheduleGame[]): number[] {
+      return games.map(game => game.id);
+    }
+
+    it('should return the last 5 finished games before a real playoff game, most recent first', () => {
+      const games = bostonGames();
+      expect(ids(NhlGameInfoUtils.getTeamFormGames(games, gameById(games, 2025030115))))
+          .toEqual([2025030114, 2025030113, 2025030112, 2025030111, 2025021292]);
+    });
+
+    it('should skip games that are not finished, like a postponed game', () => {
+      const games = bostonGames();
+      gameById(games, 2025030114).gameState = NhlGameStateEnum.FUTURE;
+      expect(ids(NhlGameInfoUtils.getTeamFormGames(games, gameById(games, 2025030115))))
+          .toEqual([2025030113, 2025030112, 2025030111, 2025021292, 2025021278]);
+    });
+
+    it('should skip preseason games for a regular season game, but not for a preseason game', () => {
+      const games = bostonGames();
+      expect(ids(NhlGameInfoUtils.getTeamFormGames(games, gameById(games, 2025020008)))).toEqual([2025020005]);
+      expect(ids(NhlGameInfoUtils.getTeamFormGames(games, gameById(games, 2025010095))))
+          .toEqual([2025010078, 2025010063, 2025010047, 2025010018, 2025010013]);
+    });
+
+    it('should return no games before a season has been played', () => {
+      const games = mockClubScheduleSeason('BOS', 20262027).games;
+      expect(NhlGameInfoUtils.getTeamFormGames(games, mockGameLanding(2026020056))).toEqual([]);
+    });
+
+    it('should sort games in any order and return the requested count', () => {
+      const games = bostonGames().reverse();
+      expect(ids(NhlGameInfoUtils.getTeamFormGames(games, mockGameLanding(2026020056), 3)))
+          .toEqual([2025030116, 2025030115, 2025030114]);
+    });
+
+    it('should return no games without games or a game', () => {
+      expect(NhlGameInfoUtils.getTeamFormGames(null, mockGameLanding(2026020056))).toEqual([]);
+      expect(NhlGameInfoUtils.getTeamFormGames(bostonGames(), null)).toEqual([]);
     });
   });
 });

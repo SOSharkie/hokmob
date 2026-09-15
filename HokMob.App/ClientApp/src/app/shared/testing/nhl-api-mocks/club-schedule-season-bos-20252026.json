@@ -1,0 +1,1876 @@
+{
+  "previousSeason": 20242025,
+  "currentSeason": 20252026,
+  "nextSeason": 20262027,
+  "clubTimezone": "US/Eastern",
+  "clubUTCOffset": "-04:00",
+  "games": [
+    {
+      "id": 2025010013,
+      "season": 20252026,
+      "gameType": 1,
+      "gameDate": "2025-09-21",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2025-09-21T21:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FINAL",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 128,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESNplus",
+          "sequenceNumber": 390
+        },
+        {
+          "id": 517,
+          "market": "A",
+          "countryCode": "US",
+          "network": "MNMT",
+          "sequenceNumber": 396
+        }
+      ],
+      "awayTeam": {
+        "id": 15,
+        "commonName": {
+          "default": "Capitals"
+        },
+        "placeName": {
+          "default": "Washington"
+        },
+        "placeNameWithPreposition": {
+          "default": "Washington",
+          "fr": "de Washington"
+        },
+        "abbrev": "WSH",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_dark.svg",
+        "awaySplitSquad": false,
+        "airlineLink": "https://www.united.com/en/us?utm_source=washcaps_schedulepage&utm_medium=web_organic&utm_campaign=2526_washcaps&utm_content=united",
+        "airlineDesc": "Book Flights with United Airlines",
+        "score": 5
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 2
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8480313,
+        "firstInitial": {
+          "default": "L."
+        },
+        "lastName": {
+          "default": "Thompson"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8477947,
+        "firstInitial": {
+          "default": "S."
+        },
+        "lastName": {
+          "default": "Milano"
+        }
+      },
+      "threeMinRecap": "/video/wsh-at-bos-recap-6379898926112",
+      "threeMinRecapFr": "/fr/video/wsh-vs-bos-21-09-2025-resume-6379899526112",
+      "condensedGame": "/video/wsh-at-bos-condensed-game-6379899435112",
+      "condensedGameFr": "/fr/video/match-condense-capitals-bruins-21-09-2025-6379898842112",
+      "gameCenterLink": "/gamecenter/wsh-vs-bos/2025/09/21/2025010013"
+    },
+    {
+      "id": 2025010018,
+      "season": 20252026,
+      "gameType": 1,
+      "gameDate": "2025-09-23",
+      "venue": {
+        "default": "Madison Square Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2025-09-23T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "America/New_York",
+      "gameState": "FINAL",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 324,
+          "market": "N",
+          "countryCode": "US",
+          "network": "NHLN",
+          "sequenceNumber": 35
+        },
+        {
+          "id": 128,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESNplus",
+          "sequenceNumber": 390
+        },
+        {
+          "id": 27,
+          "market": "H",
+          "countryCode": "US",
+          "network": "MSG",
+          "sequenceNumber": 417
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 5
+      },
+      "homeTeam": {
+        "id": 3,
+        "commonName": {
+          "default": "Rangers"
+        },
+        "placeName": {
+          "default": "New York"
+        },
+        "placeNameWithPreposition": {
+          "default": "New York",
+          "fr": "de New York"
+        },
+        "abbrev": "NYR",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/NYR_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/NYR_dark.svg",
+        "homeSplitSquad": false,
+        "score": 4
+      },
+      "periodDescriptor": {
+        "number": 4,
+        "periodType": "OT",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "OT"
+      },
+      "winningGoalie": {
+        "playerId": 8476914,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Korpisalo"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8477507,
+        "firstInitial": {
+          "default": "N."
+        },
+        "lastName": {
+          "default": "Zadorov"
+        }
+      },
+      "threeMinRecap": "/video/bos-at-nyr-recap-6380019046112",
+      "threeMinRecapFr": "/fr/video/bos-vs-nyr-23-09-2025-resume-6380018660112",
+      "condensedGame": "/video/bos-at-nyr-condensed-game-6380020022112",
+      "condensedGameFr": "/fr/video/match-condense-bruins-rangers-23-09-2025-6380018258112",
+      "gameCenterLink": "/gamecenter/bos-vs-nyr/2025/09/23/2025010018"
+    },
+    {
+      "id": 2025010047,
+      "season": 20252026,
+      "gameType": 1,
+      "gameDate": "2025-09-27",
+      "venue": {
+        "default": "Xfinity Mobile Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2025-09-27T21:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FINAL",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 128,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESNplus",
+          "sequenceNumber": 390
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 4
+      },
+      "homeTeam": {
+        "id": 4,
+        "commonName": {
+          "default": "Flyers"
+        },
+        "placeName": {
+          "default": "Philadelphia",
+          "fr": "Philadelphie"
+        },
+        "placeNameWithPreposition": {
+          "default": "Philadelphia",
+          "fr": "de Philadelphie"
+        },
+        "abbrev": "PHI",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/PHI_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg",
+        "homeSplitSquad": false,
+        "score": 3
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8480022,
+        "firstInitial": {
+          "default": "M."
+        },
+        "lastName": {
+          "default": "DiPietro",
+          "cs": "Dipietro",
+          "de": "Dipietro",
+          "es": "Dipietro",
+          "fi": "Dipietro",
+          "sk": "Dipietro",
+          "sv": "Dipietro"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8479705,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Viel"
+        }
+      },
+      "threeMinRecap": "/video/bos-at-phi-recap-6380201667112",
+      "threeMinRecapFr": "/fr/video/bos-vs-phi-27-09-2025-resume-6380202538112",
+      "gameCenterLink": "/gamecenter/bos-vs-phi/2025/09/27/2025010047"
+    },
+    {
+      "id": 2025010063,
+      "season": 20252026,
+      "gameType": 1,
+      "gameDate": "2025-09-29",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2025-09-29T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FINAL",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 107
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        }
+      ],
+      "awayTeam": {
+        "id": 4,
+        "commonName": {
+          "default": "Flyers"
+        },
+        "placeName": {
+          "default": "Philadelphia",
+          "fr": "Philadelphie"
+        },
+        "placeNameWithPreposition": {
+          "default": "Philadelphia",
+          "fr": "de Philadelphie"
+        },
+        "abbrev": "PHI",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/PHI_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 2
+      },
+      "periodDescriptor": {
+        "number": 5,
+        "periodType": "SO",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "SO"
+      },
+      "winningGoalie": {
+        "playerId": 8478435,
+        "firstInitial": {
+          "default": "D."
+        },
+        "lastName": {
+          "default": "Vladar",
+          "cs": "Vladař",
+          "sk": "Vladař"
+        }
+      },
+      "threeMinRecapFr": "/fr/video/phi-vs-bos-29-09-2025-resume-6380327612112",
+      "condensedGame": "/video/phi-at-bos-condensed-game-6380326520112",
+      "condensedGameFr": "/fr/video/match-condense-flyers-bruins-29-09-2025-6380327499112",
+      "gameCenterLink": "/gamecenter/phi-vs-bos/2025/09/29/2025010063"
+    },
+    {
+      "id": 2025010078,
+      "season": 20252026,
+      "gameType": 1,
+      "gameDate": "2025-10-02",
+      "venue": {
+        "default": "Capital One Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2025-10-02T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FINAL",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 31,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 517,
+          "market": "H",
+          "countryCode": "US",
+          "network": "MNMT",
+          "sequenceNumber": 396
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 15,
+        "commonName": {
+          "default": "Capitals"
+        },
+        "placeName": {
+          "default": "Washington"
+        },
+        "placeNameWithPreposition": {
+          "default": "Washington",
+          "fr": "de Washington"
+        },
+        "abbrev": "WSH",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_dark.svg",
+        "homeSplitSquad": false,
+        "airlineLink": "https://www.united.com/en/us?utm_source=washcaps_schedulepage&utm_medium=web_organic&utm_campaign=2526_washcaps&utm_content=united",
+        "airlineDesc": "Book Flights with United Airlines",
+        "score": 1
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8476914,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Korpisalo"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8482739,
+        "firstInitial": {
+          "default": "B."
+        },
+        "lastName": {
+          "default": "Harrison"
+        }
+      },
+      "condensedGame": "/video/bos-at-wsh-condensed-game-6381120946112",
+      "gameCenterLink": "/gamecenter/bos-vs-wsh/2025/10/02/2025010078"
+    },
+    {
+      "id": 2025010095,
+      "season": 20252026,
+      "gameType": 1,
+      "gameDate": "2025-10-04",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2025-10-04T18:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FINAL",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 324,
+          "market": "N",
+          "countryCode": "US",
+          "network": "NHLN",
+          "sequenceNumber": 35
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 27,
+          "market": "A",
+          "countryCode": "US",
+          "network": "MSG",
+          "sequenceNumber": 417
+        }
+      ],
+      "awayTeam": {
+        "id": 3,
+        "commonName": {
+          "default": "Rangers"
+        },
+        "placeName": {
+          "default": "New York"
+        },
+        "placeNameWithPreposition": {
+          "default": "New York",
+          "fr": "de New York"
+        },
+        "abbrev": "NYR",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/NYR_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/NYR_dark.svg",
+        "awaySplitSquad": false,
+        "score": 1
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 4
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8480280,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Swayman"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8478401,
+        "firstInitial": {
+          "default": "P."
+        },
+        "lastName": {
+          "default": "Zacha"
+        }
+      },
+      "threeMinRecap": "/video/nyr-at-bos-recap-6382046782112",
+      "threeMinRecapFr": "/fr/video/nyr-vs-bos-04-10-2025-resume-6382045926112",
+      "condensedGame": "/video/nyr-at-bos-condensed-game-6382046603112",
+      "gameCenterLink": "/gamecenter/nyr-vs-bos/2025/10/04/2025010095"
+    },
+    {
+      "id": 2025020005,
+      "season": 20252026,
+      "gameType": 2,
+      "gameDate": "2025-10-08",
+      "venue": {
+        "default": "Capital One Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2025-10-08T23:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 385,
+          "market": "N",
+          "countryCode": "US",
+          "network": "TNT",
+          "sequenceNumber": 11
+        },
+        {
+          "id": 578,
+          "market": "N",
+          "countryCode": "US",
+          "network": "HBO MAX",
+          "sequenceNumber": 19
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 15,
+        "commonName": {
+          "default": "Capitals"
+        },
+        "placeName": {
+          "default": "Washington"
+        },
+        "placeNameWithPreposition": {
+          "default": "Washington",
+          "fr": "de Washington"
+        },
+        "abbrev": "WSH",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_dark.svg",
+        "homeSplitSquad": false,
+        "airlineLink": "https://www.united.com/en/us?utm_source=washcaps_schedulepage&utm_medium=web_organic&utm_campaign=2526_washcaps&utm_content=united",
+        "airlineDesc": "Book Flights with United Airlines",
+        "score": 1
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8480280,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Swayman"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8477496,
+        "firstInitial": {
+          "default": "E."
+        },
+        "lastName": {
+          "default": "Lindholm"
+        }
+      },
+      "threeMinRecap": "/video/bos-at-wsh-recap-6382424815112",
+      "gameCenterLink": "/gamecenter/bos-vs-wsh/2025/10/08/2025020005"
+    },
+    {
+      "id": 2025020008,
+      "season": 20252026,
+      "gameType": 2,
+      "gameDate": "2025-10-09",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2025-10-09T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 21
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 551,
+          "market": "A",
+          "countryCode": "US",
+          "network": "CHSN",
+          "sequenceNumber": 254
+        }
+      ],
+      "awayTeam": {
+        "id": 16,
+        "commonName": {
+          "default": "Blackhawks"
+        },
+        "placeName": {
+          "default": "Chicago"
+        },
+        "placeNameWithPreposition": {
+          "default": "Chicago",
+          "fr": "de Chicago"
+        },
+        "abbrev": "CHI",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/CHI_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/CHI_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 4
+      },
+      "periodDescriptor": {
+        "number": 4,
+        "periodType": "OT",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "OT"
+      },
+      "winningGoalie": {
+        "playerId": 8476914,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Korpisalo"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8483489,
+        "firstInitial": {
+          "default": "F."
+        },
+        "lastName": {
+          "default": "Minten"
+        }
+      },
+      "threeMinRecap": "/video/chi-at-bos-recap-6382535026112",
+      "threeMinRecapFr": "/fr/video/chi-vs-bos-09-10-2025-resume-6382532479112",
+      "condensedGame": "/video/chi-at-bos-condensed-game-6382534147112",
+      "condensedGameFr": "/fr/video/match-condense-blackhawks-bruins-09-10-2025-6382534740112",
+      "gameCenterLink": "/gamecenter/chi-vs-bos/2025/10/09/2025020008"
+    },
+    {
+      "id": 2025021278,
+      "season": 20252026,
+      "gameType": 2,
+      "gameDate": "2026-04-12",
+      "venue": {
+        "default": "Nationwide Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-12T22:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 21
+        },
+        {
+          "id": 324,
+          "market": "N",
+          "countryCode": "US",
+          "network": "NHLN",
+          "sequenceNumber": 35
+        },
+        {
+          "id": 31,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 565,
+          "market": "H",
+          "countryCode": "US",
+          "network": "FDSNOH",
+          "sequenceNumber": 286
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 29,
+        "commonName": {
+          "default": "Blue Jackets"
+        },
+        "placeName": {
+          "default": "Columbus"
+        },
+        "placeNameWithPreposition": {
+          "default": "Columbus",
+          "fr": "de Columbus"
+        },
+        "abbrev": "CBJ",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/CBJ_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/CBJ_dark.svg",
+        "homeSplitSquad": false,
+        "hotelLink": "https://www.sonesta.com/sonesta-hotels-resorts/oh/columbus/sonesta-columbus-downtown?isGroupCode=false&promoCode=CBJPROMO",
+        "hotelDesc": "Stay at Sonesta Columbus Downtown",
+        "score": 2
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8476914,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Korpisalo"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8480355,
+        "firstInitial": {
+          "default": "M."
+        },
+        "lastName": {
+          "default": "Kastelic"
+        }
+      },
+      "threeMinRecap": "/video/bos-at-cbj-recap-6392991531112",
+      "threeMinRecapFr": "/fr/video/bos-vs-cbj-12-04-2026-resume-6392992499112",
+      "condensedGame": "/video/bos-at-cbj-condensed-game-6392991818112",
+      "condensedGameFr": "/fr/video/match-condense-bruins-blue-jackets-12-04-2026-6392992412112",
+      "gameCenterLink": "/gamecenter/bos-vs-cbj/2026/04/12/2025021278"
+    },
+    {
+      "id": 2025021292,
+      "season": 20252026,
+      "gameType": 2,
+      "gameDate": "2026-04-14",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-14T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 290,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SNP",
+          "sequenceNumber": 33
+        },
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 27,
+          "market": "A",
+          "countryCode": "US",
+          "network": "MSG",
+          "sequenceNumber": 417
+        }
+      ],
+      "awayTeam": {
+        "id": 1,
+        "commonName": {
+          "default": "Devils"
+        },
+        "placeName": {
+          "default": "New Jersey"
+        },
+        "placeNameWithPreposition": {
+          "default": "New Jersey",
+          "fr": "du New Jersey"
+        },
+        "abbrev": "NJD",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/NJD_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/NJD_dark.svg",
+        "awaySplitSquad": false,
+        "score": 0
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 4
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8480280,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Swayman"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8479987,
+        "firstInitial": {
+          "default": "M."
+        },
+        "lastName": {
+          "default": "Geekie"
+        }
+      },
+      "threeMinRecap": "/video/njd-at-bos-recap-6393124980112",
+      "threeMinRecapFr": "/fr/video/njd-vs-bos-14-04-2026-resume-6393124006112",
+      "condensedGame": "/video/njd-at-bos-condensed-game-6393123652112",
+      "condensedGameFr": "/fr/video/match-condense-devils-bruins-14-04-2026-6393123737112",
+      "gameCenterLink": "/gamecenter/njd-vs-bos/2026/04/14/2025021292"
+    },
+    {
+      "id": 2025030111,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-19",
+      "venue": {
+        "default": "KeyBank Center"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-19T23:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "America/New_York",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 309,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN",
+          "sequenceNumber": 10
+        },
+        {
+          "id": 284,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN1",
+          "sequenceNumber": 113
+        },
+        {
+          "id": 283,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN360",
+          "sequenceNumber": 114
+        },
+        {
+          "id": 291,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS2",
+          "sequenceNumber": 121
+        },
+        {
+          "id": 31,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 28,
+          "market": "H",
+          "countryCode": "US",
+          "network": "MSG-B",
+          "sequenceNumber": 392
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 7,
+        "commonName": {
+          "default": "Sabres"
+        },
+        "placeName": {
+          "default": "Buffalo"
+        },
+        "placeNameWithPreposition": {
+          "default": "Buffalo",
+          "fr": "de Buffalo"
+        },
+        "abbrev": "BUF",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BUF_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BUF_dark.svg",
+        "homeSplitSquad": false,
+        "score": 4
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8480045,
+        "firstInitial": {
+          "default": "U."
+        },
+        "lastName": {
+          "default": "Luukkonen"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8477949,
+        "firstInitial": {
+          "default": "A."
+        },
+        "lastName": {
+          "default": "Tuch"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "A",
+        "neededToWin": 4,
+        "topSeedWins": 1,
+        "bottomSeedWins": 0,
+        "gameNumberOfSeries": 1
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-a/sabres-vs-bruins",
+      "threeMinRecap": "/video/bos-at-buf-recap-6393451238112",
+      "threeMinRecapFr": "/fr/video/bos-vs-buf-19-04-2026-resume-6393452437112",
+      "condensedGameFr": "/fr/video/match-condense-bruins-sabres-19-04-2026-6393451177112",
+      "gameCenterLink": "/gamecenter/bos-vs-buf/2026/04/19/2025030111"
+    },
+    {
+      "id": 2025030112,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-21",
+      "venue": {
+        "default": "KeyBank Center"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-21T23:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "America/New_York",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 309,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN",
+          "sequenceNumber": 10
+        },
+        {
+          "id": 283,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN360",
+          "sequenceNumber": 114
+        },
+        {
+          "id": 291,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS2",
+          "sequenceNumber": 121
+        },
+        {
+          "id": 31,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 28,
+          "market": "H",
+          "countryCode": "US",
+          "network": "MSG-B",
+          "sequenceNumber": 392
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 4
+      },
+      "homeTeam": {
+        "id": 7,
+        "commonName": {
+          "default": "Sabres"
+        },
+        "placeName": {
+          "default": "Buffalo"
+        },
+        "placeNameWithPreposition": {
+          "default": "Buffalo",
+          "fr": "de Buffalo"
+        },
+        "abbrev": "BUF",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BUF_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BUF_dark.svg",
+        "homeSplitSquad": false,
+        "score": 2
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8480280,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Swayman"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8478401,
+        "firstInitial": {
+          "default": "P."
+        },
+        "lastName": {
+          "default": "Zacha"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "A",
+        "neededToWin": 4,
+        "topSeedWins": 1,
+        "bottomSeedWins": 1,
+        "gameNumberOfSeries": 2
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-a/sabres-vs-bruins",
+      "threeMinRecap": "/video/bos-at-buf-recap-6393595493112",
+      "threeMinRecapFr": "/fr/video/bos-vs-buf-21-04-2026-resume-6393596359112",
+      "condensedGame": "/video/bos-at-buf-condensed-game-6393596272112",
+      "condensedGameFr": "/fr/video/match-condense-bruins-sabres-21-04-2026-6393594711112",
+      "gameCenterLink": "/gamecenter/bos-vs-buf/2026/04/21/2025030112"
+    },
+    {
+      "id": 2025030113,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-23",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-23T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 385,
+          "market": "N",
+          "countryCode": "US",
+          "network": "TNT",
+          "sequenceNumber": 11
+        },
+        {
+          "id": 501,
+          "market": "N",
+          "countryCode": "US",
+          "network": "truTV",
+          "sequenceNumber": 14
+        },
+        {
+          "id": 578,
+          "market": "N",
+          "countryCode": "US",
+          "network": "HBO MAX",
+          "sequenceNumber": 19
+        },
+        {
+          "id": 283,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN360",
+          "sequenceNumber": 114
+        },
+        {
+          "id": 291,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS2",
+          "sequenceNumber": 121
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 28,
+          "market": "A",
+          "countryCode": "US",
+          "network": "MSG-B",
+          "sequenceNumber": 392
+        }
+      ],
+      "awayTeam": {
+        "id": 7,
+        "commonName": {
+          "default": "Sabres"
+        },
+        "placeName": {
+          "default": "Buffalo"
+        },
+        "placeNameWithPreposition": {
+          "default": "Buffalo",
+          "fr": "de Buffalo"
+        },
+        "abbrev": "BUF",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BUF_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BUF_dark.svg",
+        "awaySplitSquad": false,
+        "score": 3
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 1
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8479312,
+        "firstInitial": {
+          "default": "A."
+        },
+        "lastName": {
+          "default": "Lyon"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8477949,
+        "firstInitial": {
+          "default": "A."
+        },
+        "lastName": {
+          "default": "Tuch"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "A",
+        "neededToWin": 4,
+        "topSeedWins": 2,
+        "bottomSeedWins": 1,
+        "gameNumberOfSeries": 3
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-a/bruins-vs-sabres",
+      "threeMinRecap": "/video/buf-at-bos-recap-6393759443112",
+      "threeMinRecapFr": "/fr/video/buf-vs-bos-23-04-2026-resume-6393761287112",
+      "condensedGame": "/video/buf-at-bos-condensed-game-6393761392112",
+      "condensedGameFr": "/fr/video/match-condense-sabres-bruins-23-04-2026-6393760402112",
+      "gameCenterLink": "/gamecenter/buf-vs-bos/2026/04/23/2025030113"
+    },
+    {
+      "id": 2025030114,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-26",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-26T18:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 385,
+          "market": "N",
+          "countryCode": "US",
+          "network": "TNT",
+          "sequenceNumber": 11
+        },
+        {
+          "id": 501,
+          "market": "N",
+          "countryCode": "US",
+          "network": "truTV",
+          "sequenceNumber": 14
+        },
+        {
+          "id": 578,
+          "market": "N",
+          "countryCode": "US",
+          "network": "HBO MAX",
+          "sequenceNumber": 19
+        },
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 107
+        },
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 28,
+          "market": "A",
+          "countryCode": "US",
+          "network": "MSG-B",
+          "sequenceNumber": 392
+        }
+      ],
+      "awayTeam": {
+        "id": 7,
+        "commonName": {
+          "default": "Sabres"
+        },
+        "placeName": {
+          "default": "Buffalo"
+        },
+        "placeNameWithPreposition": {
+          "default": "Buffalo",
+          "fr": "de Buffalo"
+        },
+        "abbrev": "BUF",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BUF_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BUF_dark.svg",
+        "awaySplitSquad": false,
+        "score": 6
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 1
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8479312,
+        "firstInitial": {
+          "default": "A."
+        },
+        "lastName": {
+          "default": "Lyon"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8482659,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Doan"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "A",
+        "neededToWin": 4,
+        "topSeedWins": 3,
+        "bottomSeedWins": 1,
+        "gameNumberOfSeries": 4
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-a/bruins-vs-sabres",
+      "threeMinRecap": "/video/buf-at-bos-recap-6393949216112",
+      "threeMinRecapFr": "/fr/video/buf-vs-bos-26-04-2026-resume-6393951854112",
+      "condensedGame": "/video/buf-at-bos-condensed-game-6393951007112",
+      "condensedGameFr": "/fr/video/match-condense-sabres-bruins-26-04-2026-6393949218112",
+      "gameCenterLink": "/gamecenter/buf-vs-bos/2026/04/26/2025030114"
+    },
+    {
+      "id": 2025030115,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-04-28",
+      "venue": {
+        "default": "KeyBank Center"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-04-28T23:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "America/New_York",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 385,
+          "market": "N",
+          "countryCode": "US",
+          "network": "TNT",
+          "sequenceNumber": 11
+        },
+        {
+          "id": 501,
+          "market": "N",
+          "countryCode": "US",
+          "network": "truTV",
+          "sequenceNumber": 14
+        },
+        {
+          "id": 578,
+          "market": "N",
+          "countryCode": "US",
+          "network": "HBO MAX",
+          "sequenceNumber": 19
+        },
+        {
+          "id": 282,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN",
+          "sequenceNumber": 21
+        },
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120
+        },
+        {
+          "id": 31,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 28,
+          "market": "H",
+          "countryCode": "US",
+          "network": "MSG-B",
+          "sequenceNumber": 392
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "awaySplitSquad": false,
+        "score": 2
+      },
+      "homeTeam": {
+        "id": 7,
+        "commonName": {
+          "default": "Sabres"
+        },
+        "placeName": {
+          "default": "Buffalo"
+        },
+        "placeNameWithPreposition": {
+          "default": "Buffalo",
+          "fr": "de Buffalo"
+        },
+        "abbrev": "BUF",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BUF_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BUF_dark.svg",
+        "homeSplitSquad": false,
+        "score": 1
+      },
+      "periodDescriptor": {
+        "number": 4,
+        "periodType": "OT",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "OT"
+      },
+      "winningGoalie": {
+        "playerId": 8480280,
+        "firstInitial": {
+          "default": "J."
+        },
+        "lastName": {
+          "default": "Swayman"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8477956,
+        "firstInitial": {
+          "default": "D."
+        },
+        "lastName": {
+          "default": "Pastrnak",
+          "cs": "Pastrňák",
+          "sk": "Pastrňák"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "A",
+        "neededToWin": 4,
+        "topSeedWins": 3,
+        "bottomSeedWins": 2,
+        "gameNumberOfSeries": 5
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-a/sabres-vs-bruins",
+      "threeMinRecap": "/video/bos-at-buf-recap-6394133140112",
+      "threeMinRecapFr": "/fr/video/bos-vs-buf-28-04-2026-resume-6394133839112",
+      "condensedGame": "/video/bos-at-buf-condensed-game-6394134805112",
+      "condensedGameFr": "/fr/video/match-condense-bruins-sabres-28-04-2026-6394134050112",
+      "gameCenterLink": "/gamecenter/bos-vs-buf/2026/04/28/2025030115"
+    },
+    {
+      "id": 2025030116,
+      "season": 20252026,
+      "gameType": 3,
+      "gameDate": "2026-05-01",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-05-01T23:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "OFF",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 309,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN",
+          "sequenceNumber": 10
+        },
+        {
+          "id": 283,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN360",
+          "sequenceNumber": 114
+        },
+        {
+          "id": 291,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS2",
+          "sequenceNumber": 121
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 28,
+          "market": "A",
+          "countryCode": "US",
+          "network": "MSG-B",
+          "sequenceNumber": 392
+        }
+      ],
+      "awayTeam": {
+        "id": 7,
+        "commonName": {
+          "default": "Sabres"
+        },
+        "placeName": {
+          "default": "Buffalo"
+        },
+        "placeNameWithPreposition": {
+          "default": "Buffalo",
+          "fr": "de Buffalo"
+        },
+        "abbrev": "BUF",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BUF_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BUF_dark.svg",
+        "awaySplitSquad": false,
+        "score": 4
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg?season=20252026",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg?season=20252026",
+        "homeSplitSquad": false,
+        "score": 1
+      },
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      },
+      "winningGoalie": {
+        "playerId": 8479312,
+        "firstInitial": {
+          "default": "A."
+        },
+        "lastName": {
+          "default": "Lyon"
+        }
+      },
+      "winningGoalScorer": {
+        "playerId": 8480807,
+        "firstInitial": {
+          "default": "M."
+        },
+        "lastName": {
+          "default": "Samuelsson"
+        }
+      },
+      "seriesStatus": {
+        "round": 1,
+        "seriesAbbrev": "R1",
+        "seriesTitle": "1st Round",
+        "seriesLetter": "A",
+        "neededToWin": 4,
+        "topSeedWins": 4,
+        "bottomSeedWins": 2,
+        "gameNumberOfSeries": 6
+      },
+      "seriesUrl": "/schedule/playoff-series/2026/series-a/bruins-vs-sabres",
+      "threeMinRecap": "/video/buf-at-bos-recap-6394382800112",
+      "threeMinRecapFr": "/fr/video/buf-vs-bos-01-05-2026-resume-6394383468112",
+      "condensedGame": "/video/buf-at-bos-condensed-game-6394384347112",
+      "condensedGameFr": "/fr/video/match-condense-sabres-bruins-01-05-2026-6394383472112",
+      "gameCenterLink": "/gamecenter/buf-vs-bos/2026/05/01/2025030116"
+    }
+  ]
+}

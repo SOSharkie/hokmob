@@ -1,0 +1,781 @@
+{
+  "previousSeason": 20252026,
+  "currentSeason": 20262027,
+  "clubTimezone": "US/Eastern",
+  "clubUTCOffset": "-04:00",
+  "games": [
+    {
+      "id": 2026010013,
+      "season": 20262027,
+      "gameType": 1,
+      "gameDate": "2026-09-20",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-09-20T21:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 324,
+          "market": "N",
+          "countryCode": "US",
+          "network": "NHLN",
+          "sequenceNumber": 35
+        },
+        {
+          "id": 128,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESNplus",
+          "sequenceNumber": 390
+        },
+        {
+          "id": 520,
+          "market": "A",
+          "countryCode": "US",
+          "network": "MNMT2",
+          "sequenceNumber": 418
+        }
+      ],
+      "awayTeam": {
+        "id": 15,
+        "commonName": {
+          "default": "Capitals"
+        },
+        "placeName": {
+          "default": "Washington"
+        },
+        "placeNameWithPreposition": {
+          "default": "Washington",
+          "fr": "de Washington"
+        },
+        "abbrev": "WSH",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/WSH/20262027/WSH-radio.m3u8"
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.nhl.com/bruins/tickets/",
+      "ticketsLinkFr": "https://www.nhl.com/bruins/tickets/",
+      "gameCenterLink": "/gamecenter/wsh-vs-bos/2026/09/20/2026010013"
+    },
+    {
+      "id": 2026010028,
+      "season": 20262027,
+      "gameType": 1,
+      "gameDate": "2026-09-22",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-09-22T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 128,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESNplus",
+          "sequenceNumber": 390
+        },
+        {
+          "id": 323,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NBCSP+",
+          "sequenceNumber": 401
+        }
+      ],
+      "awayTeam": {
+        "id": 4,
+        "commonName": {
+          "default": "Flyers"
+        },
+        "placeName": {
+          "default": "Philadelphia",
+          "fr": "Philadelphie"
+        },
+        "placeNameWithPreposition": {
+          "default": "Philadelphia",
+          "fr": "de Philadelphie"
+        },
+        "abbrev": "PHI",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/PHI_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/PHI/20262027/PHI-radio.m3u8"
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.nhl.com/bruins/tickets/",
+      "ticketsLinkFr": "https://www.nhl.com/bruins/tickets/",
+      "gameCenterLink": "/gamecenter/phi-vs-bos/2026/09/22/2026010028"
+    },
+    {
+      "id": 2026010040,
+      "season": 20262027,
+      "gameType": 1,
+      "gameDate": "2026-09-24",
+      "venue": {
+        "default": "Xfinity Mobile Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-09-24T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 128,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESNplus",
+          "sequenceNumber": 390
+        },
+        {
+          "id": 323,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NBCSP+",
+          "sequenceNumber": 401
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "homeTeam": {
+        "id": 4,
+        "commonName": {
+          "default": "Flyers"
+        },
+        "placeName": {
+          "default": "Philadelphia",
+          "fr": "Philadelphie"
+        },
+        "placeNameWithPreposition": {
+          "default": "Philadelphia",
+          "fr": "de Philadelphie"
+        },
+        "abbrev": "PHI",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/PHI_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/PHI/20262027/PHI-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.nhl.com/flyers/tickets/",
+      "ticketsLinkFr": "https://www.nhl.com/flyers/tickets/",
+      "gameCenterLink": "/gamecenter/bos-vs-phi/2026/09/24/2026010040"
+    },
+    {
+      "id": 2026010049,
+      "season": 20262027,
+      "gameType": 1,
+      "gameDate": "2026-09-25",
+      "venue": {
+        "default": "Capital One Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-09-25T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 128,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESNplus",
+          "sequenceNumber": 390
+        },
+        {
+          "id": 517,
+          "market": "H",
+          "countryCode": "US",
+          "network": "MNMT",
+          "sequenceNumber": 396
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "homeTeam": {
+        "id": 15,
+        "commonName": {
+          "default": "Capitals"
+        },
+        "placeName": {
+          "default": "Washington"
+        },
+        "placeNameWithPreposition": {
+          "default": "Washington",
+          "fr": "de Washington"
+        },
+        "abbrev": "WSH",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/WSH/20262027/WSH-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.nhl.com/capitals/tickets/",
+      "ticketsLinkFr": "https://www.nhl.com/capitals/tickets/",
+      "gameCenterLink": "/gamecenter/bos-vs-wsh/2026/09/25/2026010049"
+    },
+    {
+      "id": 2026020003,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-09-29",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-09-30T00:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 309,
+          "market": "N",
+          "countryCode": "US",
+          "network": "ESPN",
+          "sequenceNumber": 10
+        }
+      ],
+      "awayTeam": {
+        "id": 3,
+        "commonName": {
+          "default": "Rangers"
+        },
+        "placeName": {
+          "default": "New York"
+        },
+        "placeNameWithPreposition": {
+          "default": "New York",
+          "fr": "de New York"
+        },
+        "abbrev": "NYR",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/NYR_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/NYR_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/NYR/20262027/NYR-radio.m3u8"
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.ticketmaster.com/event/010064EDC4E7797E?brand=bostonbruins&artistid=805902&wt.mc_id=NHL_TEAM_BOS_SCHEDULE_GM1&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_BOS&utm_content=SCHEDULE_GM1",
+      "ticketsLinkFr": "https://www.ticketmaster.com/event/010064EDC4E7797E?brand=bostonbruins&artistid=805902&wt.mc_id=NHL_TEAM_BOS_SCHEDULE_GM1&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_BOS&utm_content=SCHEDULE_GM1",
+      "gameCenterLink": "/gamecenter/nyr-vs-bos/2026/09/29/2026020003"
+    },
+    {
+      "id": 2026020019,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-10-02",
+      "venue": {
+        "default": "Canada Life Centre"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-10-03T00:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-05:00",
+      "venueTimezone": "America/Winnipeg",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 31,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "awaySplitSquad": false,
+        "promoLink": "",
+        "promoDesc": "",
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8",
+        "airlineLink": "",
+        "airlineDesc": "",
+        "hotelLink": "",
+        "hotelDesc": ""
+      },
+      "homeTeam": {
+        "id": 52,
+        "commonName": {
+          "default": "Jets"
+        },
+        "placeName": {
+          "default": "Winnipeg"
+        },
+        "placeNameWithPreposition": {
+          "default": "Winnipeg",
+          "fr": "de Winnipeg"
+        },
+        "abbrev": "WPG",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/WPG_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/WPG_dark.svg",
+        "homeSplitSquad": false,
+        "promoLink": "https://www.ticketmaster.ca/event/11006505CAB7A879",
+        "promoDesc": "Home Opener",
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/WPG/20262027/WPG-radio.m3u8",
+        "airlineLink": "",
+        "airlineDesc": "",
+        "hotelLink": "",
+        "hotelDesc": ""
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.ticketmaster.ca/event/11006505CAB7A879?brand=winnipegjets&artistid=1613893&wt.mc_id=NHL_TEAM_WPG_SCHEDULE_GM1&utm_source=NHL.com&utm_medium=client_PM&utm_campaign=NHL_TEAM_WPG&utm_content=SCHEDULE_GM1",
+      "ticketsLinkFr": "https://www.ticketmaster.ca/event/11006505CAB7A879?brand=winnipegjets&artistid=1613893&wt.mc_id=NHL_TEAM_WPG_SCHEDULE_GM1&utm_source=NHL.com&utm_medium=client_PM&utm_campaign=NHL_TEAM_WPG&utm_content=SCHEDULE_GM1",
+      "gameCenterLink": "/gamecenter/bos-vs-wpg/2026/10/02/2026020019"
+    },
+    {
+      "id": 2026020031,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-10-03",
+      "venue": {
+        "default": "Grand Casino Arena"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-10-04T00:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-05:00",
+      "venueTimezone": "US/Central",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 31,
+          "market": "A",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        },
+        {
+          "id": 648,
+          "market": "H",
+          "countryCode": "US",
+          "network": "MINNHL",
+          "sequenceNumber": 1
+        }
+      ],
+      "awayTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "homeTeam": {
+        "id": 30,
+        "commonName": {
+          "default": "Wild"
+        },
+        "placeName": {
+          "default": "Minnesota"
+        },
+        "placeNameWithPreposition": {
+          "default": "Minnesota",
+          "fr": "du Minnesota"
+        },
+        "abbrev": "MIN",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/MIN_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/MIN_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/MIN/20262027/MIN-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://mnwild.co/nbtcp3gl",
+      "ticketsLinkFr": "https://mnwild.co/nbtcp3gl",
+      "gameCenterLink": "/gamecenter/bos-vs-min/2026/10/03/2026020031"
+    },
+    {
+      "id": 2026020041,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-10-05",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-10-05T23:30:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 549,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "SN+",
+          "sequenceNumber": 117
+        },
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        }
+      ],
+      "awayTeam": {
+        "id": 9,
+        "commonName": {
+          "default": "Senators",
+          "fr": "Sénateurs"
+        },
+        "placeName": {
+          "default": "Ottawa"
+        },
+        "placeNameWithPreposition": {
+          "default": "Ottawa",
+          "fr": "d'Ottawa"
+        },
+        "abbrev": "OTT",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/OTT_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/OTT_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/OTT/20262027/OTT-radio.m3u8",
+        "airlineLink": "https://www.aircanada.com/home/ca/en/aco/flights",
+        "airlineDesc": "Book Flights with Air Canada",
+        "hotelLink": "https://www.brookstreethotel.com/?gad_source=1&gad_campaignid=361534260&gbraid=0AAAAAD7lh6gowt52ky_hNFfUfpIJrBOLt&gclid=CjwKCAjws_DTBhB_EiwAXZknGWgxgnsGfRdBp1sxO_Bjc5W4YaWOrsfOWgCMIIPHfxIA9-A04EYXdhoClb8QAvD_BwE",
+        "hotelDesc": "Brookstreet Hotel"
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.ticketmaster.com/event/010064EDC4EC799C?brand=bostonbruins&artistid=805902&wt.mc_id=NHL_TEAM_BOS_SCHEDULE_GM2&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_BOS&utm_content=SCHEDULE_GM2",
+      "ticketsLinkFr": "https://www.ticketmaster.com/event/010064EDC4EC799C?brand=bostonbruins&artistid=805902&wt.mc_id=NHL_TEAM_BOS_SCHEDULE_GM2&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_BOS&utm_content=SCHEDULE_GM2",
+      "gameCenterLink": "/gamecenter/ott-vs-bos/2026/10/05/2026020041"
+    },
+    {
+      "id": 2026020056,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-10-08",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-10-08T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        }
+      ],
+      "awayTeam": {
+        "id": 68,
+        "commonName": {
+          "default": "Mammoth"
+        },
+        "placeName": {
+          "default": "Utah"
+        },
+        "placeNameWithPreposition": {
+          "default": "Utah",
+          "fr": "de l'Utah"
+        },
+        "abbrev": "UTA",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/UTA_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/UTA/20262027/UTA-radio.m3u8"
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.ticketmaster.com/event/010064EDC4F179B1?brand=bostonbruins&artistid=805902&wt.mc_id=NHL_TEAM_BOS_SCHEDULE_GM3&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_BOS&utm_content=SCHEDULE_GM3",
+      "ticketsLinkFr": "https://www.ticketmaster.com/event/010064EDC4F179B1?brand=bostonbruins&artistid=805902&wt.mc_id=NHL_TEAM_BOS_SCHEDULE_GM3&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_BOS&utm_content=SCHEDULE_GM3",
+      "gameCenterLink": "/gamecenter/uta-vs-bos/2026/10/08/2026020056"
+    },
+    {
+      "id": 2026020070,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-10-10",
+      "venue": {
+        "default": "TD Garden"
+      },
+      "neutralSite": false,
+      "startTimeUTC": "2026-10-10T17:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "venueTimezone": "US/Eastern",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "tvBroadcasts": [
+        {
+          "id": 281,
+          "market": "N",
+          "countryCode": "CA",
+          "network": "TVAS",
+          "sequenceNumber": 120
+        },
+        {
+          "id": 31,
+          "market": "H",
+          "countryCode": "US",
+          "network": "NESN",
+          "sequenceNumber": 405
+        }
+      ],
+      "awayTeam": {
+        "id": 4,
+        "commonName": {
+          "default": "Flyers"
+        },
+        "placeName": {
+          "default": "Philadelphia",
+          "fr": "Philadelphie"
+        },
+        "placeNameWithPreposition": {
+          "default": "Philadelphia",
+          "fr": "de Philadelphie"
+        },
+        "abbrev": "PHI",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/PHI_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg",
+        "awaySplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/PHI/20262027/PHI-radio.m3u8"
+      },
+      "homeTeam": {
+        "id": 6,
+        "commonName": {
+          "default": "Bruins"
+        },
+        "placeName": {
+          "default": "Boston"
+        },
+        "placeNameWithPreposition": {
+          "default": "Boston",
+          "fr": "de Boston"
+        },
+        "abbrev": "BOS",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
+        "darkLogo": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg",
+        "homeSplitSquad": false,
+        "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/BOS/20262027/BOS-radio.m3u8"
+      },
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "ticketsLink": "https://www.ticketmaster.com/event/010064EDC4F579BC?brand=bostonbruins&artistid=805902&wt.mc_id=NHL_TEAM_BOS_SCHEDULE_GM4&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_BOS&utm_content=SCHEDULE_GM4",
+      "ticketsLinkFr": "https://www.ticketmaster.com/event/010064EDC4F579BC?brand=bostonbruins&artistid=805902&wt.mc_id=NHL_TEAM_BOS_SCHEDULE_GM4&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_BOS&utm_content=SCHEDULE_GM4",
+      "gameCenterLink": "/gamecenter/phi-vs-bos/2026/10/10/2026020070"
+    }
+  ]
+}

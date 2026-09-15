@@ -12,6 +12,9 @@ import {PlayByPlay} from "@shared/models/nhl-web-api/play-by-play.model";
 import {Boxscore} from "@shared/models/nhl-web-api/boxscore.model";
 import {RightRail} from "@shared/models/nhl-web-api/right-rail.model";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
+import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
+import {ClubScheduleGame, ClubScheduleSeason} from "@shared/models/nhl-web-api/club-schedule.model";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Injectable()
 export class NhlGameService {
@@ -25,28 +28,17 @@ export class NhlGameService {
   private readonly scheduleDetails = "linescore,broadcasts(all),game(seriesSummary),seriesSummary(series)"
 
   // Proxied through the HokMob backend (NhlController) to avoid CORS
-  private readonly newNhlScoreNowUrl = "/api/nhl/score/now";
-
   private readonly nhlScoreUrl = "/api/nhl/score/";
 
   private readonly nhlGamecenterUrl = "/api/nhl/gamecenter/";
 
-  constructor(private http: HttpClient) { }
+  private readonly nhlPlayerUrl = "/api/nhl/player/";
 
-  /**
-   * Test call against the new NHL API (api-web.nhle.com). Logs the response or error to the console.
-   */
-  public testNewNhlApi(): void {
-    console.log("Testing new NHL API: " + this.newNhlScoreNowUrl);
-    this.http.get<any>(this.newNhlScoreNowUrl).subscribe({
-      next: (response) => {
-        console.log("New NHL API response:", response);
-      },
-      error: (error) => {
-        console.error("New NHL API error:", error);
-      }
-    });
-  }
+  private readonly nhlClubScheduleSeasonUrl = "/api/nhl/club-schedule-season/";
+
+  private readonly teamFormGameCount = 5;
+
+  constructor(private http: HttpClient) { }
 
   /**
    *  Gets all NHL games for a given date. Uses an explicit date because score/now jumps ahead to the next game day.
@@ -95,6 +87,40 @@ export class NhlGameService {
   public getSeriesStatus(gameId: number, gameDate: string): Promise<SeriesStatus> {
     return this.get<ScoreResponse>(this.nhlScoreUrl + gameDate)
         .then(response => (response.games ?? []).find(game => game.id === gameId)?.seriesStatus);
+  }
+
+  /**
+   * Gets a player's bio (country, birth date, headshot, ...) from player/{id}/landing, for the player game dialog.
+   * Kept here instead of the player service, which still calls the dead stats API.
+   *
+   * @param playerId - The player ID.
+   */
+  public getPlayerLanding(playerId: number): Promise<PlayerLanding> {
+    return this.get<PlayerLanding>(this.nhlPlayerUrl + playerId + "/landing");
+  }
+
+  /**
+   * Gets a team's last 5 finished games before a game, most recent first, for the team form (see
+   * NhlGameInfoUtils.getTeamFormGames). Loads club-schedule-season/{abbrev}/{season} for the game's season. When that
+   * season has fewer than 5, like before the preseason, the previous season fills in. If only the previous season fails,
+   * the games found so far are returned.
+   *
+   * @param teamAbbrev - The team abbreviation, like "BOS".
+   * @param game - The game the form is shown for (its landing).
+   */
+  public getTeamFormGames(teamAbbrev: string,
+                          game: Pick<GameLanding, "id" | "season" | "gameType" | "startTimeUTC">): Promise<ClubScheduleGame[]> {
+    const teamUrl = this.nhlClubScheduleSeasonUrl + teamAbbrev + "/";
+    return this.get<ClubScheduleSeason>(teamUrl + game.season).then(schedule => {
+      const games = NhlGameInfoUtils.getTeamFormGames(schedule.games, game, this.teamFormGameCount);
+      if (games.length >= this.teamFormGameCount || !schedule.previousSeason) {
+        return games;
+      }
+      return this.get<ClubScheduleSeason>(teamUrl + schedule.previousSeason)
+          .then(previous => NhlGameInfoUtils.getTeamFormGames([...(previous.games ?? []), ...games], game,
+              this.teamFormGameCount))
+          .catch(() => games);
+    });
   }
 
   // The methods below call the dead stats API. They're only kept for the unmigrated team and player pages

@@ -2,10 +2,12 @@ import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {
+  mockClubScheduleSeason,
   mockGameBoxscore,
   mockGameLanding,
   mockGamePlayByPlay,
   mockGameRightRail,
+  mockPlayerLanding,
   mockPlayoffScoreResponse,
   mockScoreResponse
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
@@ -155,6 +157,87 @@ describe('NhlGameService', () => {
       const seriesStatus = service.getSeriesStatus(2025030414, '2026-06-09');
       const rejection = expectAsync(seriesStatus).toBeRejected();
       httpMock.expectOne('/api/nhl/score/2026-06-09').flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getPlayerLanding', () => {
+    it('should request the player landing and resolve the bio', async () => {
+      const playerLanding = service.getPlayerLanding(8476460);
+      httpMock.expectOne('/api/nhl/player/8476460/landing').flush(mockPlayerLanding(8476460));
+      expect(await playerLanding).toEqual(jasmine.objectContaining({
+        playerId: 8476460, position: 'C', birthCountry: 'CAN', birthDate: '1993-03-15'
+      }));
+    });
+
+    it('should resolve a player without optional bio fields', async () => {
+      const response = mockPlayerLanding(8477480);
+      delete response.birthStateProvince;
+      delete response.draftDetails;
+      const playerLanding = service.getPlayerLanding(8477480);
+      httpMock.expectOne('/api/nhl/player/8477480/landing').flush(response);
+      expect((await playerLanding).lastName.default).toBe('Comrie');
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const playerLanding = service.getPlayerLanding(1);
+      const rejection = expectAsync(playerLanding).toBeRejectedWith(jasmine.objectContaining({status: 404}));
+      httpMock.expectOne('/api/nhl/player/1/landing').flush('Not found', {status: 404, statusText: 'Not Found'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getTeamFormGames', () => {
+    const scheduleUrl = '/api/nhl/club-schedule-season/';
+
+    /** Waits for the service to make its next request. */
+    function nextRequest(): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve));
+    }
+
+    it('should load the season of the game and resolve its last 5 finished games', async () => {
+      const schedule = mockClubScheduleSeason('BOS', 20252026);
+      const game = schedule.games.find(item => item.id === 2025030116);
+      const formGames = service.getTeamFormGames('BOS', game);
+      httpMock.expectOne(scheduleUrl + 'BOS/20252026').flush(schedule);
+      expect((await formGames).map(item => item.id))
+          .toEqual([2025030115, 2025030114, 2025030113, 2025030112, 2025030111]);
+    });
+
+    it('should fill in from the previous season before a real future game', async () => {
+      const formGames = service.getTeamFormGames('UTA', mockGameLanding(2026020056));
+      httpMock.expectOne(scheduleUrl + 'UTA/20262027').flush(mockClubScheduleSeason('UTA', 20262027));
+      await nextRequest();
+      httpMock.expectOne(scheduleUrl + 'UTA/20252026').flush(mockClubScheduleSeason('UTA', 20252026));
+
+      const games = await formGames;
+      expect(games.map(item => item.id)).toEqual([2025030176, 2025030175, 2025030174, 2025030173, 2025030172]);
+      expect(games[0].homeTeam.abbrev).toBe('UTA');
+      expect(games[0].awayTeam.score).toBe(5);
+    });
+
+    it('should resolve the games found when the previous season fails', async () => {
+      const formGames = service.getTeamFormGames('BOS', mockGameLanding(2026020056));
+      httpMock.expectOne(scheduleUrl + 'BOS/20262027').flush(mockClubScheduleSeason('BOS', 20262027));
+      await nextRequest();
+      httpMock.expectOne(scheduleUrl + 'BOS/20252026').flush('Not found', {status: 404, statusText: 'Not Found'});
+      expect(await formGames).toEqual([]);
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it('should resolve no games for a response without games or a previous season', async () => {
+      const formGames = service.getTeamFormGames('BOS', mockGameLanding(2026020056));
+      httpMock.expectOne(scheduleUrl + 'BOS/20262027')
+          .flush({...mockClubScheduleSeason('BOS', 20262027), games: undefined, previousSeason: undefined});
+      expect(await formGames).toEqual([]);
+    });
+
+    it('should log and reject when the season request fails', async () => {
+      const formGames = service.getTeamFormGames('BOS', mockGameLanding(2026020056));
+      const rejection = expectAsync(formGames).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne(scheduleUrl + 'BOS/20262027').flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
     });

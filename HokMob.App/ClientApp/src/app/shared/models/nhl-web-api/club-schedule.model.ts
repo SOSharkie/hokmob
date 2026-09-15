@@ -9,11 +9,13 @@ import {
 } from "@shared/models/nhl-web-api/common.model";
 
 /**
- * Response of club-schedule-season/{abbrev}/now.
+ * Response of club-schedule-season/{abbrev}/now or club-schedule-season/{abbrev}/{season}.
  */
 export interface ClubScheduleSeason {
   previousSeason: number;
   currentSeason: number;
+  /** Only in the response for a past season. */
+  nextSeason?: number;
   clubTimezone: string;
   clubUTCOffset: string;
   games: ClubScheduleGame[];

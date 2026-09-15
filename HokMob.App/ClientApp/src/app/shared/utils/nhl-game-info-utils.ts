@@ -1,7 +1,7 @@
-import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
+import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
 
 export class NhlGameInfoUtils {
 
@@ -55,36 +55,51 @@ export class NhlGameInfoUtils {
     return leaderAbbrev + verb + leaderWins + "-" + trailerWins;
   }
 
-  // The NhlGameStatusModel argument is deprecated. It's only kept for pages not yet migrated to the new NHL API
-  // (see docs/nhl-api-migration-plan.md); remove it once they are.
+  /**
+   * Returns a team's last finished games before a game, most recent first, for the team form. Preseason games only
+   * count for a preseason game.
+   *
+   * @param games - Games from the team's club schedule, in any order.
+   * @param game - The game the form is shown for, like its landing.
+   * @param count - The maximum number of games to return.
+   */
+  public static getTeamFormGames(games: ClubScheduleGame[],
+                                 game: Pick<ClubScheduleGame, "id" | "gameType" | "startTimeUTC">,
+                                 count: number = 5): ClubScheduleGame[] {
+    if (!game) {
+      return [];
+    }
+    const gameStart = Date.parse(game.startTimeUTC);
+    const includePreseason = game.gameType === NhlGameTypeEnum.PRESEASON;
+    return (games ?? [])
+        .filter(item => item.id !== game.id && NhlGameInfoUtils.isCompletedGame(item.gameState) &&
+            (includePreseason || item.gameType !== NhlGameTypeEnum.PRESEASON) &&
+            Date.parse(item.startTimeUTC) < gameStart)
+        .sort((a, b) => Date.parse(b.startTimeUTC) - Date.parse(a.startTimeUTC))
+        .slice(0, count);
+  }
 
   /**
    * Whether the game hasn't started yet (gameState FUT or PRE).
    */
-  public static isFutureGame(gameState: NhlGameStateEnum | NhlGameStatusModel): boolean {
-    if (typeof gameState === "object") {
-      return gameState?.abstractGameState === "Preview";
-    }
+  public static isFutureGame(gameState: NhlGameStateEnum): boolean {
     return gameState === NhlGameStateEnum.FUTURE || gameState === NhlGameStateEnum.PREGAME;
   }
 
   /**
    * Whether the game is in progress (gameState LIVE or CRIT).
+   *
+   * TODO: CRIT (the last minutes of a close game) hasn't been seen in a captured response yet. Confirm it during a live
+   *  game (see docs/nhl-api-migration-plan.md, section 10).
    */
-  public static isLiveGame(gameState: NhlGameStateEnum | NhlGameStatusModel): boolean {
-    if (typeof gameState === "object") {
-      return gameState?.abstractGameState === "Live";
-    }
+  public static isLiveGame(gameState: NhlGameStateEnum): boolean {
     return gameState === NhlGameStateEnum.LIVE || gameState === NhlGameStateEnum.CRITICAL;
   }
 
   /**
    * Whether the game is over (gameState FINAL or OFF).
    */
-  public static isCompletedGame(gameState: NhlGameStateEnum | NhlGameStatusModel): boolean {
-    if (typeof gameState === "object") {
-      return gameState?.abstractGameState === "Final";
-    }
+  public static isCompletedGame(gameState: NhlGameStateEnum): boolean {
     return gameState === NhlGameStateEnum.FINAL || gameState === NhlGameStateEnum.OFF;
   }
 }

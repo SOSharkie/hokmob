@@ -59,10 +59,11 @@
         </div>
       </div>
     </div>
-    <!-- TODO: Top players isn't migrated yet (phase 6, see the TODO in game.component.ts) -->
-    <div *ngIf="unmigratedSectionsEnabled && showTopPlayers" class="game-container">
+    <div *ngIf="showTopPlayers" class="game-container">
       <app-game-top-players
-        (playerClicked)="openPlayerGameDialog($event)"
+          [homePlayers]="homePlayers"
+          [awayPlayers]="awayPlayers"
+          (playerClicked)="openPlayerGameDialog($event)"
       ></app-game-top-players>
     </div>
     <div *ngIf="!futureGame && playByPlay" class="game-container">
@@ -74,15 +75,22 @@
           (playerClicked)="openPlayerGameDialog($event)"
       ></app-mini-event-timeline>
     </div>
-    <!-- TODO: Game stats and team form aren't migrated yet (phases 6-7, see the TODO in game.component.ts) -->
-    <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="game-container">
+    <div *ngIf="showGameStats" class="game-container">
       <app-game-stats
+          [teamGameStats]="rightRail.teamGameStats"
+          [homeTeamId]="landing.homeTeam.id"
+          [awayTeamId]="landing.awayTeam.id"
           [homeTeamLogo]="homeTeamLogo"
           [awayTeamLogo]="awayTeamLogo"
       ></app-game-stats>
     </div>
-    <div *ngIf="unmigratedSectionsEnabled && landing && !completedGame" class="game-container">
-      <app-team-form></app-team-form>
+    <div *ngIf="landing && showTeamForm" class="game-container">
+      <app-team-form
+          [homeTeamId]="landing.homeTeam.id"
+          [awayTeamId]="landing.awayTeam.id"
+          [homeTeamGames]="homeTeamFormGames"
+          [awayTeamGames]="awayTeamFormGames"
+      ></app-team-form>
     </div>
   </div>
   <div *ngIf="!futureGame && playByPlay" class="side-game">

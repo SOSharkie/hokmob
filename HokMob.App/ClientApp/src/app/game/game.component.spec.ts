@@ -7,12 +7,16 @@ import { BehaviorSubject } from 'rxjs';
 import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameBundle } from '@shared/models/nhl-web-api/game-bundle.model';
+import { ClubScheduleSeason } from '@shared/models/nhl-web-api/club-schedule.model';
 import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
+import { MatDialog } from '@angular/material/dialog';
+import { PlayerGameDialogComponent } from '@app/game/player-game-dialog/player-game-dialog.component';
 import {
   derivedIntermissionLanding,
   derivedLiveLanding,
+  mockClubScheduleSeason,
   mockGameBundle,
   mockGameLanding,
   mockPlayoffScoreResponse
@@ -65,6 +69,16 @@ describe('GameComponent', () => {
         request.flush('Server error', {status: 500, statusText: 'Internal Server Error'});
       }
     });
+  }
+
+  /** Answers the team form request for a team's season with the schedule, or with a server error without one. */
+  function flushClubSchedule(teamAbbrev: string, season: number, schedule?: ClubScheduleSeason): void {
+    const request = httpMock.expectOne(`/api/nhl/club-schedule-season/${teamAbbrev}/${season}`);
+    if (schedule) {
+      request.flush(schedule);
+    } else {
+      request.flush('Server error', {status: 500, statusText: 'Internal Server Error'});
+    }
   }
 
   /** Waits for pending service promises, then updates the view. */
@@ -144,15 +158,48 @@ describe('GameComponent', () => {
     expect(openDialog).toHaveBeenCalledWith(8478398);
   });
 
-  it('should keep the boxscore and right-rail but hide the sections not migrated yet', async () => {
+  it('should pass the rated players with full names to the top players', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
-    expect(component.boxscore.id).toBe(2025021057);
-    expect(component.rightRail.teamGameStats.length).toBeGreaterThan(0);
-    expect(component.showTopPlayers).toBeTrue();
-    ['app-game-top-players', 'app-game-stats', 'app-team-form']
-        .forEach(selector => expect(element(selector)).withContext(selector).toBeNull());
+    const topPlayers = element('app-game-top-players');
+    expect(topPlayers.homePlayers.length).toBe(20);
+    expect(topPlayers.homePlayers.slice(0, 2).map(player => player.name)).toEqual(['Eric Comrie', 'Haydn Fleury']);
+    expect(topPlayers.awayPlayers[0].name).toBe('Dylan Holloway');
+  });
+
+  it('should pass the right-rail team stats and team IDs to the game stats', async () => {
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    const gameStats = element('app-game-stats');
+    expect(gameStats.teamGameStats.find(stat => stat.category === 'hits')).toEqual({category: 'hits', awayValue: 13, homeValue: 26});
+    expect(gameStats.homeTeamId).toBe(52);
+    expect(gameStats.awayTeamId).toBe(19);
+    expect(gameStats.homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    // No team form for a finished game
+    expect(element('app-team-form')).toBeNull();
+  });
+
+  it('should open the player dialog with the game stats of the clicked player', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    fixture.debugElement.query(By.css('app-game-top-players')).triggerEventHandler('playerClicked', 8476412);
+    expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
+      data: {player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.1})}
+    }));
+  });
+
+  it('should not open the player dialog for a player without game stats', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    open('2025021057');
+    flushBundle('2025021057', {...mockGameBundle(2025021057), boxscore: undefined});
+    await settle();
+    component.openPlayerGameDialog(8476460);
+    expect(openDialog).not.toHaveBeenCalled();
+    expect(element('app-game-top-players')).toBeNull();
   });
 
   it('should not load a series status or poll a finished game', fakeAsync(() => {
@@ -201,6 +248,8 @@ describe('GameComponent', () => {
     expect(text('.game-load-error')).toBeUndefined();
     expect(element('app-momentum')).toBeNull();
     expect(element('app-mini-event-timeline')).toBeNull();
+    expect(element('app-game-top-players')).toBeNull();
+    expect(element('app-game-stats')).toBeNull();
   });
 
   it('should show an error instead of the game when the landing fails', async () => {
@@ -216,12 +265,76 @@ describe('GameComponent', () => {
     open('2026020056');
     flushBundle('2026020056', mockGameBundle(2026020056));
     await settle();
+    flushClubSchedule('BOS', 20262027);
+    flushClubSchedule('UTA', 20262027);
+    await settle();
     expect(text('.info-label')).toBe('TV: NESN');
     expect(text('.game-venue-container')).toContain('TD Garden');
     expect(element('app-goal-scorers')).toBeNull();
     expect(component.showTopPlayers).toBeFalse();
+    expect(component.homePlayers).toEqual([]);
+    expect(element('app-game-top-players')).toBeNull();
+    expect(element('app-game-stats')).toBeNull();
     expect(element('app-momentum')).toBeNull();
     expect(element('app-mini-event-timeline')).toBeNull();
+    // Both team form requests failed
+    expect(element('app-team-form')).toBeNull();
+  });
+
+  it('should show the team form of a real future game, filled in from the previous season', async () => {
+    open('2026020056');
+    flushBundle('2026020056', mockGameBundle(2026020056));
+    await settle();
+    expect(element('app-team-form')).toBeNull();
+
+    flushClubSchedule('BOS', 20262027, mockClubScheduleSeason('BOS', 20262027));
+    flushClubSchedule('UTA', 20262027, mockClubScheduleSeason('UTA', 20262027));
+    await settle();
+    flushClubSchedule('BOS', 20252026, mockClubScheduleSeason('BOS', 20252026));
+    flushClubSchedule('UTA', 20252026, mockClubScheduleSeason('UTA', 20252026));
+    await settle();
+
+    const teamForm = element('app-team-form');
+    expect(teamForm.homeTeamId).toBe(6);
+    expect(teamForm.awayTeamId).toBe(68);
+    expect(teamForm.homeTeamGames.map(game => game.id))
+        .toEqual([2025030116, 2025030115, 2025030114, 2025030113, 2025030112]);
+    expect(teamForm.awayTeamGames.map(game => game.id))
+        .toEqual([2025030176, 2025030175, 2025030174, 2025030173, 2025030172]);
+  });
+
+  it('should show the team form when only one team has games', async () => {
+    open('2026020056');
+    flushBundle('2026020056', mockGameBundle(2026020056));
+    await settle();
+    flushClubSchedule('BOS', 20262027, mockClubScheduleSeason('BOS', 20262027));
+    flushClubSchedule('UTA', 20262027);
+    await settle();
+    flushClubSchedule('BOS', 20252026, mockClubScheduleSeason('BOS', 20252026));
+    await settle();
+
+    const teamForm = element('app-team-form');
+    expect(teamForm.homeTeamGames.length).toBe(5);
+    expect(teamForm.awayTeamGames).toEqual([]);
+  });
+
+  it('should ignore a late team form for the previous game', async () => {
+    open('2026020056');
+    flushBundle('2026020056', mockGameBundle(2026020056));
+    await settle();
+
+    routeParams.next({id: '2025021057'});
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    flushClubSchedule('BOS', 20262027, mockClubScheduleSeason('BOS', 20262027));
+    flushClubSchedule('UTA', 20262027, mockClubScheduleSeason('UTA', 20262027));
+    await settle();
+    flushClubSchedule('BOS', 20252026, mockClubScheduleSeason('BOS', 20252026));
+    flushClubSchedule('UTA', 20252026, mockClubScheduleSeason('UTA', 20252026));
+    await settle();
+
+    expect(component.landing.id).toBe(2025021057);
+    expect(component.homeTeamFormGames).toEqual([]);
+    expect(component.awayTeamFormGames).toEqual([]);
   });
 
   it('should refresh a future game scheduled today', fakeAsync(() => {
@@ -230,9 +343,14 @@ describe('GameComponent', () => {
     open('2026020056');
     flushBundle('2026020056', bundle);
     settleFakeAsync();
+    flushClubSchedule('BOS', 20262027);
+    flushClubSchedule('UTA', 20262027);
+    settleFakeAsync();
     tick(10000);
     flushBundle('2026020056', bundle);
     settleFakeAsync();
+    // The team form is only loaded once
+    httpMock.expectNone(request => request.url.includes('club-schedule-season'));
     fixture.destroy();
     tick(10000);
     httpMock.expectNone('/api/nhl/gamecenter/2026020056/landing');
@@ -241,6 +359,9 @@ describe('GameComponent', () => {
   it('should refresh a live game every 10 seconds and stop once it is over', fakeAsync(() => {
     open('2025021057');
     flushBundle('2025021057', {...mockGameBundle(2025021057), landing: derivedLiveLanding()});
+    settleFakeAsync();
+    flushClubSchedule('WPG', 20252026);
+    flushClubSchedule('STL', 20252026);
     settleFakeAsync();
     expect(component.liveGame).toBeTrue();
     expect(element('app-goal-scorers').scoring.length).toBe(2);
@@ -268,6 +389,9 @@ describe('GameComponent', () => {
     open('2025021057');
     flushBundle('2025021057', {...mockGameBundle(2025021057), landing: derivedLiveLanding()});
     settleFakeAsync();
+    flushClubSchedule('WPG', 20252026);
+    flushClubSchedule('STL', 20252026);
+    settleFakeAsync();
 
     tick(10000);
     flushBundle('2025021057', {});
@@ -284,6 +408,9 @@ describe('GameComponent', () => {
   it('should count down an intermission between refreshes', fakeAsync(() => {
     open('2025021057');
     flushBundle('2025021057', {...mockGameBundle(2025021057), landing: derivedIntermissionLanding()});
+    settleFakeAsync();
+    flushClubSchedule('WPG', 20252026);
+    flushClubSchedule('STL', 20252026);
     settleFakeAsync();
     expect(component.isIntermission).toBeTrue();
     expect(component.intermissionTimeRemaining).toBe('16:40 till 2nd');

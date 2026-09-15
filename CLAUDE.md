@@ -3,16 +3,15 @@
 Hockey stats site (like Fotmob, for the NHL). `HokMob.App/` is an ASP.NET Core (.NET 7) backend that serves the Angular
 app and proxies the NHL API. `HokMob.App/ClientApp/` is the Angular 15 frontend (Angular Material, dayjs, chart.js).
 
-## NHL API migration (in progress)
+## NHL API migration (home and game pages done)
 
-The old NHL APIs (`statsapi.web.nhl.com`, `cms.nhl.bamgrid.com`, `suggest.svc.nhl.com`) are dead. Pages are being
-moved to `api-web.nhle.com` phase by phase. **Read `docs/nhl-api-migration-plan.md` before working on any page**: it
-has field mappings, what's done, decisions and known risks. Update its status, tables and decisions when you finish or
-change a phase.
+The old NHL APIs (`statsapi.web.nhl.com`, `cms.nhl.bamgrid.com`, `suggest.svc.nhl.com`) are dead. The home and game
+pages were moved to `api-web.nhle.com` in phases 0–8. **Read `docs/nhl-api-migration-plan.md` before working on any
+page**: it has field mappings, decisions, known risks, and in section 10 the open live game checks and follow-ups.
+Update it when you change a migrated page or finish an open item.
 
-- Unmigrated pages (team, player, playoffs bracket, search) still call dead APIs, and the game page hides its phase
-  6–7 sections until they migrate. Their `ERR_NAME_NOT_RESOLVED` / `statsapi.web.nhl.com` console errors are
-  expected noise, not regressions.
+- Unmigrated pages (team, player, playoffs bracket, search) still call dead APIs. Their `ERR_NAME_NOT_RESOLVED` /
+  `statsapi.web.nhl.com` console errors are expected noise, not regressions.
 - Out-of-scope code that breaks because a shared component changed gets the smallest compile fix plus a `// TODO:`
   comment pointing at the plan (see `team.component.ts` for the format).
 
@@ -27,7 +26,7 @@ change a phase.
     only for unmigrated pages.
   - `services/`: Angular services.
   - `utils/`: static helpers: `PeriodUtils`, `NhlGameInfoUtils`, `NhlTeamUtils`, `NhlTeamLogoUtils`,
-    `NhlTeamColorUtils`, `DateTimeUtils`, `StatsUtils`.
+    `NhlTeamColorUtils`, `NhlPlayerHeadshotUtils`, `DateTimeUtils`, `StatsUtils`, `PlayByPlayUtils`.
   - `enums/`: new API enums (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...).
   - `components/`: shared components (scorecard, standings, ...).
 - Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`,
@@ -114,7 +113,8 @@ change a phase.
   `git checkout -- <file>`. Never commit the override.
 - **Sample data:** the API is public. `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>` and inspect
   with `node -e`. Useful test inputs are listed in the plan's phases table. No live games until the preseason starts
-  on 2026-09-29; the 2025-26 playoffs are all finished.
+  on 2026-09-29; the 2025-26 playoffs are all finished. During a live game, `npm run capture-live-fixtures -- --watch`
+  (from `HokMob.App/ClientApp`) saves live responses for the plan's section 10 checks.
 
 ## Git
 

@@ -12,7 +12,7 @@
           <img [src]="homeTeamLogo" alt="" class="team-logo">
         </div>
         <div class="chart-container">
-          <canvas id="shotDoughnut"></canvas>
+          <canvas #shotChart></canvas>
         </div>
         <div *ngIf="awayTeamLogo" class="team-shots">
           <img [src]="awayTeamLogo" alt="" class="team-logo">
@@ -24,58 +24,13 @@
       </div>
     </div>
     <div class="team-stats-container">
-      <div class="team-stats-row">
-        <span class="home team-stat" [ngStyle]="{'background-color': this.homeFacOffWin ? this.homeColor : ''}">
-          {{homeFaceOffPercentage}}
+      <div *ngFor="let row of statRows" class="team-stats-row">
+        <span class="home team-stat" [ngStyle]="{'background-color': row.homeBetter ? homeColor : ''}">
+          {{row.homeValue}}
         </span>
-        <span class="stats-label">Faceoff %</span>
-        <span class="away team-stat" [ngStyle]="{'background-color': this.awayFacOffWin ? this.awayColor: ''}">
-          {{awayFaceOffPercentage}}
-        </span>
-      </div>
-      <div class="team-stats-row">
-        <span class="home team-stat" [ngStyle]="{'background-color': this.homePPWin ? this.homeColor : ''}">
-          {{homePowerPlay}}
-        </span>
-        <span class="stats-label">Power Plays</span>
-        <span class="away team-stat" [ngStyle]="{'background-color': this.awayPPWin ? this.awayColor: ''}">
-          {{awayPowerPlay}}
-        </span>
-      </div>
-      <div class="team-stats-row">
-        <span class="home team-stat" [ngStyle]="{'background-color': this.homePimWin ? this.homeColor : ''}">
-          {{homePim}}
-        </span>
-        <span class="stats-label">Penalty Minutes</span>
-        <span class="away team-stat" [ngStyle]="{'background-color': this.awayPimWin ? this.awayColor: ''}">
-          {{awayPim}}
-        </span>
-      </div>
-      <div class="team-stats-row">
-        <span class="home team-stat" [ngStyle]="{'background-color': this.homeHitWin ? this.homeColor : ''}">
-          {{homeHits}}
-        </span>
-        <span class="stats-label">Hits</span>
-        <span class="away team-stat" [ngStyle]="{'background-color': this.awayHitWin ? this.awayColor: ''}">
-          {{awayHits}}
-        </span>
-      </div>
-      <div class="team-stats-row">
-        <span class="home team-stat" [ngStyle]="{'background-color': this.homeBlockWin ? this.homeColor : ''}">
-          {{homeBlocks}}
-        </span>
-        <span class="stats-label">Blocks</span>
-        <span class="away team-stat" [ngStyle]="{'background-color': this.awayBlockWin ? this.awayColor: ''}">
-          {{awayBlocks}}
-        </span>
-      </div>
-      <div class="team-stats-row">
-        <span class="home team-stat" [ngStyle]="{'background-color': this.homeTakeawayWin ? this.homeColor : ''}">
-          {{homeTakeaways}}
-        </span>
-        <span class="stats-label">Takeaways</span>
-        <span class="away team-stat" [ngStyle]="{'background-color': this.awayTakeawayWin ? this.awayColor: ''}">
-          {{awayTakeaways}}
+        <span class="stats-label">{{row.label}}</span>
+        <span class="away team-stat" [ngStyle]="{'background-color': row.awayBetter ? awayColor : ''}">
+          {{row.awayValue}}
         </span>
       </div>
     </div>

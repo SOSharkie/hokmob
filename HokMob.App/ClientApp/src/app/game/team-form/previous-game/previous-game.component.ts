@@ -1,6 +1,5 @@
-import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
-import {NhlGameDayModel} from "@shared/models/nhl-schedule/nhl-game-day.model";
-import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
+import {Component, Input} from '@angular/core';
+import {ClubScheduleGame, ClubScheduleTeam} from "@shared/models/nhl-web-api/club-schedule.model";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 
@@ -9,60 +8,75 @@ import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
   templateUrl: './previous-game.component.html',
   styleUrls: ['./previous-game.component.scss']
 })
-export class PreviousGameComponent implements OnChanges {
+export class PreviousGameComponent {
 
+  /**
+   * A finished game from the team's club schedule.
+   */
   @Input()
-  public gameDay: NhlGameDayModel;
+  public game: ClubScheduleGame;
 
+  /**
+   * The team whose form the game is part of. Its wins are green and its losses red.
+   */
   @Input()
-  public team: NhlTeamModel;
+  public teamId: number;
 
   @Input()
   public isLast: boolean;
 
-  public homeTeamLogo: any;
+  public get homeTeamLogo(): string {
+    return NhlTeamLogoUtils.getTeamPrimaryLogo(this.game?.homeTeam?.id);
+  }
 
-  public awayTeamLogo: any;
+  public get awayTeamLogo(): string {
+    return NhlTeamLogoUtils.getTeamPrimaryLogo(this.game?.awayTeam?.id);
+  }
 
   public get homeTeamShortName(): string {
-    return NhlTeamUtils.getTeam(this.gameDay.games[0].teams.home.team.id).teamName;
+    return PreviousGameComponent.getShortName(this.game?.homeTeam);
   }
 
   public get awayTeamShortName(): string {
-    return NhlTeamUtils.getTeam(this.gameDay.games[0].teams.away.team.id).teamName;
+    return PreviousGameComponent.getShortName(this.game?.awayTeam);
   }
 
+  /**
+   * The score as "home - away", or "N/A" without a score.
+   */
   public get score(): string {
-    if (this.gameDay) {
-      return this.gameDay.games[0].teams.home.score + " - " + this.gameDay.games[0].teams.away.score;
+    if (!this.hasScore) {
+      return "N/A";
     }
-    return "N/A";
+    return this.game.homeTeam.score + " - " + this.game.awayTeam.score;
   }
 
+  /**
+   * "green" when the team won, "red" when it lost, and empty without a score or when the team didn't play.
+   */
   public get scoreColor(): string {
-    if (this.gameDay) {
-      if (this.gameDay.games[0].teams.home.team.id === this.team.id) {
-         if (this.gameDay.games[0].teams.home.score > this.gameDay.games[0].teams.away.score) {
-           return "green"
-         } else {
-           return "red";
-         }
-      } else {
-        if (this.gameDay.games[0].teams.home.score < this.gameDay.games[0].teams.away.score) {
-          return "green"
-        } else {
-          return "red";
-        }
-      }
+    if (!this.hasScore || this.game.homeTeam.score === this.game.awayTeam.score) {
+      return "";
+    }
+    const homeTeamWon = this.game.homeTeam.score > this.game.awayTeam.score;
+    if (this.teamId === this.game.homeTeam.id) {
+      return homeTeamWon ? "green" : "red";
+    }
+    if (this.teamId === this.game.awayTeam.id) {
+      return homeTeamWon ? "red" : "green";
     }
     return "";
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['gameDay']) {
-      this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.gameDay.games[0].teams.home.team.id);
-      this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.gameDay.games[0].teams.away.team.id);
-    }
+  private get hasScore(): boolean {
+    return typeof this.game?.homeTeam?.score === "number" && typeof this.game?.awayTeam?.score === "number";
+  }
+
+  /**
+   * The team's common name from the schedule, like "Bruins", or from the team utils when it's missing.
+   */
+  private static getShortName(team: ClubScheduleTeam): string {
+    return team?.commonName?.default ?? NhlTeamUtils.getTeam(team?.id).teamName;
   }
 
 }

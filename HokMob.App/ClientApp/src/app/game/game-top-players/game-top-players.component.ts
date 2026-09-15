@@ -1,8 +1,7 @@
 import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
-import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
-import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
-import {NhlImageService} from "@shared/services/nhl-image.service";
+import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
+import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 
 @Component({
   selector: 'app-game-top-players',
@@ -11,170 +10,78 @@ import {StatsUtils} from "@shared/utils/stats-utils";
 })
 export class GameTopPlayersComponent implements OnChanges {
 
+  /**
+   * The home team's players, best rated first (StatsUtils.getGamePlayers).
+   */
   @Input()
-  public homePlayerStats: NhlBoxscorePlayerModel[];
+  public homePlayers: GamePlayer[];
 
+  /**
+   * The away team's players, best rated first (StatsUtils.getGamePlayers).
+   */
   @Input()
-  public awayPlayerStats: NhlBoxscorePlayerModel[];
+  public awayPlayers: GamePlayer[];
 
   @Output()
   public playerClicked = new EventEmitter<number>();
 
-  public topHomePlayers: NhlBoxscorePlayerModel[] = [];
+  public topHomePlayers: GamePlayer[] = [];
 
-  public topAwayPlayers: NhlBoxscorePlayerModel[] = [];
+  public topAwayPlayers: GamePlayer[] = [];
 
-  public homeGoalies: NhlBoxscorePlayerModel[] = [];
+  /**
+   * The best rated player of the game, shown with a star. The home player wins a tie.
+   */
+  public gameMvpPlayerId: number;
 
-  public awayGoalies: NhlBoxscorePlayerModel[] = [];
-
-  public homePlayerHeadshots: any[];
-
-  public awayPlayerHeadshots: any[];
-
-  public homeImagesLoaded: boolean = false;
-
-  public awayImagesLoaded: boolean = false;
-
-  public readonly numSkatersToShow = 6;
-
-  constructor(private nhlImageService: NhlImageService) {
-  }
+  public readonly numPlayersToShow = 6;
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['homePlayerStats']) {
-      this.handleHomePlayers();
-    }
-    if (changes['awayPlayerStats']) {
-      this.handleAwayPlayers();
-    }
+    this.topHomePlayers = this.getTopPlayers(this.homePlayers);
+    this.topAwayPlayers = this.getTopPlayers(this.awayPlayers);
+    this.gameMvpPlayerId = this.getGameMvpPlayerId();
   }
 
-  public handleHomePlayers(): void {
-    if (!this.homePlayerStats || this.homePlayerStats.length < 1) {
-      return;
-    }
-    let homeTopPlayers = this.homePlayerStats.slice(0, this.numSkatersToShow);
-    this.homeGoalies = this.homePlayerStats.filter(player => player.position.code === 'G')
-        .sort((a, b) => StatsUtils.sortByGoalieTimeOnIce(a, b));
-    if (homeTopPlayers.findIndex(player => player.position.code === 'G') === -1) {
-      homeTopPlayers[this.numSkatersToShow - 1] = this.homeGoalies[0];
-    }
-
-    let imagesChanged = false;
-    if (this.topHomePlayers.length === this.numSkatersToShow || this.topAwayPlayers.length === this.numSkatersToShow) {
-      for (let i = 0; i < 6; i++) {
-        if (!imagesChanged) {
-          if (homeTopPlayers[i].person.id !== this.topHomePlayers[i].person.id) {
-            imagesChanged = true;
-          }
-        }
-      }
-    } else {
-      imagesChanged = true;
-    }
-    this.topHomePlayers = homeTopPlayers;
-    this.setGameMvp();
-    if (imagesChanged) {
-      this.loadHomeImages();
-    }
+  public getHokmobScoreColor(player: GamePlayer): string {
+    return StatsUtils.getHokmobRatingColor(player.hokmobRating);
   }
 
-  public handleAwayPlayers(): void {
-    if (!this.awayPlayerStats || this.awayPlayerStats.length < 1) {
-      return;
-    }
-    let awayTopPlayers = this.awayPlayerStats.slice(0, this.numSkatersToShow);
-    this.awayGoalies = this.awayPlayerStats.filter(player => player.position.code === 'G')
-        .sort((a, b) => StatsUtils.sortByGoalieTimeOnIce(a, b));
-    if (awayTopPlayers.findIndex(player => player.position.code === 'G') === -1) {
-      awayTopPlayers[this.numSkatersToShow - 1] = this.awayGoalies[0];
-    }
-
-    let imagesChanged = false;
-    if (this.topAwayPlayers.length === this.numSkatersToShow) {
-      for (let i = 0; i < 6; i++) {
-        if (!imagesChanged) {
-          if (awayTopPlayers[i].person.id !== this.topAwayPlayers[i].person.id) {
-            imagesChanged = true;
-          }
-        }
-      }
-    } else {
-      imagesChanged = true;
-    }
-    this.topAwayPlayers = awayTopPlayers;
-    this.setGameMvp();
-    if (imagesChanged) {
-      this.loadAwayImages();
-    }
+  public showBlankHeadshot(event: Event): void {
+    NhlPlayerHeadshotUtils.showBlankHeadshot(event);
   }
 
-  private setGameMvp(): void {
-    if (!this.awayPlayerStats || this.awayPlayerStats.length < 1 || !this.homePlayerStats || this.homePlayerStats.length < 1) {
-      return;
-    }
-    let homeBestStats = this.homePlayerStats[0].stats
-    let awayBestStats = this.awayPlayerStats[0].stats
-
-    let homeBestRating = homeBestStats.skaterStats ? homeBestStats.skaterStats.hokmobRating : homeBestStats.goalieStats.hokmobRating;
-    let awayBestRating = awayBestStats.skaterStats ? awayBestStats.skaterStats.hokmobRating : awayBestStats.goalieStats.hokmobRating;
-    if (homeBestStats.skaterStats) {
-      this.homePlayerStats[0].stats.skaterStats.isGameMvp = homeBestRating >= awayBestRating;
-    } else {
-      this.homePlayerStats[0].stats.goalieStats.isGameMvp = homeBestRating >= awayBestRating;
-    }
-    if (awayBestStats.skaterStats) {
-      this.awayPlayerStats[0].stats.skaterStats.isGameMvp = awayBestRating > homeBestRating;
-    } else {
-      this.awayPlayerStats[0].stats.goalieStats.isGameMvp = awayBestRating > homeBestRating;
-    }
+  public trackByPlayerId(index: number, player: GamePlayer): number {
+    return player.playerId;
   }
 
-  public loadHomeImages(): void {
-    this.homePlayerHeadshots = [];
-    for (let i = 0; i < this.numSkatersToShow; i++){
-      this.homePlayerHeadshots.push('assets/blank_headshot.png');
-    }
-    this.topHomePlayers.forEach((player, index) => {
-      this.nhlImageService.getNhlPlayerHeadshot(player.person.id).then(data => {
-        let reader = new FileReader();
-        reader.addEventListener("load", () => {
-          this.homePlayerHeadshots[index] = reader.result;
-        }, false);
-        reader.readAsDataURL(data);
-      });
-    });
-    this.homeImagesLoaded = true;
+  public clickPlayer(player: GamePlayer): void {
+    this.playerClicked.emit(player.playerId);
   }
 
-  public loadAwayImages(): void {
-    this.awayPlayerHeadshots = [];
-    for (let i = 0; i < this.numSkatersToShow; i++){
-      this.awayPlayerHeadshots.push('assets/blank_headshot.png')
+  /**
+   * Returns the best rated players. When none of them is a goalie, the last one is replaced by the goalie who played
+   * the most.
+   */
+  private getTopPlayers(players: GamePlayer[]): GamePlayer[] {
+    const sortedPlayers = [...(players ?? [])].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB));
+    const topPlayers = sortedPlayers.slice(0, this.numPlayersToShow);
+    const goalie = sortedPlayers.filter(player => player.goalieStats)
+        .sort((playerA, playerB) => StatsUtils.sortByGoalieTimeOnIce(playerA, playerB))[0];
+    if (goalie && !topPlayers.some(player => player.goalieStats)) {
+      topPlayers.splice(Math.min(topPlayers.length, this.numPlayersToShow - 1), 1, goalie);
     }
-    this.topAwayPlayers.forEach((player, index) => {
-      this.nhlImageService.getNhlPlayerHeadshot(player.person.id).then(data => {
-        let reader = new FileReader();
-        reader.addEventListener("load", () => {
-          this.awayPlayerHeadshots[index] = reader.result;
-        }, false);
-        reader.readAsDataURL(data);
-      });
-    });
-    this.awayImagesLoaded = true;
+    return topPlayers;
   }
 
-  public getHokmobScoreColor(player: NhlBoxscorePlayerModel): string {
-    if (player.stats.skaterStats) {
-      return StatsUtils.getHokmobRatingColor(player.stats.skaterStats.hokmobRating);
-    } else {
-      return StatsUtils.getHokmobRatingColor(player.stats.goalieStats.hokmobRating);
+  private getGameMvpPlayerId(): number {
+    const bestHomePlayer = this.topHomePlayers.reduce<GamePlayer>((best, player) =>
+        !best || player.hokmobRating > best.hokmobRating ? player : best, undefined);
+    const bestAwayPlayer = this.topAwayPlayers.reduce<GamePlayer>((best, player) =>
+        !best || player.hokmobRating > best.hokmobRating ? player : best, undefined);
+    if (!bestHomePlayer || !bestAwayPlayer) {
+      return undefined;
     }
-  }
-
-  public clickPlayer(player: NhlBoxscorePlayerModel): void {
-    this.playerClicked.emit(player.person.id);
+    return bestHomePlayer.hokmobRating >= bestAwayPlayer.hokmobRating ? bestHomePlayer.playerId : bestAwayPlayer.playerId;
   }
 
 }

@@ -16,11 +16,15 @@ import {RightRail} from "@shared/models/nhl-web-api/right-rail.model";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
+import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
+import {StatsUtils} from "@shared/utils/stats-utils";
+import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
+import {
+  PlayerGameDialogComponent,
+  PlayerGameDialogData
+} from "@app/game/player-game-dialog/player-game-dialog.component";
+import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
 
-// TODO: Phases 6-7 of docs/nhl-api-migration-plan.md. Top players, game stats and team form still take old API models,
-//  so their sections are hidden (unmigratedSectionsEnabled), and clicking a player doesn't open the player dialog yet
-//  (phase 6). The bundle already loads the boxscore and right-rail responses they need: pass them to each component
-//  as it migrates, and remove the flag after phase 7.
 @Component({
   selector: 'app-game',
   templateUrl: './game.component.html',
@@ -42,6 +46,13 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   public seriesStatus: SeriesStatus;
 
+  /**
+   * The home team's players with their ratings, best first. Empty without a boxscore or player stats.
+   */
+  public homePlayers: GamePlayer[] = [];
+
+  public awayPlayers: GamePlayer[] = [];
+
   public homeTeamLogo: any;
 
   public awayTeamLogo: any;
@@ -60,9 +71,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public leagueRouterLink: string = "/standings";
 
   /**
-   * Shows the sections whose components aren't migrated yet. See the TODO above.
+   * The home team's last finished games before this game, most recent first. Only loaded for games that aren't over.
    */
-  public readonly unmigratedSectionsEnabled = false;
+  public homeTeamFormGames: ClubScheduleGame[] = [];
+
+  public awayTeamFormGames: ClubScheduleGame[] = [];
 
   private intermissionSecondsRemaining: number;
 
@@ -162,8 +175,19 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "";
   }
 
+  // TODO: Verify during a live game that the boxscore has playerByGameStats and the right-rail has teamGameStats, or top
+  //  players and game stats stay hidden until the game ends (see docs/nhl-api-migration-plan.md, section 10).
   public get showTopPlayers(): boolean {
-    return this.completedGame || (this.liveGame && this.playByPlay?.plays?.length > 10);
+    return this.homePlayers.length > 0 && this.awayPlayers.length > 0 &&
+        (this.completedGame || (this.liveGame && this.playByPlay?.plays?.length > 10));
+  }
+
+  public get showGameStats(): boolean {
+    return !this.futureGame && this.rightRail?.teamGameStats?.length > 0;
+  }
+
+  public get showTeamForm(): boolean {
+    return !this.completedGame && (this.homeTeamFormGames.length > 0 || this.awayTeamFormGames.length > 0);
   }
 
   private previousUrl: string;
@@ -206,9 +230,20 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Opens the player's game stats. Does nothing for a player without boxscore stats (or without a boxscore).
+   */
   public openPlayerGameDialog(playerId: number): void {
-    // TODO: Phase 6 (see docs/nhl-api-migration-plan.md): open PlayerGameDialogComponent with the player's boxscore
-    //  stats and player/{id}/landing. Its old-model dialog data can't be built from the new API.
+    const player = [...this.homePlayers, ...this.awayPlayers].find(item => item.playerId === playerId);
+    if (!player) {
+      return;
+    }
+    const data: PlayerGameDialogData = {player};
+    this.seriesDialog.open(PlayerGameDialogComponent, {
+      maxWidth: "85vw",
+      backdropClass: "dialog-backdrop",
+      data
+    });
   }
 
   /**
@@ -229,6 +264,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.homeTeam.id);
       this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.awayTeam.id);
       this.loadSeriesStatus();
+      this.loadTeamForm();
       if (!this.completedGame && (this.liveGame || this.gameDay === "Today")) {
         this.startContinuousNhlGameUpdates();
       }
@@ -245,6 +281,10 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.boxscore = undefined;
     this.rightRail = undefined;
     this.seriesStatus = undefined;
+    this.homePlayers = [];
+    this.awayPlayers = [];
+    this.homeTeamFormGames = [];
+    this.awayTeamFormGames = [];
     this.homeTeamLogo = undefined;
     this.awayTeamLogo = undefined;
     this.isIntermission = false;
@@ -260,6 +300,9 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.playByPlay = bundle.playByPlay ?? this.playByPlay;
     this.boxscore = bundle.boxscore ?? this.boxscore;
     this.rightRail = bundle.rightRail ?? this.rightRail;
+    const rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
+    this.homePlayers = StatsUtils.getGamePlayers(this.boxscore, true, rosterSpots);
+    this.awayPlayers = StatsUtils.getGamePlayers(this.boxscore, false, rosterSpots);
     this.updateIntermission();
   }
 
@@ -278,6 +321,26 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     }).catch(() => {
       // Already logged by the service
     });
+  }
+
+  /**
+   * Loads each team's last 5 games before this game for the team form, unless the game is over. It's loaded once, not
+   * on refresh. A team whose games can't be loaded gets none, and the section is hidden when neither team has games.
+   */
+  private loadTeamForm(): void {
+    if (this.completedGame) {
+      return;
+    }
+    const gameId = this.gameId;
+    const teamFormGames = (teamAbbrev: string): Promise<ClubScheduleGame[]> =>
+        this.nhlGameService.getTeamFormGames(teamAbbrev, this.landing).catch((): ClubScheduleGame[] => []);
+    Promise.all([teamFormGames(this.landing.homeTeam.abbrev), teamFormGames(this.landing.awayTeam.abbrev)])
+        .then(([homeGames, awayGames]) => {
+          if (gameId === this.gameId) {
+            this.homeTeamFormGames = homeGames;
+            this.awayTeamFormGames = awayGames;
+          }
+        });
   }
 
   /**
@@ -311,8 +374,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Updates the intermission countdown from the landing clock, whose secondsRemaining is expected to count down the
-   * intermission while clock.inIntermission is true (not verified during a live game yet, see the migration plan).
-   * A 1s timer keeps the countdown moving between refreshes.
+   * intermission while clock.inIntermission is true. A 1s timer keeps the countdown moving between refreshes.
+   *
+   * TODO: Verify during a live game that secondsRemaining counts down the intermission (and isn't 0 or the next
+   *  period's 20:00), and that periodDescriptor is still the period just ended (see docs/nhl-api-migration-plan.md,
+   *  section 10).
    */
   private updateIntermission(): void {
     let clock = this.landing?.clock;
