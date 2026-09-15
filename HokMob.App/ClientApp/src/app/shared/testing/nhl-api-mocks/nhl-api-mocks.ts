@@ -38,6 +38,9 @@ import gamecenter2026020056Landing from './gamecenter-2026020056-landing.json';
 import gamecenter2026020056PlayByPlay from './gamecenter-2026020056-play-by-play.json';
 import gamecenter2026020056Boxscore from './gamecenter-2026020056-boxscore.json';
 import gamecenter2026020056RightRail from './gamecenter-2026020056-right-rail.json';
+import playerLanding8476460 from './player-8476460-landing.json';
+import playerLanding8477480 from './player-8477480-landing.json';
+import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
 
 /*
  * Real api-web.nhle.com responses for unit tests, captured on 2026-09-15. The JSON files are unchanged responses, except
@@ -194,6 +197,19 @@ export function mockGameBundle(gameId: MockGamecenterGameId): GameBundle {
     boxscore: mockGameBoxscore(gameId),
     rightRail: mockGameRightRail(gameId)
   };
+}
+
+/** Players with a captured player/{id}/landing response. Both played in 2025021057 (STL @ WPG). */
+export type MockPlayerId = 8476460 | 8477480;
+
+/**
+ * player/{id}/landing for:
+ * - 8476460: Mark Scheifele, WPG center, born 1993-03-15 in Canada.
+ * - 8477480: Eric Comrie, goalie, born 1995-07-06 in Canada. He played for WPG in 2025021057, but his current team is
+ *   now SJS (28).
+ */
+export function mockPlayerLanding(playerId: MockPlayerId): PlayerLanding {
+  return copy(playerId === 8476460 ? playerLanding8476460 : playerLanding8477480);
 }
 
 /**

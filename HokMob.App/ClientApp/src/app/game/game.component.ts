@@ -16,11 +16,16 @@ import {RightRail} from "@shared/models/nhl-web-api/right-rail.model";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
+import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
+import {StatsUtils} from "@shared/utils/stats-utils";
+import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
+import {
+  PlayerGameDialogComponent,
+  PlayerGameDialogData
+} from "@app/game/player-game-dialog/player-game-dialog.component";
 
-// TODO: Phases 6-7 of docs/nhl-api-migration-plan.md. Top players, game stats and team form still take old API models,
-//  so their sections are hidden (unmigratedSectionsEnabled), and clicking a player doesn't open the player dialog yet
-//  (phase 6). The bundle already loads the boxscore and right-rail responses they need: pass them to each component
-//  as it migrates, and remove the flag after phase 7.
+// TODO: Phase 7 of docs/nhl-api-migration-plan.md. Team form still takes old API models, so its section is hidden
+//  (unmigratedSectionsEnabled). Pass it the club schedules when it migrates, and remove the flag.
 @Component({
   selector: 'app-game',
   templateUrl: './game.component.html',
@@ -41,6 +46,13 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
    * The playoff series status from score/{gameDate}. Only loaded for playoff games.
    */
   public seriesStatus: SeriesStatus;
+
+  /**
+   * The home team's players with their ratings, best first. Empty without a boxscore or player stats.
+   */
+  public homePlayers: GamePlayer[] = [];
+
+  public awayPlayers: GamePlayer[] = [];
 
   public homeTeamLogo: any;
 
@@ -163,7 +175,12 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public get showTopPlayers(): boolean {
-    return this.completedGame || (this.liveGame && this.playByPlay?.plays?.length > 10);
+    return this.homePlayers.length > 0 && this.awayPlayers.length > 0 &&
+        (this.completedGame || (this.liveGame && this.playByPlay?.plays?.length > 10));
+  }
+
+  public get showGameStats(): boolean {
+    return !this.futureGame && this.rightRail?.teamGameStats?.length > 0;
   }
 
   private previousUrl: string;
@@ -206,9 +223,20 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Opens the player's game stats. Does nothing for a player without boxscore stats (or without a boxscore).
+   */
   public openPlayerGameDialog(playerId: number): void {
-    // TODO: Phase 6 (see docs/nhl-api-migration-plan.md): open PlayerGameDialogComponent with the player's boxscore
-    //  stats and player/{id}/landing. Its old-model dialog data can't be built from the new API.
+    const player = [...this.homePlayers, ...this.awayPlayers].find(item => item.playerId === playerId);
+    if (!player) {
+      return;
+    }
+    const data: PlayerGameDialogData = {player};
+    this.seriesDialog.open(PlayerGameDialogComponent, {
+      maxWidth: "85vw",
+      backdropClass: "dialog-backdrop",
+      data
+    });
   }
 
   /**
@@ -245,6 +273,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.boxscore = undefined;
     this.rightRail = undefined;
     this.seriesStatus = undefined;
+    this.homePlayers = [];
+    this.awayPlayers = [];
     this.homeTeamLogo = undefined;
     this.awayTeamLogo = undefined;
     this.isIntermission = false;
@@ -260,6 +290,9 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.playByPlay = bundle.playByPlay ?? this.playByPlay;
     this.boxscore = bundle.boxscore ?? this.boxscore;
     this.rightRail = bundle.rightRail ?? this.rightRail;
+    const rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
+    this.homePlayers = StatsUtils.getGamePlayers(this.boxscore, true, rosterSpots);
+    this.awayPlayers = StatsUtils.getGamePlayers(this.boxscore, false, rosterSpots);
     this.updateIntermission();
   }
 

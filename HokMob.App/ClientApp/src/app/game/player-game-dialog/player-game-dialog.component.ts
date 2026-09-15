@@ -1,14 +1,21 @@
 import {Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {NhlImageService} from "@shared/services/nhl-image.service";
-import {NhlStatsService} from "@shared/services/nhl-stats.service";
-import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
-import {GamePlayerModel} from "@shared/models/game-player.model";
-import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
-import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 import {Router} from "@angular/router";
+import * as dayjs from "dayjs";
+import {NhlGameService} from "@shared/services/nhl-game.service";
+import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
-import {StatsUtils} from "../../shared/utils/stats-utils";
+import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
+import {StatsUtils} from "@shared/utils/stats-utils";
+import {BoxscoreGoalie, BoxscoreSkater, GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
+import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
+
+/**
+ * Data of the player game dialog: a player's stats in the game, from the game page's boxscore.
+ */
+export interface PlayerGameDialogData {
+  player: GamePlayer;
+}
 
 @Component({
   selector: 'app-player-game-dialog',
@@ -18,69 +25,95 @@ import {StatsUtils} from "../../shared/utils/stats-utils";
 })
 export class PlayerGameDialogComponent implements OnInit {
 
-  public player: NhlBoxscorePlayerModel;
+  public player: GamePlayer;
 
-  public playerTeam: NhlTeamModel;
+  /**
+   * The player's bio from player/{id}/landing. Undefined until it loads, or when it fails.
+   */
+  public playerLanding: PlayerLanding;
 
-  public playerHeadshot: any;
-
-  public teamLogo: any;
+  public teamLogo: string;
 
   public teamColor: string = "#000000";
 
-  public countryFlagPath = "assets/flags/CAN.png";
+  public get skaterStats(): BoxscoreSkater {
+    return this.player?.skaterStats;
+  }
+
+  public get goalieStats(): BoxscoreGoalie {
+    return this.player?.goalieStats;
+  }
 
   public get isGoalie(): boolean {
-    if (this.player) {
-      return this.player.person.primaryPosition.code === "G";
-    }
-    return false;
+    return !!this.goalieStats;
+  }
+
+  /**
+   * The game's headshot (the player's team that season), or the current one from the player landing.
+   */
+  public get playerHeadshot(): string {
+    return this.player?.headshot || this.playerLanding?.headshot || NhlPlayerHeadshotUtils.blankHeadshot;
+  }
+
+  public get birthCountry(): string {
+    return this.playerLanding?.birthCountry ?? "-";
+  }
+
+  public get countryFlagPath(): string {
+    return this.playerLanding?.birthCountry ? "assets/flags/" + this.playerLanding.birthCountry + ".png" : undefined;
+  }
+
+  public get age(): string {
+    return this.playerLanding?.birthDate ? String(dayjs().diff(dayjs(this.playerLanding.birthDate), 'year')) : "-";
   }
 
   public get weight(): string {
-    if (this.player) {
-      return this.player.person.weight + " lb";
-    }
-    return "-";
+    return this.playerLanding?.weightInPounds ? this.playerLanding.weightInPounds + " lb" : "-";
   }
 
-  constructor(private nhlImageService: NhlImageService,
-              private nhlStatsService: NhlStatsService,
+  /**
+   * Whether to show the faceoff percentage: for centers, and for other skaters who won a faceoff. The boxscore has no
+   * faceoff counts, so a player who took none can't be told apart from one who lost them all.
+   */
+  public get showFaceoffs(): boolean {
+    return this.player?.position === "C" || this.skaterStats?.faceoffWinningPctg > 0;
+  }
+
+  public get faceoffPercentage(): string {
+    return ((this.skaterStats?.faceoffWinningPctg ?? 0) * 100).toFixed(1) + "%";
+  }
+
+  constructor(private nhlGameService: NhlGameService,
               private router: Router,
               private dialogRef: MatDialogRef<PlayerGameDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: GamePlayerModel) {}
+              @Inject(MAT_DIALOG_DATA) public data: PlayerGameDialogData) {}
 
+  /**
+   * Shows the player's game stats right away, and loads the bio (country, age). If the bio fails, those show "-".
+   */
   public ngOnInit(): void {
-    this.player = this.data.playerInfo;
-    this.playerTeam = this.data.playerTeam;
-    this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.playerTeam.id);
-    this.loadImages();
-    this.nhlStatsService.getNhlPlayerStats(this.player.person.id.toString()).then(result => {
-      this.player.person = result;
-      this.countryFlagPath = "assets/flags/" + this.player.person.birthCountry + ".png"
-    });
-  }
-
-  public loadImages(): void {
+    this.player = this.data?.player;
     if (!this.player) {
       return;
     }
-    this.playerHeadshot = 'assets/blank_headshot.png';
-    this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.playerTeam.id);
-    this.nhlImageService.getNhlPlayerHeadshot(this.player.person.id).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.playerHeadshot = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
+    this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.player.teamId);
+    this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.player.teamId);
+    this.nhlGameService.getPlayerLanding(this.player.playerId).then(playerLanding => {
+      this.playerLanding = playerLanding;
+    }).catch(() => {
+      // Already logged by the service
     });
+  }
+
+  public showBlankHeadshot(event: Event): void {
+    NhlPlayerHeadshotUtils.showBlankHeadshot(event);
   }
 
   public clickPlayerProfile(): void {
     this.dialogRef.close();
     setTimeout(() => {
       window.scrollTo(0, 0);
-      this.router.navigate(['/player', this.player.person.id]);
+      this.router.navigate(['/player', this.player.playerId]);
     }, 100)
   }
 
@@ -89,5 +122,4 @@ export class PlayerGameDialogComponent implements OnInit {
   }
 
   protected readonly StatsUtils = StatsUtils;
-  protected readonly Math = Math;
 }

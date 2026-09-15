@@ -10,6 +10,8 @@ import { GameBundle } from '@shared/models/nhl-web-api/game-bundle.model';
 import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
+import { MatDialog } from '@angular/material/dialog';
+import { PlayerGameDialogComponent } from '@app/game/player-game-dialog/player-game-dialog.component';
 import {
   derivedIntermissionLanding,
   derivedLiveLanding,
@@ -144,15 +146,48 @@ describe('GameComponent', () => {
     expect(openDialog).toHaveBeenCalledWith(8478398);
   });
 
-  it('should keep the boxscore and right-rail but hide the sections not migrated yet', async () => {
+  it('should pass the rated players with full names to the top players', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
-    expect(component.boxscore.id).toBe(2025021057);
-    expect(component.rightRail.teamGameStats.length).toBeGreaterThan(0);
-    expect(component.showTopPlayers).toBeTrue();
-    ['app-game-top-players', 'app-game-stats', 'app-team-form']
-        .forEach(selector => expect(element(selector)).withContext(selector).toBeNull());
+    const topPlayers = element('app-game-top-players');
+    expect(topPlayers.homePlayers.length).toBe(20);
+    expect(topPlayers.homePlayers.slice(0, 2).map(player => player.name)).toEqual(['Eric Comrie', 'Haydn Fleury']);
+    expect(topPlayers.awayPlayers[0].name).toBe('Dylan Holloway');
+  });
+
+  it('should pass the right-rail team stats and team IDs to the game stats', async () => {
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    const gameStats = element('app-game-stats');
+    expect(gameStats.teamGameStats.find(stat => stat.category === 'hits')).toEqual({category: 'hits', awayValue: 13, homeValue: 26});
+    expect(gameStats.homeTeamId).toBe(52);
+    expect(gameStats.awayTeamId).toBe(19);
+    expect(gameStats.homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    // Team form isn't migrated yet (phase 7)
+    expect(element('app-team-form')).toBeNull();
+  });
+
+  it('should open the player dialog with the game stats of the clicked player', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    fixture.debugElement.query(By.css('app-game-top-players')).triggerEventHandler('playerClicked', 8476412);
+    expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
+      data: {player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.1})}
+    }));
+  });
+
+  it('should not open the player dialog for a player without game stats', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    open('2025021057');
+    flushBundle('2025021057', {...mockGameBundle(2025021057), boxscore: undefined});
+    await settle();
+    component.openPlayerGameDialog(8476460);
+    expect(openDialog).not.toHaveBeenCalled();
+    expect(element('app-game-top-players')).toBeNull();
   });
 
   it('should not load a series status or poll a finished game', fakeAsync(() => {
@@ -201,6 +236,8 @@ describe('GameComponent', () => {
     expect(text('.game-load-error')).toBeUndefined();
     expect(element('app-momentum')).toBeNull();
     expect(element('app-mini-event-timeline')).toBeNull();
+    expect(element('app-game-top-players')).toBeNull();
+    expect(element('app-game-stats')).toBeNull();
   });
 
   it('should show an error instead of the game when the landing fails', async () => {
@@ -220,6 +257,9 @@ describe('GameComponent', () => {
     expect(text('.game-venue-container')).toContain('TD Garden');
     expect(element('app-goal-scorers')).toBeNull();
     expect(component.showTopPlayers).toBeFalse();
+    expect(component.homePlayers).toEqual([]);
+    expect(element('app-game-top-players')).toBeNull();
+    expect(element('app-game-stats')).toBeNull();
     expect(element('app-momentum')).toBeNull();
     expect(element('app-mini-event-timeline')).toBeNull();
   });

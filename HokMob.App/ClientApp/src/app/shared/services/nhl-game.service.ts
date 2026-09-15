@@ -12,6 +12,7 @@ import {PlayByPlay} from "@shared/models/nhl-web-api/play-by-play.model";
 import {Boxscore} from "@shared/models/nhl-web-api/boxscore.model";
 import {RightRail} from "@shared/models/nhl-web-api/right-rail.model";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
+import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
 
 @Injectable()
 export class NhlGameService {
@@ -30,6 +31,8 @@ export class NhlGameService {
   private readonly nhlScoreUrl = "/api/nhl/score/";
 
   private readonly nhlGamecenterUrl = "/api/nhl/gamecenter/";
+
+  private readonly nhlPlayerUrl = "/api/nhl/player/";
 
   constructor(private http: HttpClient) { }
 
@@ -95,6 +98,16 @@ export class NhlGameService {
   public getSeriesStatus(gameId: number, gameDate: string): Promise<SeriesStatus> {
     return this.get<ScoreResponse>(this.nhlScoreUrl + gameDate)
         .then(response => (response.games ?? []).find(game => game.id === gameId)?.seriesStatus);
+  }
+
+  /**
+   * Gets a player's bio (country, birth date, headshot, ...) from player/{id}/landing, for the player game dialog.
+   * Kept here instead of the player service, which still calls the dead stats API.
+   *
+   * @param playerId - The player ID.
+   */
+  public getPlayerLanding(playerId: number): Promise<PlayerLanding> {
+    return this.get<PlayerLanding>(this.nhlPlayerUrl + playerId + "/landing");
   }
 
   // The methods below call the dead stats API. They're only kept for the unmigrated team and player pages

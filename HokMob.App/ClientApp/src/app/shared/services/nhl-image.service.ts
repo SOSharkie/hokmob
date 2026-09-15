@@ -9,6 +9,9 @@ export class NhlImageService {
 
   constructor(private http: HttpClient) { }
 
+  // TODO: cms.nhl.bamgrid.com is gone (see docs/nhl-api-migration-plan.md). The game page uses headshot URLs directly
+  //  (NhlPlayerHeadshotUtils); switch the player page, search results and stat leaderboards when they migrate, then
+  //  remove this method.
   public getNhlPlayerHeadshot(playerId: number): Promise<Blob> {
     let url = this.nhlPlayerHeadShotUrl + playerId + ".jpg";
 

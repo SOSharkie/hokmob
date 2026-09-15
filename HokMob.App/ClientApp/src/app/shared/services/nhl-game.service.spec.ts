@@ -6,6 +6,7 @@ import {
   mockGameLanding,
   mockGamePlayByPlay,
   mockGameRightRail,
+  mockPlayerLanding,
   mockPlayoffScoreResponse,
   mockScoreResponse
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
@@ -155,6 +156,33 @@ describe('NhlGameService', () => {
       const seriesStatus = service.getSeriesStatus(2025030414, '2026-06-09');
       const rejection = expectAsync(seriesStatus).toBeRejected();
       httpMock.expectOne('/api/nhl/score/2026-06-09').flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getPlayerLanding', () => {
+    it('should request the player landing and resolve the bio', async () => {
+      const playerLanding = service.getPlayerLanding(8476460);
+      httpMock.expectOne('/api/nhl/player/8476460/landing').flush(mockPlayerLanding(8476460));
+      expect(await playerLanding).toEqual(jasmine.objectContaining({
+        playerId: 8476460, position: 'C', birthCountry: 'CAN', birthDate: '1993-03-15'
+      }));
+    });
+
+    it('should resolve a player without optional bio fields', async () => {
+      const response = mockPlayerLanding(8477480);
+      delete response.birthStateProvince;
+      delete response.draftDetails;
+      const playerLanding = service.getPlayerLanding(8477480);
+      httpMock.expectOne('/api/nhl/player/8477480/landing').flush(response);
+      expect((await playerLanding).lastName.default).toBe('Comrie');
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const playerLanding = service.getPlayerLanding(1);
+      const rejection = expectAsync(playerLanding).toBeRejectedWith(jasmine.objectContaining({status: 404}));
+      httpMock.expectOne('/api/nhl/player/1/landing').flush('Not found', {status: 404, statusText: 'Not Found'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
     });

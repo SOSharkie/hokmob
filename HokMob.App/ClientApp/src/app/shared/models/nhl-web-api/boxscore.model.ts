@@ -89,3 +89,21 @@ export interface BoxscoreGoalie {
   shotsAgainst: number;
   saves: number;
 }
+
+/**
+ * A dressed player's game stats with the HokMob rating, built by StatsUtils.getGamePlayers (not part of the response).
+ * Exactly one of skaterStats and goalieStats is set.
+ */
+export interface GamePlayer {
+  playerId: number;
+  teamId: number;
+  isHome: boolean;
+  /** The full name from the roster spots ("Mark Scheifele"), or the boxscore's short name ("M. Scheifele"). */
+  name: string;
+  /** C, L, R, D or G. */
+  position: string;
+  headshot: string;
+  hokmobRating: number;
+  skaterStats?: BoxscoreSkater;
+  goalieStats?: BoxscoreGoalie;
+}
