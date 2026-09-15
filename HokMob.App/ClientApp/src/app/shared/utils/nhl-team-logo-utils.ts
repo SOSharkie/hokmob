@@ -101,6 +101,9 @@ export class NhlTeamLogoUtils {
       case 55:
         imagePath += "seattle";
         break;
+      case 68:
+        // TODO: No local Utah logo yet, so use the NHL hosted one. Add assets/logos/utah.png to match the other teams.
+        return "https://assets.nhle.com/logos/nhl/svg/UTA_light.svg";
       default:
         imagePath += "team_fallback"
     }

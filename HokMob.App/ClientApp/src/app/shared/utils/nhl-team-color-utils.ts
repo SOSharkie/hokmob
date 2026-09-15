@@ -71,6 +71,8 @@ export class NhlTeamColorUtils {
         return "#B4975A";
       case 55:
         return "#99D9D9";
+      case 68:
+        return "#6CACE4";
       default:
         return "#000000"
     }

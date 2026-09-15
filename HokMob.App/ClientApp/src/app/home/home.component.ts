@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import * as dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlGameService} from "@shared/services/nhl-game.service";
 
 @Component({
   selector: 'app-home',
@@ -15,9 +16,11 @@ export class HomeComponent implements OnInit {
   public isPlayoffs: boolean = false;
 
   constructor(private activatedRoute: ActivatedRoute,
-              private router: Router){}
+              private router: Router,
+              private nhlGameService: NhlGameService){}
 
   public ngOnInit(): void {
+    this.nhlGameService.testNewNhlApi();
     this.isPlayoffs = DateTimeUtils.isPlayoffMode();
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("date") && params.get("date").length === 8) {

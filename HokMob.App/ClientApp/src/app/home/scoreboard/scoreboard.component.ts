@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, Vi
 import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
-import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
+import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
 import {NhlImageService} from "@shared/services/nhl-image.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
@@ -45,7 +45,7 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
   /**
    * The list of NHL games for the currently selected day.
    */
-  public currentDayGames: NhlGameModel[] = [];
+  public currentDayGames: ScoreGame[] = [];
 
   /**
    * The ID of the timer which runs a function to GET the latest NHL games.
@@ -115,12 +115,8 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
   }
 
   private retrieveNhlGames(): void {
-    this.nhlGameService.getNhlGames(this.selectedDay).then(nhlGameDay => {
-      if (nhlGameDay) {
-        this.currentDayGames = nhlGameDay.games;
-      } else {
-        this.currentDayGames = [];
-      }
+    this.nhlGameService.getNhlGames(this.selectedDay).then(games => {
+      this.currentDayGames = games;
     });
   }
 
@@ -130,17 +126,18 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
    */
   private startContinuousNhlGameUpdates(): void {
     this.nhlGameUpdateTimerId = setInterval(() => {
-      this.nhlGameService.getNhlGames(this.selectedDay).then(nhlGameDay => {
-        if (nhlGameDay) {
-          this.currentDayGames.forEach(existingGame  => {
-            let updatedGame = nhlGameDay.games.find(item => item.gamePk === existingGame.gamePk);
-            if (updatedGame) {
-              existingGame.linescore = updatedGame.linescore;
-              existingGame.teams = updatedGame.teams;
-              existingGame.status = updatedGame.status;
-            }
-          });
-        }
+      this.nhlGameService.getNhlGames(this.selectedDay).then(games => {
+        this.currentDayGames.forEach(existingGame  => {
+          let updatedGame = games.find(item => item.id === existingGame.id);
+          if (updatedGame) {
+            existingGame.homeTeam = updatedGame.homeTeam;
+            existingGame.awayTeam = updatedGame.awayTeam;
+            existingGame.clock = updatedGame.clock;
+            existingGame.periodDescriptor = updatedGame.periodDescriptor;
+            existingGame.gameState = updatedGame.gameState;
+            existingGame.gameOutcome = updatedGame.gameOutcome;
+          }
+        });
       });
     }, this.nhlGameRefreshTime);
   }

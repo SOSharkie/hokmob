@@ -1,20 +1,19 @@
 
+/**
+ * The new NHL API gameState values.
+ */
 export enum NhlGameStateEnum {
 
-    SCHEDULED = "Scheduled",
+    FUTURE = "FUT",
 
-    SCHEDULE_TBD = "Scheduled (Time TBD)",
+    PREGAME = "PRE",
 
-    POSTPONED = "Postponed",
+    LIVE = "LIVE",
 
-    PREGAME = "Pre-Game",
+    CRITICAL = "CRIT",
 
-    LIVE = "In Progress",
+    FINAL = "FINAL",
 
-    LIVE_CRITICAL = "In Progress - Critical",
-
-    POSTGAME = "Game Over",
-
-    FINAL = "Final"
+    OFF = "OFF"
 
 }

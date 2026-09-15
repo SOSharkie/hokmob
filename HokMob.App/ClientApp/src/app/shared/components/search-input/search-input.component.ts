@@ -3,6 +3,8 @@ import {NhlSearchService} from "@shared/services/nhl-search.service";
 import {SearchResultModel} from "@shared/models/search-result.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
+// TODO: Search is broken; NhlSearchService still calls the dead statsapi/suggest APIs. Out of scope for the home/game
+//  page migration (see docs/nhl-api-migration-plan.md).
 @Component({
   selector: 'app-search-input',
   templateUrl: './search-input.component.html',

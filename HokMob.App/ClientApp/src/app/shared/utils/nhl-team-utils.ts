@@ -2,6 +2,27 @@ import {NhlTeamCustomModel} from "@shared/models/nhl-general/nhl-team-custom.mod
 
 export class NhlTeamUtils {
 
+  /**
+   * All team IDs, including former teams (Arizona, 53) for historical games.
+   */
+  private static readonly teamIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+    26, 28, 29, 30, 52, 53, 54, 55, 68];
+
+  private static teamIdsByAbbrev: Map<string, number>;
+
+  /**
+   * Gets a team ID from its abbreviation, like "SJS". Returns undefined for an unknown abbreviation.
+   * Needed because new NHL API standings rows have no team ID.
+   *
+   * @param abbrev - The team abbreviation.
+   */
+  public static getTeamIdByAbbrev(abbrev: string): number {
+    if (!NhlTeamUtils.teamIdsByAbbrev) {
+      NhlTeamUtils.teamIdsByAbbrev = new Map(NhlTeamUtils.teamIds.map(id => [NhlTeamUtils.getTeam(id).triCode, id]));
+    }
+    return NhlTeamUtils.teamIdsByAbbrev.get(abbrev?.toUpperCase());
+  }
+
   public static getTeam(teamId: number): NhlTeamCustomModel {
     switch (teamId) {
       case 1:
@@ -291,6 +312,15 @@ export class NhlTeamUtils {
           teamName: "Kraken",
           triCode: "SEA",
           link: "/api/v1/teams/55"
+        }
+      case 68:
+        return {
+          id: 68,
+          name: "Utah Mammoth",
+          shortName: "Utah",
+          teamName: "Mammoth",
+          triCode: "UTA",
+          link: "/api/v1/teams/68"
         }
       default:
         return {

@@ -8,6 +8,11 @@ export class StatsUtils {
 
   /**
    * Calculates hokmob rating for single live/past game for skater.
+   *
+   * TODO: The new NHL API boxscore (gamecenter/{id}/boxscore) has no faceoff win/taken counts or powerPlayAssists.
+   *  For now use the simple version: faceoff term from faceoffWinningPctg (centers only) and drop the powerPlayAssists
+   *  correction from realPlusMinus. A new, exact version will be built later by deriving faceoff counts from
+   *  play-by-play "faceoff" plays (winningPlayerId/losingPlayerId) and PP assists from "goal" plays' situationCode.
    */
   public static calculateSkaterHokmobRating(skaterStats: NhlBoxscorePlayerSkaterStatsModel): number {
     let hokmobRating = 5;

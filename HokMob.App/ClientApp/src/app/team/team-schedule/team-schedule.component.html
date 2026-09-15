@@ -4,7 +4,7 @@
   </div>
   <div *ngFor="let game of next5TeamGames let last = last" class="future-game-container" [ngClass]="{'last-scorecard': last}">
     <app-scorecard *ngIf="game"
-        [game]="game"
+        [game]="$any(game)"
         [smallerScorecard]="true"
     ></app-scorecard>
   </div>

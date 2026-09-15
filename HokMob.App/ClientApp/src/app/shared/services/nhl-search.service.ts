@@ -6,6 +6,9 @@ import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 import {SearchResultTypeEnum} from "@shared/enums/search-result-type.enum";
 
 
+// TODO: All URLs below are dead (statsapi.web.nhl.com and suggest.svc.nhl.com no longer exist). Out of scope for now.
+//  Fix later: players from https://search.d3.nhle.com/api/v1/search/player?culture=en-us&limit=20&q={query}
+//  (different host, so the backend proxy needs support for it) and teams from standings/now.
 @Injectable()
 export class NhlSearchService {
 
