@@ -1,0 +1,60 @@
+# Runs the checks for every pull request: the Angular production build and unit tests, and the backend build.
+# "Client tests" and "Backend build" are required status checks for merging into master (branch protection).
+
+name: PR tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pr-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  client-tests:
+    name: Client tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: HokMob.App/ClientApp
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: HokMob.App/ClientApp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Same build the deploy runs: AOT template type-checking plus the angular.json size budgets
+      - name: Production build
+        run: npx ng build --configuration production
+
+      # ubuntu-latest ships Google Chrome, which karma-chrome-launcher finds for ChromeHeadless
+      - name: Unit tests
+        run: npm run test:ci
+
+  backend-build:
+    name: Backend build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '7.x'
+
+      # A Release build compiles the C# only; npm runs just for Debug builds and publish
+      - name: Build
+        run: dotnet build HokMob.App/HokMob.App.csproj --configuration Release
