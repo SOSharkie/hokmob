@@ -1,6 +1,5 @@
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
-import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
@@ -40,12 +39,6 @@ describe('NhlGameInfoUtils', () => {
       expect(NhlGameInfoUtils.isFutureGame(undefined)).toBeFalse();
       expect(NhlGameInfoUtils.isLiveGame(null)).toBeFalse();
       expect(NhlGameInfoUtils.isCompletedGame('Final' as NhlGameStateEnum)).toBeFalse();
-    });
-
-    it('should still accept the deprecated old status model', () => {
-      const status = {abstractGameState: 'Live'} as NhlGameStatusModel;
-      expect(NhlGameInfoUtils.isLiveGame(status)).toBeTrue();
-      expect(NhlGameInfoUtils.isCompletedGame(status)).toBeFalse();
     });
   });
 

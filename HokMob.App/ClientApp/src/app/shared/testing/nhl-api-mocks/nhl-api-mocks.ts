@@ -239,6 +239,11 @@ export function mockClubScheduleSeason(teamAbbrev: MockClubScheduleTeam, season:
   return copy(clubScheduleResponses[teamAbbrev][season]);
 }
 
+// TODO: The live derived helpers below (derivedLiveLanding, derivedIntermissionLanding, derivedLivePlayByPlay,
+//  derivedLiveGame) edit finished games because no live game could be captured before the 2026-27 preseason. Replace
+//  them with responses captured by `npm run capture-live-fixtures` during a live game (see
+//  docs/nhl-api-migration-plan.md, section 10).
+
 /**
  * Derived: the regulation final (STL @ WPG) landing as if live in the 2nd period with 5:32 left, WPG leading 2-0 after
  * its two 1st period goals.

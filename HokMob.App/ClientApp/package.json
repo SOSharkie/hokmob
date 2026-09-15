@@ -12,7 +12,8 @@
     "build:ssr": "ng run hokmob:server:dev",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:ci": "ng test --watch=false --browsers=ChromeHeadless"
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
+    "capture-live-fixtures": "node capture-live-fixtures.js"
   },
   "private": true,
   "dependencies": {

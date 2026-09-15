@@ -28,8 +28,6 @@ export class NhlGameService {
   private readonly scheduleDetails = "linescore,broadcasts(all),game(seriesSummary),seriesSummary(series)"
 
   // Proxied through the HokMob backend (NhlController) to avoid CORS
-  private readonly newNhlScoreNowUrl = "/api/nhl/score/now";
-
   private readonly nhlScoreUrl = "/api/nhl/score/";
 
   private readonly nhlGamecenterUrl = "/api/nhl/gamecenter/";
@@ -41,21 +39,6 @@ export class NhlGameService {
   private readonly teamFormGameCount = 5;
 
   constructor(private http: HttpClient) { }
-
-  /**
-   * Test call against the new NHL API (api-web.nhle.com). Logs the response or error to the console.
-   */
-  public testNewNhlApi(): void {
-    console.log("Testing new NHL API: " + this.newNhlScoreNowUrl);
-    this.http.get<any>(this.newNhlScoreNowUrl).subscribe({
-      next: (response) => {
-        console.log("New NHL API response:", response);
-      },
-      error: (error) => {
-        console.error("New NHL API error:", error);
-      }
-    });
-  }
 
   /**
    *  Gets all NHL games for a given date. Uses an explicit date because score/now jumps ahead to the next game day.

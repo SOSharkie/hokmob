@@ -3,11 +3,14 @@ import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
 import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
-import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import * as dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
+// TODO: Not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). NhlGameInfoUtils' game state checks
+//  no longer take the old status model, so the old abstractGameState is compared directly to compile. Fix: take the
+//  next game from club-schedule-season/{abbrev}/now and its gamecenter/{id}/landing, and use
+//  NhlGameInfoUtils.isLiveGame/isCompletedGame/isFutureGame(landing.gameState).
 @Component({
   selector: 'app-team-next-game',
   templateUrl: './team-next-game.component.html',
@@ -33,21 +36,21 @@ export class TeamNextGameComponent implements OnChanges {
 
   public get liveGame(): boolean {
     if (this.gameLiveData) {
-      return NhlGameInfoUtils.isLiveGame(this.gameLiveData.gameData.status);
+      return this.gameLiveData.gameData.status?.abstractGameState === "Live";
     }
     return false;
   }
 
   public get completedGame(): boolean {
     if (this.gameLiveData) {
-      return NhlGameInfoUtils.isCompletedGame(this.gameLiveData.gameData.status);
+      return this.gameLiveData.gameData.status?.abstractGameState === "Final";
     }
     return false;
   }
 
   public get futureGame(): boolean {
     if (this.gameLiveData) {
-      return NhlGameInfoUtils.isFutureGame(this.gameLiveData.gameData.status);
+      return this.gameLiveData.gameData.status?.abstractGameState === "Preview";
     }
     return false;
   }

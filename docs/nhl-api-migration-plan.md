@@ -1,6 +1,7 @@
 # NHL API Migration Plan: Home Page & Game Page
 
-Status: **In progress** · Phases 0–7 done with unit tests (2026-09-15), phase 8 to do.
+Status: **Done** · Phases 0–8 done with unit tests (2026-09-15). The live game checks in section 10 stay open until
+the preseason starts on 2026-09-29.
 Scope: home page (scoreboard, standings summary, playoff summary and series dialog) and game page (header, goals, stats,
 momentum, event timelines, top players, player dialog, team form). Player and team pages are out of scope.
 
@@ -25,7 +26,8 @@ All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-w
 - **Trailing slashes don't matter.** The proxy drops empty path segments, and upstream accepts paths with or without
   the trailing `/` shown in the reference.
 - **Live-game fields are unverified.** Every sample so far is a finished (`OFF`) or future (`FUT`) game.
-  The preseason starts 2026-09-29. `clock` and intermission behavior must be checked against a real live game.
+  The preseason starts 2026-09-29. `clock` and intermission behavior must be checked against a real live game
+  (checklist in section 10).
 
 ## 2. Endpoint mapping
 
@@ -53,8 +55,8 @@ All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-w
 
 - `NhlGameStateEnum` now holds the new values. New enums: `NhlGameScheduleStateEnum`, `NhlGameTypeEnum`,
   `NhlPeriodTypeEnum`.
-- `NhlGameInfoUtils.isFutureGame/isLiveGame/isCompletedGame` take a `gameState`. They still accept the old status model
-  (deprecated) so unmigrated pages compile. Remove that overload in phase 8.
+- `NhlGameInfoUtils.isFutureGame/isLiveGame/isCompletedGame` take a `gameState`. Phase 8 removed the old status model
+  overload; the team page's `TeamNextGameComponent` compares the old `abstractGameState` directly (see its TODO).
 
 ### Game type
 The old code was a string: `"PR"` / `"R"` / `"P"`. The new `gameType` is a number (`NhlGameTypeEnum`): `1` preseason,
@@ -119,7 +121,7 @@ The old `gameDate` was a UTC datetime. Use `startTimeUTC` now. The new `gameDate
 The scorecard is also used by the team page's schedule, which casts its old models with `$any` so it compiles. It
 stays broken until the team page is migrated.
 
-`HomeComponent` still calls the temporary `NhlGameService.testNewNhlApi()`. Remove it in phase 8.
+Phase 8 removed the temporary `NhlGameService.testNewNhlApi()` and its call in `HomeComponent`.
 
 ### 4.2 Standings summary (`home/standings-summary`) and shared `standings` component: done (phase 2)
 - Service: `NhlStandingAndPlayoffService.getNhlStandings(standingsType)` → `GET /api/nhl/standings/now` →
@@ -188,7 +190,7 @@ but its team data still comes from the dead API (see its TODO).
 `DateTimeUtils.isPlayoffMode()` is still hard-coded to dates (May 21 to end of September). Optionally drive it from the
 `schedule/{date}` response instead (`regularSeasonEndDate`, `playoffEndDate`).
 
-## 5. Game page (phases 4–7 done)
+## 5. Game page (phases 4–8 done)
 
 ### 5.1 Data loading (`game.component.ts`): done (phase 4)
 The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team page still does). It loads:
@@ -245,13 +247,14 @@ The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team pag
 `NhlGameInfoUtils.getNhlGameDescription` (old `NhlSeriesSummaryModel`) was replaced by `getGameDescription`.
 `landing` has no `gameOutcome`, so final labels fall back to `periodDescriptor.periodType` (`SO`, `OT`).
 
-### 5.3 Intermission countdown: built in phase 4, verify live in phase 8
+### 5.3 Intermission countdown: built in phase 4, live check open (section 10)
 The old code timed from the `PERIOD_END` play's wall-clock `about.dateTime`.
 **New plays have no wall-clock timestamp**, so that approach can't be ported.
 - `isIntermission` is `landing.clock.inIntermission` for a live game. The countdown starts from
   `clock.secondsRemaining`, which is expected to count down the intermission, and a 1s timer moves it between
   refreshes ("16:40 till 2nd"). **Not verified yet:** there are no live games before the preseason starts on
-  2026-09-29, so phase 5 couldn't check it. Verify it during a live game in phase 8.
+  2026-09-29, so phases 5 and 8 couldn't check it. It's the first check in section 10 (TODO in
+  `GameComponent.updateIntermission`).
 - The next-period label is `PeriodUtils.getNextPeriodLabel(periodDescriptor, gameType)`.
 
 ### 5.4 Goal scorers (`goal-scorers`): done (phase 4)
@@ -445,6 +448,8 @@ Headshots: `NhlImageService.getNhlPlayerHeadshot` (dead host, blob + FileReader)
   Don't adapt the new data into the old models; too many fields have no equivalent. Converting between new models is
   fine when a shared component needs it (the series dialog converts series schedule games to `ScoreGame`).
 - **Keep the old models** for now. Player and team pages still import them, and they get removed when those pages migrate.
+  Phase 8 deleted the ones nothing imports anymore: `game-player`, `nhl-general/nhl-standings` and the `nhl-playoffs`
+  models except `nhl-series-summary`.
 - **Services.** Use relative `/api/nhl/...` URLs and keep the Promise-based style. `NhlStandingAndPlayoffService` has a
   private `get<T>(url)` helper that wraps `HttpClient` the same way.
 - **Backend (done).** `AllowedRoots` in `NhlController.cs` already allows `score`, `scoreboard`, `schedule`,
@@ -454,12 +459,13 @@ Headshots: `NhlImageService.getNhlPlayerHeadshot` (dead host, blob + FileReader)
   1 min otherwise (including `playoff-bracket`).
 - **Shared components used by unmigrated pages.** When a migrated shared component breaks an out-of-scope caller, make the
   caller compile with the smallest change (a `$any` cast, or the new service call) and leave a TODO that points here.
-- **Unit tests (done for phases 0–7).** `npm run test:ci` runs all specs. See section 7 for what each phase must add.
+- **Unit tests (done for phases 0–8).** `npm run test:ci` runs all specs. See section 7 for what each phase must add.
   - Real API responses live in `shared/testing/nhl-api-mocks/` as JSON files (captured 2026-09-15; only item counts
     trimmed). `nhl-api-mocks.ts` returns fresh copies (`mockScoreResponse()`, `mockStandingsTeams()`,
     `mockRankedCarouselSeries('A')`, `mockGameBundle(2025021057)`, ...).
   - `derived*` helpers change real data into states that can't be captured yet: a live game, live and intermission landings,
-    TBD/postponed games, and a series in progress. They're assumptions; replace them with captured responses when possible (phase 8).
+    TBD/postponed games, and a series in progress. They're assumptions; replace them with captured responses when possible
+    (section 10).
   - Component specs use `AppTestingModule` (`shared/testing/app-testing.module.ts`) and `HttpTestingController`.
   - Specs for unmigrated components still skip rendering. Give them real tests when their phase migrates them.
 - **Error handling.** Migrated components `.catch()` service promises (the service already logs), and show an empty
@@ -493,10 +499,10 @@ A phase is done only when all of these are true:
 | 2 | Standings summary + shared standings component + full standings page | Done | `nhl-standing-and-playoff.service.ts`, `home/standings-summary`, `shared/components/standings`, `league-standings` | `standings/now` | Done: service grouping, `standings`, `standings-summary`, `league-standings` specs; fixture `standings-now` |
 | 3 | Playoff summary + playoff-series component + series dialog; playoffs page compiles | Done | same service, `home/playoff-summary`, `playoffs/playoff-series`, `playoffs/playoff-series-dialog`, `playoffs` | 2025-26 carousel (force `isPlayoffMode` true to test), 2022-23 on the playoffs page | Done: service carousel/bracket merge and series schedule, `playoff-summary`, `playoff-series`, `playoff-series-dialog` specs; fixtures carousel, bracket, series A and O |
 | 4 | Game page core: loading, header, info bar, goal scorers | Done | `nhl-game.service.ts`, `game.component`, `game-header`, `goal-scorers`, `period-utils`, `nhl-game-info-utils` | `2025021057` (reg), `2025020952` (SO), `2025030414` (playoff), `2026020056` (future), an unknown ID (error state) | Done: service bundle and series status, `PeriodUtils.getNextPeriodLabel`, `NhlGameInfoUtils.getGameDescription`, `game` (loading, errors, refresh, intermission, route change), `game-header`, `goal-scorers` specs; fixtures `gamecenter-{id}-{landing,play-by-play,boxscore,right-rail}` for the 4 games |
-| 5 | Play-by-play: momentum, event timelines | Done | `momentum`, `event-timeline`, `mini-event-timeline`, `event`, `mini-event`, `play-by-play-utils`, `nhl-play-type.enum`, `game.component` | `2025021057` (reg), `2025020952` (OT + SO), `2025030414` (playoff, bench minor), `2026020056` (future). The intermission check moved to phase 8 (no live games yet) | Done: `PlayByPlayUtils` (grouping, names, bench minors, penalty text), `momentum` (layout, weights, blocked-shot ownership, cap, OT and multi-OT, shootout, refresh), `event-timeline`, `mini-event-timeline`, real `event` and `mini-event` specs, `game` wiring; `derivedLivePlayByPlay` helper |
+| 5 | Play-by-play: momentum, event timelines | Done | `momentum`, `event-timeline`, `mini-event-timeline`, `event`, `mini-event`, `play-by-play-utils`, `nhl-play-type.enum`, `game.component` | `2025021057` (reg), `2025020952` (OT + SO), `2025030414` (playoff, bench minor), `2026020056` (future). The intermission check moved to section 10 (no live games yet) | Done: `PlayByPlayUtils` (grouping, names, bench minors, penalty text), `momentum` (layout, weights, blocked-shot ownership, cap, OT and multi-OT, shootout, refresh), `event-timeline`, `mini-event-timeline`, real `event` and `mini-event` specs, `game` wiring; `derivedLivePlayByPlay` helper |
 | 6 | Boxscore + right-rail: game stats, top players, rating, player dialog, headshots | Done | `game-stats`, `game-top-players`, `player-game-dialog`, `stats-utils`, `nhl-player-headshot-utils`, `nhl-image.service` (TODO only), `nhl-game.service.ts`, `game.component` | `2025021057` (reg; goalie swapped into STL's top 6), `2025030414` (playoff; star to the away team), `2026020056` (future: sections hidden) | Done: `StatsUtils` (skater and goalie rating, faceoff term, penalties, caps, missing stats, `getGamePlayers`, sorting), `NhlPlayerHeadshotUtils`, service `getPlayerLanding`, `game-stats`, `game-top-players`, real `player-game-dialog` spec, `game` wiring and dialog; fixtures `player-8476460-landing` (Scheifele), `player-8477480-landing` (Comrie) |
 | 7 | Team form | Done | `team-form`, `previous-game`, `nhl-game.service.ts`, `nhl-game-info-utils`, `game.component`, `single-team-form` (compile fix) | `2026020056` (future, UTA @ BOS: filled in from 2025-26), a finished game (section hidden) | Done: `NhlGameInfoUtils.getTeamFormGames` (order, unfinished and preseason games, count, missing data), service `getTeamFormGames` (previous-season fill-in, failures), `team-form`, real `previous-game` spec, `game` wiring (fill-in, one team failing, late responses, no reload on refresh); fixtures `club-schedule-season-{bos,uta}-{20252026,20262027}` |
-| 8 | Live validation + cleanup: run through a live preseason game (from 2026-09-29), verify the intermission countdown (5.3) and the live momentum chart and timelines, remove `testNewNhlApi` and its call in `HomeComponent`, remove the deprecated old-status overload in `NhlGameInfoUtils`, delete unused old models | To do | — | live game | Capture live score and gamecenter responses (in period, intermission, `CRIT`) and replace the `derived*` live helpers; remove tests for the deprecated overload |
+| 8 | Cleanup + live validation prep: remove `testNewNhlApi` and its call in `HomeComponent`, remove the deprecated old-status overload in `NhlGameInfoUtils`, delete unused old models, TODOs where live data is assumed, `capture-live-fixtures.js`. The live run itself moved to section 10 | Done (live checks open) | `home.component`, `nhl-game.service.ts`, `nhl-game-info-utils`, `team-next-game` (compile fix), old models, `game.component` / `period-utils` / `nhl-api-mocks.ts` (TODOs), `ClientApp/capture-live-fixtures.js` | `ng build`, `test:ci` (329 specs), the served dev bundle (no `testNewNhlApi`, `/api/nhl` calls return 200; the Browser pane check was skipped because another session held port 4200), capture script on `2025021057` (finished) and with no live game | Done: removed the overload test. Open (section 10): capture live responses and replace the `derived*` live helpers |
 
 ## 8. Decisions
 
@@ -538,6 +544,11 @@ A phase is done only when all of these are true:
     and UTA's 2026 playoff losses.
 17. **Preseason games only count toward a preseason game's form.** Exhibition lineups say little about a regular season
     or playoff team, so early regular season games fill in from last season instead.
+18. **The plan closed without a live game.** Phase 8 did the cleanup and turned the live checks into a checklist
+    (section 10), with TODOs at each assumption in the code and a script that captures the responses, instead of
+    waiting until 2026-09-29.
+19. **Only unused old models were deleted.** Models still imported by the team, player, stats or search pages stay until
+    those pages migrate.
 
 ## 9. Risks
 
@@ -556,13 +567,51 @@ A phase is done only when all of these are true:
 - **Rating approach A:** the boxscore has no faceoff counts, so a center who took no faceoffs (`faceoffWinningPctg` 0)
   gets the same -0.5 as one who lost them all. Approach B fixes it.
 - **Live boxscore and right-rail:** it's unverified that a live game's right-rail has `teamGameStats` and its boxscore
-  has `playerByGameStats`. Without them, game stats and top players stay hidden. Check in phase 8.
+  has `playerByGameStats`. Without them, game stats and top players stay hidden. See section 10.
 - **Team form across seasons:** filling in from the previous season only goes back one season, and assumes the team
   had the same abbreviation then. A renamed or relocated team gets fewer games (the failed request is ignored). The rows
   show no dates, so April games next to October games aren't marked as last season's.
 - **Request volume:** the game page makes up to 4 requests per poll (was 1). The 10s backend cache keeps upstream load flat.
 - **Derived test data.** The live game, TBD/postponed game and in-progress series fixtures are real responses edited to
   match the models, not captured states. Tests built on them can pass while the real live shape differs. Replace them
-  with captured responses in phase 8 or the 2027 playoffs.
+  with captured responses during a live game (section 10) or the 2027 playoffs.
 - **Stale fixtures.** Captured responses can drift from the live API. When a phase finds a changed field, re-capture
   the affected fixtures and fix the specs.
+
+## 10. Open items
+
+### Live game checklist
+Nothing below could be checked before the preseason starts on 2026-09-29. Each assumption has a `TODO` in the code
+pointing here. During a live game, run this from `HokMob.App/ClientApp`:
+
+```bash
+npm run capture-live-fixtures -- --watch
+```
+
+It waits for a `LIVE` or `CRIT` game (or pass a game ID), then saves `score`, `landing`, `play-by-play`, `boxscore` and
+`right-rail` to `shared/testing/nhl-api-mocks/live/` each time the state changes (`p1`, `intermission-1`,
+`intermission-1-later` a minute later, `crit-p3`, `off`). For each capture it prints the fields below.
+
+| Check | Assumed in | How to check |
+|---|---|---|
+| `clock.inIntermission` is true and `clock.secondsRemaining` counts down the intermission | `GameComponent.updateIntermission`, `derivedIntermissionLanding` | Compare `intermission-N` with `intermission-N-later`; the game page shows "16:40 till 2nd" |
+| During an intermission, `periodDescriptor` is the period just ended | `PeriodUtils.getLiveLabel` / `getNextPeriodLabel` | "End 1st" on the scorecard and header, "till 2nd" in the countdown |
+| `CRIT` shows up and is otherwise like `LIVE` | `NhlGameInfoUtils.isLiveGame` | A `crit-*` capture |
+| `landing.summary.scoring` lists the current period before it has a goal | `derivedLiveLanding`, goal scorers | A `landing-pN` capture |
+| A live play-by-play only has the plays so far, in the finished game shape; the momentum chart and timelines update on refresh | `derivedLivePlayByPlay`, momentum, mini event timeline | Game page during a period |
+| A live boxscore has `playerByGameStats` and the right-rail has `teamGameStats` | `GameComponent.showTopPlayers` / `showGameStats` | Script output; both sections on the game page |
+| The score response has `clock` and `periodDescriptor` for the scoreboard | `derivedLiveGame`, scorecard live label | A `score-*` capture; home scoreboard |
+| Live plays have `situationCode` (for the power play badge) | `GameHeaderComponent` TODO (5.2) | Script output |
+
+When done: trim the captures (item counts only), move the ones worth keeping next to the other fixtures with accessors
+in `nhl-api-mocks.ts`, replace the live `derived*` helpers, make the specs assert captured values, fix any wrong
+assumption, remove the TODOs and update this section. Don't commit the untrimmed `live/` folder.
+
+### Follow-ups outside this plan
+- Migrate the team, player, playoffs and stats pages and header search (TODOs on `TeamComponent`, `TeamScheduleComponent`,
+  `SingleTeamFormComponent`, `TeamNextGameComponent`, `PlayoffsComponent`, `SearchInputComponent`, `NhlSearchService`,
+  `NhlImageService`), then delete the remaining old models and the dead-API methods in `NhlGameService`.
+- HokMob rating approach B (decision 1).
+- A local Utah logo (`NhlTeamLogoUtils` TODO).
+- Optionally drive `DateTimeUtils.isPlayoffMode()` from `schedule/{date}` (4.3).
+- Check an in-progress playoff series (next game date, unplayed games in the series dialog) during the 2027 playoffs.

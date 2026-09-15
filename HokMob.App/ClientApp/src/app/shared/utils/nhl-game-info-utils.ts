@@ -1,4 +1,3 @@
-import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
@@ -80,36 +79,27 @@ export class NhlGameInfoUtils {
         .slice(0, count);
   }
 
-  // The NhlGameStatusModel argument is deprecated. It's only kept for pages not yet migrated to the new NHL API
-  // (see docs/nhl-api-migration-plan.md); remove it once they are.
-
   /**
    * Whether the game hasn't started yet (gameState FUT or PRE).
    */
-  public static isFutureGame(gameState: NhlGameStateEnum | NhlGameStatusModel): boolean {
-    if (typeof gameState === "object") {
-      return gameState?.abstractGameState === "Preview";
-    }
+  public static isFutureGame(gameState: NhlGameStateEnum): boolean {
     return gameState === NhlGameStateEnum.FUTURE || gameState === NhlGameStateEnum.PREGAME;
   }
 
   /**
    * Whether the game is in progress (gameState LIVE or CRIT).
+   *
+   * TODO: CRIT (the last minutes of a close game) hasn't been seen in a captured response yet. Confirm it during a live
+   *  game (see docs/nhl-api-migration-plan.md, section 10).
    */
-  public static isLiveGame(gameState: NhlGameStateEnum | NhlGameStatusModel): boolean {
-    if (typeof gameState === "object") {
-      return gameState?.abstractGameState === "Live";
-    }
+  public static isLiveGame(gameState: NhlGameStateEnum): boolean {
     return gameState === NhlGameStateEnum.LIVE || gameState === NhlGameStateEnum.CRITICAL;
   }
 
   /**
    * Whether the game is over (gameState FINAL or OFF).
    */
-  public static isCompletedGame(gameState: NhlGameStateEnum | NhlGameStatusModel): boolean {
-    if (typeof gameState === "object") {
-      return gameState?.abstractGameState === "Final";
-    }
+  public static isCompletedGame(gameState: NhlGameStateEnum): boolean {
     return gameState === NhlGameStateEnum.FINAL || gameState === NhlGameStateEnum.OFF;
   }
 }
