@@ -1,47 +1,35 @@
-import {NhlSeriesSummaryModel} from "@shared/models/nhl-playoffs/nhl-series-summary.model";
 import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 
 export class NhlGameInfoUtils {
 
   /**
-   * Returns a formatted game description.
+   * Returns the league label for a game, like "NHL Regular Season" or "Stanley Cup Final: Tied 2-2". Before a playoff
+   * series starts, the matchup ("CAR vs VGK") is shown instead of the status.
    *
-   * @param gameType - The type of game (R: regular season, P: playoffs, PR, preseason).
-   * @param playoffRoundNum - The round number for the playoffs.
-   * @param conferenceName - The name of the conference the game takes place in.
-   * @param seriesSummary - The playoff series summary.
-   * @param matchupName - The matchup name (ex: SJS vs LAK).
+   * @param gameType - The game type from the new NHL API.
+   * @param seriesStatus - The playoff series status from the score response, if loaded.
    */
-  public static getNhlGameDescription(gameType: string, playoffRoundNum: number, conferenceName: string,
-                                      seriesSummary: NhlSeriesSummaryModel, matchupName: string): string {
+  public static getGameDescription(gameType: NhlGameTypeEnum, seriesStatus: SeriesStatus): string {
     switch (gameType) {
-      case "P":
-        if (seriesSummary) {
-          let conference = conferenceName === "Eastern" ? "East" : "West";
-          let status = seriesSummary.seriesStatus ? seriesSummary.seriesStatus : matchupName ? matchupName : "TBD";
-          switch (playoffRoundNum) {
-            case 1:
-              return conference + " Round 1: " + status;
-            case 2:
-              return conference + " Semifinals: " + status;
-            case 3:
-              return conference + " Finals: " + status;
-            case 4:
-              return "Stanley Cup Finals: " + status;
-            default:
-              return "NHL Playoffs: " + status;
-          }
-        } else {
-          return "NHL Playoffs Round " + playoffRoundNum;
+      case NhlGameTypeEnum.PLAYOFFS: {
+        if (!seriesStatus) {
+          return "NHL Playoffs";
         }
-      case "PR":
-        return "NHL Preseason"
-      case "A":
-        return "NHL All-Star Game"
+        let status = NhlGameInfoUtils.getSeriesStatusShort(seriesStatus);
+        if (status === "(0-0)") {
+          status = seriesStatus.topSeedTeamAbbrev + " vs " + seriesStatus.bottomSeedTeamAbbrev;
+        }
+        return (seriesStatus.seriesTitle || "NHL Playoffs") + ": " + status;
+      }
+      case NhlGameTypeEnum.PRESEASON:
+        return "NHL Preseason";
+      case NhlGameTypeEnum.REGULAR_SEASON:
+        return "NHL Regular Season";
       default:
-        return "NHL Regular Season"
+        return "NHL";
     }
   }
 

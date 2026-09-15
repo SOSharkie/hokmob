@@ -1,27 +1,26 @@
 import {AfterViewInit, Component, HostListener, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
-import {NhlBoxscoreModel} from "@shared/models/nhl-boxscore/nhl-boxscore.model";
 import * as dayjs from "dayjs";
-import {NhlImageService} from "@shared/services/nhl-image.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
-import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
-import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
-import {GoalModel} from "@shared/models/goal.model";
-import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
-import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {MatDialog} from "@angular/material/dialog";
-import {PlayerGameDialogComponent} from "@app/game/player-game-dialog/player-game-dialog.component";
-import {GamePlayerModel} from "@shared/models/game-player.model";
-import {NhlLiveFeedPlayModel} from "@shared/models/nhl-live-feed/nhl-live-feed-play.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
-import {NhlBoxscorePlayerStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-stats.model";
-import {NhlBoxscorePlayerModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player.model";
-import {StatsUtils} from "@shared/utils/stats-utils";
-import {NhlBoxscorePlayerSkaterStatsModel} from "@shared/models/nhl-boxscore/nhl-boxscore-player-skater-stats.model";
+import {PeriodUtils} from "@shared/utils/period-utils";
+import {GameBundle} from "@shared/models/nhl-web-api/game-bundle.model";
+import {GameLanding, GameLandingScoringPeriod} from "@shared/models/nhl-web-api/gamecenter-landing.model";
+import {PlayByPlay} from "@shared/models/nhl-web-api/play-by-play.model";
+import {Boxscore} from "@shared/models/nhl-web-api/boxscore.model";
+import {RightRail} from "@shared/models/nhl-web-api/right-rail.model";
+import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
+import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 
+// TODO: Phases 5-7 of docs/nhl-api-migration-plan.md. Top players, momentum, event timelines, game stats and team form
+//  still take old API models, so their sections are hidden (unmigratedSectionsEnabled), and clicking a player doesn't
+//  open the player dialog yet (phase 6). The bundle already loads the play-by-play, boxscore and right-rail responses
+//  they need: pass them to each component as it migrates, and remove the flag after phase 7.
 @Component({
   selector: 'app-game',
   templateUrl: './game.component.html',
@@ -30,25 +29,18 @@ import {NhlBoxscorePlayerSkaterStatsModel} from "@shared/models/nhl-boxscore/nhl
 })
 export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  public gameLiveData: NhlLiveFeedModel;
+  public landing: GameLanding;
 
-  public gameBoxscore: NhlBoxscoreModel;
+  public playByPlay: PlayByPlay;
 
-  public gameLinescore: NhlLinescoreModel;
+  public boxscore: Boxscore;
 
-  public gameModel: NhlGameModel;
+  public rightRail: RightRail;
 
-  public homeTeamGames: NhlScheduleModel;
-
-  public awayTeamGames: NhlScheduleModel;
-
-  public homeTeamGoals: GoalModel[] = [];
-
-  public awayTeamGoals: GoalModel[] = [];
-
-  public homePlayerStats: NhlBoxscorePlayerModel[] = [];
-
-  public awayPlayerStats: NhlBoxscorePlayerModel[] = [];
+  /**
+   * The playoff series status from score/{gameDate}. Only loaded for playoff games.
+   */
+  public seriesStatus: SeriesStatus;
 
   public homeTeamLogo: any;
 
@@ -60,11 +52,19 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public isIntermission: boolean = false
 
+  /**
+   * Set when the game landing can't be loaded.
+   */
+  public loadFailed: boolean = false;
+
   public leagueRouterLink: string = "/standings";
 
-  private intermissionTimeRemainingMs: number;
+  /**
+   * Shows the sections whose components aren't migrated yet. See the TODO above.
+   */
+  public readonly unmigratedSectionsEnabled = false;
 
-  private periodEndEvent: NhlLiveFeedPlayModel;
+  private intermissionSecondsRemaining: number;
 
   private nhlGameUpdateTimerId: number;
 
@@ -75,74 +75,63 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly nhlGameRefreshTime = 10000;
 
   public get gameInfoLabel(): string {
-    if (this.gameLiveData && this.gameModel) {
-      return NhlGameInfoUtils.getNhlGameDescription(this.gameLiveData.gameData.game.type, Number(this.gameId.charAt(7)),
-          this.gameLiveData.gameData.teams.home.conference.name, this.gameModel.seriesSummary,
-          this.gameLinescore.teams.home.team.triCode + " vs " + this.gameLinescore.teams.away.team.triCode);
+    if (this.landing) {
+      return NhlGameInfoUtils.getGameDescription(this.landing.gameType, this.seriesStatus);
     }
     return "";
   }
 
   public get tvInfo(): string {
-    if (this.gameModel && this.gameModel.broadcasts && this.gameModel.broadcasts[0]) {
-      return "TV: " + this.gameModel.broadcasts[0].name;
-    }
-    return "";
+    let network = this.landing?.tvBroadcasts?.[0]?.network;
+    return network ? "TV: " + network : "";
   }
 
   public get liveGame(): boolean {
-    if (this.gameLiveData) {
-      return NhlGameInfoUtils.isLiveGame(this.gameLiveData.gameData.status);
-    }
-    return false;
+    return NhlGameInfoUtils.isLiveGame(this.landing?.gameState);
   }
 
   public get completedGame(): boolean {
-    if (this.gameLiveData) {
-      return NhlGameInfoUtils.isCompletedGame(this.gameLiveData.gameData.status);
-    }
-    return false;
+    return NhlGameInfoUtils.isCompletedGame(this.landing?.gameState);
   }
 
   public get futureGame(): boolean {
-    if (this.gameLiveData) {
-      return NhlGameInfoUtils.isFutureGame(this.gameLiveData.gameData.status);
-    }
-    return false;
+    return NhlGameInfoUtils.isFutureGame(this.landing?.gameState);
   }
 
   public get gameDay(): string {
-    if (this.gameLiveData) {
-      return DateTimeUtils.getDayDisplayValue(dayjs(this.gameLiveData.gameData.datetime.dateTime).toDate());
+    if (this.landing) {
+      return DateTimeUtils.getDayDisplayValue(dayjs(this.landing.startTimeUTC).toDate());
     }
     return "N/A";
   }
 
+  public get scoringPeriods(): GameLandingScoringPeriod[] {
+    return this.landing?.summary?.scoring ?? [];
+  }
+
+  /**
+   * Whether any goal outside a shootout has been scored.
+   */
   public get haveGoalsBeenScored(): boolean {
-    if (this.gameBoxscore) {
-      return this.gameBoxscore.teams.home.teamStats.teamSkaterStats.goals > 0 ||
-          this.gameBoxscore.teams.away.teamStats.teamSkaterStats.goals > 0;
-    }
-    return false;
+    return this.scoringPeriods.some(period =>
+        period.periodDescriptor?.periodType !== NhlPeriodTypeEnum.SHOOTOUT && period.goals?.length > 0);
   }
 
   public get gameDateTime(): string {
-    if (this.gameLiveData) {
-      return dayjs(this.gameLiveData.gameData.datetime.dateTime).format("MMMM D, YYYY, h:mm A");
+    if (this.landing) {
+      return dayjs(this.landing.startTimeUTC).format("MMMM D, YYYY, h:mm A");
     }
     return "N/A";
   }
 
   public get gameVenue(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.venue.name;
-    }
-    return "N/A";
+    return this.landing?.venue?.default ?? "N/A";
   }
 
   public get gameStreamLink(): string {
-    if (this.gameLiveData) {
-      let homeTeamLink = this.gameLiveData.gameData.teams.home.name.toLowerCase().replaceAll(' ', '-');
+    if (this.landing) {
+      let homeTeam = this.landing.homeTeam;
+      let homeTeamLink = (homeTeam.placeName?.default + " " + homeTeam.commonName?.default).toLowerCase().replaceAll(' ', '-');
       return "https://720pstream.nu/nhl/live-" + homeTeamLink + "-stream";
     }
     return "N/A";
@@ -161,17 +150,20 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "Games";
   }
 
+  /**
+   * The intermission countdown, like "16:40 till 2nd", or empty outside an intermission.
+   */
   public get intermissionTimeRemaining(): string {
-    if (this.intermissionTimeRemainingMs) {
-      let pad = (n, z = 2) => ('00' + n).slice(-z);
-      return ((this.intermissionTimeRemainingMs%3.6e6)/6e4 | 0) + ':' + pad((this.intermissionTimeRemainingMs%6e4)/1000 | 0)
-          + " till " + this.nextPeriod;
+    if (this.isIntermission && this.intermissionSecondsRemaining > 0) {
+      let minutes = Math.floor(this.intermissionSecondsRemaining / 60);
+      let seconds = this.intermissionSecondsRemaining % 60;
+      return minutes + ":" + String(seconds).padStart(2, "0") + " till " + this.nextPeriod;
     }
     return "";
   }
 
   public get showTopPlayers(): boolean {
-    return this.completedGame || (this.liveGame && this.gameLiveData.liveData.plays.allPlays.length > 10);
+    return this.completedGame || (this.liveGame && this.playByPlay?.plays?.length > 10);
   }
 
   private previousUrl: string;
@@ -180,7 +172,6 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
               private route: ActivatedRoute,
               private router: Router,
               private routerExtensionService: RouterExtensionService,
-              private nhlLogoService: NhlImageService,
               private nhlGameService: NhlGameService) {
   }
 
@@ -188,30 +179,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.previousUrl = this.routerExtensionService.getPreviousUrl();
     this.route.params.subscribe((params: Params) => {
       this.gameId = params['id'];
-      this.nhlGameService.getNhlGameLiveFeed(this.gameId).then(gameLiveData => {
-        this.gameLiveData = gameLiveData;
-        this.gameBoxscore = gameLiveData.liveData.boxscore;
-        this.gameLinescore = gameLiveData.liveData.linescore;
-        this.leagueRouterLink = this.gameLiveData.gameData.game.type === 'P' ? "/playoffs" : "/standings";
-        this.calculateGoals();
-        this.calculatePlayerStats();
-        this.loadLogos();
-        if (!this.completedGame && this.gameDay === "Today") {
-          this.startContinuousNhlGameUpdates();
-          this.calculateIntermission();
-        }
-      });
-      this.nhlGameService.getNhlGame(this.gameId).then(gameModel => {
-        this.gameModel = gameModel;
-        let yesterday = dayjs().subtract(1, 'day');
-        let thirtyDaysAgo = yesterday.subtract(30, 'days');
-        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.home.team.id).then(homeTeamGames => {
-          this.homeTeamGames = homeTeamGames;
-        });
-        this.nhlGameService.getTeamGames(thirtyDaysAgo.toDate(), yesterday.toDate(), this.gameModel.teams.away.team.id).then(awayTeamGames => {
-          this.awayTeamGames = awayTeamGames;
-        });
-      });
+      this.loadGame();
     });
   }
 
@@ -228,8 +196,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.previousUrl) {
       this.router.navigateByUrl(this.previousUrl);
     } else {
-      let dateString = dayjs(this.gameLiveData.gameData.datetime.dateTime).format("YYYYMMDD");
-      const dateParam = {date: dateString};
+      const dateParam = this.landing ? {date: dayjs(this.landing.startTimeUTC).format("YYYYMMDD")} : {};
       this.router.navigate([''],
           {
             relativeTo: this.route,
@@ -240,40 +207,97 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public openPlayerGameDialog(playerId: number): void {
-    let isHomePlayer = this.homePlayerStats.findIndex(player => player.person.id === playerId) > -1;
-    let data = new GamePlayerModel();
-    if (isHomePlayer) {
-      data.playerInfo = this.homePlayerStats.find(player => player.person.id === playerId);
-      data.playerTeam = this.gameLiveData.gameData.teams.home;
-    } else {
-      data.playerInfo = this.awayPlayerStats.find(player => player.person.id === playerId);
-      data.playerTeam = this.gameLiveData.gameData.teams.away;
-    }
+    // TODO: Phase 6 (see docs/nhl-api-migration-plan.md): open PlayerGameDialogComponent with the player's boxscore
+    //  stats and player/{id}/landing. Its old-model dialog data can't be built from the new API.
+  }
 
-    this.seriesDialog.open(PlayerGameDialogComponent, {
-      maxWidth: "85vw",
-      backdropClass: "dialog-backdrop",
-      data: data
+  /**
+   * Loads the game, and the series status for playoff games. Starts the 10s refresh for games that aren't over and
+   * are live or scheduled today. Shows an error state when the landing can't be loaded.
+   */
+  private loadGame(): void {
+    this.stopContinuousNhlGameUpdates();
+    this.stopNhlIntermissionTimer();
+    this.clearGame();
+    const gameId = this.gameId;
+    this.nhlGameService.getGameBundle(gameId).then(bundle => {
+      if (gameId !== this.gameId) {
+        return;
+      }
+      this.applyGameBundle(bundle);
+      this.leagueRouterLink = this.landing.gameType === NhlGameTypeEnum.PLAYOFFS ? "/playoffs" : "/standings";
+      this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.homeTeam.id);
+      this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.awayTeam.id);
+      this.loadSeriesStatus();
+      if (!this.completedGame && (this.liveGame || this.gameDay === "Today")) {
+        this.startContinuousNhlGameUpdates();
+      }
+    }).catch(() => {
+      if (gameId === this.gameId) {
+        this.loadFailed = true;
+      }
+    });
+  }
+
+  private clearGame(): void {
+    this.landing = undefined;
+    this.playByPlay = undefined;
+    this.boxscore = undefined;
+    this.rightRail = undefined;
+    this.seriesStatus = undefined;
+    this.homeTeamLogo = undefined;
+    this.awayTeamLogo = undefined;
+    this.isIntermission = false;
+    this.loadFailed = false;
+    this.leagueRouterLink = "/standings";
+  }
+
+  /**
+   * Shows new game data. When an optional response is missing (its request failed), the last one is kept.
+   */
+  private applyGameBundle(bundle: GameBundle): void {
+    this.landing = bundle.landing;
+    this.playByPlay = bundle.playByPlay ?? this.playByPlay;
+    this.boxscore = bundle.boxscore ?? this.boxscore;
+    this.rightRail = bundle.rightRail ?? this.rightRail;
+    this.updateIntermission();
+  }
+
+  /**
+   * Loads the series status of a playoff game. If it fails, the league label falls back to "NHL Playoffs".
+   */
+  private loadSeriesStatus(): void {
+    if (this.landing.gameType !== NhlGameTypeEnum.PLAYOFFS) {
+      return;
+    }
+    const gameId = this.gameId;
+    this.nhlGameService.getSeriesStatus(this.landing.id, this.landing.gameDate).then(seriesStatus => {
+      if (gameId === this.gameId) {
+        this.seriesStatus = seriesStatus;
+      }
+    }).catch(() => {
+      // Already logged by the service
     });
   }
 
   /**
-   * Starts continuous timer updating of current day nhl games every 10 seconds. Should always call retrieveNhlGames once
-   * before starting this timer.
+   * Refreshes the game every 10 seconds. Stops once the game is over, after reloading the series status. A failed
+   * refresh keeps the data already shown.
    */
   private startContinuousNhlGameUpdates(): void {
     this.nhlGameUpdateTimerId = setInterval(() => {
-      this.nhlGameService.getNhlGameLiveFeed(this.gameId).then(gameLiveData => {
-        if (gameLiveData) {
-          this.gameLiveData = gameLiveData;
-          this.gameBoxscore = gameLiveData.liveData.boxscore;
-          this.gameLinescore = gameLiveData.liveData.linescore;
-          this.calculateGoals();
-          this.calculatePlayerStats();
-          this.calculateIntermission();
-        } else {
-          console.log("Problem updating NHL game with ID", this.gameId);
+      const gameId = this.gameId;
+      this.nhlGameService.getGameBundle(gameId).then(bundle => {
+        if (gameId !== this.gameId || !this.nhlGameUpdateTimerId) {
+          return;
         }
+        this.applyGameBundle(bundle);
+        if (this.completedGame) {
+          this.stopContinuousNhlGameUpdates();
+          this.loadSeriesStatus();
+        }
+      }).catch(() => {
+        // Already logged by the service
       });
     }, this.nhlGameRefreshTime);
   }
@@ -286,52 +310,23 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Starts an intermission countdown timer if the current play or the previous play are of type 'PERIOD_END'.
-   * Stops the existing intermission time if the current play is of type 'PERIOD_START' or 'GAME_END'.
-   * 1st and 2nd intermissions are about 18.5 minutes long. Intermissions between playoff overtimes are about 15.5
-   * minutes long. Intermission before regular season overtime is about 3 minutes long.
+   * Updates the intermission countdown from the landing clock, whose secondsRemaining is expected to count down the
+   * intermission while clock.inIntermission is true (not verified during a live game yet, see the migration plan).
+   * A 1s timer keeps the countdown moving between refreshes.
    */
-  private calculateIntermission() {
-    let allPlays = this.gameLiveData.liveData.plays.allPlays;
-    if (this.gameLiveData.liveData.plays.allPlays.length < 3) {
+  private updateIntermission(): void {
+    let clock = this.landing?.clock;
+    this.isIntermission = this.liveGame && !!clock?.inIntermission;
+    if (!this.isIntermission) {
+      this.intermissionSecondsRemaining = undefined;
+      this.stopNhlIntermissionTimer();
       return;
     }
-    if (this.gameLiveData.liveData.plays.currentPlay.result.eventTypeId === "PERIOD_END") {
-      this.periodEndEvent = this.gameLiveData.liveData.plays.currentPlay;
-      this.isIntermission = true;
-    } else if (allPlays[allPlays.length - 2].result.eventTypeId === "PERIOD_END") {
-      this.periodEndEvent = allPlays[allPlays.length - 2];
-      this.isIntermission = true;
-    }
-      if (this.gameLiveData.liveData.plays.currentPlay.result.eventTypeId === "PERIOD_START" ||
-        this.gameLiveData.liveData.plays.currentPlay.result.eventTypeId === "GAME_END") {
-      this.periodEndEvent = null;
-      this.isIntermission = false;
-      this.stopNhlIntermissionTimer();
-    }
-    if (this.isIntermission && !this.intermissionTimerId) {
-      switch (this.gameLinescore.currentPeriod) {
-        case 1:
-          this.nextPeriod = "2nd";
-          break;
-        case 2:
-          this.nextPeriod = "3rd";
-          break;
-        case 3:
-          this.nextPeriod = "OT";
-          break;
-        default:
-          this.nextPeriod = (this.gameLinescore.currentPeriod - 3) + "OT";
-          break;
-      }
-      let intermissionTimeMs = 19 * 60 * 1000;
-      if (this.nextPeriod === "OT" && this.gameModel.gameType !== "P") {
-        intermissionTimeMs =  3 * 60 * 1000;
-      } else if (this.nextPeriod.includes("OT") && this.gameModel.gameType === "P") {
-        intermissionTimeMs =  15.5 * 60 * 1000;
-      }
+    this.intermissionSecondsRemaining = clock.secondsRemaining;
+    this.nextPeriod = PeriodUtils.getNextPeriodLabel(this.landing.periodDescriptor, this.landing.gameType);
+    if (!this.intermissionTimerId) {
       this.intermissionTimerId = setInterval(() => {
-        this.calculateIntermissionTimer(intermissionTimeMs);
+        this.intermissionSecondsRemaining = Math.max((this.intermissionSecondsRemaining ?? 0) - 1, 0);
       }, 1000);
     }
   }
@@ -343,78 +338,12 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private calculateIntermissionTimer(intermissionTimeMs: number): void {
-    if (this.isIntermission) {
-      let periodEndTime = dayjs(this.periodEndEvent.about.dateTime);
-      let currentTime = dayjs();
-      let elapsedTimeMs = currentTime.diff(periodEndTime, 'ms');
-      this.intermissionTimeRemainingMs = Math.max(intermissionTimeMs - elapsedTimeMs, 0);
-    }
-  }
-
-  private calculateGoals(): void {
-    let allPlays = this.gameLiveData.liveData.plays.allPlays;
-    this.homeTeamGoals = [];
-    this.awayTeamGoals = [];
-    this.gameLiveData.liveData.plays.scoringPlays.forEach(scoringPlayIndex => {
-      let goal = new GoalModel();
-      goal.period = allPlays[scoringPlayIndex].about.period;
-      goal.periodTime = allPlays[scoringPlayIndex].about.periodTime;
-      goal.periodTimeRemaining = allPlays[scoringPlayIndex].about.periodTimeRemaining
-
-      // Assumes scorer will always be 1st player in goal scoring event player list
-      goal.scorerFullName = allPlays[scoringPlayIndex].players[0].player.fullName;
-      goal.scorerLastName = goal.scorerFullName.substring(goal.scorerFullName.indexOf(' '));
-      goal.scorerId = allPlays[scoringPlayIndex].players[0].player.id;
-      if (allPlays[scoringPlayIndex].team.id === this.gameBoxscore.teams.home.team.id) {
-        this.homeTeamGoals.push(goal);
-      } else {
-        this.awayTeamGoals.push(goal);
-      }
-    });
-  }
-
-  private calculatePlayerStats(): void {
-    const homeTeam = this.gameLiveData.liveData.boxscore.teams.home;
-    const awayTeam = this.gameLiveData.liveData.boxscore.teams.away;
-    let homePlayerStats: NhlBoxscorePlayerModel[] = [];
-    let awayPlayerStats: NhlBoxscorePlayerModel[] = [];
-    let homePlayers = homeTeam.skaters.filter(player => !homeTeam.scratches.includes(player)).map(id => "ID" + id);
-    let awayPlayers = awayTeam.skaters.filter(player => !awayTeam.scratches.includes(player)).map(id => "ID" + id);
-    homePlayers = homePlayers.concat(homeTeam.goalies.map(id => "ID" + id));
-    awayPlayers = awayPlayers.concat(awayTeam.goalies.map(id => "ID" + id));
-
-    homePlayers.forEach((playerId: string) => {
-      homePlayerStats.unshift(homeTeam.players[playerId]);
-      if (homePlayerStats[0].stats.skaterStats) {
-        homePlayerStats[0].stats.skaterStats.hokmobRating = StatsUtils.calculateSkaterHokmobRating(homePlayerStats[0].stats.skaterStats);
-      } else {
-        homePlayerStats[0].stats.goalieStats.hokmobRating = StatsUtils.calculateGoalieHokMobRating(homePlayerStats[0].stats.goalieStats);
-      }
-    });
-    awayPlayers.forEach((playerId: string) => {
-      awayPlayerStats.unshift(awayTeam.players[playerId]);
-      if (awayPlayerStats[0].stats.skaterStats) {
-        awayPlayerStats[0].stats.skaterStats.hokmobRating = StatsUtils.calculateSkaterHokmobRating(awayPlayerStats[0].stats.skaterStats);
-      } else {
-        awayPlayerStats[0].stats.goalieStats.hokmobRating = StatsUtils.calculateGoalieHokMobRating(awayPlayerStats[0].stats.goalieStats);
-      }
-    });
-    this.homePlayerStats = homePlayerStats.sort((a, b) => StatsUtils.sortByHokMobRating(a,b));
-    this.awayPlayerStats = awayPlayerStats.sort((a, b) => StatsUtils.sortByHokMobRating(a,b));
-  }
-
-  private loadLogos(): void {
-    this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.gameBoxscore.teams.home.team.id);
-    this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.gameBoxscore.teams.away.team.id);
-  }
-
   @HostListener('document:scroll')
   private onScroll(): void {
     if (window.scrollY > 265) {
-      this.stickyHeader.classList.add("header-show");
+      this.stickyHeader?.classList.add("header-show");
     } else {
-      this.stickyHeader.classList.remove("header-show");
+      this.stickyHeader?.classList.remove("header-show");
     }
   }
 

@@ -3,16 +3,18 @@
     <div class="dropdown-header" id="dropdownHeader">
       <app-game-header
           [isDropdownHeader]="true"
-          [gameLiveData]="gameLiveData"
-          [gameLinescore]="gameLinescore"
-          [gameModel]="gameModel"
+          [landing]="landing"
+          [seriesStatus]="seriesStatus"
           [intermissionTimeRemaining]="intermissionTimeRemaining"
           [homeTeamLogo]="homeTeamLogo"
           [awayTeamLogo]="awayTeamLogo"
           [isIntermission]="isIntermission"
       ></app-game-header>
     </div>
-    <div class="game-header" *ngIf="gameLiveData">
+    <div *ngIf="loadFailed" class="game-load-error">
+      <span>This game couldn't be loaded.</span>
+    </div>
+    <div class="game-header" *ngIf="landing">
       <div class="league-info">
         <div class="games-back-button" (click)="backToPrevious()">
           <div class="back-icon">
@@ -29,9 +31,8 @@
       <div class="expanded-scorecard-container">
         <app-game-header
             [isDropdownHeader]="false"
-            [gameLiveData]="gameLiveData"
-            [gameLinescore]="gameLinescore"
-            [gameModel]="gameModel"
+            [landing]="landing"
+            [seriesStatus]="seriesStatus"
             [intermissionTimeRemaining]="intermissionTimeRemaining"
             [homeTeamLogo]="homeTeamLogo"
             [awayTeamLogo]="awayTeamLogo"
@@ -39,9 +40,7 @@
         ></app-game-header>
         <app-goal-scorers
             *ngIf="haveGoalsBeenScored"
-            [numPeriods]="gameLinescore.periods.length"
-            [homeTeamGoals]="homeTeamGoals"
-            [awayTeamGoals]="awayTeamGoals"
+            [scoring]="scoringPeriods"
             (scorerClicked)="openPlayerGameDialog($event)">
         </app-goal-scorers>
       </div>
@@ -60,43 +59,32 @@
         </div>
       </div>
     </div>
-    <div *ngIf="showTopPlayers" class="game-container">
+    <!-- TODO: The sections below aren't migrated yet (phases 5-7, see the TODO in game.component.ts) -->
+    <div *ngIf="unmigratedSectionsEnabled && showTopPlayers" class="game-container">
       <app-game-top-players
-        [homePlayerStats]="homePlayerStats"
-        [awayPlayerStats]="awayPlayerStats"
         (playerClicked)="openPlayerGameDialog($event)"
       ></app-game-top-players>
     </div>
-    <div *ngIf="!futureGame" class="game-container">
-      <app-momentum
-          [gameLiveData]="gameLiveData"
-      ></app-momentum>
+    <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="game-container">
+      <app-momentum></app-momentum>
     </div>
-    <div *ngIf="!futureGame" class="game-container mobile-only">
+    <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="game-container mobile-only">
       <app-mini-event-timeline
-          [gameLiveData]="gameLiveData"
           (playerClicked)="openPlayerGameDialog($event)"
       ></app-mini-event-timeline>
     </div>
-    <div *ngIf="!futureGame" class="game-container">
+    <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="game-container">
       <app-game-stats
           [homeTeamLogo]="homeTeamLogo"
           [awayTeamLogo]="awayTeamLogo"
-          [gameLiveData]="gameLiveData"
       ></app-game-stats>
     </div>
-    <div *ngIf="gameModel && !completedGame" class="game-container">
-      <app-team-form
-          [homeTeam]="gameModel.teams.home.team"
-          [awayTeam]="gameModel.teams.away.team"
-          [homeTeamGames]="homeTeamGames"
-          [awayTeamGames]="awayTeamGames"
-      ></app-team-form>
+    <div *ngIf="unmigratedSectionsEnabled && landing && !completedGame" class="game-container">
+      <app-team-form></app-team-form>
     </div>
   </div>
-  <div *ngIf="!futureGame" class="side-game">
+  <div *ngIf="unmigratedSectionsEnabled && !futureGame" class="side-game">
     <app-mini-event-timeline
-        [gameLiveData]="gameLiveData"
         [homeTeamLogo]="homeTeamLogo"
         [awayTeamLogo]="awayTeamLogo"
         (playerClicked)="openPlayerGameDialog($event)"

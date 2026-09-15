@@ -1,5 +1,6 @@
 import {PeriodUtils} from "@shared/utils/period-utils";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {GameClock, PeriodDescriptor} from "@shared/models/nhl-web-api/common.model";
 import {
   derivedLiveGame,
@@ -95,6 +96,45 @@ describe('PeriodUtils', () => {
 
     it('should show Live without a period', () => {
       expect(PeriodUtils.getLiveLabel(undefined, clock('20:00'))).toBe('Live');
+    });
+  });
+
+  describe('getNextPeriodLabel', () => {
+    it('should label the next regulation period', () => {
+      expect(PeriodUtils.getNextPeriodLabel(period(1, NhlPeriodTypeEnum.REGULATION), NhlGameTypeEnum.REGULAR_SEASON))
+          .toBe('2nd');
+      expect(PeriodUtils.getNextPeriodLabel(period(2, NhlPeriodTypeEnum.REGULATION), NhlGameTypeEnum.PLAYOFFS))
+          .toBe('3rd');
+    });
+
+    it('should label overtime after the last period of a real game', () => {
+      const regulation = mockRegulationFinal();
+      const playoff = mockPlayoffGame();
+      expect(PeriodUtils.getNextPeriodLabel(regulation.periodDescriptor, regulation.gameType)).toBe('OT');
+      expect(PeriodUtils.getNextPeriodLabel(playoff.periodDescriptor, playoff.gameType)).toBe('OT');
+    });
+
+    it('should go to a shootout after one overtime outside the playoffs', () => {
+      const overtime = mockOvertimeFinal();
+      expect(PeriodUtils.getNextPeriodLabel(overtime.periodDescriptor, overtime.gameType)).toBe('SO');
+      expect(PeriodUtils.getNextPeriodLabel(period(4, NhlPeriodTypeEnum.OVERTIME), NhlGameTypeEnum.PRESEASON))
+          .toBe('SO');
+    });
+
+    it('should number the next overtime in the playoffs', () => {
+      expect(PeriodUtils.getNextPeriodLabel(period(4, NhlPeriodTypeEnum.OVERTIME), NhlGameTypeEnum.PLAYOFFS))
+          .toBe('2OT');
+      expect(PeriodUtils.getNextPeriodLabel(period(6, NhlPeriodTypeEnum.OVERTIME), NhlGameTypeEnum.PLAYOFFS))
+          .toBe('4OT');
+    });
+
+    it('should assume 3 regulation periods when maxRegulationPeriods is missing', () => {
+      const periodDescriptor = {number: 3, periodType: NhlPeriodTypeEnum.REGULATION} as PeriodDescriptor;
+      expect(PeriodUtils.getNextPeriodLabel(periodDescriptor, NhlGameTypeEnum.REGULAR_SEASON)).toBe('OT');
+    });
+
+    it('should return an empty label without a period', () => {
+      expect(PeriodUtils.getNextPeriodLabel(undefined, NhlGameTypeEnum.PLAYOFFS)).toBe('');
     });
   });
 

@@ -2,9 +2,11 @@ import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {NhlGameStatusModel} from "@shared/models/nhl-general/nhl-game-status.model";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {
   derivedLiveGame,
   mockFutureGame,
+  mockGameLanding,
   mockPlayoffGame,
   mockRegulationFinal
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
@@ -71,6 +73,41 @@ describe('NhlGameInfoUtils', () => {
 
     it('should return an empty status without series data', () => {
       expect(NhlGameInfoUtils.getSeriesStatusShort(undefined)).toBe('');
+    });
+  });
+
+  describe('getGameDescription', () => {
+    function seriesStatus(topSeedWins: number, bottomSeedWins: number): SeriesStatus {
+      return {...mockPlayoffGame().seriesStatus, topSeedWins, bottomSeedWins};
+    }
+
+    it('should label real regular season games, and preseason games', () => {
+      expect(NhlGameInfoUtils.getGameDescription(mockGameLanding(2025021057).gameType, undefined))
+          .toBe('NHL Regular Season');
+      expect(NhlGameInfoUtils.getGameDescription(NhlGameTypeEnum.PRESEASON, undefined)).toBe('NHL Preseason');
+    });
+
+    it('should show the series title and status of a real playoff game', () => {
+      expect(NhlGameInfoUtils.getGameDescription(mockGameLanding(2025030414).gameType, mockPlayoffGame().seriesStatus))
+          .toBe('Stanley Cup Final: Tied 2-2');
+      expect(NhlGameInfoUtils.getGameDescription(NhlGameTypeEnum.PLAYOFFS, seriesStatus(4, 2)))
+          .toBe('Stanley Cup Final: CAR wins 4-2');
+    });
+
+    it('should show the matchup before the series starts', () => {
+      expect(NhlGameInfoUtils.getGameDescription(NhlGameTypeEnum.PLAYOFFS, seriesStatus(0, 0)))
+          .toBe('Stanley Cup Final: CAR vs VGK');
+    });
+
+    it('should fall back to NHL Playoffs without series data or a title', () => {
+      expect(NhlGameInfoUtils.getGameDescription(NhlGameTypeEnum.PLAYOFFS, undefined)).toBe('NHL Playoffs');
+      const untitled = {...seriesStatus(3, 1), seriesTitle: undefined};
+      expect(NhlGameInfoUtils.getGameDescription(NhlGameTypeEnum.PLAYOFFS, untitled)).toBe('NHL Playoffs: CAR leads 3-1');
+    });
+
+    it('should show NHL for other or missing game types', () => {
+      expect(NhlGameInfoUtils.getGameDescription(4 as NhlGameTypeEnum, undefined)).toBe('NHL');
+      expect(NhlGameInfoUtils.getGameDescription(undefined, undefined)).toBe('NHL');
     });
   });
 });

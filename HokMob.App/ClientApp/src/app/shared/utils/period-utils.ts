@@ -1,5 +1,6 @@
 import {GameClock, GameOutcome, PeriodDescriptor} from "@shared/models/nhl-web-api/common.model";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 
 export class PeriodUtils {
 
@@ -59,6 +60,31 @@ export class PeriodUtils {
     } else {
       return periodLabel + " - " + PeriodUtils.formatTimeRemaining(clock.timeRemaining);
     }
+  }
+
+  /**
+   * Gets the label of the period after the given one, like "2nd", "OT" or "2OT". Regular season and preseason games
+   * have one overtime, then a shootout ("SO").
+   *
+   * @param periodDescriptor - The current period, like the one that just ended before an intermission.
+   * @param gameType - The game type. Only playoff games have more than one overtime.
+   */
+  public static getNextPeriodLabel(periodDescriptor: PeriodDescriptor, gameType: NhlGameTypeEnum): string {
+    if (!periodDescriptor) {
+      return "";
+    }
+    let regulationPeriods = periodDescriptor.maxRegulationPeriods || 3;
+    let nextNumber = periodDescriptor.number + 1;
+    if (nextNumber <= regulationPeriods) {
+      return PeriodUtils.getOrdinal(nextNumber);
+    } else if (gameType !== NhlGameTypeEnum.PLAYOFFS && nextNumber > regulationPeriods + 1) {
+      return "SO";
+    }
+    return PeriodUtils.getLabel({
+      number: nextNumber,
+      periodType: NhlPeriodTypeEnum.OVERTIME,
+      maxRegulationPeriods: regulationPeriods
+    });
   }
 
   /**

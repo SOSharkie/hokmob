@@ -1,15 +1,17 @@
 <div class="goal-details-container">
   <div class="goals-container">
-    <ng-container *ngFor="let period of periods">
-      <div *ngIf="hasPeriod(period)" class="first period-goals">
-        <div class="home-goals-label">
-          <span *ngFor="let goal of getHomeTeamGoals(period)" (click)="clickHomeScorer(goal)" class="scorer-label">{{goal}}</span>
-        </div>
-        <span *ngIf="hasPeriod(period)" class="period-label">{{getPeriodLabel(period)}}</span>
-        <div class="away-goals-label">
-          <span *ngFor="let goal of getAwayTeamGoals(period)" (click)="clickAwayScorer(goal)" class="scorer-label">{{goal}}</span>
-        </div>
+    <div *ngFor="let period of periods" class="period-goals">
+      <div class="home-goals-label">
+        <ng-container *ngFor="let goal of getHomeTeamGoals(period); let isLast = last">
+          <span (click)="clickScorer(goal)" class="scorer-label">{{getGoalLabel(goal)}}</span><span *ngIf="!isLast">, </span>
+        </ng-container>
       </div>
-    </ng-container>
+      <span class="period-label">{{getPeriodLabel(period)}}</span>
+      <div class="away-goals-label">
+        <ng-container *ngFor="let goal of getAwayTeamGoals(period); let isLast = last">
+          <span (click)="clickScorer(goal)" class="scorer-label">{{getGoalLabel(goal)}}</span><span *ngIf="!isLast">, </span>
+        </ng-container>
+      </div>
+    </div>
   </div>
 </div>
