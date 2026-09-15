@@ -24,7 +24,6 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "allowedCommonJsDependencies": [
-              "oidc-client",
               "dayjs"
             ],
             "assets": [
@@ -50,8 +49,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kb",
-                  "maximumError": "8kb"
+                  "maximumWarning": "8kb",
+                  "maximumError": "16kb"
                 }
               ],
               "fileReplacements": [

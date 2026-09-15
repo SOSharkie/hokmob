@@ -1,10 +1,11 @@
 import {Component, Input} from '@angular/core';
 import * as dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
-import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
-import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
-import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {GameLanding} from "@shared/models/nhl-web-api/gamecenter-landing.model";
+import {GamecenterTeam, SeriesStatus} from "@shared/models/nhl-web-api/common.model";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
+import {PeriodUtils} from "@shared/utils/period-utils";
 
 @Component({
   selector: 'app-game-header',
@@ -14,16 +15,16 @@ import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 export class GameHeaderComponent {
 
   @Input()
-  public isDropdownHeader;
+  public isDropdownHeader: boolean;
 
   @Input()
-  public gameLiveData: NhlLiveFeedModel;
+  public landing: GameLanding;
 
+  /**
+   * The playoff series status from the score response. Only loaded for playoff games.
+   */
   @Input()
-  public gameLinescore: NhlLinescoreModel;
-
-  @Input()
-  public gameModel: NhlGameModel;
+  public seriesStatus: SeriesStatus;
 
   @Input()
   public intermissionTimeRemaining: string;
@@ -38,157 +39,113 @@ export class GameHeaderComponent {
   public isIntermission: boolean;
 
   public get liveGame(): boolean {
-    if (this.gameLiveData) {
-      return NhlGameInfoUtils.isLiveGame(this.gameLiveData.gameData.status);
-    }
-    return false;
+    return NhlGameInfoUtils.isLiveGame(this.landing?.gameState);
   }
 
   public get completedGame(): boolean {
-    if (this.gameLiveData) {
-      return NhlGameInfoUtils.isCompletedGame(this.gameLiveData.gameData.status);
-    }
-    return false;
+    return NhlGameInfoUtils.isCompletedGame(this.landing?.gameState);
   }
 
   public get futureGame(): boolean {
-    if (this.gameLiveData) {
-      return NhlGameInfoUtils.isFutureGame(this.gameLiveData.gameData.status);
-    }
-    return false;
+    return NhlGameInfoUtils.isFutureGame(this.landing?.gameState);
   }
 
   public get homeTeamName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.home.name;
+    if (this.landing) {
+      return this.getTeamFullName(this.landing.homeTeam);
     }
     return "N/A";
   }
 
   public get awayTeamName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.away.name;
+    if (this.landing) {
+      return this.getTeamFullName(this.landing.awayTeam);
     }
     return "N/A";
   }
 
   public get homeTeamShortName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.home.teamName;
-    }
-    return "N/A";
+    return this.landing?.homeTeam.commonName?.default ?? "N/A";
   }
 
   public get awayTeamShortName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.away.teamName;
-    }
-    return "N/A";
+    return this.landing?.awayTeam.commonName?.default ?? "N/A";
   }
 
   public get homeTeamId(): number {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.home.id;
-    }
-    return 0;
+    return this.landing?.homeTeam.id ?? 0;
   }
 
   public get awayTeamId(): number {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.away.id;
-    }
-    return 0;
+    return this.landing?.awayTeam.id ?? 0;
   }
 
   public get gameTime(): string {
-    if (this.gameLiveData) {
-      return dayjs(this.gameLiveData.gameData.datetime.dateTime).format("h:mm A");
+    if (this.landing) {
+      return dayjs(this.landing.startTimeUTC).format("h:mm A");
     }
     return "N/A";
   }
 
   public get gameDay(): string {
-    if (this.gameLiveData) {
-      return DateTimeUtils.getDayDisplayValue(dayjs(this.gameLiveData.gameData.datetime.dateTime).toDate());
+    if (this.landing) {
+      return DateTimeUtils.getDayDisplayValue(dayjs(this.landing.startTimeUTC).toDate());
     }
     return "N/A";
   }
 
+  /**
+   * The series status, like "CAR leads 3-1", or "Series (0-0)" before the first game.
+   */
   public get playoffSeriesDetails(): string {
-    if (this.gameModel) {
-      if (this.gameModel.seriesSummary.gameNumber === 1 || this.gameModel.seriesSummary.seriesStatusShort.length === 0) {
-        return "Series (0-0)";
-      } else {
-        return this.gameModel.seriesSummary.seriesStatusShort;
-      }
-    }
-    return "";
+    let status = NhlGameInfoUtils.getSeriesStatusShort(this.seriesStatus);
+    return status === "(0-0)" ? "Series (0-0)" : status;
   }
 
   public get isPlayoffGame(): boolean {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.game.type === "P";
-    }
-    return false;
+    return this.landing?.gameType === NhlGameTypeEnum.PLAYOFFS && !!this.seriesStatus;
   }
 
   public get gameScore(): string {
-    if (this.gameLinescore) {
-      return this.gameLinescore.teams.home.goals + " - " + this.gameLinescore.teams.away.goals;
+    if (this.landing) {
+      return (this.landing.homeTeam.score ?? 0) + " - " + (this.landing.awayTeam.score ?? 0);
     }
     return "N/A"
   }
 
+  /**
+   * "Final", or "Final OT", "Final 2OT" or "Final SO".
+   */
   public get completedGameStatus(): string {
-    if (this.gameLinescore) {
-      if (this.gameLinescore.currentPeriod === 5 && this.gameLinescore.hasShootout) {
-        return "Final SO";
-      } else if (this.gameLinescore.currentPeriod === 4 && !this.gameLinescore.hasShootout) {
-        return "Final OT";
-      } else if (this.gameLinescore.currentPeriod > 4) {
-        return "Final " + (this.gameLinescore.currentPeriod - 3) + "OT";
-      } else {
-        return "Final";
-      }
+    if (this.landing) {
+      let label = PeriodUtils.getFinalLabel(this.landing.gameOutcome, this.landing.periodDescriptor);
+      return label === "Final" ? label : "Final " + label;
     }
     return "N/A"
   }
 
   public get liveGameStatus(): string {
-    if (this.gameLinescore) {
-      if (this.gameLinescore.hasShootout) {
-        return "SO";
-      } else if (this.gameLinescore.currentPeriodTimeRemaining === "END") {
-        return "End " + this.gameLinescore.currentPeriodOrdinal;
-      } else {
-        return this.gameLinescore.currentPeriodOrdinal + " - " + this.formatTimeRemaining();
-      }
+    if (this.landing) {
+      return PeriodUtils.getLiveLabel(this.landing.periodDescriptor, this.landing.clock);
     }
     return "N/A"
   }
 
   public get homeTeamPP(): boolean {
-    if (this.gameLinescore) {
-      // TODO: Implement
-      return false;
-    }
+    // TODO: Implement, optionally from the latest play's situationCode (see docs/nhl-api-migration-plan.md, 5.2)
     return false;
   }
 
   public get awayTeamPP(): boolean {
-    if (this.gameLinescore) {
-      // TODO: Implement
-      return false;
-    }
+    // TODO: Implement, optionally from the latest play's situationCode (see docs/nhl-api-migration-plan.md, 5.2)
     return false;
   }
 
-  private formatTimeRemaining(): string {
-    if (this.gameLinescore.currentPeriodTimeRemaining.startsWith("0")) {
-      return this.gameLinescore.currentPeriodTimeRemaining.substring(1);
-    } else {
-      return this.gameLinescore.currentPeriodTimeRemaining;
-    }
+  /**
+   * The gamecenter responses split the name into place and common name, like "Winnipeg" and "Jets".
+   */
+  private getTeamFullName(team: GamecenterTeam): string {
+    return [team.placeName?.default, team.commonName?.default].filter(name => !!name).join(" ");
   }
 
 }

@@ -160,6 +160,12 @@ $central-info-width: 130px;
     }
   }
 
+  .game-load-error {
+    margin: $spacing-large;
+    color: $gray-04;
+    font-size: large;
+  }
+
   .game-container {
     margin: $spacing-small;
   }

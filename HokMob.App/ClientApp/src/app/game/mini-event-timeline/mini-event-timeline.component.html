@@ -8,20 +8,17 @@
       <img [src]="awayTeamLogo" alt="" class="team-logo">
     </div>
   </div>
-  <div *ngFor="let period of periodEvents, let i = index">
-    <ng-container *ngIf="hasPeriod(i)">
-      <div class="period-start-container">
-        <span class="period-label">{{getPeriodLabel(i)}}</span>
-      </div>
-      <ng-container *ngFor="let event of period">
-        <app-mini-event
-            [event]="event"
-            [homeTeamId]="gameLiveData.gameData.teams.home.id"
-            [awayTeamId]="gameLiveData.gameData.teams.away.id"
-            (playerClicked)="onPlayerClicked($event)"
-        ></app-mini-event>
-      </ng-container>
-    </ng-container>
+  <div *ngFor="let period of periods" class="period-events">
+    <div class="period-start-container">
+      <span class="period-label">{{getPeriodLabel(period)}}</span>
+    </div>
+    <app-mini-event
+        *ngFor="let play of period.plays; trackBy: trackPlay"
+        [play]="play"
+        [homeTeamId]="homeTeamId"
+        [rosterSpots]="rosterSpots"
+        (playerClicked)="onPlayerClicked($event)"
+    ></app-mini-event>
   </div>
   <div *ngIf="isGameFinal" class="period-start-container">
     <span class="period-label">End</span>

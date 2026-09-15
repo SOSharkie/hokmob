@@ -92,6 +92,14 @@ export interface PlayDetails {
   servedByPlayerId?: number;
 }
 
+/**
+ * A period's goals and penalties, built by PlayByPlayUtils.getKeyEventPeriods (not part of the response).
+ */
+export interface KeyEventPeriod {
+  periodDescriptor: PeriodDescriptor;
+  plays: Play[];
+}
+
 export interface RosterSpot {
   teamId: number;
   playerId: number;
