@@ -1,7 +1,7 @@
 <div class="scorecard-container"
      [ngClass]="{'smaller-scorecard': smallerScorecard}"
      (click)="clickScorecard($event)"
-     [routerLink]="['/game', game.gamePk]">
+     [routerLink]="['/game', game.id]">
   <div class="home-team" [ngClass]="{'smaller-text': smallerScorecard}">
     <span>{{homeTeamName}}</span>
     <div class="logo-container">

@@ -5,7 +5,7 @@
   <div class="playoff-series-dialog-container">
     <div *ngFor="let game of seriesGames let last = last" class="series-game-container" [ngClass]="{'last-scorecard': last}">
       <app-scorecard
-          [game]="game"
+          [game]="$any(game)"
           [smallerScorecard]="true"
           (scorecardClicked)="seriesGameClicked()"
       ></app-scorecard>

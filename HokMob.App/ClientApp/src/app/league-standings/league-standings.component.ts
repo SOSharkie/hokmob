@@ -5,6 +5,9 @@ import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {NhlStandingsModel} from "@shared/models/nhl-general/nhl-standings.model";
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 
+// TODO: Standings page is not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). The shared
+//  app-standings component now expects grouped new API standings. Fix: use the migrated getNhlStandings (standings/now)
+//  and group client-side by league/conference/division/wild card using the *Sequence fields.
 @Component({
   selector: 'app-league-standings',
   templateUrl: './league-standings.component.html',

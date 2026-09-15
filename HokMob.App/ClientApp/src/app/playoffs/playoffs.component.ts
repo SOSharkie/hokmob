@@ -5,6 +5,9 @@ import {NhlPlayoffMatchupTeamModel} from "@shared/models/nhl-playoffs/nhl-playof
 import {NhlSeriesSummaryModel} from "@shared/models/nhl-playoffs/nhl-series-summary.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
+// TODO: Playoffs page is not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). The shared
+//  app-playoff-series component now expects new API series models. Fix: load playoff-bracket/{year} for the full bracket
+//  (seriesLetter, seeds, wins, winningTeamId); the winner-backfill workaround below should no longer be needed.
 @Component({
   selector: 'app-playoffs',
   templateUrl: './playoffs.component.html',

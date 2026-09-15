@@ -1,8 +1,17 @@
+using HokMob.App.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<NhlApiClient>(client =>
+{
+    client.BaseAddress = new Uri(NhlApiClient.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("HokMob/1.0");
+});
 
 var app = builder.Build();
 

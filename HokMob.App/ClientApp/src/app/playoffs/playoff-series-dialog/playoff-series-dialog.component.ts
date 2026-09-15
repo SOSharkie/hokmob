@@ -6,6 +6,9 @@ import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-pl
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 
+// TODO: Playoff series dialog is not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). The shared
+//  app-scorecard now expects new API score games. Fix: load games from schedule/playoff-series/{season}/{seriesLetter}/
+//  and build the title from that response's roundLabel/seeds instead of seriesSummary and conference.
 @Component({
   selector: 'app-playoff-series-dialog',
   templateUrl: './playoff-series-dialog.component.html',

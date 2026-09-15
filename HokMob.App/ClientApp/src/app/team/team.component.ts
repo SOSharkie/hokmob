@@ -19,6 +19,10 @@ import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
 import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
 
+// TODO: Team page is not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). Its shared components
+//  (app-standings, app-scorecard via team-schedule, app-previous-game via single-team-form) now expect new API models.
+//  Fix: load team data from club-schedule-season/{abbrev}/now, standings/now and roster/{abbrev}/current, and pass the
+//  new models to those components.
 @Component({
   selector: 'app-team',
   templateUrl: './team.component.html',
