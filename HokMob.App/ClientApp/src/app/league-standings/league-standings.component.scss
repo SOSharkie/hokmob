@@ -1,19 +1,38 @@
 @import "variables";
 
+// The gap around the page, around the filters and between the cards. It's the game page's 16px on desktop and shrinks
+// smoothly on phones, so nothing jumps at a breakpoint
+$page-gap: clamp(#{$spacing-medium}, 2.3vw, #{$spacing-card-gap});
+
 .league-standings-container {
+  display: flex;
+  flex-direction: column;
+  gap: $page-gap;
+  box-sizing: border-box;
   width: 100%;
-  overflow-x: auto;
-  margin-top: $spacing-medium;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $page-gap;
 
   .standings-filters-container {
     display: flex;
     align-items: center;
-    height: 70px;
-    margin-top: $spacing-large;
-    margin-bottom: $spacing-medium;
+    gap: clamp(#{$spacing-small}, 1.2vw, #{$spacing-x-large});
+    padding: clamp(#{$spacing-medium}, 1.2vw, #{$spacing-x-large});
 
     background-color: $black-02;
     border-radius: 25px;
+
+    .standings-type-filter {
+      min-width: 0;
+      padding: clamp(#{$spacing-large}, 1.4vw, #{$spacing-x-large}) clamp(#{$spacing-large}, 1.4vw, #{$spacing-xx-large});
+      // medium on phones, large on desktop
+      font-size: clamp(14px, 0.6vw + 12px, 18px);
+      white-space: nowrap;
+      color: white;
+      background-color: $black-04;
+      border-radius: 25px;
+    }
 
     .standings-type-filter:hover {
       cursor: pointer;
@@ -28,53 +47,5 @@
 
   app-standings {
     width: 100%;
-  }
-}
-
-// Desktop Styling
-@media only screen and (min-width: $small-display-breakpoint) {
-  .standings-type-filter {
-    font-size: large;
-    color: white;
-    background-color: $black-04;
-    margin-left: $spacing-x-large;
-    padding: $spacing-x-large;
-    border-radius: 25px;
-  }
-  .main-standings {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 1200px;
-  }
-}
-
-// small display Styling
-@media only screen and (min-width: $tiny-display-breakpoint) and (max-width: $small-display-breakpoint){
-  .standings-type-filter {
-    font-size: large;
-    color: white;
-    background-color: $black-04;
-    margin-left: $spacing-x-large;
-    padding: $spacing-x-large;
-    border-radius: 25px;
-  }
-  .main-standings {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 950px;
-  }
-}
-
-// Mobile Styling
-@media only screen and (max-width: $tiny-display-breakpoint) {
-  .standings-type-filter {
-    font-size: medium;
-    color: white;
-    background-color: $black-04;
-    margin-left: $spacing-large;
-    padding: $spacing-large;
-    border-radius: 25px;
   }
 }

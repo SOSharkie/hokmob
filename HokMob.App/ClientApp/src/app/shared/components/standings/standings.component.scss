@@ -1,15 +1,31 @@
 @import "variables";
 
+// Cell padding and font sizes scale with the viewport width between their phone and desktop sizes, so the table resizes
+// smoothly instead of jumping at a breakpoint
+$header-cell-padding: clamp(#{$spacing-small}, 1.1vw, #{$spacing-x-large});
+$cell-padding: clamp(#{$spacing-small}, 0.8vw, #{$spacing-large});
+
+// A list of standings cards on its own page: space the cards like the page's other cards
+:host(.standings-cards) {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(#{$spacing-medium}, 2.3vw, #{$spacing-card-gap});
+
+  .standings-container {
+    margin-bottom: 0;
+  }
+}
+
 .standings-container {
   color: white;
   background-color: $black-02;
   border-radius: 25px;
-  padding: $spacing-medium $spacing-large;
+  padding: $spacing-medium clamp(#{$spacing-medium}, 1vw, #{$spacing-large});
   margin-bottom: $spacing-medium;
 
   .standings-type-container {
     padding: $spacing-large;
-    font-size: larger;
+    font-size: clamp(16px, 0.45vw + 13px, 19px);
     border-bottom: 1px solid $black-03;
   }
 
@@ -21,9 +37,19 @@
       text-align: left;
 
       th {
-        padding: $spacing-x-large;
+        padding: $header-cell-padding;
         color: $gray-03;
         font-weight: normal;
+        font-size: clamp(13px, 0.4vw + 10.5px, 16px);
+      }
+
+      // Every stat column gets the same share, and the team column takes the rest
+      .stat-cell {
+        width: 8%;
+      }
+
+      .rank-header {
+        width: 6%;
       }
     }
 
@@ -32,7 +58,8 @@
 
       td {
         font-weight: lighter;
-        padding: $spacing-large;
+        padding: $cell-padding;
+        font-size: clamp(13px, 0.4vw + 10.5px, 16px);
       }
 
       .rank-cell {
@@ -45,6 +72,8 @@
       }
 
       .team-name-cell {
+        white-space: nowrap;
+
         :hover {
           cursor: pointer;
           color: $gray-03;
@@ -52,28 +81,28 @@
         .team-logo {
           position: absolute;
           width: 30px;
-          margin-left: -10px;
           margin-top: -4px;
         }
         .team-name-text {
-          margin-left: $spacing-huge;
+          // Room for the logo, which is taken out of the flow
+          margin-left: 30px + $spacing-medium;
         }
+      }
+
+      .points-cell {
+        font-size: clamp(16px, 0.45vw + 13px, 19px);
+        font-weight: bolder;
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
       }
     }
 
-    // The mini standings are narrow: keep long names like "Golden Knights" on one line, and use less side padding so
-    // the table still fits inside the card's padding
+    // The mini standings are narrow: use less side padding so the table still fits inside the card's padding
     &.mini-standings {
       .standings-header th,
       .standings-row td {
         padding-left: $spacing-medium;
         padding-right: $spacing-medium;
-      }
-
-      .standings-row .team-name-cell {
-        white-space: nowrap;
-        // The logo is pulled 10px left of the cell's content, so keep the room for it
-        padding-left: $spacing-large;
       }
     }
 
@@ -97,105 +126,23 @@
   }
 }
 
-// Desktop Styling
+// Wide enough for full team names, goal differential and form
 @media only screen and (min-width: $tiny-display-breakpoint) {
-  .standings-header {
-    .rank-header {
-      width: 7%;
-    }
-    .team-name-header {
-      width: 20%;
-    }
-    .gp-header {
-      width: 9%;
-    }
-    .wins-header {
-      width: 9%;
-    }
-    .losses-header {
-      width: 9%;
-    }
-    .ot-header {
-      width: 9%;
-    }
-    .rw-header {
-      width: 9%;
-    }
-    .gd-header {
-      width: 9%;
-    }
-    .points-header {
-      width: 9%;
-    }
-    .form-header {
-      width: 9%;
-    }
-    //.next-game-header {
-    //  width: 10%;
-    //}
-  }
-  .points-cell {
-    font-size: larger;
-    font-weight: bolder;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-  }
   .show-mobile {
     display: none;
   }
 }
 
-// Mobile Display
-@media only screen and (max-width: $tiny-display-breakpoint) {
-  .standings-header {
-    .rank-header {
-      width: 9%;
-    }
-    .team-name-header {
-      width: 36%;
-    }
-    .gp-header {
-      width: 9%;
-    }
-    .wins-header {
-      width: 9%;
-    }
-    .losses-header {
-      width: 9%;
-    }
-    .ot-header {
-      width: 9%;
-    }
-    .rw-header {
-      width: 9%;
-    }
-    .gd-header {
-      display: none;
-    }
-    .points-header {
-      width: 9%;
-    }
-    .form-header {
-      display: none;
-    }
-    .next-game-header {
-      display: none;
-    }
+// Narrower: show team common names, and drop goal differential and form
+@media only screen and (max-width: #{$tiny-display-breakpoint - 0.02px}) {
+  .gd-header, .form-header, .hide-mobile {
+    display: none;
   }
-  th {
-    padding: $spacing-medium !important;
-  }
-  td {
-    padding: $spacing-medium !important;
-    font-size: smaller;
-  }
-  .points-cell {
-    font-size: medium;
-    font-weight: bolder;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-  }
-  .hide-mobile {
+}
+
+// Small phones: drop regulation wins so the table still fits
+@media only screen and (max-width: 374.98px) {
+  .rw-header, .rw-cell {
     display: none;
   }
 }
