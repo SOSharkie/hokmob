@@ -1,7 +1,14 @@
 @import "variables";
 
+// Fills the card slot on the player page, so cards in a row are the same height
+:host {
+  display: block;
+  height: 100%;
+}
+
 .player-stats-container {
   width: 100%;
+  height: 100%;
   background-color: $black-02;
   border-radius: 25px;
 

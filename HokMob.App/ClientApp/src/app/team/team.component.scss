@@ -82,13 +82,22 @@
     justify-content: flex-start;
     align-items: flex-start;
 
+    .team-main-container {
+      display: flex;
+      flex-direction: column;
+
+      .team-stats-container, .team-standings {
+        margin-top: $spacing-large;
+      }
+    }
+
     .team-info-container {
       display: flex;
       flex-direction: column;
       min-width: 250px;
       min-height: 700px;
 
-      .team-form-container, .team-next-game-container, .next-game-container, .team-stats-container {
+      .team-form-container, .team-next-game-container, .next-game-container {
         margin-top: $spacing-large;
       }
     }
@@ -98,7 +107,7 @@
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .team-header {
-    margin: $spacing-medium $spacing-medium $spacing-x-small $spacing-medium;
+    margin: $spacing-medium $spacing-medium 0 $spacing-medium;
 
     .back-container {
       width: 80px;
@@ -138,16 +147,18 @@
     }
   }
 
+  // The gap between the columns matches the $spacing-large between boxes, and the columns line up with the header
   .team-data-container {
     flex-direction: row;
+    column-gap: $spacing-large;
+    margin: 0 $spacing-medium;
 
     .team-info-container {
-      width: 32%;
+      flex: 42 1 0;
     }
-    .team-standings {
-      width: 65%;
+    .team-main-container {
+      flex: 55 1 0;
       min-width: 375px;
-      margin: $spacing-small;
     }
   }
 }
@@ -206,9 +217,8 @@
     .team-info-container {
       width: 100%;
     }
-    .team-standings {
-      margin-top: $spacing-small;
-      width: 100%
+    .team-main-container {
+      width: 100%;
     }
   }
 }

@@ -4,7 +4,8 @@
   display: flex;
   align-items: center;
 
-  // The headshots have space around the player, so they're zoomed in and cropped to a circle
+  // The headshots have space around the player, so they're zoomed in and cropped to a circle. The face center sits at
+  // about 37% of the photo's height, so a 40px image anchored at the top lands it in the middle of the 30px circle.
   .player-headshot-container {
     display: flex;
     justify-content: center;
@@ -17,7 +18,6 @@
     .player-headshot {
       height: 40px;
       width: 40px;
-      margin-top: 4px;
     }
   }
 

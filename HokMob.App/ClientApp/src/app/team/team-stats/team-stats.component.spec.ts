@@ -50,13 +50,13 @@ describe('TeamStatsComponent', () => {
     show(6);
     expect(text('.team-stats-header')).toBe('2025-2026 Team Stats');
     expect(rows()).toEqual([
-      {label: 'Power Play %', value: '23.4', rank: '9th'},
-      {label: 'Penalty Kill %', value: '77.0', rank: '24th'},
+      {label: 'Power Play %', value: '23.4%', rank: '9th'},
+      {label: 'Penalty Kill %', value: '77.0%', rank: '24th'},
       {label: 'Goals For / Game', value: '3.27', rank: '10th'},
       {label: 'Goals Against / Game', value: '3.01', rank: '14th'},
-      {label: 'Shots For / Game', value: '27.02', rank: '21st'},
-      {label: 'Shots Against / Game', value: '29.70', rank: '28th'},
-      {label: 'Faceoff %', value: '53.1', rank: '4th'}
+      {label: 'Shots For / Game', value: '27.0', rank: '21st'},
+      {label: 'Shots Against / Game', value: '29.7', rank: '28th'},
+      {label: 'Faceoff %', value: '53.1%', rank: '4th'}
     ]);
   });
 

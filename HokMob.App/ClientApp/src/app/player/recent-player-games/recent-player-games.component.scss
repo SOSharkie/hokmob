@@ -39,13 +39,16 @@
 
       .date-cell {
         color: $gray-03;
+        white-space: nowrap;
       }
 
       .opponent-cell {
         display: flex;
         align-items: center;
+        white-space: nowrap;
 
         .logo-container {
+          flex-shrink: 0;
           width: 40px;
           height: 40px;
           display: flex;
