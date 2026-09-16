@@ -1,7 +1,11 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {NhlStatsApiService} from '@shared/services/nhl-stats-api.service';
-import {mockPlayerStats, mockTeamStats} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  mockHitsAndShotsLeaders,
+  mockPlayerStats,
+  mockTeamStats
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {
   GoalieGameStats,
   SkaterGameStats,
@@ -78,6 +82,44 @@ describe('NhlStatsApiService', () => {
       const playerStats = service.getPlayerStats(8477964);
       const rejection = expectAsync(playerStats).toBeRejectedWith(jasmine.objectContaining({status: 502}));
       httpMock.expectOne('/api/nhl-stats/player/8477964?position=skater')
+          .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getHitsAndShotsLeaders', () => {
+    it('should resolve the real hits and shots leaders of a season', async () => {
+      const leaders = service.getHitsAndShotsLeaders(20252026, 2, 5);
+      httpMock.expectOne('/api/nhl-stats/leaders?season=20252026&gameType=2&limit=5')
+          .flush(mockHitsAndShotsLeaders());
+
+      const hitsAndShots = await leaders;
+      expect(hitsAndShots.hits.length).toBe(5);
+      expect(hitsAndShots.hits[0].skaterFullName).toBe('Yakov Trenin');
+      expect(hitsAndShots.hits[0].hits).toBe(413);
+      expect(hitsAndShots.hits[0].teamAbbrevs).toBe('MIN');
+      expect(hitsAndShots.shots[0].skaterFullName).toBe('Nathan MacKinnon');
+      expect(hitsAndShots.shots[0].shots).toBe(350);
+    });
+
+    it('should ask for the regular season and five leaders by default', async () => {
+      const leaders = service.getHitsAndShotsLeaders('20252026');
+      httpMock.expectOne('/api/nhl-stats/leaders?season=20252026&gameType=2&limit=5')
+          .flush(mockHitsAndShotsLeaders());
+      await leaders;
+    });
+
+    it('should resolve empty lists for a season without stats', async () => {
+      const leaders = service.getHitsAndShotsLeaders(20262027, 3);
+      httpMock.expectOne('/api/nhl-stats/leaders?season=20262027&gameType=3&limit=5').flush({});
+      expect(await leaders).toEqual({hits: [], shots: []});
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const leaders = service.getHitsAndShotsLeaders(20252026, 2);
+      const rejection = expectAsync(leaders).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne('/api/nhl-stats/leaders?season=20252026&gameType=2&limit=5')
           .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();

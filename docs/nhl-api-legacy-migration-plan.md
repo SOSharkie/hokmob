@@ -1,6 +1,6 @@
 # NHL API Migration Plan, Part 2: Remaining Legacy APIs
 
-Status: **Phases 9, 10 and 11 done** (planned 2026-09-15, built 2026-09-15). Phases 9–15 continue
+Status: **Phases 9 to 12 done** (planned 2026-09-15, built 2026-09-15). Phases 9–15 continue
 [`nhl-api-migration-plan.md`](nhl-api-migration-plan.md). Phases 0–8 in that plan migrated the home and game pages.
 Scope: every remaining caller of a dead API: the team page, player page, stats page, header search and playoffs page.
 Then the old services and models get deleted.
@@ -428,7 +428,26 @@ Two requests: api-web `player/{id}/landing` for the header and bio, then `/api/n
 - The `imagesLoaded` flags, the `@ViewChild` resets in `PlayerComponent` and the `FileReader` code go away: logos and
   headshots are plain URLs now.
 
-## 8. Stats page (phase 12)
+## 8. Stats page (phase 12, done)
+
+Built on 2026-09-15 as described below, with these notes:
+- The web API leaders are a new `NhlLeadersService` (`getSkaterLeaders` / `getGoalieLeaders`), and the hits and shots
+  leaders are `NhlStatsApiService.getHitsAndShotsLeaders`, next to the other `/api/nhl-stats/*` methods.
+- Both leader requests pass `categories` (`points,goals,assists,toi` and `savePctg,goalsAgainstAverage,wins`), which
+  works for the goalie endpoint as well, so only the four and three categories shown come back.
+- The season is read once from `standings/now`, so switching between the regular season and the playoffs reloads the
+  three leader requests alone. `updateGameType` only sets the query parameter now: the page loads from the query
+  parameter subscription, so a switch makes one set of requests instead of two as before.
+- `app-stat-leaderboard` builds its rows in `ngOnChanges` from `LeaderboardEntry` (`playerId`, `name`, `teamId`,
+  `headshot`, `value`) and a `format`. The `imagesLoaded` flags, the `@ViewChildren` reset and the `FileReader` code
+  are gone. It shows up to 5 leaders, so a category with fewer (4 goalies had a playoff shutout in 2025-26) still
+  renders.
+- `savePctg` and `gaa` use the existing `SavePercentagePipe` / `GoalsAgainstAveragePipe`, and `toi` uses
+  `StatsUtils.formatSeconds` (the value is in seconds).
+- Checked in the browser: `/stats` in playoff mode (the 2025-26 playoff leaders, Marner 29 points, Barbashev 110
+  hits), the Regular Season toggle (`?gameType=R`: McDavid 138 points, Trenin 413 hits, Hughes 27:44), one request
+  per source and all 200, and a leader linking to `/player/8478402`. Only the header search's dead statsapi calls
+  still log errors (phase 13).
 
 Three requests replace downloading 32 hydrated rosters and sorting on the client:
 - api-web `skater-stats-leaders/{season}/{gameType}?limit=5`;
@@ -629,7 +648,7 @@ add one in phase 9.
 | 9 | Foundation: search proxy, stats API client with the player stats and leaders endpoints, new models, move `NhlTeamCustomModel`, `NhlTeamUtils.getActiveTeamIds`, `StatsUtils` mappers, fixtures | **Done** | new `NhlSearchController.cs` / `NhlStatsController.cs` (or `NhlController.cs`), `NhlApiClient.cs` + new clients, `Program.cs`, `models/nhl-web-api/*`, `models/nhl-stats-api/*`, `nhl-team-utils`, `stats-utils`, `nhl-api-mocks/*` | `ng build`, `dotnet build`. `/api/nhl-search/player?q=mac` returns players, and disallowed parameters are dropped. `/api/nhl-stats/player/8477496?position=skater` has the 2023-24 `CGY,VAN` row with hits. `/api/nhl-stats/player/8477964?position=skater` returns 10 games starting with `2025030416`, with scores. `/api/nhl-stats/player/8476945?position=goalie` has saves by strength. `/api/nhl-stats/leaders?season=20252026&gameType=2` starts with Trenin (413 hits). `/api/nhl-stats/teams?season=20252026&gameType=2` returns 32 rows | `nhl-team-utils` (active IDs); `StatsUtils.toBoxscoreSkater/Goalie` + ratings vs the `2025030414` boxscore; `formatSeconds`; fixture accessors |
 | 10 | Team page: header, conference standings, form, schedule, next game, team stats card (new) | **Done** | `team`, `team-next-game`, `single-team-form`, `team-schedule`, new `team-stats`, `nhl-game.service.ts`, new team stats service method, `nhl-game-info-utils` | `/team/6` (stats card ranks), `/team/68`, `/team/53` (no card), `/team/999`; off-season (form and stats from 2025-26) | Service schedule/form generalization and teams stats URL; `team` (loading, conference pick, failures, unknown team, 10s live refresh), real `team-next-game`, `single-team-form`, `team-schedule` specs; `team-stats` (values and ranks from the fixture, ties, lower-is-better stats, no row, failure) |
 | 11 | Player page: header and bio (landing), season cards, career and recent games (stats endpoint) | **Done** | `player`, `player-bio`, `player-stats`, `player-career`, `recent-player-games`, new player service methods | `/player/8476460` (skater), `/player/8476945` (goalie), `/player/8477496` (traded season), `/player/8477964` (playoff games), a retired player | Service (landing, stats URL and position, failures); draft label, height, one logo per `teamAbbrevs` entry (traded season, unknown abbreviation), scores with the player's team first, GAA from TOI; real specs for all five components |
-| 12 | Stats page: api-web leaders, hits and shots from the stats endpoint, leaderboard entries | Not started | `stats`, `stat-leaderboard`, new service methods, delete `beta-nhl-stats.service`, `nhl-stat-type.enum` | `/stats` regular season, `?gameType=P` (2025-26 playoffs), empty categories, one source failing | Service URLs and categories; entry conversion for both sources; `stats` (toggle, failure clears spinner), real `stat-leaderboard` spec (formats, team from abbrev, empty) |
+| 12 | Stats page: api-web leaders, hits and shots from the stats endpoint, leaderboard entries | **Done** | `stats`, `stat-leaderboard`, new `nhl-leaders.service`, `nhl-stats-api.service`, deleted `beta-nhl-stats.service` and `nhl-stat-type.enum` | `/stats` regular season, `?gameType=P` (2025-26 playoffs), empty categories, one source failing | Service URLs and categories; entry conversion for both sources; `stats` (toggle, failure clears spinner), real `stat-leaderboard` spec (formats, team from abbrev, empty) |
 | 13 | Header search: static teams, player search via proxy, headshot URLs | Not started | `nhl-search.service.ts`, `search-input`, `search-result`, `search-result.model.ts` | Typing "bos", "mac", "zz" (no results), a failed search | Service (URL, params, errors); `search-input` (debounce, min length, stale responses, teams first), real `search-result` spec |
 | 14 | Playoffs page: bracket by year with fallback, season picker (2013-14 on), letter lookup, 2020 qualifiers note, labels from the bracket, TBD series cards | Not started | `nhl-standing-and-playoff.service.ts`, `playoffs`, `playoff-series` | `/playoffs` today (falls back to 2025-26), `?season=` 20132014, 20192020 (note), 20202021 (no conferences), 20222023; an invalid season | Service conversion, fallback and round 0 filtering; `playoffs` (letters in the right slots, picker options and query parameter, invalid season, late responses, empty bracket, failure, 2020 note, 2021 labels), `playoff-series` TBD case |
 | 15 | Cleanup: delete old services, methods, `StatsUtils` helpers and model folders; docs | Not started | `nhl-stats.service`, `nhl-image.service`, `nhl-game.service.ts`, `stats-utils`, `models/nhl-*` (old), `app.module`, `app-testing.module`, `CLAUDE.md`, both plans | The grep in section 11 is empty; every route and search in the browser with no console errors | Remove specs for deleted code; full `test:ci` |

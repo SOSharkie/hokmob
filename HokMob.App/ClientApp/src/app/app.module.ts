@@ -31,9 +31,9 @@ import {NhlGameService} from "@shared/services/nhl-game.service";
 import {MatDialogModule} from "@angular/material/dialog";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import { StatsComponent } from './stats/stats.component';
-import {BetaNhlStatsService} from "@shared/services/beta-nhl-stats.service";
 import {NhlStatsService} from "@shared/services/nhl-stats.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {NhlLeadersService} from "@shared/services/nhl-leaders.service";
 import { StatLeaderboardComponent } from '@app/stats/stat-leaderboard/stat-leaderboard.component';
 import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.component';
 import { PlayerComponent } from './player/player.component';
@@ -124,9 +124,9 @@ import { PlayerCareerComponent } from './player/player-career/player-career.comp
     NhlGameService,
     NhlImageService,
     NhlStandingAndPlayoffService,
-    BetaNhlStatsService,
     NhlStatsService,
     NhlStatsApiService,
+    NhlLeadersService,
     RouterExtensionService,
       NhlSearchService
   ],

@@ -23,6 +23,15 @@
     flex-direction: column;
     color: white;
 
+    .no-stats {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 55px;
+      color: $gray-03;
+      border-top: 1px solid $black-03;
+    }
+
     .stat-player {
       display: flex;
       justify-content: space-between;

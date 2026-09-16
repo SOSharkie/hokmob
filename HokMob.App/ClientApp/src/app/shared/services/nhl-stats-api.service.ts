@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {TeamSeasonStats, TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
 import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 
 /**
  * The stats the NHL web API doesn't have, from the NHL stats API through the backend (/api/nhl-stats/*). The backend
@@ -13,6 +14,8 @@ export class NhlStatsApiService {
   private readonly nhlTeamStatsUrl = "/api/nhl-stats/teams";
 
   private readonly nhlPlayerStatsUrl = "/api/nhl-stats/player/";
+
+  private readonly nhlLeadersUrl = "/api/nhl-stats/leaders";
 
   constructor(private http: HttpClient) { }
 
@@ -35,6 +38,31 @@ export class NhlStatsApiService {
             playoffSeasons: response?.playoffSeasons ?? [],
             recentGames: response?.recentGames ?? []
           });
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+   * Gets a season's hits and shots leaders, best first. The NHL web API has no hits or shots category, so these two
+   * leaderboards come from the stats API while the others come from NhlLeadersService. A season without games
+   * played resolves empty lists.
+   *
+   * @param season - The season ID, like 20252026.
+   * @param gameType - 2 for the regular season (the default), 3 for the playoffs.
+   * @param limit - The number of leaders per category.
+   */
+  public getHitsAndShotsLeaders(season: number | string, gameType: number = 2,
+                                limit: number = 5): Promise<HitsAndShotsLeaders> {
+    const url = this.nhlLeadersUrl + "?season=" + season + "&gameType=" + gameType + "&limit=" + limit;
+    return new Promise((resolve, reject) => {
+      return this.http.get<HitsAndShotsLeaders>(url).subscribe({
+        next: (response) => {
+          resolve({hits: response?.hits ?? [], shots: response?.shots ?? []});
         },
         error: (error) => {
           console.error(error);
