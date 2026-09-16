@@ -159,17 +159,48 @@
   font-size: large;
 }
 
-// Small Desktop Styling
+// Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .player-header {
     padding-left: $spacing-small;
     padding-right: $spacing-xx-large;
   }
+  .games-back-button-mobile {
+    display: none;
+  }
+}
+
+// Wide Desktop Styling: only from here do three cards fit across at their 375px minimum, which is
+// what leaves the empty slot for the career table to slide up into when there are no playoff stats
+@media only screen and (min-width: $small-display-breakpoint) {
   .shift-career-up {
     margin-top: -244px !important;
   }
-  .games-back-button-mobile {
-    display: none;
+}
+
+// Small Desktop Display: the cards cannot shrink past their 375px minimum, so let them wrap onto as
+// many rows as they need instead of overflowing off the side of the row
+@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint) {
+  .player-container {
+    .player-info-container, .player-games-and-career-container {
+      flex-wrap: wrap;
+
+      .player-bio-container, .playoff-stats, .regular-season-stats, .stats-error, .career-totals {
+        flex: 1 1 375px;
+        width: auto;
+      }
+
+      // The recent games table has the most columns, so it always gets a row to itself here
+      .match-stats-container {
+        flex: 1 1 100%;
+        width: auto;
+      }
+
+      // No empty slot to slide up into once the cards wrap, so the career table stays in place
+      .shift-career-up {
+        margin-top: $spacing-small !important;
+      }
+    }
   }
 }
 
