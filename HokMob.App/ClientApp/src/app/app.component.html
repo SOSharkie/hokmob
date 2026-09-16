@@ -5,15 +5,15 @@
   </div>
   <div class="mobile-menu">
     <div id="games-item" class="menu-item" [ngClass]="{selected : isGamesSelected}" [routerLink]="['/']">
-      <mat-icon>calendar_month</mat-icon>
+      <mat-icon svgIcon="lucide:calendar-days"></mat-icon>
       <span>Games</span>
     </div>
     <div id="playoffs-item" class="menu-item" [ngClass]="{selected : menuUrl === '/standings'}" [routerLink]="['/standings']">
-      <mat-icon>table_rows</mat-icon>
+      <mat-icon svgIcon="lucide:list-ordered"></mat-icon>
       <span>Standings</span>
     </div>
     <div id="stats-item" class="menu-item" [ngClass]="{selected : menuUrl === '/stats'}" [routerLink]="['/stats']">
-      <mat-icon>leaderboard</mat-icon>
+      <mat-icon svgIcon="lucide:chart-no-axes-column"></mat-icon>
       <span>Stats</span>
     </div>
   </div>

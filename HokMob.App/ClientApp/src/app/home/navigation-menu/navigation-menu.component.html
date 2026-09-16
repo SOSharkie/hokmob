@@ -1,6 +1,7 @@
-<div>
+<div class="nav-menu-card">
+  <h2 class="nav-menu-title">Explore</h2>
   <a *ngFor="let menuItem of navMenuItems" class="nav-menu-item" (click)="onClickMenuItem(menuItem)">
-    <mat-icon>{{menuItem.iconName}}</mat-icon>
+    <mat-icon class="nav-menu-icon" [svgIcon]="getSvgIcon(menuItem)"></mat-icon>
     <span class="nav-menu-text">{{menuItem.name}}</span>
   </a>
 </div>

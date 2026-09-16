@@ -58,6 +58,7 @@ import { GameTopPlayersComponent } from './game/game-top-players/game-top-player
 import { MiniEventTimelineComponent } from './game/mini-event-timeline/mini-event-timeline.component';
 import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-event.component';
 import { PlayerCareerComponent } from './player/player-career/player-career.component';
+import { DraftComponent } from './draft/draft.component';
 
 @NgModule({
   declarations: [
@@ -104,7 +105,8 @@ import { PlayerCareerComponent } from './player/player-career/player-career.comp
     GameTopPlayersComponent,
     MiniEventTimelineComponent,
     MiniEventComponent,
-    PlayerCareerComponent
+    PlayerCareerComponent,
+    DraftComponent
   ],
   imports: [
     BrowserModule,

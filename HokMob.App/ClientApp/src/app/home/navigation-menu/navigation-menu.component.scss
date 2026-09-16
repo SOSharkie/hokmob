@@ -1,25 +1,75 @@
 @import "variables";
 
-.nav-menu-item {
-  width: 95%;
-  height: 50px;
-  padding-left: $spacing-xx-large;
-  background-color: black;
-  color: white;
+// Card styled like Fotmob's "Followed teams" sidebar: a bold title, then full-width rows with an icon and a label.
+.nav-menu-card {
+  background-color: $black-02;
   border-radius: 25px;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  align-content: center;
+  padding-top: $spacing-large;
+  padding-bottom: $spacing-large;
+  overflow: hidden;
 
+  .nav-menu-title {
+    margin: 0;
+    padding: $spacing-large $spacing-xx-large $spacing-large $spacing-xx-large;
+    color: white;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 24px;
+  }
 
-  .nav-menu-text {
-    margin-left: $spacing-large;
+  .nav-menu-item {
+    height: 40px;
+    padding-left: $spacing-xx-large;
+    padding-right: $spacing-xx-large;
+    color: white;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    text-decoration: none;
+
+    .nav-menu-icon {
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+      color: $gray-04;
+    }
+
+    .nav-menu-text {
+      margin-left: $spacing-x-large;
+      font-size: 15px;
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .nav-menu-item:hover {
+    background-color: $black-03;
+    cursor: pointer;
+
+    .nav-menu-icon {
+      color: white;
+    }
   }
 }
 
-.nav-menu-item:hover {
-  background-color: $black-02;
-  cursor: pointer;
+// Small and tiny displays: the column is narrower, so tighten the side padding.
+@media only screen and (max-width: $small-display-breakpoint) {
+  .nav-menu-card {
+    .nav-menu-title {
+      padding-left: $spacing-x-large;
+      padding-right: $spacing-x-large;
+    }
+
+    .nav-menu-item {
+      padding-left: $spacing-x-large;
+      padding-right: $spacing-large;
+
+      .nav-menu-text {
+        margin-left: $spacing-large;
+      }
+    }
+  }
 }

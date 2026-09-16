@@ -1,11 +1,10 @@
 @import "variables";
 
 .playoff-summary-container {
+  // Keeps the last child's bottom margin inside the card, so it doesn't add to the gap below it
+  display: flow-root;
   background-color: $black-02;
   border-radius: 25px;
-  margin-left: $spacing-medium;
-  margin-right: $spacing-medium;
-  margin-bottom: $spacing-large;
 
   .playoffs-title {
     display: flex;

@@ -32,7 +32,10 @@
       color: $gray-03;
 
       .mat-icon {
-        font-size: 22px;
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        margin-bottom: 2px;
       }
     }
 
