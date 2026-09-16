@@ -22,8 +22,8 @@ mappings, proposed decisions). Read both plans before working on those pages.
   syntax (`cayenneExp`, `isAggregate`, `isGame`, `sort`) and fields. The stats API sends no CORS header, so it's
   only called from the backend, which builds the queries.
 
-- Unmigrated pages (stats, playoffs bracket, search) still call dead APIs. Their `ERR_NAME_NOT_RESOLVED` /
-  `statsapi.web.nhl.com` console errors are expected noise, not regressions.
+- Every page and the header search use the new APIs (phases 0–14). The old services, methods and `models/nhl-*`
+  folders stay until the cleanup (phase 15), so a new `statsapi.web.nhl.com` console error is a regression.
 - Out-of-scope code that breaks because a shared component changed gets the smallest compile fix plus a `// TODO:`
   comment pointing at the plan (see `team.component.ts` for the format).
 

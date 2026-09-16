@@ -30,6 +30,9 @@ export interface PlayoffCarouselSeries {
   roundNumber: number;
   seriesLabel: string;
   seriesLink: string;
+  /** "Eastern" or "Western" for a conference final. Only set for series converted from the bracket. */
+  conferenceName?: string;
+  /** Undefined while the team isn't known yet (only for series converted from the bracket). */
   topSeed: PlayoffCarouselSeed;
   bottomSeed: PlayoffCarouselSeed;
   neededToWin: number;
@@ -86,6 +89,20 @@ export interface PlayoffBracketTeam {
   placeNameWithPreposition: LocalizedString;
   logo: string;
   darkLogo: string;
+}
+
+/**
+ * A season's playoff bracket as NhlStandingAndPlayoffService.getNhlPlayoffBracket returns it.
+ */
+export interface PlayoffBracketSeason {
+  /** The year the season ends in, like 2026. */
+  year: number;
+  /** The season ID, like 20252026. */
+  season: number;
+  /** Rounds 1 to 4 (series A to O), in the order of the bracket. Empty before the playoffs start. */
+  series: PlayoffCarouselSeries[];
+  /** Whether the bracket had a qualifying round (2020's series S to Z), which isn't in the series. */
+  hasQualifyingRound: boolean;
 }
 
 /**

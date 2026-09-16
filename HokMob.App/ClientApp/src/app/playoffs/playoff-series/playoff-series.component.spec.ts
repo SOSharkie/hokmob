@@ -138,18 +138,49 @@ describe('PlayoffSeriesComponent', () => {
     expect(nextGameText()).toBe('TBD');
   });
 
-  it('should handle a series whose teams are not known yet', () => {
+  it('should show TBD for a series whose teams are not known yet, without loading the schedule', () => {
     const series = mockRankedCarouselSeries('A');
     delete series.topSeed;
     delete series.bottomSeed;
     delete series.winningTeamId;
     delete series.losingTeamId;
-    render(series, true);
-    expect([component.teamAName, component.teamBName, component.teamARank]).toEqual(['', '', ' ']);
+    render(series);
+    httpMock.expectNone(scheduleUrl);
+    expect([component.teamAName, component.teamBName, component.teamARank]).toEqual(['TBD', 'TBD', ' ']);
+    expect(abbrevElements().map(element => element.textContent.trim())).toEqual(['TBD', 'TBD']);
     expect([component.teamAWins, component.teamBWins]).toEqual([0, 0]);
     expect([component.teamALost, component.teamBLost]).toEqual([false, false]);
     expect(component.logoA).toBe('assets/team_fallback.png');
     expect(component.isLogoALoaded).toBeFalse();
+    expect(component.hasBothTeams).toBeFalse();
+    expect(nextGameText()).toBe('TBD');
+  });
+
+  it('should show the known team of a series whose other team is TBD', () => {
+    const series = mockRankedCarouselSeries('O');
+    delete series.bottomSeed;
+    delete series.winningTeamId;
+    delete series.losingTeamId;
+    render(series, true);
+    expect([component.teamAName, component.teamBName]).toEqual(['CAR', 'TBD']);
+    expect(component.logoA).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(12));
+    expect(component.logoB).toBe('assets/team_fallback.png');
+    expect([component.teamALost, component.teamBLost]).toEqual([false, false]);
+  });
+
+  it('should render an empty slot as TBD', () => {
+    render(undefined, true);
+    expect(abbrevElements().map(element => element.textContent.trim())).toEqual(['TBD', 'TBD']);
+  });
+
+  it('should not open the dialog for a series without both teams', () => {
+    const series = mockRankedCarouselSeries('A');
+    delete series.bottomSeed;
+    render(series, true);
+    spyOn(component.seriesDialog, 'open');
+    fixture.nativeElement.querySelector('.series-container').click();
+    expect(component.seriesDialog.open).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('.series-container').classList).toContain('undecided-series');
   });
 
   it('should open the series dialog with the series and season', () => {

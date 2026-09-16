@@ -4,9 +4,21 @@
   display: flex;
   align-items: center;
 
-  .player-headshot {
+  // The headshots have space around the player, so they're zoomed in and cropped to a circle
+  .player-headshot-container {
+    display: flex;
+    justify-content: center;
     height: 30px;
+    width: 30px;
     border-radius: 50%;
+    overflow: hidden;
+    background-color: $black-03;
+
+    .player-headshot {
+      height: 40px;
+      width: 40px;
+      margin-top: 4px;
+    }
   }
 
   .team-logo {
@@ -16,6 +28,12 @@
 
   .result-text {
     margin-left: $spacing-large;
+  }
+
+  .result-detail {
+    margin-left: $spacing-medium;
+    color: $gray-02;
+    font-size: smaller;
   }
 }
 

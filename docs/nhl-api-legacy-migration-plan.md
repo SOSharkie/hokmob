@@ -1,6 +1,6 @@
 # NHL API Migration Plan, Part 2: Remaining Legacy APIs
 
-Status: **Phases 9 to 12 done** (planned 2026-09-15, built 2026-09-15). Phases 9–15 continue
+Status: **Phases 9 to 14 done** (planned 2026-09-15, phases 9–12 built 2026-09-15, 13–14 built 2026-09-16). Phases 9–15 continue
 [`nhl-api-migration-plan.md`](nhl-api-migration-plan.md). Phases 0–8 in that plan migrated the home and game pages.
 Scope: every remaining caller of a dead API: the team page, player page, stats page, header search and playoffs page.
 Then the old services and models get deleted.
@@ -478,7 +478,25 @@ Regular Season toggle.
   shows the empty state for its boards only.
 - Delete `BetaNhlStatsService` and `NhlStatTypeEnum`. Nothing uses them.
 
-## 9. Header search (phase 13)
+## 9. Header search (phase 13, done)
+
+Built on 2026-09-16 as described below, with these notes:
+- `NhlSearchService` has `searchTeams(query)` (no request) and `searchPlayers(query, limit)`. Its old statsapi methods and
+  the commented-out `suggest.svc` code are deleted, since `SearchResultModel` no longer has the old `team` field.
+- `SearchResultModel` also lost `playerFirstName` / `playerLastName` (the search only has `name`, in `displayValue`).
+  A player's `teamId` is `teamId`, or `lastTeamId` without one.
+- The team matches take their share of the 10 first, and the player request asks for the rest (`limit=7` for "new",
+  which matches three teams). No request is made while teams fill all 10.
+- The search runs on the `input` event instead of `keyup`, so a paste or the search box's clear button also searches,
+  and arrow keys in the result list don't. A failed player search keeps the team matches (the service logs once per
+  request).
+- A player result shows the position after the name. The headshot is cropped to a 30px circle, like the leaderboards,
+  because the mugs have space around the player.
+- Checked in the browser: "bos" (Boston Bruins, then the player Boston Buckberger, `limit=9`), "mac" (10 players,
+  the blank headshot for Tomas Machu, Dylan MacKinnon and Mack Oliphant), "new" (3 teams, then Alex Newhook), a query
+  without matches, and a click on a team result opening `/team/3`. The failed search is covered by the specs only.
+  With this phase, no page load calls a dead API anymore.
+
 
 | Result | Old | New |
 |---|---|---|
@@ -495,7 +513,35 @@ Regular Season toggle.
 - Remove the TODOs on `SearchInputComponent` and `NhlSearchService`. The commented-out `suggest.svc` code goes away.
 - Not the stats API `players`: it caps results at 5 and can't filter to active players (3).
 
-## 10. Playoffs page (phase 14)
+## 10. Playoffs page (phase 14, done)
+
+Built on 2026-09-16 as described below, with these notes:
+- **The letters don't always match the tree.** Checked with every bracket from 2014 to 2026: in 2020 the second round
+  was reseeded (I was fed by A and C, J by B and D, K by E and H, L by F and G), and in 2021 M was fed by K and L and
+  N by I and J. So the template looks up series by *slot* (`slots['E']`), and the new
+  `NhlPlayoffBracketUtils.arrangeSeries` fills the slots: each later round series gets the two earlier series that share
+  a team with it (in letter order), and the conference final that leads back to series A is on the Eastern (right)
+  side. Series whose teams aren't known yet fall back to their letter.
+- The service has `getNhlPlayoffBracket(year)`, which returns a `PlayoffBracketSeason` (`year`, `season`, `series` of
+  rounds 1–4, `hasQualifyingRound`), and `getLatestNhlPlayoffBracket(year)`, which falls back to the previous year once
+  when the year has no series. `PlayoffCarouselSeries` gained an optional `conferenceName`; `seriesLink` is the
+  bracket's `seriesUrl`.
+- The default year is the end year of `DateTimeUtils.getCurrentNhlSeason()`, so until October 10 it's 2026 and
+  `playoff-bracket/2027` isn't requested at all. When the latest year falls back, it's dropped from the picker.
+- Only the latest year falls back. An older season without series (not seen from 2014 on) shows "No playoff series
+  yet", and a failed request shows "The playoff bracket couldn't be loaded".
+- Labels: the conference finals and the final show their `seriesTitle` above the card ("Western Conference Finals",
+  "Stanley Cup Semifinals" in 2021). The first two rounds have no labels, like before. The page title is
+  "2025-26 Playoffs", and the picker's labels use the same short format.
+- The picker is a native `<select>` (Material's select isn't in the app), with each option's `selected` bound, because
+  `ngModel` didn't select an option rendered by `ngFor` reliably.
+- `app-playoff-series` shows "TBD" for a missing team (also for an empty slot), loads no schedule and opens no dialog
+  without both teams, and doesn't highlight on hover then.
+- Checked in the browser: `/playoffs` (2025-26), every season in the picker from 2013-14 to 2025-26 (15 cards each, and
+  every series winner appears in the series of the next round it feeds; 2019-20 shows the note; 2020-21 shows
+  "Stanley Cup Semifinals"), `?season=abc` and `?season=20122013` (2025-26), the 2019-20 final's dialog, all requests 200
+  with no console errors, and the 2020-21 tree at 375px without horizontal scrolling.
+
 
 - **Default season:** `playoff-bracket/{end year of the current season}`. While its `series` is empty (before the
   playoffs, like 2027 today), load the previous year instead. The page title shows the season it's showing.
@@ -523,8 +569,8 @@ Regular Season toggle.
   | `neededToWin` | Not in the bracket: 4 |
   | `winningTeamId` / `losingTeamId` | same |
 
-- **Template:** replace the `rounds[n]?.series[m]` index lookups with a lookup by letter (`series['E']`), using the
-  facts from the first plan's 4.3: A–D East round 1, E–H West round 1, I/J East round 2, K/L West round 2, M East
+- **Template:** replace the `rounds[n]?.series[m]` index lookups with a lookup by letter (`series['E']`; built as a
+  lookup by slot, see the notes above), using the facts from the first plan's 4.3: A–D East round 1, E–H West round 1, I/J East round 2, K/L West round 2, M East
   final, N West final, O Stanley Cup Final.
 - **TBD series:** `app-playoff-series` must render a series without one or both seeds ("TBD", fallback logo, no
   dialog). The carousel never had these, so the component has never handled them.
@@ -625,9 +671,8 @@ Regular Season toggle.
   last season.
 - **Relocated teams:** `/team/53` (Arizona) and Utah's first season's `previousSeason` fill-in, with the same caveat as
   the first plan's team form risk.
-- **Brackets in the picker's range:** only 2014, 2020, 2021, 2022 and 2026 were checked. Phase 14 opens every
-  season from 2013-14 on in the browser, and checks that each series letter lands in the right slot of the tree
-  (series titles and seeds are only known to be right for those five years).
+- **Brackets in the picker's range:** checked in phase 14 for every season from 2013-14 to 2025-26: every series is
+  in the right slot of the tree (2020 and 2021 only thanks to the placement by team, see 10).
 - **Bracket before series are set:** how `playoff-bracket` lists TBD series is unverified. Check during the 2027
   playoffs, together with the first plan's in-progress series follow-up.
 - **Leaders format:** settled in phase 9 for a finished season: the api-web `toi` leader value is in seconds
@@ -649,8 +694,8 @@ add one in phase 9.
 | 10 | Team page: header, conference standings, form, schedule, next game, team stats card (new) | **Done** | `team`, `team-next-game`, `single-team-form`, `team-schedule`, new `team-stats`, `nhl-game.service.ts`, new team stats service method, `nhl-game-info-utils` | `/team/6` (stats card ranks), `/team/68`, `/team/53` (no card), `/team/999`; off-season (form and stats from 2025-26) | Service schedule/form generalization and teams stats URL; `team` (loading, conference pick, failures, unknown team, 10s live refresh), real `team-next-game`, `single-team-form`, `team-schedule` specs; `team-stats` (values and ranks from the fixture, ties, lower-is-better stats, no row, failure) |
 | 11 | Player page: header and bio (landing), season cards, career and recent games (stats endpoint) | **Done** | `player`, `player-bio`, `player-stats`, `player-career`, `recent-player-games`, new player service methods | `/player/8476460` (skater), `/player/8476945` (goalie), `/player/8477496` (traded season), `/player/8477964` (playoff games), a retired player | Service (landing, stats URL and position, failures); draft label, height, one logo per `teamAbbrevs` entry (traded season, unknown abbreviation), scores with the player's team first, GAA from TOI; real specs for all five components |
 | 12 | Stats page: api-web leaders, hits and shots from the stats endpoint, leaderboard entries | **Done** | `stats`, `stat-leaderboard`, new `nhl-leaders.service`, `nhl-stats-api.service`, deleted `beta-nhl-stats.service` and `nhl-stat-type.enum` | `/stats` regular season, `?gameType=P` (2025-26 playoffs), empty categories, one source failing | Service URLs and categories; entry conversion for both sources; `stats` (toggle, failure clears spinner), real `stat-leaderboard` spec (formats, team from abbrev, empty) |
-| 13 | Header search: static teams, player search via proxy, headshot URLs | Not started | `nhl-search.service.ts`, `search-input`, `search-result`, `search-result.model.ts` | Typing "bos", "mac", "zz" (no results), a failed search | Service (URL, params, errors); `search-input` (debounce, min length, stale responses, teams first), real `search-result` spec |
-| 14 | Playoffs page: bracket by year with fallback, season picker (2013-14 on), letter lookup, 2020 qualifiers note, labels from the bracket, TBD series cards | Not started | `nhl-standing-and-playoff.service.ts`, `playoffs`, `playoff-series` | `/playoffs` today (falls back to 2025-26), `?season=` 20132014, 20192020 (note), 20202021 (no conferences), 20222023; an invalid season | Service conversion, fallback and round 0 filtering; `playoffs` (letters in the right slots, picker options and query parameter, invalid season, late responses, empty bracket, failure, 2020 note, 2021 labels), `playoff-series` TBD case |
+| 13 | Header search: static teams, player search via proxy, headshot URLs | **Done** | `nhl-search.service.ts`, `search-input`, `search-result`, `search-result.model.ts` | Typing "bos", "mac", "zz" (no results), a failed search | Service (URL, params, errors); `search-input` (debounce, min length, stale responses, teams first), real `search-result` spec |
+| 14 | Playoffs page: bracket by year with fallback, season picker (2013-14 on), letter lookup, 2020 qualifiers note, labels from the bracket, TBD series cards | **Done** | `nhl-standing-and-playoff.service.ts`, `playoffs`, `playoff-series`, new `nhl-playoff-bracket-utils` | `/playoffs` today (falls back to 2025-26), `?season=` 20132014, 20192020 (note), 20202021 (no conferences), 20222023; an invalid season | Service conversion, fallback and round 0 filtering; `playoffs` (letters in the right slots, picker options and query parameter, invalid season, late responses, empty bracket, failure, 2020 note, 2021 labels), `playoff-series` TBD case |
 | 15 | Cleanup: delete old services, methods, `StatsUtils` helpers and model folders; docs | Not started | `nhl-stats.service`, `nhl-image.service`, `nhl-game.service.ts`, `stats-utils`, `models/nhl-*` (old), `app.module`, `app-testing.module`, `CLAUDE.md`, both plans | The grep in section 11 is empty; every route and search in the browser with no console errors | Remove specs for deleted code; full `test:ci` |
 
 ## 15. Open items

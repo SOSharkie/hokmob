@@ -3,7 +3,7 @@ import {HttpClientTestingModule, HttpTestingController} from '@angular/common/ht
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {StandingsGroup} from "@shared/models/nhl-web-api/standings.model";
-import {PlayoffCarousel} from "@shared/models/nhl-web-api/playoffs.model";
+import {PlayoffBracketSeason, PlayoffCarousel, PlayoffCarouselSeries} from "@shared/models/nhl-web-api/playoffs.model";
 import {
   mockPlayoffBracket,
   mockPlayoffCarousel,
@@ -167,6 +167,110 @@ describe('NhlStandingAndPlayoffService', () => {
       httpMock.expectOne(bracketUrl).flush(mockPlayoffBracket());
       await rejection;
       expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getNhlPlayoffBracket', () => {
+    function seriesByLetter(bracket: PlayoffBracketSeason, seriesLetter: string): PlayoffCarouselSeries {
+      return bracket.series.find(series => series.seriesLetter === seriesLetter);
+    }
+
+    it('should convert the real bracket series to the carousel series model', async () => {
+      const bracket = service.getNhlPlayoffBracket(2026);
+      httpMock.expectOne(bracketUrl).flush(mockPlayoffBracket());
+      const result = await bracket;
+
+      expect([result.year, result.season, result.hasQualifyingRound]).toEqual([2026, 20252026, false]);
+      expect(result.series.length).toBe(15);
+      const seriesA = seriesByLetter(result, 'A');
+      expect([seriesA.roundNumber, seriesA.seriesLabel, seriesA.neededToWin]).toEqual([1, '1st Round', 4]);
+      expect([seriesA.topSeed.id, seriesA.topSeed.abbrev, seriesA.topSeed.wins, seriesA.topSeed.rank])
+          .toEqual([7, 'BUF', 4, 1]);
+      expect([seriesA.bottomSeed.id, seriesA.bottomSeed.abbrev, seriesA.bottomSeed.wins, seriesA.bottomSeed.rank])
+          .toEqual([6, 'BOS', 2, 4]);
+      expect(seriesA.topSeed.logo).toContain('BUF');
+      expect([seriesA.winningTeamId, seriesA.losingTeamId]).toEqual([7, 6]);
+      const eastFinal = seriesByLetter(result, 'M');
+      expect([eastFinal.roundNumber, eastFinal.seriesLabel, eastFinal.conferenceName])
+          .toEqual([3, 'Eastern Conference Finals', 'Eastern']);
+      expect(seriesByLetter(result, 'O').seriesLabel).toBe('Stanley Cup Final');
+    });
+
+    it('should leave out the 2020 qualifying round and flag it', async () => {
+      const bracket = service.getNhlPlayoffBracket(2020);
+      httpMock.expectOne('/api/nhl/playoff-bracket/2020').flush(mockPlayoffBracket(2020));
+      const result = await bracket;
+
+      expect(result.hasQualifyingRound).toBeTrue();
+      expect(result.season).toBe(20192020);
+      expect(result.series.map(series => series.seriesLetter).join('')).toBe('ABCDEFGHIJKLMNO');
+    });
+
+    it('should keep the 2021 labels, which have no conferences', async () => {
+      const bracket = service.getNhlPlayoffBracket(2021);
+      httpMock.expectOne('/api/nhl/playoff-bracket/2021').flush(mockPlayoffBracket(2021));
+      const result = await bracket;
+
+      expect(seriesByLetter(result, 'M').seriesLabel).toBe('Stanley Cup Semifinals');
+      expect(result.series.every(series => !series.conferenceName)).toBeTrue();
+    });
+
+    it('should leave the seeds of teams that are not known yet undefined', async () => {
+      const response = mockPlayoffBracket();
+      const final = response.series.find(series => series.seriesLetter === 'O');
+      delete final.bottomSeedTeam;
+      delete final.winningTeamId;
+
+      const bracket = service.getNhlPlayoffBracket(2026);
+      httpMock.expectOne(bracketUrl).flush(response);
+      const result = seriesByLetter(await bracket, 'O');
+      expect(result.topSeed.abbrev).toBe('CAR');
+      expect(result.bottomSeed).toBeUndefined();
+      expect(result.winningTeamId).toBeUndefined();
+    });
+
+    it('should resolve a bracket without series as empty', async () => {
+      const bracket = service.getNhlPlayoffBracket(2027);
+      httpMock.expectOne('/api/nhl/playoff-bracket/2027').flush(mockPlayoffBracket(2027));
+      expect(await bracket).toEqual({year: 2027, season: 20262027, series: [], hasQualifyingRound: false});
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const bracket = service.getNhlPlayoffBracket(2026);
+      const rejection = expectAsync(bracket).toBeRejected();
+      httpMock.expectOne(bracketUrl).flush('Server error', {status: 500, statusText: 'Internal Server Error'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getLatestNhlPlayoffBracket', () => {
+    it('should return the bracket of the year when it has series', async () => {
+      const bracket = service.getLatestNhlPlayoffBracket(2026);
+      httpMock.expectOne(bracketUrl).flush(mockPlayoffBracket());
+      const result = await bracket;
+      expect(result.year).toBe(2026);
+      expect(result.series.length).toBe(15);
+      httpMock.expectNone('/api/nhl/playoff-bracket/2025');
+    });
+
+    it('should fall back to the previous year while the year has no series', async () => {
+      const bracket = service.getLatestNhlPlayoffBracket(2027);
+      httpMock.expectOne('/api/nhl/playoff-bracket/2027').flush(mockPlayoffBracket(2027));
+      await new Promise(resolve => setTimeout(resolve));
+      httpMock.expectOne(bracketUrl).flush(mockPlayoffBracket());
+      const result = await bracket;
+      expect([result.year, result.season]).toEqual([2026, 20252026]);
+      expect(result.series.length).toBe(15);
+    });
+
+    it('should reject when the fallback fails', async () => {
+      const bracket = service.getLatestNhlPlayoffBracket(2027);
+      const rejection = expectAsync(bracket).toBeRejected();
+      httpMock.expectOne('/api/nhl/playoff-bracket/2027').flush(mockPlayoffBracket(2027));
+      await new Promise(resolve => setTimeout(resolve));
+      httpMock.expectOne(bracketUrl).flush('Not found', {status: 404, statusText: 'Not Found'});
+      await rejection;
     });
   });
 

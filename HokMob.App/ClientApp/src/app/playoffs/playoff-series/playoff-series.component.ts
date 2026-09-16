@@ -40,11 +40,11 @@ export class PlayoffSeriesComponent implements OnChanges {
   public nextGame: PlayoffSeriesGame;
 
   public get teamAName(): string {
-    return this.seriesData?.topSeed?.abbrev ?? "";
+    return this.seriesData?.topSeed?.abbrev ?? "TBD";
   }
 
   public get teamBName(): string {
-    return this.seriesData?.bottomSeed?.abbrev ?? "";
+    return this.seriesData?.bottomSeed?.abbrev ?? "TBD";
   }
 
   public get teamARank(): string {
@@ -71,6 +71,13 @@ export class PlayoffSeriesComponent implements OnChanges {
     return this.hasLost(this.seriesData?.bottomSeed, this.seriesData?.topSeed);
   }
 
+  /**
+   * Whether both teams are known. A series without them (a later round before the earlier one ends) has no dialog.
+   */
+  public get hasBothTeams(): boolean {
+    return !!this.seriesData?.topSeed && !!this.seriesData?.bottomSeed;
+  }
+
   public get nextGameDay(): string {
     if (this.nextGame && this.nextGame.gameScheduleState !== NhlGameScheduleStateEnum.TBD) {
       return dayjs(this.nextGame.startTimeUTC).format("MMM D");
@@ -93,7 +100,7 @@ export class PlayoffSeriesComponent implements OnChanges {
         this.isLogoBLoaded = true;
       }
       // The next game date is only shown in the full-size version
-      if (!this.smallerVersion && this.season && !this.seriesData.winningTeamId) {
+      if (!this.smallerVersion && this.season && this.hasBothTeams && !this.seriesData.winningTeamId) {
         this.nhlPlayoffService.getNhlPlayoffSeriesSchedule(this.season, this.seriesData.seriesLetter).then(result => {
           this.nextGame = result.games?.find(game => !NhlGameInfoUtils.isCompletedGame(game.gameState));
         }).catch(() => {
@@ -104,6 +111,9 @@ export class PlayoffSeriesComponent implements OnChanges {
   }
 
   public openSeriesDialog(): void {
+    if (!this.hasBothTeams) {
+      return;
+    }
     this.seriesDialog.open(PlayoffSeriesDialogComponent, {
       maxWidth: "85vw",
       backdropClass: "dialog-backdrop",

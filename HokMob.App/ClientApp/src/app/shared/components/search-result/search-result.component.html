@@ -1,10 +1,13 @@
 <div [routerLink]="[searchResult.link]">
   <div class="search-result-container" *ngIf="isPlayer">
-    <img *ngIf="playerHeadshot" [src]="playerHeadshot" class="player-headshot">
-    <span class="result-text">{{searchResult.playerFirstName}} {{searchResult.playerLastName}}</span>
+    <div class="player-headshot-container">
+      <img [src]="playerHeadshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
+    </div>
+    <span class="result-text">{{searchResult.displayValue}}</span>
+    <span *ngIf="searchResult.positionCode" class="result-detail">{{searchResult.positionCode}}</span>
   </div>
   <div class="search-result-container" *ngIf="isTeam">
-    <img *ngIf="teamLogo" [src]="teamLogo" class="team-logo">
-    <span *ngIf="searchResult.team" class="result-text">{{searchResult.team.name}}</span>
+    <img [src]="teamLogo" alt="" class="team-logo">
+    <span class="result-text">{{searchResult.teamName}}</span>
   </div>
 </div>
