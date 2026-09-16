@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import * as dayjs from "dayjs";
-import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 
 @Component({
   selector: 'app-home',
@@ -12,13 +12,20 @@ export class HomeComponent implements OnInit {
 
   public selectedDayString: string;
 
-  public isPlayoffs: boolean = false;
+  /** Whether to show the playoff summary instead of the standings summary. Undefined until the season dates load. */
+  public isPlayoffs: boolean;
 
   constructor(private activatedRoute: ActivatedRoute,
-              private router: Router){}
+              private router: Router,
+              private nhlStatsApiService: NhlStatsApiService){}
 
   public ngOnInit(): void {
-    this.isPlayoffs = DateTimeUtils.isPlayoffMode();
+    this.nhlStatsApiService.getCurrentSeason().then(currentSeason => {
+      this.isPlayoffs = currentSeason.isPlayoffMode;
+    }).catch(() => {
+      // The service logs the error. Show the standings summary
+      this.isPlayoffs = false;
+    });
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("date") && params.get("date").length === 8) {
         this.selectedDayString = params.get("date");

@@ -149,8 +149,9 @@ but the convention is still relative URLs through the backend (decision 1).
   2026-09-29, regular season end 2027-04-10, playoffs end 2027-06-10. `scoreboard/BOS/now` already lists preseason
   game `2026010013` on 2026-09-20. **Live games start around 2026-09-19**, not 2026-09-29 as the first plan says
   (2026-09-29 is the regular season start).
-- `DateTimeUtils.getCurrentNhlSeason()` switches seasons on October 10, so it returns `20252026` for the first games
-  of 2026-27. Migrated pages take the season from responses instead (decision 6).
+- `DateTimeUtils.getCurrentNhlSeason()` switched seasons on October 10, so it returned `20252026` for the first games
+  of 2026-27. Migrated pages take the season from responses instead (decision 6). Since 11.1 it works from season
+  dates.
 
 ## 3. Which API for what
 
@@ -526,8 +527,8 @@ Built on 2026-09-16 as described below, with these notes:
   rounds 1–4, `hasQualifyingRound`), and `getLatestNhlPlayoffBracket(year)`, which falls back to the previous year once
   when the year has no series. `PlayoffCarouselSeries` gained an optional `conferenceName`; `seriesLink` is the
   bracket's `seriesUrl`.
-- The default year is the end year of `DateTimeUtils.getCurrentNhlSeason()`, so until October 10 it's 2026 and
-  `playoff-bracket/2027` isn't requested at all. When the latest year falls back, it's dropped from the picker.
+- The default year is the end year of the current season (11.1), so from 2 weeks before the 2026-27 preseason
+  `playoff-bracket/2027` is requested first and falls back to 2026. When the latest year falls back, it's dropped from the picker.
 - Only the latest year falls back. An older season without series (not seen from 2014 on) shows "No playoff series
   yet", and a failed request shows "The playoff bracket couldn't be loaded".
 - Labels: the conference finals and the final show their `seriesTitle` above the card ("Western Conference Finals",
@@ -598,6 +599,37 @@ Built on 2026-09-16 as described below, with these notes:
   `/player/8477496`, `/stats`, `/playoffs`, `/standings` and a search for "mac": no console errors, 28 `/api/nhl*`
   responses all 200, no request to an `nhl.com` host.
 
+### 11.1 Season dates (after phase 15, 2026-09-16)
+
+`DateTimeUtils.getCurrentNhlSeason()` (October 10) and `isPlayoffMode()` (May 21 to September 30) were calendar
+rules. They now work from season dates:
+- **Backend:** `/api/nhl-stats/seasons` returns `{ seasons: [{ id, firstGameDate, firstPlayoffGameDate }] }` for the
+  two latest seasons of the stats API `season` report, newest first (the newest can be listed before its games are
+  scheduled). The dates come from the `game` report sorted by `gameDate` with `limit=1`: `gameType in (1,2)` (the
+  first preseason game, or the first regular season game without a preseason, like 2020-21) and `gameType=3`. A
+  date is null while no such game is scheduled. 5 upstream calls, cached 5 minutes; any failure is a 502, because a
+  missing date would look like a season that hasn't started.
+- **Rules** (`DateTimeUtils`, local days):
+  - The current season is the newest one whose first game is at most 14 days away or played. Otherwise the oldest
+    listed.
+  - Playoff mode runs from 2 days before the current season's first playoff game until the next season starts.
+  - With the capture of 2026-09-16 (2026-27 first game 2026-09-19; 2025-26 first playoff game 2026-04-18): 2026-27
+    started on 2026-09-05, and 2025-26 playoff mode ran from 2026-04-16 to 2026-09-04.
+- **Client:** `NhlStatsApiService.getSeasonDates()` shares one request for an hour (a failed one isn't reused), and
+  `getCurrentSeason()` resolves `{ season, isPlayoffMode }` for today.
+  - Home shows neither summary until it's known, and the standings summary when it fails.
+  - The playoff summary takes the current season; the series dialog uses it when no season is passed.
+  - `/stats` waits for playoff mode before loading, and falls back to the regular season without filters.
+  - `/playoffs` waits for the latest year, and falls back to the calendar year, which the latest bracket with
+    series always ends in or before.
+- Tests: `date-time-utils` (new: boundaries on both sides, unscheduled dates, no seasons), the service (URL, shared
+  and expiring request, today's season from the fixture, failures), fixture `seasons-2026-09-16`, and the `home`
+  (was a placeholder), `playoff-summary`, `playoffs`, `stats` and `playoff-series-dialog` specs (waiting and
+  failures). 554 specs pass.
+- Checked in the browser on 2026-09-16: one `/api/nhl-stats/seasons` request per page load, home shows the standings
+  summary, `/stats` the regular season without filters, `/playoffs` falls back from 2027 to 2025-26, no console
+  errors. Playoff mode itself was only checked in unit tests.
+
 The plan:
 
 - Delete:
@@ -656,9 +688,8 @@ The plan:
 6. **Seasons come from responses, not the calendar.** **Decided 2026-09-15** (not optional).
    `DateTimeUtils.getCurrentNhlSeason()` is wrong between the
    season start (2026-09-29) and October 10. New code uses `now`/`current` endpoints and the returned `seasonId` /
-   `featuredStats.season`. The util stays only for display formatting until cleanup. After phase 15 it still picks
-   the home playoff summary's season (only shown in playoff mode, when it's right), the series dialog's fallback
-   season and the playoffs page's default year (which falls back a year when the bracket is empty); see 15.
+   `featuredStats.season`. The util stays only for display formatting until cleanup. After phase 15, the current
+   season and playoff mode moved to season dates from the stats API (11.1).
 7. **The playoffs page shows the latest bracket that has series, with a season picker from 2013-14 on** (phase 14).
    **Decided 2026-09-15.**
    - The picker covers the current divisional and wild card era, whose brackets use today's layout. In 2020, the
@@ -728,8 +759,6 @@ add one in phase 9.
   - HokMob rating approach B. For finished games, the stats API's `faceoffwins` and `powerplay` reports have the
     inputs (3); live games still need play-by-play.
   - A local Utah logo.
-  - `DateTimeUtils.isPlayoffMode()` from season dates (api-web `schedule/{date}` or the stats API `season`).
   - An in-progress playoff series check during the 2027 playoffs.
-- `DateTimeUtils.getCurrentNhlSeason()` (decision 6) is still used by the home playoff summary, the series dialog and
-  the playoffs page's default year. None of them shows a wrong season today, but they could use `now` endpoints
-  instead.
+- Check playoff mode in the browser when it starts (2 days before the 2027 playoffs), or with the override in
+  `CLAUDE.md`.

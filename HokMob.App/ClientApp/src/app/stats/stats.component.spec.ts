@@ -4,7 +4,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
-import { DateTimeUtils } from '@shared/utils/date-time-utils';
+import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 import { LeaderboardEntry } from '@app/stats/stat-leaderboard/stat-leaderboard.component';
 import {
   mockGoalieStatsLeaders,
@@ -21,6 +21,7 @@ describe('StatsComponent', () => {
   let httpMock: HttpTestingController;
   let queryParams: BehaviorSubject<ParamMap>;
   let navigate: jasmine.Spy;
+  let currentSeason: jasmine.Spy;
 
   const standingsUrl = '/api/nhl/standings/now';
   const skaterLeadersUrl = '/api/nhl/skater-stats-leaders/20252026/';
@@ -43,7 +44,8 @@ describe('StatsComponent', () => {
     navigate = spyOn(TestBed.inject(Router), 'navigate');
     spyOn(console, 'error');
     // The page defaults to the playoffs during playoff mode, so the tests pin it instead of depending on the date
-    spyOn(DateTimeUtils, 'isPlayoffMode').and.returnValue(false);
+    currentSeason = spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason')
+        .and.resolveTo({season: 20262027, isPlayoffMode: false});
   });
 
   afterEach(() => {
@@ -51,12 +53,13 @@ describe('StatsComponent', () => {
     httpMock.verify();
   });
 
-  /** Opens the page, optionally with a gameType query parameter ("R" or "P"). */
-  function open(gameType?: string): void {
+  /** Opens the page, optionally with a gameType query parameter ("R" or "P"), and waits for playoff mode. */
+  async function open(gameType?: string): Promise<void> {
     queryParams.next(convertToParamMap(gameType ? {gameType} : {}));
     fixture = TestBed.createComponent(StatsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await settle();
   }
 
   /** Clicks a game type filter, and pushes the query parameter the router would set. */
@@ -99,7 +102,7 @@ describe('StatsComponent', () => {
   }
 
   it('should show a spinner until the leaders load', async () => {
-    open('R');
+    await open('R');
     expect(component.isLoading).toBeTrue();
     expect(fixture.nativeElement.querySelector('.loading-gif')).toBeTruthy();
     expect(boards().length).toBe(0);
@@ -112,7 +115,7 @@ describe('StatsComponent', () => {
   });
 
   it('should show the nine real leaderboards of the standings season', async () => {
-    open('R');
+    await open('R');
     await flushStandings();
     await flushLeaders();
 
@@ -127,7 +130,7 @@ describe('StatsComponent', () => {
   });
 
   it('should convert web API leaders with their own headshot and team', async () => {
-    open('R');
+    await open('R');
     await flushStandings();
     await flushLeaders();
 
@@ -146,7 +149,7 @@ describe('StatsComponent', () => {
   });
 
   it('should convert stats API rows with a built headshot and their last team', async () => {
-    open('R');
+    await open('R');
     await flushStandings();
     await flushLeaders();
 
@@ -162,7 +165,7 @@ describe('StatsComponent', () => {
   });
 
   it('should ask for the playoffs when the query parameter says so', async () => {
-    open('P');
+    await open('P');
     expect(component.playoffsSelected).toBeTrue();
     await flushStandings();
     await flushLeaders(3);
@@ -172,7 +175,7 @@ describe('StatsComponent', () => {
   });
 
   it('should reload only the leaders when the game type is switched', async () => {
-    open('R');
+    await open('R');
     await flushStandings();
     await flushLeaders();
 
@@ -187,7 +190,7 @@ describe('StatsComponent', () => {
   });
 
   it('should ignore the leaders of the game type left behind', async () => {
-    open('R');
+    await open('R');
     await flushStandings();
     const regularSeasonSkaters = httpMock.expectOne(skaterLeadersUrl + '2' + skaterCategories);
     const regularSeasonGoalies = httpMock.expectOne(goalieLeadersUrl + '2' + goalieCategories);
@@ -207,7 +210,7 @@ describe('StatsComponent', () => {
   });
 
   it('should leave only the boards of a failed source empty', async () => {
-    open('R');
+    await open('R');
     await flushStandings();
     httpMock.expectOne(skaterLeadersUrl + '2' + skaterCategories)
         .flush('Bad Gateway', {status: 502, statusText: 'Bad Gateway'});
@@ -223,7 +226,7 @@ describe('StatsComponent', () => {
   });
 
   it('should show empty boards when the standings fail, without asking for leaders', async () => {
-    open('R');
+    await open('R');
     httpMock.expectOne(standingsUrl).flush('Bad Gateway', {status: 502, statusText: 'Bad Gateway'});
     await settle();
 
@@ -233,7 +236,7 @@ describe('StatsComponent', () => {
   });
 
   it('should hide the game type filters outside playoff mode', async () => {
-    open('R');
+    await open('R');
     await flushStandings();
     await flushLeaders();
 
@@ -241,8 +244,8 @@ describe('StatsComponent', () => {
   });
 
   it('should show the filters and the playoffs first in playoff mode', async () => {
-    (DateTimeUtils.isPlayoffMode as jasmine.Spy).and.returnValue(true);
-    open();
+    currentSeason.and.resolveTo({season: 20252026, isPlayoffMode: true});
+    await open();
 
     expect(fixture.nativeElement.querySelector('.stat-filters-container')).toBeTruthy();
     expect(component.playoffsSelected).toBeTrue();
@@ -250,5 +253,29 @@ describe('StatsComponent', () => {
     await flushLeaders(3);
 
     expect(board('Points').entries[0].name).toBe('Mitch Marner');
+  });
+
+  it('should wait for playoff mode before loading the leaders', async () => {
+    queryParams.next(convertToParamMap({}));
+    fixture = TestBed.createComponent(StatsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    httpMock.expectNone(() => true);
+    expect(component.isLoading).toBeTrue();
+
+    await settle();
+    await flushStandings();
+    await flushLeaders();
+    expect(component.isLoading).toBeFalse();
+  });
+
+  it('should show the regular season without filters when the season dates fail', async () => {
+    currentSeason.and.rejectWith(new Error('Bad gateway'));
+    await open();
+    expect(component.playoffsSelected).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.stat-filters-container')).toBeNull();
+    await flushStandings();
+    await flushLeaders();
+    expect(board('Points').entries.length).toBe(5);
   });
 });

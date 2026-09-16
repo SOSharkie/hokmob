@@ -9,7 +9,7 @@
     ></app-scores>
   </div>
   <div class="news-and-standings">
-    <app-playoff-summary *ngIf="isPlayoffs"></app-playoff-summary>
-    <app-standings-summary *ngIf="!isPlayoffs"></app-standings-summary>
+    <app-playoff-summary *ngIf="isPlayoffs === true"></app-playoff-summary>
+    <app-standings-summary *ngIf="isPlayoffs === false"></app-standings-summary>
   </div>
 </div>

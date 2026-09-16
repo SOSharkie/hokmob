@@ -191,8 +191,8 @@ but its team data still comes from the dead API (see its TODO).
   Bracket `topSeedRankAbbrev` looks like `D1` (division) or `WC1` (wild card), and `topSeedRank` is the number
   shown on the card. Both wild cards can have the same rank: BOS (`WC1`) and LAK (`WC2`) are both rank 4.
 
-`DateTimeUtils.isPlayoffMode()` is still hard-coded to dates (May 21 to end of September). Optionally drive it from the
-`schedule/{date}` response instead (`regularSeasonEndDate`, `playoffEndDate`).
+`DateTimeUtils.isPlayoffMode()` was hard-coded to dates (May 21 to end of September). It now works from season dates:
+see section 11.1 of [`nhl-api-legacy-migration-plan.md`](nhl-api-legacy-migration-plan.md).
 
 ## 5. Game page (phases 4–8 done)
 
@@ -615,5 +615,5 @@ assumption, remove the TODOs and update this section. Don't commit the untrimmed
   9–15 of [`nhl-api-legacy-migration-plan.md`](nhl-api-legacy-migration-plan.md).
 - HokMob rating approach B (decision 1).
 - A local Utah logo (`NhlTeamLogoUtils` TODO).
-- Optionally drive `DateTimeUtils.isPlayoffMode()` from `schedule/{date}` (4.3).
+- ~~Drive `DateTimeUtils.isPlayoffMode()` from season dates (4.3).~~ Done (second plan, 11.1).
 - Check an in-progress playoff series (next game date, unplayed games in the series dialog) during the 2027 playoffs.

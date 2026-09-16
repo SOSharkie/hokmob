@@ -4,7 +4,7 @@ import {Subscription} from "rxjs";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {PlayoffBracketSeason} from "@shared/models/nhl-web-api/playoffs.model";
 import {NhlPlayoffBracketUtils, PlayoffBracketSlots} from "@shared/utils/nhl-playoff-bracket-utils";
-import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 
 /**
  * A season in the season picker.
@@ -40,13 +40,18 @@ export class PlayoffsComponent implements OnInit, OnDestroy {
 
   public hasError: boolean = false;
 
-  /** The year the latest season ends in: the calendar's, until its bracket turns out to have no series yet. */
-  public latestYear: number = Number(DateTimeUtils.getCurrentNhlSeason().substring(4));
+  /**
+   * The year the latest season ends in: the current season's, until its bracket turns out to have no series yet.
+   * Undefined until the season dates load.
+   */
+  public latestYear: number;
 
   /** The year of the last request, so a response of a season picked before is ignored. */
   private requestedYear: number;
 
   private queryParamSubscription: Subscription;
+
+  private isDestroyed: boolean = false;
 
   /**
    * The picker's seasons, newest first.
@@ -82,17 +87,33 @@ export class PlayoffsComponent implements OnInit, OnDestroy {
   }
 
   constructor(private nhlPlayoffService: NhlStandingAndPlayoffService,
+              private nhlStatsApiService: NhlStatsApiService,
               private activatedRoute: ActivatedRoute,
               private router: Router) {
   }
 
+  /**
+   * Works out the latest year from the current season, then loads the season in the query parameter. When the season
+   * dates fail, the latest year is the calendar year: the latest bracket with series always ends in it or before it.
+   */
   public ngOnInit(): void {
-    this.queryParamSubscription = this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
-      this.loadBracket(this.parseSeasonYear(params.get("season")));
+    this.isLoading = true;
+    this.nhlStatsApiService.getCurrentSeason().then(currentSeason => currentSeason.season % 10000).catch(() => {
+      // The service logs the error
+      return new Date().getFullYear();
+    }).then(latestYear => {
+      if (this.isDestroyed) {
+        return;
+      }
+      this.latestYear = latestYear;
+      this.queryParamSubscription = this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
+        this.loadBracket(this.parseSeasonYear(params.get("season")));
+      });
     });
   }
 
   public ngOnDestroy(): void {
+    this.isDestroyed = true;
     this.queryParamSubscription?.unsubscribe();
   }
 

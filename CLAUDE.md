@@ -33,8 +33,8 @@ Update them when you change a page or finish an open item.
 - `HokMob.App/Services/NhlApiClient.cs`: HTTP client with in-memory caching per path root (10s for live data).
 - `HokMob.App/Controllers/NhlSearchController.cs`: `/api/nhl-search/player?q=…` → `search.d3.nhle.com` player search
   (`NhlSearchApiClient`, cached 5 minutes). Only allowlisted query parameters are forwarded.
-- `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders` and `/teams`, built from
-  the stats API (`NhlStatsApiClient`, cached 5 minutes). The controller builds every upstream query and merges the
+- `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/teams` and `/seasons`,
+  built from the stats API (`NhlStatsApiClient`, cached 5 minutes). The controller builds every upstream query and merges the
   reports a page needs into one response.
 - `ClientApp/src/app/shared/`:
   - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the
@@ -127,9 +127,12 @@ Update them when you change a page or finish an open item.
     1400×1000, then reset to `desktop` when done.
   - The console log persists across navigations, so old errors look new. To check for new errors, wrap `console.error`
     in the page right after navigating, then perform the action and read the captured list.
-- **Date-gated UI:** the home playoff summary only shows when `DateTimeUtils.isPlayoffMode()` is true (May 21 to
-  September). To test it off-season, temporarily add `return true;` at the top of that method, then revert with
-  `git checkout -- <file>`. Never commit the override.
+- **Season-gated UI:** the current season and playoff mode come from `NhlStatsApiService.getCurrentSeason()`, worked
+  out from `/api/nhl-stats/seasons` by `DateTimeUtils.getCurrentNhlSeason` / `isPlayoffMode`. A season starts 14
+  days before its first (preseason) game; playoff mode runs from 2 days before its first playoff game until the next
+  season starts. In playoff mode, home shows the playoff summary and `/stats` shows the playoffs first. To test it
+  outside the playoffs, temporarily return `isPlayoffMode: true` from `getCurrentSeason`, then revert with
+  `git checkout -- <file>`. Never commit the override. In specs, spy on `getCurrentSeason` instead of the date.
 - **Sample data:** both APIs are public. Stats API example: `curl -sSL -o <scratch>/x.json
   "https://api.nhle.com/stats/rest/en/skater/summary?isAggregate=false&isGame=false&cayenneExp=playerId=8477496%20and%20gameTypeId=2"`
   (URL-encode spaces as `%20`). For api-web: `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>` and inspect

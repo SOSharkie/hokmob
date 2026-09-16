@@ -3,7 +3,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import * as dayjs from "dayjs";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
-import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {
   PlayoffCarouselSeries,
   PlayoffSeriesGame,
@@ -47,6 +47,7 @@ export class PlayoffSeriesDialogComponent implements OnInit {
   public seriesGames: ScoreGame[];
 
   constructor(private nhlPlayoffService: NhlStandingAndPlayoffService,
+              private nhlStatsApiService: NhlStatsApiService,
               private dialogRef: MatDialogRef<PlayoffSeriesDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: PlayoffSeriesDialogData) {}
 
@@ -55,8 +56,22 @@ export class PlayoffSeriesDialogComponent implements OnInit {
     if (!series?.topSeed || !series?.bottomSeed) {
       return;
     }
-    const season = this.data.season ?? DateTimeUtils.getCurrentNhlSeason();
-    this.nhlPlayoffService.getNhlPlayoffSeriesSchedule(season, series.seriesLetter).then(result => {
+    if (this.data.season) {
+      this.loadSeriesSchedule(this.data.season, series.seriesLetter);
+      return;
+    }
+    this.nhlStatsApiService.getCurrentSeason().then(currentSeason => {
+      this.loadSeriesSchedule(currentSeason.season, series.seriesLetter);
+    }).catch(() => {
+      // The service logs the error. Without a season there are no games to show
+    });
+  }
+
+  /**
+   * Loads the series games. When they fail, the title stays without games.
+   */
+  private loadSeriesSchedule(season: number, seriesLetter: string): void {
+    this.nhlPlayoffService.getNhlPlayoffSeriesSchedule(season, seriesLetter).then(result => {
       this.seriesSchedule = result;
       this.seriesGames = (result.games ?? []).map(game => this.toScoreGame(game));
     }).catch(() => {

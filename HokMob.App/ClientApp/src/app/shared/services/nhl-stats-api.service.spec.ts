@@ -4,6 +4,7 @@ import {NhlStatsApiService} from '@shared/services/nhl-stats-api.service';
 import {
   mockHitsAndShotsLeaders,
   mockPlayerStats,
+  mockSeasonDates,
   mockTeamStats
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {
@@ -158,6 +159,81 @@ describe('NhlStatsApiService', () => {
           .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getSeasonDates and getCurrentSeason', () => {
+    const seasonsUrl = '/api/nhl-stats/seasons';
+
+    afterEach(() => {
+      jasmine.clock().uninstall();
+    });
+
+    /** Pins today to a local day. The month is 1-based. */
+    function setToday(year: number, month: number, date: number): void {
+      jasmine.clock().install();
+      jasmine.clock().mockDate(new Date(year, month - 1, date, 12));
+    }
+
+    it('should resolve the real seasons, newest first', async () => {
+      const seasonDates = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      const seasons = await seasonDates;
+      expect(seasons.map(season => season.id)).toEqual([20262027, 20252026]);
+      expect(seasons[1].firstPlayoffGameDate).toBe('2026-04-18');
+    });
+
+    it('should share one request between callers', async () => {
+      const first = service.getCurrentSeason();
+      const second = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      await Promise.all([first, second]);
+      await service.getCurrentSeason();
+      httpMock.expectNone(seasonsUrl);
+    });
+
+    it('should ask again after an hour', async () => {
+      setToday(2026, 9, 16);
+      const first = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      await first;
+      jasmine.clock().tick(60 * 60 * 1000);
+      const second = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      await second;
+    });
+
+    it('should resolve the new season outside playoff mode on the day the fixture was captured', async () => {
+      setToday(2026, 9, 16);
+      const currentSeason = service.getCurrentSeason();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      expect(await currentSeason).toEqual({season: 20262027, isPlayoffMode: false});
+    });
+
+    it('should resolve the previous season in playoff mode during its playoffs', async () => {
+      setToday(2026, 5, 1);
+      const currentSeason = service.getCurrentSeason();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      expect(await currentSeason).toEqual({season: 20252026, isPlayoffMode: true});
+    });
+
+    it('should reject when no season is listed', async () => {
+      const currentSeason = service.getCurrentSeason();
+      const rejection = expectAsync(currentSeason).toBeRejected();
+      httpMock.expectOne(seasonsUrl).flush({seasons: []});
+      await rejection;
+    });
+
+    it('should log, reject and not reuse a failed request', async () => {
+      const currentSeason = service.getCurrentSeason();
+      const rejection = expectAsync(currentSeason).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne(seasonsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+
+      const retry = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      expect((await retry).length).toBe(2);
     });
   });
 });

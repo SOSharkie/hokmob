@@ -162,6 +162,76 @@ namespace HokMob.App.Controllers
         }
 
         /// <summary>
+        /// Returns the dates the client works out the current season and playoff mode from, as
+        /// { seasons: [{ id, firstGameDate, firstPlayoffGameDate }] } for the two latest seasons, newest first. The first
+        /// game is the first preseason game, or the first regular season game for a season without a preseason. A date
+        /// is null while no such game is scheduled. The dates are local game days, like "2026-09-19".
+        /// </summary>
+        [HttpGet("seasons")]
+        public async Task<IActionResult> GetSeasonDates(CancellationToken cancellationToken)
+        {
+            // The newest season can be listed before any of its games are scheduled, so the one before it is needed too.
+            var seasons = await _nhlStatsApiClient.GetReportAsync("season", new[]
+            {
+                new KeyValuePair<string, string>("sort", "[{\"property\":\"id\",\"direction\":\"DESC\"}]"),
+                new KeyValuePair<string, string>("limit", "2")
+            }, cancellationToken);
+            var seasonIds = seasons?.Select(season => GetLongValue(season["id"])).OfType<long>().ToList();
+            if (seasonIds == null || seasonIds.Count == 0)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway);
+            }
+
+            var firstGameTasks = seasonIds.Select(id => GetFirstGameDate(id, "gameType in (1,2)", cancellationToken)).ToList();
+            var firstPlayoffGameTasks = seasonIds.Select(id => GetFirstGameDate(id, "gameType=3", cancellationToken)).ToList();
+            await Task.WhenAll(firstGameTasks.Concat(firstPlayoffGameTasks));
+
+            // A failed call would pass for a season that hasn't started yet, so every call is required.
+            if (firstGameTasks.Concat(firstPlayoffGameTasks).Any(task => !task.Result.Succeeded))
+            {
+                return StatusCode(StatusCodes.Status502BadGateway);
+            }
+
+            var result = new JsonArray();
+            for (var i = 0; i < seasonIds.Count; i++)
+            {
+                result.Add(new JsonObject
+                {
+                    ["id"] = seasonIds[i],
+                    ["firstGameDate"] = firstGameTasks[i].Result.Date,
+                    ["firstPlayoffGameDate"] = firstPlayoffGameTasks[i].Result.Date
+                });
+            }
+            return new JsonResult(new JsonObject {["seasons"] = result});
+        }
+
+        /// <summary>
+        /// Gets the game day of a season's first game matching a filter, like "2026-09-19". Date is null when no game
+        /// matches, and Succeeded is false when the call failed.
+        /// </summary>
+        /// <param name="season">The season ID, like 20262027.</param>
+        /// <param name="gameTypeFilter">The game type part of the cayenneExp, like "gameType=3".</param>
+        private async Task<(bool Succeeded, string? Date)> GetFirstGameDate(long season, string gameTypeFilter,
+            CancellationToken cancellationToken)
+        {
+            var games = await _nhlStatsApiClient.GetReportAsync("game", new[]
+            {
+                new KeyValuePair<string, string>("sort",
+                    "[{\"property\":\"gameDate\",\"direction\":\"ASC\"},{\"property\":\"id\",\"direction\":\"ASC\"}]"),
+                new KeyValuePair<string, string>("limit", "1"),
+                new KeyValuePair<string, string>("cayenneExp", $"season={season} and {gameTypeFilter}")
+            }, cancellationToken);
+            if (games == null)
+            {
+                return (false, null);
+            }
+            var date = games.FirstOrDefault()?["gameDate"] is JsonValue value && value.TryGetValue(out string? gameDate)
+                ? gameDate
+                : null;
+            return (true, date);
+        }
+
+        /// <summary>
         /// The query for a player's per season rows of one game type. Rows don't say which game type they are, so the
         /// regular season and the playoffs are asked for separately.
         /// </summary>

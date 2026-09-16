@@ -6,6 +6,7 @@ import {
   mockPlayerStats,
   mockPlayoffBracket,
   mockSkaterStatsLeaders,
+  mockSeasonDates,
   mockTeamStats
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 import {GoalieGameStats, SkaterGameStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
@@ -159,6 +160,18 @@ describe('nhl-api-mocks', () => {
 
     it('should return no teams for a season without games', () => {
       expect(mockTeamStats(20262027).teams).toEqual([]);
+    });
+  });
+
+  describe('mockSeasonDates', () => {
+    it('should return the two latest seasons, newest first, with a fresh copy every time', () => {
+      const seasons = mockSeasonDates().seasons;
+      expect(seasons.map(season => season.id)).toEqual([20262027, 20252026]);
+      expect(seasons[0].firstGameDate).toBe('2026-09-19');
+      expect(seasons[0].firstPlayoffGameDate).toBeNull();
+      expect(seasons[1].firstPlayoffGameDate).toBe('2026-04-18');
+      seasons[0].id = 0;
+      expect(mockSeasonDates().seasons[0].id).toBe(20262027);
     });
   });
 });

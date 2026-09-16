@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
-import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {PlayoffCarousel, PlayoffCarouselRound, PlayoffCarouselSeries} from "@shared/models/nhl-web-api/playoffs.model";
 
 @Component({
@@ -27,14 +27,17 @@ export class PlayoffSummaryComponent implements OnInit {
     return this.playoffsData?.rounds?.find(round => round.roundNumber === this.playoffsData.currentRound);
   }
 
-  constructor(private nhlPlayoffService: NhlStandingAndPlayoffService) {
+  constructor(private nhlPlayoffService: NhlStandingAndPlayoffService,
+              private nhlStatsApiService: NhlStatsApiService) {
   }
 
   public ngOnInit(): void {
-    this.nhlPlayoffService.getNhlPlayoffs(DateTimeUtils.getCurrentNhlSeason()).then(result => {
+    this.nhlStatsApiService.getCurrentSeason().then(currentSeason => {
+      return this.nhlPlayoffService.getNhlPlayoffs(String(currentSeason.season));
+    }).then(result => {
       this.playoffsData = result;
     }).catch(() => {
-      // The service logs the error. Show the plain title without series
+      // The services log the error. Show the plain title without series
     });
   }
 

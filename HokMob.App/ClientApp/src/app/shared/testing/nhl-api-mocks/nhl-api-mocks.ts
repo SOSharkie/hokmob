@@ -65,16 +65,18 @@ import playerStats8483548 from './player-stats-8483548-goalie.json';
 import hitsAndShotsLeaders20252026 from './leaders-hits-shots-20252026-2.json';
 import teamStats20252026 from './team-stats-20252026-2.json';
 import teamStats20262027 from './team-stats-20262027-2.json';
+import seasonDates from './seasons-2026-09-16.json';
 import {GoalieStatsLeaders, SkaterStatsLeaders} from "@shared/models/nhl-web-api/stats-leaders.model";
 import {PlayerSearchResult} from "@shared/models/nhl-web-api/player-search.model";
 import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
+import {SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.model";
 
 /*
  * Real responses for unit tests, captured on 2026-09-15: api-web.nhle.com responses, the player search
  * (search-player-mac, through /api/nhl-search/player) and the backend's stats API responses (player-stats-*,
- * leaders-hits-shots-*, team-stats-*, captured from a running app because the browser only ever sees the merged
+ * leaders-hits-shots-*, team-stats-*, seasons-*, captured from a running app because the browser only ever sees the merged
  * shape). The JSON files are unchanged responses, except score-2026-03-01 (trimmed to 3 games), score-2026-10-08
  * (trimmed to 2 games) and the club-schedule-season-* responses (trimmed games, see mockClubScheduleSeason). The
  * gamecenter-* responses are unchanged. To refresh one, download it again with curl and re-check the values the specs
@@ -328,6 +330,14 @@ export type MockTeamStatsSeason = 20252026 | 20262027;
  */
 export function mockTeamStats(season: MockTeamStatsSeason = 20252026): TeamStatsResponse {
   return copy(season === 20252026 ? teamStats20252026 : teamStats20262027);
+}
+
+/**
+ * /api/nhl-stats/seasons, captured on 2026-09-16: 2026-27 (first game, a preseason game, on 2026-09-19; no playoff game
+ * yet) and 2025-26 (first game 2025-09-20, first playoff game 2026-04-18).
+ */
+export function mockSeasonDates(): SeasonDatesResponse {
+  return copy(seasonDates);
 }
 
 /** Teams with captured club-schedule-season responses: the teams of the future game 2026020056 (UTA @ BOS). */

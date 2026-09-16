@@ -4,7 +4,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
-import { DateTimeUtils } from '@shared/utils/date-time-utils';
+import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 import { MockBracketYear, mockPlayoffBracket } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { PlayoffsComponent } from './playoffs.component';
@@ -33,7 +33,8 @@ describe('PlayoffsComponent', () => {
     navigate = spyOn(TestBed.inject(Router), 'navigate');
     spyOn(console, 'error');
     // Pinned to the 2026-27 season, whose bracket has no series yet, instead of depending on the date
-    currentSeason = spyOn(DateTimeUtils, 'getCurrentNhlSeason').and.returnValue('20262027');
+    currentSeason = spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason')
+        .and.resolveTo({season: 20262027, isPlayoffMode: false});
   });
 
   afterEach(() => {
@@ -41,12 +42,13 @@ describe('PlayoffsComponent', () => {
     httpMock.verify();
   });
 
-  /** Opens the page, optionally with a season query parameter. */
-  function open(season?: string): void {
+  /** Opens the page, optionally with a season query parameter, and waits for the current season. */
+  async function open(season?: string): Promise<void> {
     queryParams.next(convertToParamMap(season ? {season} : {}));
     fixture = TestBed.createComponent(PlayoffsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await settle();
   }
 
   async function settle(): Promise<void> {
@@ -62,7 +64,7 @@ describe('PlayoffsComponent', () => {
 
   /** Opens the default page, which falls back from the empty 2027 bracket to 2026. */
   async function openDefault(): Promise<void> {
-    open();
+    await open();
     await flushBracket(2027);
     await flushBracket(2026);
   }
@@ -113,11 +115,30 @@ describe('PlayoffsComponent', () => {
   });
 
   it('should not fall back when the current season has series', async () => {
-    currentSeason.and.returnValue('20252026');
-    open();
+    currentSeason.and.resolveTo({season: 20252026, isPlayoffMode: false});
+    await open();
     await flushBracket(2026);
     expect(text('.playoffs-title')).toBe('2025-26 Playoffs');
     expect(component.seasonOptions[0].value).toBe('20252026');
+  });
+
+  it('should wait for the current season before loading a bracket', () => {
+    queryParams.next(convertToParamMap({}));
+    fixture = TestBed.createComponent(PlayoffsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    httpMock.expectNone(() => true);
+    expect(component.isLoading).toBeTrue();
+    expect(component.seasonOptions).toEqual([]);
+  });
+
+  it('should start from the calendar year when the current season fails', async () => {
+    const year = new Date().getFullYear();
+    currentSeason.and.rejectWith(new Error('Bad gateway'));
+    await open();
+    expect(component.latestYear).toBe(year);
+    httpMock.expectOne(bracketUrl + year).flush(mockPlayoffBracket(2026));
+    await settle();
   });
 
   it('should show the Western final on the left, the Eastern final on the right and the labels of the bracket',
@@ -127,7 +148,7 @@ describe('PlayoffsComponent', () => {
   });
 
   it('should load the season of the query parameter', async () => {
-    open('20222023');
+    await open('20222023');
     httpMock.expectNone(bracketUrl + '2027');
     await flushBracket(2023);
     await fixture.whenStable();
@@ -142,7 +163,7 @@ describe('PlayoffsComponent', () => {
   });
 
   it('should hide the 2020 qualifying round behind a note', async () => {
-    open('20192020');
+    await open('20192020');
     await flushBracket(2020);
     expect(text('.qualifying-round-note')).toBe('2020 also had a qualifying round.');
     expect(fixture.nativeElement.querySelectorAll('.standard-playoffs-tree app-playoff-series').length).toBe(15);
@@ -151,7 +172,7 @@ describe('PlayoffsComponent', () => {
   });
 
   it('should label 2021 from the bracket, without conferences', async () => {
-    open('20202021');
+    await open('20202021');
     await flushBracket(2021);
     expect(desktopSeriesTitles()).toEqual(['Stanley Cup Semifinals', 'Stanley Cup Final', 'Stanley Cup Semifinals']);
     // M (VGK-MTL) was fed by K and L, so it's on the left
@@ -160,7 +181,7 @@ describe('PlayoffsComponent', () => {
 
   for (const season of ['20122013', 'abc', '20232025', '20272028']) {
     it(`should fall back to the default for the season parameter "${season}"`, async () => {
-      open(season);
+      await open(season);
       await flushBracket(2027);
       await flushBracket(2026);
       expect(text('.playoffs-title')).toBe('2025-26 Playoffs');
@@ -192,7 +213,7 @@ describe('PlayoffsComponent', () => {
   });
 
   it('should ignore a late response of a season picked before', async () => {
-    open('20222023');
+    await open('20222023');
     const request2023 = httpMock.expectOne(bracketUrl + '2023');
     queryParams.next(convertToParamMap({season: '20202021'}));
     const request2021 = httpMock.expectOne(bracketUrl + '2021');
@@ -207,7 +228,7 @@ describe('PlayoffsComponent', () => {
   });
 
   it('should show a message for a season without series', async () => {
-    open('20222023');
+    await open('20222023');
     httpMock.expectOne(bracketUrl + '2023').flush(mockPlayoffBracket(2027));
     await settle();
     expect(text('.playoffs-message')).toBe('No playoff series yet');
@@ -215,7 +236,7 @@ describe('PlayoffsComponent', () => {
   });
 
   it('should show an error and clear the loading state when the bracket fails', async () => {
-    open('20222023');
+    await open('20222023');
     httpMock.expectOne(bracketUrl + '2023').flush('Server error', {status: 500, statusText: 'Internal Server Error'});
     await settle();
     expect(component.isLoading).toBeFalse();
@@ -224,7 +245,7 @@ describe('PlayoffsComponent', () => {
   });
 
   it('should show TBD slots for series the bracket does not list yet', async () => {
-    open('20222023');
+    await open('20222023');
     const bracket = mockPlayoffBracket(2023);
     bracket.series = bracket.series.filter(series => series.playoffRound === 1);
     httpMock.expectOne(bracketUrl + '2023').flush(bracket);

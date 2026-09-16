@@ -6,7 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayoffSeriesSchedule } from '@shared/models/nhl-web-api/playoffs.model';
 import { NhlGameInfoUtils } from '@shared/utils/nhl-game-info-utils';
-import { DateTimeUtils } from '@shared/utils/date-time-utils';
+import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 import {
   derivedSeriesInProgress,
   mockPlayoffSeriesSchedule,
@@ -147,10 +147,22 @@ describe('PlayoffSeriesDialogComponent', () => {
   });
 
   it('should use the current season when none is given', async () => {
-    spyOn(DateTimeUtils, 'getCurrentNhlSeason').and.returnValue('20252026');
+    // Spied on the prototype, because the dialog data can only be overridden before the first inject
+    spyOn(NhlStatsApiService.prototype, 'getCurrentSeason').and.resolveTo({season: 20252026, isPlayoffMode: true});
     open({series: mockRankedCarouselSeries('A'), season: undefined});
+    await new Promise(resolve => setTimeout(resolve));
     await loadSchedule(scheduleUrlA, mockPlayoffSeriesSchedule('A'));
     expect(scorecards().length).toBe(6);
+  });
+
+  it('should show no games when no season is given and the current season fails', async () => {
+    spyOn(NhlStatsApiService.prototype, 'getCurrentSeason').and.rejectWith(new Error('Bad gateway'));
+    open({series: mockRankedCarouselSeries('A'), season: undefined});
+    await new Promise(resolve => setTimeout(resolve));
+    fixture.detectChanges();
+    httpMock.expectNone(() => true);
+    expect(title()).toBe('Round 1: BUF wins 4-2');
+    expect(scorecards().length).toBe(0);
   });
 
   it('should keep the title and show no games when the schedule fails', async () => {

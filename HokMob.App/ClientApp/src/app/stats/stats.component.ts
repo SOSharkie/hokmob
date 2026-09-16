@@ -9,7 +9,6 @@ import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
-import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {LeaderboardEntry, LeaderboardFormat} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
 
 /**
@@ -66,9 +65,27 @@ export class StatsComponent implements OnInit {
               private router: Router) {
   }
 
+  /**
+   * Waits for playoff mode, which shows the game type filters and selects the playoffs by default, then loads the
+   * leaders of the game type in the query parameter. When the season dates fail, it's the regular season without
+   * filters.
+   */
   public ngOnInit(): void {
-    this.showFilters = DateTimeUtils.isPlayoffMode();
-    this.playoffsSelected = DateTimeUtils.isPlayoffMode();
+    this.isLoading = true;
+    this.nhlStatsApiService.getCurrentSeason().then(currentSeason => currentSeason.isPlayoffMode).catch(() => {
+      // The service logs the error
+      return false;
+    }).then(isPlayoffMode => {
+      this.showFilters = isPlayoffMode;
+      this.playoffsSelected = isPlayoffMode;
+      this.subscribeToGameType();
+    });
+  }
+
+  /**
+   * Loads the leaders whenever the gameType query parameter changes ("P" for the playoffs, "R" for the regular season).
+   */
+  private subscribeToGameType(): void {
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("gameType")) {
         this.playoffsSelected = params.get("gameType") === "P";
