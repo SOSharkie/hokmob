@@ -45,6 +45,12 @@ export interface ScoreGame {
   homeTeam: ScoreTeam;
   awayTeam: ScoreTeam;
   gameCenterLink: string;
+  /** NHL.com path of the recap video, like "/video/stl-at-wpg-recap-6390989103112". Only for finished games, once posted. */
+  threeMinRecap?: string;
+  threeMinRecapFr?: string;
+  /** NHL.com path of the condensed game video. Only for finished games, once posted. */
+  condensedGame?: string;
+  condensedGameFr?: string;
   clock?: GameClock;
   period?: number;
   periodDescriptor?: PeriodDescriptor;

@@ -7,7 +7,6 @@ import {GameLanding} from "@shared/models/nhl-web-api/gamecenter-landing.model";
 import {PlayByPlay} from "@shared/models/nhl-web-api/play-by-play.model";
 import {Boxscore} from "@shared/models/nhl-web-api/boxscore.model";
 import {RightRail} from "@shared/models/nhl-web-api/right-rail.model";
-import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
 import {
   ClubScheduleGame,
@@ -70,15 +69,15 @@ export class NhlGameService {
   }
 
   /**
-   * Gets the playoff series status of a game from score/{gameDate}, since no gamecenter response has it. Resolves
-   * undefined when the game isn't in the response or has no series status.
+   * Gets a game from score/{gameDate}, for what no gamecenter response has: the playoff series status and the recap and
+   * condensed game video paths. Resolves undefined when the game isn't in the response.
    *
    * @param gameId - The game ID.
    * @param gameDate - The game's local date, like "2026-06-09" (landing.gameDate).
    */
-  public getSeriesStatus(gameId: number, gameDate: string): Promise<SeriesStatus> {
+  public getScoreGame(gameId: number, gameDate: string): Promise<ScoreGame> {
     return this.get<ScoreResponse>(this.nhlScoreUrl + gameDate)
-        .then(response => (response.games ?? []).find(game => game.id === gameId)?.seriesStatus);
+        .then(response => (response.games ?? []).find(game => game.id === gameId));
   }
 
   /**

@@ -8,6 +8,7 @@ import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameBundle } from '@shared/models/nhl-web-api/game-bundle.model';
 import { ClubScheduleSeason } from '@shared/models/nhl-web-api/club-schedule.model';
+import { ScoreResponse } from '@shared/models/nhl-web-api/score.model';
 import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
@@ -19,7 +20,9 @@ import {
   mockClubScheduleSeason,
   mockGameBundle,
   mockGameLanding,
-  mockPlayoffScoreResponse
+  mockPlayoffScoreResponse,
+  mockRegularSeasonScoreResponse,
+  mockScoreResponse
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { GameComponent } from './game.component';
@@ -81,6 +84,16 @@ describe('GameComponent', () => {
     }
   }
 
+  /** Answers the score request of a finished or playoff game with the response, or with a server error without one. */
+  function flushScore(gameDate: string, response?: ScoreResponse): void {
+    const request = httpMock.expectOne(`/api/nhl/score/${gameDate}`);
+    if (response) {
+      request.flush(response);
+    } else {
+      request.flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    }
+  }
+
   /** Waits for pending service promises, then updates the view. */
   async function settle(): Promise<void> {
     await new Promise(resolve => setTimeout(resolve));
@@ -106,13 +119,17 @@ describe('GameComponent', () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
 
     const landing = mockGameLanding(2025021057);
     expect(text('.league-info-label')).toBe('NHL Regular Season');
     expect(text('.info-label')).toBe('TV: NHLN');
     expect(text('.game-venue-container')).toContain('Canada Life Centre');
     expect(text('.game-date-time')).toContain(dayjs(landing.startTimeUTC).format('MMMM D, YYYY, h:mm A'));
-    expect(element('.stream-link').getAttribute('href')).toBe('https://720pstream.nu/nhl/live-winnipeg-jets-stream');
+    expect(text('.watch-link')).toBe('Highlights');
+    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/video/stl-at-wpg-recap-6390989103112');
+    expect(component.watchIcon).toBe('smart_display');
     expect(text('.games-label')).toBe('Games');
     expect(text('.game-load-error')).toBeUndefined();
     expect(component.leagueRouterLink).toBe('/standings');
@@ -131,6 +148,8 @@ describe('GameComponent', () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
     const scoring = element('app-goal-scorers').scoring;
     expect(scoring.map(period => period.goals.length)).toEqual([2, 0, 3]);
   });
@@ -138,6 +157,8 @@ describe('GameComponent', () => {
   it('should pass the play-by-play to the momentum chart and event timelines', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     await settle();
     expect(element('app-momentum').playByPlay.plays.length).toBe(270);
 
@@ -154,6 +175,8 @@ describe('GameComponent', () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
     fixture.debugElement.query(By.css('.side-game app-mini-event-timeline')).triggerEventHandler('playerClicked', 8478398);
     expect(openDialog).toHaveBeenCalledWith(8478398);
   });
@@ -161,6 +184,8 @@ describe('GameComponent', () => {
   it('should pass the rated players with full names to the top players', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     await settle();
     const topPlayers = element('app-game-top-players');
     expect(topPlayers.homePlayers.length).toBe(20);
@@ -171,6 +196,8 @@ describe('GameComponent', () => {
   it('should pass the right-rail team stats and team IDs to the game stats', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     await settle();
     const gameStats = element('app-game-stats');
     expect(gameStats.teamGameStats.find(stat => stat.category === 'hits')).toEqual({category: 'hits', awayValue: 13, homeValue: 26});
@@ -186,6 +213,8 @@ describe('GameComponent', () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
     fixture.debugElement.query(By.css('app-game-top-players')).triggerEventHandler('playerClicked', 8476412);
     expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
       data: {player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.1})}
@@ -197,16 +226,22 @@ describe('GameComponent', () => {
     open('2025021057');
     flushBundle('2025021057', {...mockGameBundle(2025021057), boxscore: undefined});
     await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
     component.openPlayerGameDialog(8476460);
     expect(openDialog).not.toHaveBeenCalled();
     expect(element('app-game-top-players')).toBeNull();
   });
 
-  it('should not load a series status or poll a finished game', fakeAsync(() => {
+  it('should load the highlights but no series status of a finished game, and not poll it', fakeAsync(() => {
     open('2025020952');
     flushBundle('2025020952', mockGameBundle(2025020952));
     settleFakeAsync();
+    flushScore('2026-03-01', mockScoreResponse());
+    settleFakeAsync();
     expect(text('.game-venue-container')).toContain('Honda Center');
+    expect(component.seriesStatus).toBeUndefined();
+    expect(component.highlightsPath).toBe('/video/cgy-at-ana-recap-6390250506112');
     tick(30000);
     httpMock.expectNone(() => true);
   }));
@@ -221,6 +256,7 @@ describe('GameComponent', () => {
     httpMock.expectOne('/api/nhl/score/2026-06-09').flush(mockPlayoffScoreResponse());
     await settle();
     expect(text('.league-info-label')).toBe('Stanley Cup Final: Tied 2-2');
+    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/video/car-at-vgk-recap-6398034433112');
     expect(text('.info-label')).toBe('TV: ABC');
     expect(element('.game-header app-game-header').seriesStatus)
         .toEqual(jasmine.objectContaining({seriesLetter: 'O', gameNumberOfSeries: 4}));
@@ -234,11 +270,42 @@ describe('GameComponent', () => {
     await settle();
     expect(text('.league-info-label')).toBe('NHL Playoffs');
     expect(component.seriesStatus).toBeUndefined();
+    expect(text('.watch-link')).toBe('NHL.com Game Center');
+    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2025030414');
+  });
+
+  it('should link the condensed game of a finished game without a recap', async () => {
+    const response = mockRegularSeasonScoreResponse();
+    delete response.games[0].threeMinRecap;
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', response);
+    await settle();
+    expect(text('.watch-link')).toBe('Highlights');
+    expect(element('.watch-link').getAttribute('href'))
+        .toBe('https://www.nhl.com/video/stl-at-wpg-condensed-game-6390990355112');
+  });
+
+  it('should link the NHL.com game center of a finished game without highlights', async () => {
+    const response = mockRegularSeasonScoreResponse();
+    delete response.games[0].threeMinRecap;
+    delete response.games[0].condensedGame;
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', response);
+    await settle();
+    expect(text('.watch-link')).toBe('NHL.com Game Center');
+    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2025021057');
+    expect(component.watchIcon).toBe('tv');
   });
 
   it('should show the game when the optional gamecenter requests fail', async () => {
     open('2025020952');
     flushBundle('2025020952', {landing: mockGameLanding(2025020952)});
+    await settle();
+    flushScore('2026-03-01');
     await settle();
     expect(element('.game-header')).not.toBeNull();
     expect(text('.game-venue-container')).toContain('Honda Center');
@@ -269,6 +336,11 @@ describe('GameComponent', () => {
     flushClubSchedule('UTA', 20262027);
     await settle();
     expect(text('.info-label')).toBe('TV: NESN');
+    // No score request for a future regular season game
+    httpMock.expectNone(request => request.url.startsWith('/api/nhl/score/'));
+    expect(text('.watch-link')).toBe('Where to Watch');
+    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2026020056');
+    expect(element('.watch-link').getAttribute('target')).toBe('_blank');
     expect(text('.game-venue-container')).toContain('TD Garden');
     expect(element('app-goal-scorers')).toBeNull();
     expect(component.showTopPlayers).toBeFalse();
@@ -332,6 +404,8 @@ describe('GameComponent', () => {
     flushClubSchedule('UTA', 20252026, mockClubScheduleSeason('UTA', 20252026));
     await settle();
 
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
     expect(component.landing.id).toBe(2025021057);
     expect(component.homeTeamFormGames).toEqual([]);
     expect(component.awayTeamFormGames).toEqual([]);
@@ -365,6 +439,7 @@ describe('GameComponent', () => {
     settleFakeAsync();
     expect(component.liveGame).toBeTrue();
     expect(element('app-goal-scorers').scoring.length).toBe(2);
+    expect(text('.watch-link')).toBe('Where to Watch');
 
     // A refresh with a failed play-by-play request keeps the last play-by-play
     const update = derivedLiveLanding();
@@ -380,6 +455,11 @@ describe('GameComponent', () => {
     settleFakeAsync();
     expect(component.completedGame).toBeTrue();
     expect(element('app-goal-scorers').scoring.length).toBe(3);
+
+    // The highlights are loaded once the game is over
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    settleFakeAsync();
+    expect(text('.watch-link')).toBe('Highlights');
 
     tick(30000);
     httpMock.expectNone('/api/nhl/gamecenter/2025021057/landing');
@@ -434,12 +514,17 @@ describe('GameComponent', () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
 
     routeParams.next({id: '2025020952'});
     fixture.detectChanges();
     flushBundle('2025020952', mockGameBundle(2025020952));
     await settle();
+    flushScore('2026-03-01', mockScoreResponse());
+    await settle();
     expect(element('.game-header app-game-header').landing.id).toBe(2025020952);
+    expect(component.highlightsPath).toBe('/video/cgy-at-ana-recap-6390250506112');
     expect(text('.game-venue-container')).toContain('Honda Center');
   });
 
@@ -449,6 +534,9 @@ describe('GameComponent', () => {
     flushBundle('2025020952', mockGameBundle(2025020952));
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
+    // Only the current game loads its highlights
+    flushScore('2026-03-01', mockScoreResponse());
+    await settle();
     expect(component.landing.id).toBe(2025020952);
   });
 
@@ -456,6 +544,8 @@ describe('GameComponent', () => {
     const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     await settle();
 
     component.backToPrevious();

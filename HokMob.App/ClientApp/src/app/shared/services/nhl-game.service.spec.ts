@@ -9,6 +9,7 @@ import {
   mockGameRightRail,
   mockPlayerLanding,
   mockPlayoffScoreResponse,
+  mockRegularSeasonScoreResponse,
   mockScoreResponse
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 
@@ -129,33 +130,40 @@ describe('NhlGameService', () => {
     });
   });
 
-  describe('getSeriesStatus', () => {
-    it('should find the game in the score for its date and resolve its series status', async () => {
-      const seriesStatus = service.getSeriesStatus(2025030414, '2026-06-09');
+  describe('getScoreGame', () => {
+    it('should find a playoff game in the score for its date, with its series status and highlights', async () => {
+      const scoreGame = service.getScoreGame(2025030414, '2026-06-09');
       httpMock.expectOne('/api/nhl/score/2026-06-09').flush(mockPlayoffScoreResponse());
-      expect(await seriesStatus).toEqual(jasmine.objectContaining({
+      const game = await scoreGame;
+      expect(game.seriesStatus).toEqual(jasmine.objectContaining({
         seriesTitle: 'Stanley Cup Final', topSeedTeamAbbrev: 'CAR', topSeedWins: 2, bottomSeedTeamAbbrev: 'VGK',
         bottomSeedWins: 2, gameNumberOfSeries: 4
       }));
+      expect(game.threeMinRecap).toBe('/video/car-at-vgk-recap-6398034433112');
     });
 
-    it('should resolve undefined for a game without series status or missing from the score', async () => {
-      const regularSeason = service.getSeriesStatus(2025020952, '2026-03-01');
-      httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
-      expect(await regularSeason).toBeUndefined();
+    it('should resolve a regular season game without series status', async () => {
+      const scoreGame = service.getScoreGame(2025021057, '2026-03-15');
+      httpMock.expectOne('/api/nhl/score/2026-03-15').flush(mockRegularSeasonScoreResponse());
+      const game = await scoreGame;
+      expect(game.seriesStatus).toBeUndefined();
+      expect(game.threeMinRecap).toBe('/video/stl-at-wpg-recap-6390989103112');
+      expect(game.condensedGame).toBe('/video/stl-at-wpg-condensed-game-6390990355112');
+    });
 
-      const otherDay = service.getSeriesStatus(2025030414, '2026-03-01');
+    it('should resolve undefined for a game missing from the score', async () => {
+      const otherDay = service.getScoreGame(2025030414, '2026-03-01');
       httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
       expect(await otherDay).toBeUndefined();
 
-      const noGames = service.getSeriesStatus(2025030414, '2026-06-09');
+      const noGames = service.getScoreGame(2025030414, '2026-06-09');
       httpMock.expectOne('/api/nhl/score/2026-06-09').flush({...mockPlayoffScoreResponse(), games: undefined});
       expect(await noGames).toBeUndefined();
     });
 
     it('should log and reject when the request fails', async () => {
-      const seriesStatus = service.getSeriesStatus(2025030414, '2026-06-09');
-      const rejection = expectAsync(seriesStatus).toBeRejected();
+      const scoreGame = service.getScoreGame(2025030414, '2026-06-09');
+      const rejection = expectAsync(scoreGame).toBeRejected();
       httpMock.expectOne('/api/nhl/score/2026-06-09').flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
