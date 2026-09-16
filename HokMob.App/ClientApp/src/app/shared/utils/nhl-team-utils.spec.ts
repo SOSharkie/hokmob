@@ -30,6 +30,26 @@ describe('NhlTeamUtils', () => {
     });
   });
 
+  describe('getActiveTeamIds', () => {
+    it('should return the 32 teams of the real standings, without Arizona', () => {
+      const activeTeamIds = NhlTeamUtils.getActiveTeamIds();
+      expect(activeTeamIds.length).toBe(32);
+      expect(activeTeamIds).not.toContain(53);
+      mockStandingsTeams().forEach(standingsTeam => {
+        expect(activeTeamIds).withContext(standingsTeam.teamAbbrev.default)
+            .toContain(NhlTeamUtils.getTeamIdByAbbrev(standingsTeam.teamAbbrev.default));
+      });
+    });
+
+    it('should return teams that all have a name and abbreviation', () => {
+      NhlTeamUtils.getActiveTeamIds().forEach(teamId => {
+        const team = NhlTeamUtils.getTeam(teamId);
+        expect(team.name).withContext(String(teamId)).not.toBe('Unknown');
+        expect(team.triCode).withContext(String(teamId)).toMatch(/^[A-Z]{3}$/);
+      });
+    });
+  });
+
   describe('getTeam', () => {
     it('should return Utah Mammoth for team 68', () => {
       expect(NhlTeamUtils.getTeam(68)).toEqual(jasmine.objectContaining({id: 68, name: 'Utah Mammoth', triCode: 'UTA'}));

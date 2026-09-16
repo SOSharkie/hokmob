@@ -10,7 +10,19 @@ pages were moved to `api-web.nhle.com` in phases 0–8. **Read `docs/nhl-api-mig
 page**: it has field mappings, decisions, known risks, and in section 10 the open live game checks and follow-ups.
 Update it when you change a migrated page or finish an open item.
 
-- Unmigrated pages (team, player, playoffs bracket, search) still call dead APIs. Their `ERR_NAME_NOT_RESOLVED` /
+The remaining pages are planned as phases 9–15 in `docs/nhl-api-legacy-migration-plan.md` (inventory, field
+mappings, proposed decisions). Read both plans before working on those pages.
+
+- **APIs** ([reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md)):
+  - `api-web.nhle.com/v1` for everything live, game, team, schedule, standings and playoff data.
+  - The stats API `api.nhle.com/stats/rest/en` for per-season and per-game player stats, and for hits and shots
+    leaders.
+
+  The second plan's section 3 says which one to use for what, and section 2.2 has the verified stats API query
+  syntax (`cayenneExp`, `isAggregate`, `isGame`, `sort`) and fields. The stats API sends no CORS header, so it's
+  only called from the backend, which builds the queries.
+
+- Unmigrated pages (team, player, stats, playoffs bracket, search) still call dead APIs. Their `ERR_NAME_NOT_RESOLVED` /
   `statsapi.web.nhl.com` console errors are expected noise, not regressions.
 - Out-of-scope code that breaks because a shared component changed gets the smallest compile fix plus a `// TODO:`
   comment pointing at the plan (see `team.component.ts` for the format).
@@ -111,7 +123,9 @@ Update it when you change a migrated page or finish an open item.
 - **Date-gated UI:** the home playoff summary only shows when `DateTimeUtils.isPlayoffMode()` is true (May 21 to
   September). To test it off-season, temporarily add `return true;` at the top of that method, then revert with
   `git checkout -- <file>`. Never commit the override.
-- **Sample data:** the API is public. `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>` and inspect
+- **Sample data:** both APIs are public. Stats API example: `curl -sSL -o <scratch>/x.json
+  "https://api.nhle.com/stats/rest/en/skater/summary?isAggregate=false&isGame=false&cayenneExp=playerId=8477496%20and%20gameTypeId=2"`
+  (URL-encode spaces as `%20`). For api-web: `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>` and inspect
   with `node -e`. Useful test inputs are listed in the plan's phases table. No live games until the preseason starts
   on 2026-09-29; the 2025-26 playoffs are all finished. During a live game, `npm run capture-live-fixtures -- --watch`
   (from `HokMob.App/ClientApp`) saves live responses for the plan's section 10 checks.

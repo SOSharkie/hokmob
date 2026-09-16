@@ -46,12 +46,38 @@ import clubScheduleBos20252026 from './club-schedule-season-bos-20252026.json';
 import clubScheduleBos20262027 from './club-schedule-season-bos-20262027.json';
 import clubScheduleUta20252026 from './club-schedule-season-uta-20252026.json';
 import clubScheduleUta20262027 from './club-schedule-season-uta-20262027.json';
+import playerLanding8476945 from './player-8476945-landing.json';
+import playerLanding8470638 from './player-8470638-landing.json';
+import skaterLeaders20252026Regular from './skater-stats-leaders-20252026-2.json';
+import skaterLeaders20252026Playoffs from './skater-stats-leaders-20252026-3.json';
+import goalieLeaders20252026Regular from './goalie-stats-leaders-20252026-2.json';
+import goalieLeaders20252026Playoffs from './goalie-stats-leaders-20252026-3.json';
+import playoffBracket2023 from './playoff-bracket-2023.json';
+import playoffBracket2021 from './playoff-bracket-2021.json';
+import playoffBracket2020 from './playoff-bracket-2020.json';
+import playoffBracket2027 from './playoff-bracket-2027.json';
+import searchPlayerMac from './search-player-mac.json';
+import playerStats8477964 from './player-stats-8477964-skater.json';
+import playerStats8477496 from './player-stats-8477496-skater.json';
+import playerStats8476945 from './player-stats-8476945-goalie.json';
+import playerStats8483548 from './player-stats-8483548-goalie.json';
+import hitsAndShotsLeaders20252026 from './leaders-hits-shots-20252026-2.json';
+import teamStats20252026 from './team-stats-20252026-2.json';
+import teamStats20262027 from './team-stats-20262027-2.json';
+import {GoalieStatsLeaders, SkaterStatsLeaders} from "@shared/models/nhl-web-api/stats-leaders.model";
+import {PlayerSearchResult} from "@shared/models/nhl-web-api/player-search.model";
+import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
+import {TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
 
 /*
- * Real api-web.nhle.com responses for unit tests, captured on 2026-09-15. The JSON files are unchanged responses, except
- * score-2026-03-01 (trimmed to 3 games), score-2026-10-08 (trimmed to 2 games) and the club-schedule-season-* responses
- * (trimmed games, see mockClubScheduleSeason). The gamecenter-* responses are unchanged. To refresh one, download it
- * again with curl and re-check the values the specs assert.
+ * Real responses for unit tests, captured on 2026-09-15: api-web.nhle.com responses, the player search
+ * (search-player-mac, through /api/nhl-search/player) and the backend's stats API responses (player-stats-*,
+ * leaders-hits-shots-*, team-stats-*, captured from a running app because the browser only ever sees the merged
+ * shape). The JSON files are unchanged responses, except score-2026-03-01 (trimmed to 3 games), score-2026-10-08
+ * (trimmed to 2 games) and the club-schedule-season-* responses (trimmed games, see mockClubScheduleSeason). The
+ * gamecenter-* responses are unchanged. To refresh one, download it again with curl and re-check the values the specs
+ * assert.
  *
  * Every function returns a fresh deep copy, so tests can change the data. "derived" helpers turn real data into states
  * that couldn't be captured (live games, postponed games, series in progress). Keep those changes minimal.
@@ -144,11 +170,24 @@ export function mockRankedCarouselSeries(seriesLetter: string): PlayoffCarouselS
   return series;
 }
 
+/** Years with a captured playoff-bracket response. */
+export type MockBracketYear = 2026 | 2023 | 2021 | 2020 | 2027;
+
+const playoffBrackets = {
+  2026: playoffBracket, 2023: playoffBracket2023, 2021: playoffBracket2021, 2020: playoffBracket2020,
+  2027: playoffBracket2027
+};
+
 /**
- * playoff-bracket/2026: all 15 series with seed ranks, like BUF D1 (rank 1) vs BOS WC1 (rank 4) in series A.
+ * playoff-bracket/{year}, by the year the season ends in:
+ * - 2026 (the default): all 15 series with seed ranks, like BUF D1 (rank 1) vs BOS WC1 (rank 4) in series A.
+ * - 2023: all 15 series, finished, with the era's "1st Round" titles.
+ * - 2021: 15 series without conferences, and "Stanley Cup Semifinals" in round 3.
+ * - 2020: 23 series, the extra 8 (S to Z) being the qualifying round, with playoffRound 0.
+ * - 2027: no series yet (the 2026-27 playoffs are months away).
  */
-export function mockPlayoffBracket(): PlayoffBracket {
-  return copy(playoffBracket);
+export function mockPlayoffBracket(year: MockBracketYear = 2026): PlayoffBracket {
+  return copy(playoffBrackets[year]);
 }
 
 /**
@@ -204,17 +243,88 @@ export function mockGameBundle(gameId: MockGamecenterGameId): GameBundle {
   };
 }
 
-/** Players with a captured player/{id}/landing response. Both played in 2025021057 (STL @ WPG). */
-export type MockPlayerId = 8476460 | 8477480;
+/** Players with a captured player/{id}/landing response. */
+export type MockPlayerId = 8476460 | 8477480 | 8476945 | 8470638;
+
+const playerLandings = {
+  8476460: playerLanding8476460, 8477480: playerLanding8477480, 8476945: playerLanding8476945,
+  8470638: playerLanding8470638
+};
 
 /**
  * player/{id}/landing for:
- * - 8476460: Mark Scheifele, WPG center, born 1993-03-15 in Canada.
+ * - 8476460: Mark Scheifele, WPG center, born 1993-03-15 in Canada. Drafted 2011, round 1, 7th overall.
  * - 8477480: Eric Comrie, goalie, born 1995-07-06 in Canada. He played for WPG in 2025021057, but his current team is
- *   now SJS (28).
+ *   now SJS (28). Both played in 2025021057 (STL @ WPG).
+ * - 8476945: Connor Hellebuyck, WPG goalie, with goalie featuredStats (save percentage and goals against average).
+ * - 8470638: Patrice Bergeron, retired. No currentTeamId, isActive is false, and featuredStats is his last season
+ *   (2022-23).
  */
 export function mockPlayerLanding(playerId: MockPlayerId): PlayerLanding {
-  return copy(playerId === 8476460 ? playerLanding8476460 : playerLanding8477480);
+  return copy(playerLandings[playerId]);
+}
+
+/**
+ * skater-stats-leaders/20252026/{gameType}?limit=5: 9 categories of 5 leaders each, like McDavid with 138 points in
+ * the regular season. Values are numbers, and the time on ice is in seconds.
+ */
+export function mockSkaterStatsLeaders(gameType: 2 | 3 = 2): SkaterStatsLeaders {
+  return copy(gameType === 2 ? skaterLeaders20252026Regular : skaterLeaders20252026Playoffs);
+}
+
+/**
+ * goalie-stats-leaders/20252026/{gameType}?limit=5: wins, shutouts, save percentage (0 to 1) and goals against
+ * average, 5 leaders each.
+ */
+export function mockGoalieStatsLeaders(gameType: 2 | 3 = 2): GoalieStatsLeaders {
+  return copy(gameType === 2 ? goalieLeaders20252026Regular : goalieLeaders20252026Playoffs);
+}
+
+/**
+ * search.d3.nhle.com/api/v1/search/player?q=mac&limit=10&active=true, through /api/nhl-search/player: 10 active
+ * players, starting with Mackenzie Blackwood (COL). Tomas Machu has no lastSeasonId (he hasn't played a game).
+ */
+export function mockPlayerSearchResults(): PlayerSearchResult[] {
+  return copy(searchPlayerMac);
+}
+
+/** Players with a captured /api/nhl-stats/player/{id} response. */
+export type MockPlayerStatsId = 8477964 | 8477496 | 8476945 | 8483548;
+
+const playerStats = {
+  8477964: playerStats8477964, 8477496: playerStats8477496, 8476945: playerStats8476945, 8483548: playerStats8483548
+};
+
+/**
+ * /api/nhl-stats/player/{id}?position={skater|goalie}, as the backend merges it from the stats API reports:
+ * - 8477964 (skater): Ivan Barbashev, VGK. His 10 recent games are the 2026 playoff run, newest (2025030416) first,
+ *   with hits and scores. Game 2025030414 is the one with a captured boxscore.
+ * - 8477496 (skater): Elias Lindholm, whose 2023-24 season is the one combined "CGY,VAN" row (75 games, 44 points).
+ * - 8476945 (goalie): Connor Hellebuyck, with saves by strength in his recent (regular season) games.
+ * - 8483548 (goalie): Brandon Bussi, CAR. He won game 2025030414, so his row can be compared with that boxscore.
+ */
+export function mockPlayerStats(playerId: MockPlayerStatsId): PlayerStats {
+  return copy(playerStats[playerId]);
+}
+
+/**
+ * /api/nhl-stats/leaders?season=20252026&gameType=2: the top 5 skaters by hits (Yakov Trenin, 413) and by shots
+ * (Nathan MacKinnon, 350).
+ */
+export function mockHitsAndShotsLeaders(): HitsAndShotsLeaders {
+  return copy(hitsAndShotsLeaders20252026);
+}
+
+/** Seasons with a captured /api/nhl-stats/teams response. */
+export type MockTeamStatsSeason = 20252026 | 20262027;
+
+/**
+ * /api/nhl-stats/teams?season={season}&gameType=2:
+ * - 20252026: all 32 teams, Utah as 68. Boston (6) is 9th on the power play and 24th on the penalty kill.
+ * - 20262027: no rows, because no game of that season has been played yet.
+ */
+export function mockTeamStats(season: MockTeamStatsSeason = 20252026): TeamStatsResponse {
+  return copy(season === 20252026 ? teamStats20252026 : teamStats20262027);
 }
 
 /** Teams with captured club-schedule-season responses: the teams of the future game 2026020056 (UTA @ BOS). */

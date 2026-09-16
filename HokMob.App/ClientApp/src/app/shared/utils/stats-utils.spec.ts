@@ -1,13 +1,20 @@
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 import {BoxscoreGoalie, BoxscoreSkater, GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
-import {mockGameBoxscore, mockGamePlayByPlay} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {
+  MockGamecenterGameId,
+  mockGameBoxscore,
+  mockGamePlayByPlay,
+  mockPlayerStats
+} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {GoalieGameStats, SkaterGameStats} from "@shared/models/nhl-stats-api/player-stats.model";
 
 describe('StatsUtils', () => {
 
-  /** A real skater or goalie of 2025021057 (STL @ WPG) by player ID. */
-  function boxscorePlayer<T extends BoxscoreSkater | BoxscoreGoalie>(playerId: number): T {
-    const players = mockGameBoxscore(2025021057).playerByGameStats;
+  /** A real skater or goalie of a game by player ID, from 2025021057 (STL @ WPG) unless another game is given. */
+  function boxscorePlayer<T extends BoxscoreSkater | BoxscoreGoalie>(playerId: number,
+                                                                    gameId: MockGamecenterGameId = 2025021057): T {
+    const players = mockGameBoxscore(gameId).playerByGameStats;
     return [players.homeTeam, players.awayTeam]
         .flatMap(team => [...team.forwards, ...team.defense, ...team.goalies])
         .find(player => player.playerId === playerId) as T;
@@ -138,6 +145,123 @@ describe('StatsUtils', () => {
     it('should return no players for a future game or a missing boxscore', () => {
       expect(StatsUtils.getGamePlayers(mockGameBoxscore(2026020056), true, rosterSpots())).toEqual([]);
       expect(StatsUtils.getGamePlayers(undefined, false)).toEqual([]);
+    });
+  });
+
+  describe('formatSeconds', () => {
+    it('should format a stats API time on ice', () => {
+      expect(StatsUtils.formatSeconds(1021)).toBe('17:01');
+      expect(StatsUtils.formatSeconds(1181.6133)).toBe('19:42');
+      expect(StatsUtils.formatSeconds(3600)).toBe('60:00');
+      expect(StatsUtils.formatSeconds(1664.2568)).toBe('27:44');
+    });
+
+    it('should format short times with two second digits', () => {
+      expect(StatsUtils.formatSeconds(0)).toBe('0:00');
+      expect(StatsUtils.formatSeconds(9)).toBe('0:09');
+      expect(StatsUtils.formatSeconds(70)).toBe('1:10');
+    });
+
+    it('should return a dash for a missing or negative time', () => {
+      expect(StatsUtils.formatSeconds(null)).toBe('-');
+      expect(StatsUtils.formatSeconds(undefined)).toBe('-');
+      expect(StatsUtils.formatSeconds(-1)).toBe('-');
+    });
+  });
+
+  describe('toBoxscoreSkater', () => {
+    /** Barbashev's stats API row for 2025030414, the game with a captured boxscore. */
+    function statsApiSkater(): SkaterGameStats {
+      return (mockPlayerStats(8477964).recentGames as SkaterGameStats[])
+          .find(game => game.gameId === 2025030414);
+    }
+
+    it('should map a real game to the same stats as its boxscore', () => {
+      const skater = StatsUtils.toBoxscoreSkater(statsApiSkater());
+      const boxscoreSkater = boxscorePlayer<BoxscoreSkater>(8477964, 2025030414);
+      expect(skater.playerId).toBe(8477964);
+      expect(skater.name.default).toBe('Ivan Barbashev');
+      expect(skater.position).toBe(boxscoreSkater.position);
+      expect(skater.goals).toBe(boxscoreSkater.goals);
+      expect(skater.assists).toBe(boxscoreSkater.assists);
+      expect(skater.plusMinus).toBe(boxscoreSkater.plusMinus);
+      expect(skater.pim).toBe(boxscoreSkater.pim);
+      expect(skater.hits).toBe(boxscoreSkater.hits);
+      expect(skater.sog).toBe(boxscoreSkater.sog);
+      expect(skater.blockedShots).toBe(boxscoreSkater.blockedShots);
+      expect(skater.giveaways).toBe(boxscoreSkater.giveaways);
+      expect(skater.takeaways).toBe(boxscoreSkater.takeaways);
+      expect(skater.powerPlayGoals).toBe(boxscoreSkater.powerPlayGoals);
+      expect(skater.toi).toBe(boxscoreSkater.toi);
+    });
+
+    it('should give a real game the same rating as its boxscore', () => {
+      expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(statsApiSkater())))
+          .toBe(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer<BoxscoreSkater>(8477964, 2025030414)));
+      // 5 + 1 shot * 0.3 + 1 hit * 0.2 - 1 giveaway * 0.2, with no faceoff term for a winger.
+      expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(statsApiSkater()))).toBe(5.3);
+    });
+
+    it('should map a faceoff percentage, and treat a player without faceoffs as 0', () => {
+      const centre = {...statsApiSkater(), positionCode: 'C', faceoffWinPct: 0.56362};
+      expect(StatsUtils.toBoxscoreSkater(centre).faceoffWinningPctg).toBe(0.56362);
+      expect(StatsUtils.toBoxscoreSkater(statsApiSkater()).faceoffWinningPctg).toBe(0);
+    });
+
+    it('should treat missing stats as 0, so a row without the realtime report still rates', () => {
+      const skater = {playerId: 1, positionCode: 'D', skaterFullName: 'No Stats'} as SkaterGameStats;
+      expect(StatsUtils.toBoxscoreSkater(skater).hits).toBe(0);
+      expect(StatsUtils.toBoxscoreSkater(skater).blockedShots).toBe(0);
+      expect(StatsUtils.toBoxscoreSkater(skater).toi).toBe('-');
+      expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(skater))).toBe(5);
+    });
+  });
+
+  describe('toBoxscoreGoalie', () => {
+    /** Bussi's stats API row for 2025030414, the game he won 5-3. */
+    function statsApiGoalie(): GoalieGameStats {
+      return (mockPlayerStats(8483548).recentGames as GoalieGameStats[])
+          .find(game => game.gameId === 2025030414);
+    }
+
+    it('should map a real game to the same stats as its boxscore', () => {
+      const goalie = StatsUtils.toBoxscoreGoalie(statsApiGoalie());
+      const boxscoreGoalie = boxscorePlayer<BoxscoreGoalie>(8483548, 2025030414);
+      expect(goalie.playerId).toBe(8483548);
+      expect(goalie.name.default).toBe('Brandon Bussi');
+      expect(goalie.position).toBe('G');
+      expect(goalie.evenStrengthShotsAgainst).toBe(boxscoreGoalie.evenStrengthShotsAgainst);
+      expect(goalie.powerPlayShotsAgainst).toBe(boxscoreGoalie.powerPlayShotsAgainst);
+      expect(goalie.shorthandedShotsAgainst).toBe(boxscoreGoalie.shorthandedShotsAgainst);
+      expect(goalie.saveShotsAgainst).toBe(boxscoreGoalie.saveShotsAgainst);
+      expect(goalie.shotsAgainst).toBe(boxscoreGoalie.shotsAgainst);
+      expect(goalie.saves).toBe(boxscoreGoalie.saves);
+      expect(goalie.goalsAgainst).toBe(boxscoreGoalie.goalsAgainst);
+      expect(goalie.evenStrengthGoalsAgainst).toBe(boxscoreGoalie.evenStrengthGoalsAgainst);
+      expect(goalie.powerPlayGoalsAgainst).toBe(boxscoreGoalie.powerPlayGoalsAgainst);
+      expect(goalie.decision).toBe(boxscoreGoalie.decision);
+      expect(goalie.starter).toBe(boxscoreGoalie.starter);
+      expect(goalie.toi).toBe(boxscoreGoalie.toi);
+    });
+
+    it('should give a real game the same rating as its boxscore', () => {
+      expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(statsApiGoalie())))
+          .toBe(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer<BoxscoreGoalie>(8483548, 2025030414)));
+      // 5 + 12 even strength saves / 6 + 5 power play saves / 5 - 3 goals against = 5.0
+      expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(statsApiGoalie()))).toBe(5.0);
+    });
+
+    it('should mark an overtime loss and a regulation loss', () => {
+      expect(StatsUtils.toBoxscoreGoalie({...statsApiGoalie(), wins: 0, losses: 1}).decision).toBe('L');
+      expect(StatsUtils.toBoxscoreGoalie({...statsApiGoalie(), wins: 0, otLosses: 1}).decision).toBe('O');
+      expect(StatsUtils.toBoxscoreGoalie({...statsApiGoalie(), wins: 0}).decision).toBeUndefined();
+    });
+
+    it('should leave out the saves by strength when the report is missing, and rate the goalie 0 without saves', () => {
+      const goalie = {playerId: 1, goalieFullName: 'No Stats', shotsAgainst: 10, saves: 9} as GoalieGameStats;
+      expect(StatsUtils.toBoxscoreGoalie(goalie).evenStrengthShotsAgainst).toBeUndefined();
+      expect(StatsUtils.toBoxscoreGoalie(goalie).saveShotsAgainst).toBe('9/10');
+      expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(goalie))).toBe(0);
     });
   });
 
