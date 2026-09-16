@@ -328,6 +328,11 @@ Source: `play-by-play.plays[]`.
   at ±30 per minute.
 - The chart is created on a `@ViewChild` canvas in `ngAfterViewInit` (the old code looked it up by a global `id`) and
   destroyed with the component.
+- **Goal tooltip:** hovering a goal puck shows that minute's goals (scoring team logo, period and time, scorer,
+  score, assists by full name) in a template tooltip. Chart.js's own tooltip stays disabled; its `external` callback
+  (which still fires with `enabled: false`) sets the hovered goals and position, and a `filter` skips points without
+  a goal. The tooltip opens below points in the top half of the chart and above the others, clamped to the chart
+  width.
 
 ### 5.7 Event timelines (`event-timeline`, `mini-event-timeline`, `event`, `mini-event`): done (phase 5)
 Source: `play-by-play.plays` filtered to `typeDescKey` `goal` or `penalty`, grouped by `periodDescriptor.number`.

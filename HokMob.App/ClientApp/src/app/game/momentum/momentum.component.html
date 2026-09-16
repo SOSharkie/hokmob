@@ -4,5 +4,28 @@
   </div>
   <div class="chart-container">
     <canvas #momentumChart></canvas>
+    <div
+        *ngIf="hoveredGoals.length > 0"
+        class="goal-tooltip"
+        [style.left.px]="tooltipPosition.left"
+        [style.top.px]="tooltipPosition.top"
+        [style.bottom.px]="tooltipPosition.bottom"
+        [style.width.px]="tooltipPosition.width"
+    >
+      <div *ngFor="let goal of hoveredGoals; trackBy: trackGoal" class="goal">
+        <div class="goal-header">
+          <img [src]="getTeamLogo(goal)" alt="" class="team-logo">
+          <span class="goal-time">{{hoveredPeriodLabel}} · {{getGoalTime(goal)}}</span>
+        </div>
+        <div class="goal-scorer">
+          <span class="color-green">{{getScorerName(goal)}}</span>
+          <span class="score-update">
+            (<span [class.color-green]="isHomeGoal(goal)">{{goal.details?.homeScore}}</span>
+            - <span [class.color-green]="!isHomeGoal(goal)">{{goal.details?.awayScore}}</span>)
+          </span>
+        </div>
+        <div class="goal-assists">{{getAssistsLabel(goal)}}</div>
+      </div>
+    </div>
   </div>
 </div>
