@@ -7,4 +7,6 @@ import { Component } from '@angular/core';
 })
 export class FooterComponent {
 
+  /** The copyright year, which is the current year so it never goes out of date. */
+  public readonly currentYear: number = new Date().getFullYear();
 }

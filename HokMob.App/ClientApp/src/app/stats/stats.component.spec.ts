@@ -255,6 +255,23 @@ describe('StatsComponent', () => {
     expect(board('Points').entries[0].name).toBe('Mitch Marner');
   });
 
+  it('should go back to the default playoffs when the query parameter is gone, like with the back button', async () => {
+    currentSeason.and.resolveTo({season: 20252026, isPlayoffMode: true});
+    await open();
+    await flushStandings();
+    await flushLeaders(3);
+
+    switchGameType(false);
+    await flushLeaders(2);
+    expect(component.playoffsSelected).toBeFalse();
+
+    queryParams.next(convertToParamMap({}));
+    fixture.detectChanges();
+    await flushLeaders(3);
+    expect(component.playoffsSelected).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.selected-filter').textContent.trim()).toBe('Playoffs');
+  });
+
   it('should wait for playoff mode before loading the leaders', async () => {
     queryParams.next(convertToParamMap({}));
     fixture = TestBed.createComponent(StatsComponent);

@@ -77,15 +77,30 @@ describe('LeagueStandingsComponent', () => {
     expect(component.standings.length).toBe(1);
   });
 
-  it('should update the URL and reload the standings when a filter is clicked', async () => {
+  it('should update the URL, and reload the standings for the new URL, when a filter is clicked', async () => {
     await load();
     const conferenceFilter: HTMLElement = fixture.nativeElement.querySelectorAll('.standings-type-filter')[1];
     conferenceFilter.click();
     expect(router.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({queryParams: {standingsType: 'byConference'}}));
-    httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
-    await settle();
+    httpMock.expectNone(standingsUrl);
+    await load({standingsType: 'byConference'});
     expect(component.standings.map(group => group.title)).toEqual(['Eastern Conference', 'Western Conference']);
     expect(selectedFilter()).toBe('Conference');
+  });
+
+  it('should go back to the league standings when the query parameter is gone, like with the back button', async () => {
+    await load({standingsType: NhlStandingsTypeEnum.BY_DIVISION});
+    expect(selectedFilter()).toBe('Division');
+    await load();
+    expect(component.currentStandingsType).toBe(NhlStandingsTypeEnum.BY_LEAGUE);
+    expect(component.standings.map(group => group.title)).toEqual(['NHL']);
+    expect(selectedFilter()).toBe('League');
+  });
+
+  it('should not change the URL when the selected filter is clicked', async () => {
+    await load();
+    fixture.nativeElement.querySelectorAll('.standings-type-filter')[0].click();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it('should show the filters without standings when the request fails', async () => {

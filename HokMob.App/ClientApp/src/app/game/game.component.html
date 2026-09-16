@@ -12,7 +12,13 @@
       ></app-game-header>
     </div>
     <div *ngIf="loadFailed" class="game-load-error">
-      <span>This game couldn't be loaded.</span>
+      <div class="games-back-button" (click)="backToPrevious()">
+        <div class="back-icon">
+          <mat-icon fontIcon="chevron_left"></mat-icon>
+        </div>
+        <span class="games-label">{{backButtonLabel}}</span>
+      </div>
+      <span class="game-load-error-message">This game couldn't be loaded.</span>
     </div>
     <div class="game-header" *ngIf="landing">
       <div class="league-info">

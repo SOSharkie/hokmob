@@ -24,4 +24,9 @@ describe('FooterComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should show the current year in the copyright', () => {
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('© Copyright ' + new Date().getFullYear());
+  });
 });
