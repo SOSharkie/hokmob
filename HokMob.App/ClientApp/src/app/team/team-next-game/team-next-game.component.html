@@ -1,9 +1,8 @@
-<div *ngIf="gameModel" class="team-next-game">
+<div *ngIf="game" class="team-next-game">
   <div class="team-next-game-header">
-    <span *ngIf="futureGame">Next Game</span>
-    <span *ngIf="liveGame">Ongoing Game</span>
+    <span>{{header}}</span>
   </div>
-  <div class="score-container" [routerLink]="['/game', gameModel.gamePk]">
+  <div class="score-container" [routerLink]="['/game', game.id]">
     <div class="home-team-header">
       <span>{{homeTeamShortName}}</span>
       <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="homeTeamLogo">
@@ -21,6 +20,7 @@
     <div *ngIf="liveGame" class="game-score">
       <span class="game-score-label">{{gameScore}}</span>
       <span class="live-status-label">{{liveGameStatus}}</span>
+      <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
     </div>
     <div class="away-team-header">
       <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="awayTeamLogo">

@@ -42,6 +42,21 @@ export interface ClubScheduleGame {
   gameOutcome?: GameOutcome;
 }
 
+/**
+ * What a team's form is shown relative to: the game it leads up to on the game page, or the current season and the
+ * time of day on the team page.
+ */
+export interface TeamFormReference {
+  /** The season whose schedule the games come from, like 20262027. */
+  season: number;
+  /** Only games starting before this time count. */
+  startTimeUTC: string;
+  /** The game the form leads up to, so it isn't part of its own form. */
+  id?: number;
+  /** Preseason games only count when this is the preseason. */
+  gameType?: NhlGameTypeEnum;
+}
+
 export interface ClubScheduleTeam {
   id: number;
   commonName: LocalizedString;

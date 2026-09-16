@@ -13,7 +13,11 @@ import {Boxscore} from "@shared/models/nhl-web-api/boxscore.model";
 import {RightRail} from "@shared/models/nhl-web-api/right-rail.model";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
-import {ClubScheduleGame, ClubScheduleSeason} from "@shared/models/nhl-web-api/club-schedule.model";
+import {
+  ClubScheduleGame,
+  ClubScheduleSeason,
+  TeamFormReference
+} from "@shared/models/nhl-web-api/club-schedule.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Injectable()
@@ -100,24 +104,36 @@ export class NhlGameService {
   }
 
   /**
-   * Gets a team's last 5 finished games before a game, most recent first, for the team form (see
-   * NhlGameInfoUtils.getTeamFormGames). Loads club-schedule-season/{abbrev}/{season} for the game's season. When that
-   * season has fewer than 5, like before the preseason, the previous season fills in. If only the previous season fails,
-   * the games found so far are returned.
+   * Gets a team's schedule for the current season from club-schedule-season/{abbrev}/now, which between seasons is
+   * the season about to start. One response holds the team page's form, schedule and next game.
    *
    * @param teamAbbrev - The team abbreviation, like "BOS".
-   * @param game - The game the form is shown for (its landing).
    */
-  public getTeamFormGames(teamAbbrev: string,
-                          game: Pick<GameLanding, "id" | "season" | "gameType" | "startTimeUTC">): Promise<ClubScheduleGame[]> {
+  public getTeamSchedule(teamAbbrev: string): Promise<ClubScheduleSeason> {
+    return this.get<ClubScheduleSeason>(this.nhlClubScheduleSeasonUrl + teamAbbrev + "/now");
+  }
+
+  /**
+   * Gets a team's last 5 finished games before a game or a point in time, most recent first, for the team form (see
+   * NhlGameInfoUtils.getTeamFormGames). Loads club-schedule-season/{abbrev}/{season} for the reference's season,
+   * unless that schedule is passed in. When that season has fewer than 5 finished games, like before the preseason,
+   * the previous season fills in. If only the previous season fails, the games found so far are returned.
+   *
+   * @param teamAbbrev - The team abbreviation, like "BOS".
+   * @param reference - The game the form is shown for (its landing), or a team page's season and time.
+   * @param schedule - The reference season's schedule, when the caller has already loaded it.
+   */
+  public getTeamFormGames(teamAbbrev: string, reference: TeamFormReference,
+                          schedule?: ClubScheduleSeason): Promise<ClubScheduleGame[]> {
     const teamUrl = this.nhlClubScheduleSeasonUrl + teamAbbrev + "/";
-    return this.get<ClubScheduleSeason>(teamUrl + game.season).then(schedule => {
-      const games = NhlGameInfoUtils.getTeamFormGames(schedule.games, game, this.teamFormGameCount);
-      if (games.length >= this.teamFormGameCount || !schedule.previousSeason) {
+    const season = schedule ? Promise.resolve(schedule) : this.get<ClubScheduleSeason>(teamUrl + reference.season);
+    return season.then(seasonSchedule => {
+      const games = NhlGameInfoUtils.getTeamFormGames(seasonSchedule.games, reference, this.teamFormGameCount);
+      if (games.length >= this.teamFormGameCount || !seasonSchedule.previousSeason) {
         return games;
       }
-      return this.get<ClubScheduleSeason>(teamUrl + schedule.previousSeason)
-          .then(previous => NhlGameInfoUtils.getTeamFormGames([...(previous.games ?? []), ...games], game,
+      return this.get<ClubScheduleSeason>(teamUrl + seasonSchedule.previousSeason)
+          .then(previous => NhlGameInfoUtils.getTeamFormGames([...(previous.games ?? []), ...games], reference,
               this.teamFormGameCount))
           .catch(() => games);
     });

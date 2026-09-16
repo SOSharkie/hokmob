@@ -1,0 +1,65 @@
+@import "variables";
+
+.team-stats {
+  background-color: $black-02;
+  border-radius: 25px;
+  overflow: hidden;
+  color: white;
+
+  .team-stats-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+  }
+
+  .team-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-small $spacing-large;
+    border-bottom: 1px solid $gray-01;
+
+    .stat-label {
+      color: $gray-03;
+    }
+
+    .stat-values {
+      display: flex;
+      align-items: baseline;
+
+      .stat-value {
+        font-weight: bold;
+      }
+
+      .stat-rank {
+        color: $gray-03;
+        margin-left: $spacing-medium;
+        min-width: 35px;
+        text-align: right;
+      }
+    }
+  }
+
+  .team-stat-row:last-of-type {
+    border-bottom: none;
+  }
+}
+
+// Desktop Styling
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .team-stats {
+    .team-stat-row {
+      font-size: medium;
+    }
+  }
+}
+
+// Mobile Display
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .team-stats {
+    .team-stat-row {
+      font-size: small;
+    }
+  }
+}

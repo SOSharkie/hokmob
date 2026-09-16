@@ -21,4 +21,10 @@
   .last-scorecard {
     border-bottom: none !important;
   }
+
+  .no-games {
+    text-align: center;
+    padding: $spacing-large;
+    color: $gray-01;
+  }
 }

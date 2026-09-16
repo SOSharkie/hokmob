@@ -1,6 +1,6 @@
 # NHL API Migration Plan, Part 2: Remaining Legacy APIs
 
-Status: **Phase 9 done** (planned 2026-09-15, phase 9 built 2026-09-15). Phases 9–15 continue
+Status: **Phases 9 and 10 done** (planned 2026-09-15, built 2026-09-15). Phases 9–15 continue
 [`nhl-api-migration-plan.md`](nhl-api-migration-plan.md). Phases 0–8 in that plan migrated the home and game pages.
 Scope: every remaining caller of a dead API: the team page, player page, stats page, header search and playoffs page.
 Then the old services and models get deleted.
@@ -286,7 +286,23 @@ Capture with curl, trimming item counts only.
 
 Add accessors to `nhl-api-mocks.ts`.
 
-## 6. Team page (phase 10)
+## 6. Team page (phase 10, done)
+
+Built on 2026-09-15 as described below, with these notes:
+- `NhlGameService.getTeamSchedule(abbrev)` loads `club-schedule-season/{abbrev}/now`, and `getTeamFormGames` now takes
+  a `TeamFormReference` (season and time, with the game ID and type only when there is a game) and an already loaded
+  schedule, so the team page's form costs no second request for the current season.
+- The form leads up to the next game, so its game type decides whether preseason games count: during the preseason
+  the form is preseason games, like the game page's.
+- `NhlGameInfoUtils` gained `getUpcomingGames` and `toScoreGame`, which the schedule and next game share.
+- The team stats card is `app-team-stats`, fed by `NhlStatsApiService.getTeamStats` (the new service for the
+  `/api/nhl-stats/*` endpoints, which phases 11 and 12 extend).
+- Checked in the browser: `/team/6` (BOS: Atlantic Division, Eastern Conference standings, 5 preseason games, the
+  2025-26 first round as its form, and PP 9th, PK 24th, GF/G 10th, GA/G 14th, exactly as this section says),
+  `/team/68` (UTA, Central Division), `/team/53` (Arizona: name only, empty form and schedule, no standings or stats
+  card) and `/team/999` ("Team not found"). Only the header search's dead statsapi calls still log errors (phase 13).
+
+
 
 One `club-schedule-season/{abbrev}/now` response feeds the form, the schedule and the next game. The old page made
 five requests to the dead API.
@@ -589,7 +605,7 @@ add one in phase 9.
 | # | Phase | Status | Files | Check against | Tests |
 |---|---|---|---|---|---|
 | 9 | Foundation: search proxy, stats API client with the player stats and leaders endpoints, new models, move `NhlTeamCustomModel`, `NhlTeamUtils.getActiveTeamIds`, `StatsUtils` mappers, fixtures | **Done** | new `NhlSearchController.cs` / `NhlStatsController.cs` (or `NhlController.cs`), `NhlApiClient.cs` + new clients, `Program.cs`, `models/nhl-web-api/*`, `models/nhl-stats-api/*`, `nhl-team-utils`, `stats-utils`, `nhl-api-mocks/*` | `ng build`, `dotnet build`. `/api/nhl-search/player?q=mac` returns players, and disallowed parameters are dropped. `/api/nhl-stats/player/8477496?position=skater` has the 2023-24 `CGY,VAN` row with hits. `/api/nhl-stats/player/8477964?position=skater` returns 10 games starting with `2025030416`, with scores. `/api/nhl-stats/player/8476945?position=goalie` has saves by strength. `/api/nhl-stats/leaders?season=20252026&gameType=2` starts with Trenin (413 hits). `/api/nhl-stats/teams?season=20252026&gameType=2` returns 32 rows | `nhl-team-utils` (active IDs); `StatsUtils.toBoxscoreSkater/Goalie` + ratings vs the `2025030414` boxscore; `formatSeconds`; fixture accessors |
-| 10 | Team page: header, conference standings, form, schedule, next game, team stats card (new) | Not started | `team`, `team-next-game`, `single-team-form`, `team-schedule`, new `team-stats`, `nhl-game.service.ts`, new team stats service method, `nhl-game-info-utils` | `/team/6` (stats card ranks), `/team/68`, `/team/53` (no card), `/team/999`; off-season (form and stats from 2025-26) | Service schedule/form generalization and teams stats URL; `team` (loading, conference pick, failures, unknown team, 10s live refresh), real `team-next-game`, `single-team-form`, `team-schedule` specs; `team-stats` (values and ranks from the fixture, ties, lower-is-better stats, no row, failure) |
+| 10 | Team page: header, conference standings, form, schedule, next game, team stats card (new) | **Done** | `team`, `team-next-game`, `single-team-form`, `team-schedule`, new `team-stats`, `nhl-game.service.ts`, new team stats service method, `nhl-game-info-utils` | `/team/6` (stats card ranks), `/team/68`, `/team/53` (no card), `/team/999`; off-season (form and stats from 2025-26) | Service schedule/form generalization and teams stats URL; `team` (loading, conference pick, failures, unknown team, 10s live refresh), real `team-next-game`, `single-team-form`, `team-schedule` specs; `team-stats` (values and ranks from the fixture, ties, lower-is-better stats, no row, failure) |
 | 11 | Player page: header and bio (landing), season cards, career and recent games (stats endpoint) | Not started | `player`, `player-bio`, `player-stats`, `player-career`, `recent-player-games`, new player service methods | `/player/8476460` (skater), `/player/8476945` (goalie), `/player/8477496` (traded season), `/player/8477964` (playoff games), a retired player | Service (landing, stats URL and position, failures); draft label, height, one logo per `teamAbbrevs` entry (traded season, unknown abbreviation), scores with the player's team first, GAA from TOI; real specs for all five components |
 | 12 | Stats page: api-web leaders, hits and shots from the stats endpoint, leaderboard entries | Not started | `stats`, `stat-leaderboard`, new service methods, delete `beta-nhl-stats.service`, `nhl-stat-type.enum` | `/stats` regular season, `?gameType=P` (2025-26 playoffs), empty categories, one source failing | Service URLs and categories; entry conversion for both sources; `stats` (toggle, failure clears spinner), real `stat-leaderboard` spec (formats, team from abbrev, empty) |
 | 13 | Header search: static teams, player search via proxy, headshot URLs | Not started | `nhl-search.service.ts`, `search-input`, `search-result`, `search-result.model.ts` | Typing "bos", "mac", "zz" (no results), a failed search | Service (URL, params, errors); `search-input` (debounce, min length, stale responses, teams first), real `search-result` spec |

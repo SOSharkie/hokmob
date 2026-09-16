@@ -154,5 +154,64 @@ describe('NhlGameInfoUtils', () => {
       expect(NhlGameInfoUtils.getTeamFormGames(null, mockGameLanding(2026020056))).toEqual([]);
       expect(NhlGameInfoUtils.getTeamFormGames(bostonGames(), null)).toEqual([]);
     });
+
+    it('should take the last games before a time when there is no reference game', () => {
+      const reference = {season: 20262027, startTimeUTC: '2026-04-24T00:00:00Z'};
+      expect(ids(NhlGameInfoUtils.getTeamFormGames(bostonGames(), reference, 3)))
+          .toEqual([2025030113, 2025030112, 2025030111]);
+    });
+  });
+
+  describe('getUpcomingGames', () => {
+    it('should return the real next games of a season that has not started, soonest first', () => {
+      const games = NhlGameInfoUtils.getUpcomingGames(mockClubScheduleSeason('BOS', 20262027).games);
+      expect(games.map(game => game.id)).toEqual([2026010013, 2026010028, 2026010040, 2026010049, 2026020003]);
+      expect(games[0].gameDate).toBe('2026-09-20');
+    });
+
+    it('should leave out finished games and keep the requested count', () => {
+      const games = [...mockClubScheduleSeason('BOS', 20252026).games, ...mockClubScheduleSeason('BOS', 20262027).games];
+      expect(NhlGameInfoUtils.getUpcomingGames(games, 2).map(game => game.id)).toEqual([2026010013, 2026010028]);
+    });
+
+    it('should return no games for a finished season or without games', () => {
+      expect(NhlGameInfoUtils.getUpcomingGames(mockClubScheduleSeason('BOS', 20252026).games)).toEqual([]);
+      expect(NhlGameInfoUtils.getUpcomingGames(null)).toEqual([]);
+    });
+  });
+
+  describe('toScoreGame', () => {
+    /** The first game of the real BOS schedule: WSH at BOS on 2026-09-20. */
+    function clubScheduleGame(): ClubScheduleGame {
+      return mockClubScheduleSeason('BOS', 20262027).games[0];
+    }
+
+    it('should convert a club schedule game to the score response shape', () => {
+      const game = clubScheduleGame();
+      const scoreGame = NhlGameInfoUtils.toScoreGame(game);
+      expect(scoreGame.id).toBe(2026010013);
+      expect(scoreGame.gameDate).toBe('2026-09-20');
+      expect(scoreGame.startTimeUTC).toBe(game.startTimeUTC);
+      expect(scoreGame.gameState).toBe(game.gameState);
+      expect(scoreGame.gameType).toBe(game.gameType);
+      expect(scoreGame.homeTeam.id).toBe(6);
+      expect(scoreGame.homeTeam.abbrev).toBe('BOS');
+      expect(scoreGame.homeTeam.name).toEqual(game.homeTeam.commonName);
+      expect(scoreGame.homeTeam.logo).toBe(game.homeTeam.logo);
+      expect(scoreGame.awayTeam.abbrev).toBe('WSH');
+    });
+
+    it('should convert the score of a finished game', () => {
+      const game = mockClubScheduleSeason('BOS', 20252026).games
+          .find(item => item.id === 2025030116);
+      const scoreGame = NhlGameInfoUtils.toScoreGame(game);
+      expect(scoreGame.homeTeam.score).toBe(game.homeTeam.score);
+      expect(scoreGame.awayTeam.score).toBe(game.awayTeam.score);
+      expect(scoreGame.gameOutcome).toEqual(game.gameOutcome);
+    });
+
+    it('should return nothing without a game', () => {
+      expect(NhlGameInfoUtils.toScoreGame(null)).toBeUndefined();
+    });
   });
 });

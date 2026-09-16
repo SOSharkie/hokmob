@@ -1,11 +1,9 @@
 import {Component, Input} from '@angular/core';
-import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
-import {NhlScheduleModel} from "@shared/models/nhl-schedule/nhl-schedule.model";
-import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
+import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
 
-// TODO: Not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). The shared app-scorecard now expects
-//  new API games. Fix: take games from club-schedule-season/{abbrev}/now, filter to upcoming games (gameState FUT/PRE)
-//  and pass the next 5.
+/**
+ * The team page's schedule: the team's next games, soonest first, as scorecards.
+ */
 @Component({
   selector: 'app-team-schedule',
   templateUrl: './team-schedule.component.html',
@@ -13,16 +11,11 @@ import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
 })
 export class TeamScheduleComponent {
 
+  /**
+   * The games that aren't over, soonest first, converted to the score response shape app-scorecard expects
+   * (NhlGameInfoUtils.getUpcomingGames and toScoreGame).
+   */
   @Input()
-  public team: NhlTeamModel;
+  public games: ScoreGame[] = [];
 
-  @Input()
-  public teamGames: NhlScheduleModel;
-
-  public get next5TeamGames(): NhlGameModel[] {
-    if (this.teamGames) {
-      return this.teamGames.dates.slice(0, Math.min(5, this.teamGames.dates.length)).map(item => item.games[0]);
-    }
-    return [];
-  }
 }
