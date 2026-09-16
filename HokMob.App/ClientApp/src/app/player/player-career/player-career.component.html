@@ -9,25 +9,25 @@
         <th class="games-header"><span>Games Played</span></th>
         <th class="goals-header"><span>Goals</span></th>
         <th class="assists-header"><span>Assists</span></th>
-        <th class="assists-header"><span>Points</span></th>
+        <th class="points-header"><span>Points</span></th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let season of careerRegularSeasonStats, let i = index, let isLast = last" class="career-season-row" [ngClass]="{'last-row': isLast}">
+      <tr *ngFor="let row of rows, let isLast = last" class="career-season-row" [ngClass]="{'last-row': isLast}">
         <td class="season-cell">
           <div class="season-info">
             <div class="logo-container">
-              <img [src]="careerTeamLogos[i]" class="player-team-logo">
+              <img *ngFor="let logo of row.teamLogos" [src]="logo" alt="" class="player-team-logo">
             </div>
             <div class="season-name">
-              <span>{{DateTimeUtils.getNhlSeasonDisplayValue(season.season)}}</span>
+              <span>{{row.season}}</span>
             </div>
           </div>
         </td>
-        <td class="stat-cell"><span>{{season.stat.games}}</span></td>
-        <td class="stat-cell"><span>{{season.stat.goals}}</span></td>
-        <td class="stat-cell"><span>{{season.stat.assists}}</span></td>
-        <td class="stat-cell"><span [ngStyle]="{'color': season.stat.points > 0 ? '#84dc7b' : ''}">{{season.stat.points}}</span></td>
+        <td class="stat-cell"><span>{{row.gamesPlayed}}</span></td>
+        <td class="stat-cell"><span>{{row.goals}}</span></td>
+        <td class="stat-cell"><span>{{row.assists}}</span></td>
+        <td class="stat-cell"><span [ngStyle]="{'color': row.points > 0 ? '#84dc7b' : ''}">{{row.points}}</span></td>
       </tr>
     </tbody>
   </table>
@@ -43,21 +43,21 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let season of careerRegularSeasonStats, let i = index, let isLast = last" class="career-season-row" [ngClass]="{'last-row': isLast}">
+    <tr *ngFor="let row of rows, let isLast = last" class="career-season-row" [ngClass]="{'last-row': isLast}">
       <td class="season-cell">
         <div class="season-info">
           <div class="logo-container">
-            <img [src]="careerTeamLogos[i]" class="player-team-logo">
+            <img *ngFor="let logo of row.teamLogos" [src]="logo" alt="" class="player-team-logo">
           </div>
           <div class="season-name">
-            <span>{{DateTimeUtils.getNhlSeasonDisplayValue(season.season)}}</span>
+            <span>{{row.season}}</span>
           </div>
         </div>
       </td>
-      <td class="stat-cell"><span>{{season.stat.games}}</span></td>
-      <td class="stat-cell"><span>{{season.stat.shutouts}}</span></td>
-      <td class="stat-cell"><span>{{season.stat.goalAgainstAverage | goalsAgainstAverage}}</span></td>
-      <td class="stat-cell"><span [ngStyle]="{'color': season.stat.shotsAgainst > 0 ? '#84dc7b' : ''}">{{season.stat.savePercentage | savePercentage}}</span></td>
+      <td class="stat-cell"><span>{{row.gamesPlayed}}</span></td>
+      <td class="stat-cell"><span>{{row.shutouts}}</span></td>
+      <td class="stat-cell"><span>{{row.goalsAgainstAverage | goalsAgainstAverage}}</span></td>
+      <td class="stat-cell"><span>{{row.savePct | savePercentage}}</span></td>
     </tr>
     </tbody>
   </table>

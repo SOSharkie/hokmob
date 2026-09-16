@@ -1,6 +1,11 @@
 import {Component, Input} from '@angular/core';
-import {NhlPersonModel} from "@shared/models/nhl-general/nhl-person.model";
+import * as dayjs from "dayjs";
+import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
 
+/**
+ * The player's bio, from player/{id}/landing. Neither NHL API has captaincy or rookie flags, so the old
+ * "Captain / Rookie" tile shows the draft instead (see docs/nhl-api-legacy-migration-plan.md, decision 4).
+ */
 @Component({
   selector: 'app-player-bio',
   templateUrl: './player-bio.component.html',
@@ -9,54 +14,63 @@ import {NhlPersonModel} from "@shared/models/nhl-general/nhl-person.model";
 export class PlayerBioComponent {
 
   @Input()
-  public player: NhlPersonModel;
+  public player: PlayerLanding;
 
   @Input()
   public countryFlagPath: string;
 
-  public get shoots(): string {
-    if (this.player) {
-      if (this.player.shootsCatches === "L") {
-        return "Left";
-      }
-      return "Right";
+  public get position(): string {
+    return this.player?.position ?? "-";
+  }
+
+  public get age(): string {
+    return this.player?.birthDate ? String(dayjs().diff(dayjs(this.player.birthDate), 'year')) : "-";
+  }
+
+  /**
+   * The height as feet and inches, like 6' 3" for 75 inches.
+   */
+  public get height(): string {
+    if (!this.player?.heightInInches) {
+      return "-";
     }
-    return "Right";
+    return Math.floor(this.player.heightInInches / 12) + "' " + (this.player.heightInInches % 12) + "\"";
+  }
+
+  /**
+   * "Shoots" for a skater, "Catches" for a goalie.
+   */
+  public get shootsCatchesHeader(): string {
+    return this.player?.position === "G" ? "Catches" : "Shoots";
+  }
+
+  public get shootsCatches(): string {
+    if (!this.player?.shootsCatches) {
+      return "-";
+    }
+    return this.player.shootsCatches === "L" ? "Left" : "Right";
+  }
+
+  public get birthCountry(): string {
+    return this.player?.birthCountry ?? "-";
+  }
+
+  public get sweaterNumber(): string {
+    return this.player?.sweaterNumber ? String(this.player.sweaterNumber) : "-";
   }
 
   public get weight(): string {
-    if (this.player) {
-      return this.player.weight + " lb";
-    }
-    return "-";
+    return this.player?.weightInPounds ? this.player.weightInPounds + " lb" : "-";
   }
 
-  public get rosterStatusHeader(): string {
-    if (this.player) {
-      if (this.player.captain) {
-        return "Captain";
-      } else if (this.player.alternateCaptain) {
-        return "Captain";
-      } else {
-        return "Rookie"
-      }
+  /**
+   * The draft, like "2011 R1 #7 (WPG)", or "Undrafted" for a player without draft details.
+   */
+  public get draft(): string {
+    const draft = this.player?.draftDetails;
+    if (!draft?.year) {
+      return "Undrafted";
     }
-    return "-";
+    return draft.year + " R" + draft.round + " #" + draft.overallPick + " (" + draft.teamAbbrev + ")";
   }
-
-  public get rosterStatus(): string {
-    if (this.player) {
-      if (this.player.captain) {
-        return "Yes";
-      } else if (this.player.alternateCaptain) {
-        return "Alternate";
-      } else if (this.player.rookie) {
-        return "Yes"
-      } else {
-        return "No";
-      }
-    }
-    return "-";
-  }
-
 }

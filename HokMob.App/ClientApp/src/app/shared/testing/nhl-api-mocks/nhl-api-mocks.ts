@@ -48,6 +48,7 @@ import clubScheduleUta20252026 from './club-schedule-season-uta-20252026.json';
 import clubScheduleUta20262027 from './club-schedule-season-uta-20262027.json';
 import playerLanding8476945 from './player-8476945-landing.json';
 import playerLanding8470638 from './player-8470638-landing.json';
+import playerLanding8477964 from './player-8477964-landing.json';
 import skaterLeaders20252026Regular from './skater-stats-leaders-20252026-2.json';
 import skaterLeaders20252026Playoffs from './skater-stats-leaders-20252026-3.json';
 import goalieLeaders20252026Regular from './goalie-stats-leaders-20252026-2.json';
@@ -244,11 +245,11 @@ export function mockGameBundle(gameId: MockGamecenterGameId): GameBundle {
 }
 
 /** Players with a captured player/{id}/landing response. */
-export type MockPlayerId = 8476460 | 8477480 | 8476945 | 8470638;
+export type MockPlayerId = 8476460 | 8477480 | 8476945 | 8470638 | 8477964;
 
 const playerLandings = {
   8476460: playerLanding8476460, 8477480: playerLanding8477480, 8476945: playerLanding8476945,
-  8470638: playerLanding8470638
+  8470638: playerLanding8470638, 8477964: playerLanding8477964
 };
 
 /**
@@ -259,6 +260,8 @@ const playerLandings = {
  * - 8476945: Connor Hellebuyck, WPG goalie, with goalie featuredStats (save percentage and goals against average).
  * - 8470638: Patrice Bergeron, retired. No currentTeamId, isActive is false, and featuredStats is his last season
  *   (2022-23).
+ * - 8477964: Ivan Barbashev, VGK left wing, drafted 2014 round 2, 33rd overall by STL. His stats are
+ *   mockPlayerStats(8477964), so the two together make up a whole player page.
  */
 export function mockPlayerLanding(playerId: MockPlayerId): PlayerLanding {
   return copy(playerLandings[playerId]);

@@ -18,25 +18,25 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let game of lastTenGames, let i = index, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
-        <td class="date-cell"><span>{{getDateString(game.date)}}</span></td>
-        <td [routerLink]="['/game', game.game.gamePk]">
+      <tr *ngFor="let row of rows, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
+        <td class="date-cell"><span>{{row.date}}</span></td>
+        <td [routerLink]="['/game', row.gameId]">
           <div class="opponent-cell">
             <div class="logo-container">
-              <img class="opponent-logo" [src]="teamLogos[i]">
+              <img class="opponent-logo" [src]="row.opponentLogo" alt="">
             </div>
-            <span>{{game.opponent.abbreviation}}</span>
-            <span class="game-score">{{getRecentGameScore(i)}}</span>
+            <span>{{row.opponentAbbrev}}</span>
+            <span class="game-score">{{row.score}}</span>
           </div>
         </td>
-        <td><span>{{game.stat.timeOnIce}}</span></td>
-        <td class="stat-cell"><span [ngStyle]="{'color': game.stat.goals > 0 ? '#84dc7b' : ''}">{{game.stat.goals}}</span></td>
-        <td class="stat-cell"><span [ngStyle]="{'color': game.stat.assists > 0 ? '#84dc7b' : ''}">{{game.stat.assists}}</span></td>
-        <td class="stat-cell hide-mobile"><span>{{game.stat.shots}}</span></td>
-        <td class="stat-cell hide-mobile"><span>{{game.stat.hits}}</span></td>
-        <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': getPlusMinusColor(game.stat)}">{{game.stat.plusMinus}}</span></td>
-        <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': game.stat.pim > 0 ? '#e34d53' : ''}">{{game.stat.pim}}</span></td>
-        <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': getHokmobScoreColor(game.stat)}">{{game.stat.hokmobRating}}</span></td>
+        <td><span>{{row.timeOnIce}}</span></td>
+        <td class="stat-cell"><span [ngStyle]="{'color': row.goals > 0 ? '#84dc7b' : ''}">{{row.goals}}</span></td>
+        <td class="stat-cell"><span [ngStyle]="{'color': row.assists > 0 ? '#84dc7b' : ''}">{{row.assists}}</span></td>
+        <td class="stat-cell hide-mobile"><span>{{row.shots}}</span></td>
+        <td class="stat-cell hide-mobile"><span>{{row.hits}}</span></td>
+        <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': getPlusMinusColor(row.plusMinus)}">{{row.plusMinus}}</span></td>
+        <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': row.penaltyMinutes > 0 ? '#e34d53' : ''}">{{row.penaltyMinutes}}</span></td>
+        <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': row.ratingColor}">{{row.hokmobRating}}</span></td>
       </tr>
     </tbody>
   </table>
@@ -55,23 +55,23 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let game of lastTenGames, let i = index, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
-      <td class="date-cell"><span>{{getDateString(game.date)}}</span></td>
-      <td [routerLink]="['/game', game.game.gamePk]">
+    <tr *ngFor="let row of rows, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
+      <td class="date-cell"><span>{{row.date}}</span></td>
+      <td [routerLink]="['/game', row.gameId]">
         <div class="opponent-cell">
           <div class="logo-container">
-            <img class="opponent-logo" [src]="teamLogos[i]">
+            <img class="opponent-logo" [src]="row.opponentLogo" alt="">
           </div>
-          <span>{{game.opponent.abbreviation}}</span>
-          <span class="game-score">{{getRecentGameScore(i)}}</span>
+          <span>{{row.opponentAbbrev}}</span>
+          <span class="game-score">{{row.score}}</span>
         </div>
       </td>
-      <td><span>{{game.stat.timeOnIce}}</span></td>
-      <td class="stat-cell"><span>{{game.stat.savePercentage | savePercentage}}</span></td>
-      <td class="stat-cell hide-mobile"><span>{{getRecentGameGoalsAgainstAverage(game.stat) | goalsAgainstAverage}}</span></td>
-      <td class="stat-cell hide-mobile"><span>{{game.stat.shotsAgainst}}</span></td>
-      <td class="stat-cell"><span>{{game.stat.goalsAgainst}}</span></td>
-      <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': getHokmobScoreColor(game.stat)}">{{game.stat.hokmobRating}}</span></td>
+      <td><span>{{row.timeOnIce}}</span></td>
+      <td class="stat-cell"><span>{{row.savePct | savePercentage}}</span></td>
+      <td class="stat-cell hide-mobile"><span>{{row.goalsAgainstAverage | goalsAgainstAverage}}</span></td>
+      <td class="stat-cell hide-mobile"><span>{{row.shotsAgainst}}</span></td>
+      <td class="stat-cell"><span>{{row.goalsAgainst}}</span></td>
+      <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': row.ratingColor}">{{row.hokmobRating}}</span></td>
     </tr>
     </tbody>
   </table>

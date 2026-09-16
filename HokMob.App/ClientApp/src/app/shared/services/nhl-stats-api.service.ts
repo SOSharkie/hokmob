@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {TeamSeasonStats, TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
+import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
 
 /**
  * The stats the NHL web API doesn't have, from the NHL stats API through the backend (/api/nhl-stats/*). The backend
@@ -11,7 +12,37 @@ export class NhlStatsApiService {
 
   private readonly nhlTeamStatsUrl = "/api/nhl-stats/teams";
 
+  private readonly nhlPlayerStatsUrl = "/api/nhl-stats/player/";
+
   constructor(private http: HttpClient) { }
+
+  /**
+   * Gets a player's NHL stats by season and for their last 10 games. The backend merges the stats API reports, so
+   * this is one request whose rows hold hits and blocks for a skater, and saves by strength for a goalie. A player
+   * without NHL games resolves empty lists.
+   *
+   * @param playerId - The player ID.
+   * @param isGoalie - Whether the player is a goalie (the landing's position is "G"), which decides the reports the
+   *   backend reads.
+   */
+  public getPlayerStats(playerId: number, isGoalie: boolean = false): Promise<PlayerStats> {
+    const url = this.nhlPlayerStatsUrl + playerId + "?position=" + (isGoalie ? "goalie" : "skater");
+    return new Promise((resolve, reject) => {
+      return this.http.get<PlayerStats>(url).subscribe({
+        next: (response) => {
+          resolve({
+            regularSeasons: response?.regularSeasons ?? [],
+            playoffSeasons: response?.playoffSeasons ?? [],
+            recentGames: response?.recentGames ?? []
+          });
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
 
   /**
    * Gets every team's stats for a season (power play, penalty kill, goals and shots per game, faceoffs). All teams

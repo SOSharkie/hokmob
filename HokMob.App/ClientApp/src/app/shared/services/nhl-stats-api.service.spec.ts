@@ -1,7 +1,12 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {NhlStatsApiService} from '@shared/services/nhl-stats-api.service';
-import {mockTeamStats} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {mockPlayerStats, mockTeamStats} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  GoalieGameStats,
+  SkaterGameStats,
+  SkaterSeasonStats
+} from '@shared/models/nhl-stats-api/player-stats.model';
 
 describe('NhlStatsApiService', () => {
   let service: NhlStatsApiService;
@@ -19,6 +24,64 @@ describe('NhlStatsApiService', () => {
 
   afterEach(() => {
     httpMock.verify();
+  });
+
+  describe('getPlayerStats', () => {
+    it('should resolve the real seasons of a skater, with a traded season as one row', async () => {
+      const playerStats = service.getPlayerStats(8477496);
+      httpMock.expectOne('/api/nhl-stats/player/8477496?position=skater').flush(mockPlayerStats(8477496));
+
+      const stats = await playerStats;
+      expect(stats.regularSeasons.length).toBe(13);
+      const latest = stats.regularSeasons[0] as SkaterSeasonStats;
+      expect(latest.seasonId).toBe(20252026);
+      expect(latest.skaterFullName).toBe('Elias Lindholm');
+      const tradedSeason = (stats.regularSeasons as SkaterSeasonStats[])
+          .find(season => season.seasonId === 20232024);
+      expect(tradedSeason.teamAbbrevs).toBe('CGY,VAN');
+      expect(tradedSeason.gamesPlayed).toBe(75);
+      expect(tradedSeason.points).toBe(44);
+      expect(tradedSeason.hits).toBe(89);
+    });
+
+    it('should resolve the last 10 real games of a skater, newest first, with hits and scores', async () => {
+      const playerStats = service.getPlayerStats(8477964, false);
+      httpMock.expectOne('/api/nhl-stats/player/8477964?position=skater').flush(mockPlayerStats(8477964));
+
+      const games = (await playerStats).recentGames as SkaterGameStats[];
+      expect(games.length).toBe(10);
+      expect(games[0].gameId).toBe(2025030416);
+      expect(games[0].gameDate).toBe('2026-06-14');
+      expect(games[0].opponentTeamAbbrev).toBe('CAR');
+      expect(games[0].hits).toBe(3);
+      expect(games[0].homeScore).toBe(0);
+      expect(games[0].visitingScore).toBe(3);
+    });
+
+    it('should ask for the goalie reports for a goalie', async () => {
+      const playerStats = service.getPlayerStats(8476945, true);
+      httpMock.expectOne('/api/nhl-stats/player/8476945?position=goalie').flush(mockPlayerStats(8476945));
+
+      const games = (await playerStats).recentGames as GoalieGameStats[];
+      expect(games[0].goalieFullName).toBe('Connor Hellebuyck');
+      expect(games[0].evSaves).toBe(18);
+      expect(games[0].evShotsAgainst).toBe(21);
+    });
+
+    it('should resolve empty lists for a player without NHL stats', async () => {
+      const playerStats = service.getPlayerStats(8477964);
+      httpMock.expectOne('/api/nhl-stats/player/8477964?position=skater').flush({});
+      expect(await playerStats).toEqual({regularSeasons: [], playoffSeasons: [], recentGames: []});
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const playerStats = service.getPlayerStats(8477964);
+      const rejection = expectAsync(playerStats).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne('/api/nhl-stats/player/8477964?position=skater')
+          .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
   });
 
   describe('getTeamStats', () => {

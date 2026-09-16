@@ -56,21 +56,23 @@
         flex-direction: row;
         align-items: center;
 
+        // A traded season shows a logo per team ("CGY,VAN"), so the container grows with them
         .logo-container {
-          width: 40px;
           height: 40px;
           display: flex;
           align-items: center;
-          justify-content: center;
+          justify-content: flex-start;
           margin-right: $spacing-medium;
+          gap: $spacing-x-small;
 
           .player-team-logo {
-            width: 40px;
+            width: 34px;
           }
         }
 
         .season-name {
           color: $gray-03;
+          white-space: nowrap;
         }
       }
 
@@ -96,5 +98,8 @@
   td {
     padding: $spacing-medium !important;
     font-size: smaller;
+  }
+  .player-team-logo {
+    width: 26px !important;
   }
 }

@@ -49,13 +49,31 @@ describe('TeamNextGameComponent', () => {
     return fixture.nativeElement.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim();
   }
 
+  /**
+   * A game's start time in the timezone the test runs in, like "2:00 PM" in Denver for 21:00 UTC. The page shows
+   * local times, and CI runs on UTC, so the expected string can't be hard-coded. Chrome puts a narrow no-break space
+   * before AM/PM, which dayjs doesn't.
+   */
+  function localTime(startTimeUTC: string): string {
+    return new Date(startTimeUTC).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'})
+        .replace(/[\u202f\u00a0]/g, ' ');
+  }
+
+  /** A game's local day, like "September 20". */
+  function localDay(startTimeUTC: string): string {
+    return new Date(startTimeUTC).toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
+  }
+
   it('should show the day and start time of a real future game', () => {
-    show(nextGame());
+    const game = nextGame();
+    show(game);
     expect(text('.team-next-game-header')).toBe('Next Game');
     expect(text('.home-team-header')).toBe('Bruins');
     expect(text('.away-team-header')).toBe('Capitals');
-    expect(component.gameTime).toBe('2:00 PM');
-    expect(text('.game-day-label')).toContain('September 20');
+    expect(game.startTimeUTC).toBe('2026-09-20T21:00:00Z');
+    expect(component.gameTime).toMatch(/^\d{1,2}:\d{2} (AM|PM)$/);
+    expect(component.gameTime).toBe(localTime(game.startTimeUTC));
+    expect(text('.game-day-label')).toContain(localDay(game.startTimeUTC));
     expect(fixture.nativeElement.querySelector('.game-score')).toBeNull();
     expect(fixture.nativeElement.querySelector('.playoff-series-label')).toBeNull();
   });

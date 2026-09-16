@@ -1,7 +1,10 @@
 import {Component, Input} from '@angular/core';
-import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
-import {NhlPersonModel} from "@shared/models/nhl-general/nhl-person.model";
+import {GoalieSeasonStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
 
+/**
+ * One season's stats card, from the stats API row of that season (/api/nhl-stats/player/{id}). A season with two
+ * teams is already one row, so nothing is summed here.
+ */
 @Component({
   selector: 'app-player-stats',
   templateUrl: './player-stats.component.html',
@@ -13,10 +16,7 @@ export class PlayerStatsComponent {
   public statTitle: string;
 
   @Input()
-  public stats: NhlPlayerStatsModel;
-
-  @Input()
-  public player: NhlPersonModel;
+  public stats: SkaterSeasonStats | GoalieSeasonStats;
 
   @Input()
   public teamColor: string;
@@ -24,25 +24,25 @@ export class PlayerStatsComponent {
   @Input()
   public isGoalie: boolean;
 
-  public get plusMinusColor(): string {
-    if (this.stats) {
-      return this.stats.plusMinus > 0 ? '#84dc7b' : this.stats.plusMinus < 0 ? '#e34d53' : 'white';
-    }
-    return "white";
+  /** The row as a skater's, for the skater grid. */
+  public get skaterStats(): SkaterSeasonStats {
+    return this.stats as SkaterSeasonStats;
   }
 
-  public get faceOffColor(): string {
-    if (this.stats && this.stats.faceOffPct) {
-      return this.stats.faceOffPct > 50 ? '#84dc7b' : this.stats.plusMinus < 50 ? '#e34d53' : 'white';
-    }
-    return "white";
+  /** The row as a goalie's, for the goalie grid. */
+  public get goalieStats(): GoalieSeasonStats {
+    return this.stats as GoalieSeasonStats;
   }
 
-  public formatFaceOffPercent(value: number): string {
-    if (value) {
-      return value.toFixed(1) + "%";
+  /**
+   * A faceoff percentage (0 to 1) as "48.7%". A player who took no faceoffs has none, and shows a dash.
+   *
+   * @param value - The faceoff win percentage, from 0 to 1.
+   */
+  public formatFaceoffPercent(value: number): string {
+    if (value == null) {
+      return "-";
     }
-    return "-";
+    return (value * 100).toFixed(1) + "%";
   }
-
 }

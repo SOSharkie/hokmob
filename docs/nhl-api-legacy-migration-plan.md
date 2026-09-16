@@ -1,6 +1,6 @@
 # NHL API Migration Plan, Part 2: Remaining Legacy APIs
 
-Status: **Phases 9 and 10 done** (planned 2026-09-15, built 2026-09-15). Phases 9–15 continue
+Status: **Phases 9, 10 and 11 done** (planned 2026-09-15, built 2026-09-15). Phases 9–15 continue
 [`nhl-api-migration-plan.md`](nhl-api-migration-plan.md). Phases 0–8 in that plan migrated the home and game pages.
 Scope: every remaining caller of a dead API: the team page, player page, stats page, header search and playoffs page.
 Then the old services and models get deleted.
@@ -335,7 +335,28 @@ five requests to the dead API.
 - Test inputs: BOS (6), UTA (68), ARI (53, former team: check what `club-schedule-season/ARI/now` returns and show an
   empty state), 999 (unknown).
 
-## 7. Player page (phase 11)
+## 7. Player page (phase 11, done)
+
+Built on 2026-09-15 as described below, with these notes:
+- The landing comes from `NhlGameService.getPlayerLanding` (already there for the player game dialog), the stats from
+  the new `NhlStatsApiService.getPlayerStats(playerId, isGoalie)`. The page ignores a response of a player it has
+  navigated away from.
+- Recent games take the player's side of the score from the row's own `homeRoad` instead of comparing `teamAbbrev`
+  with `homeTeamId`, which is the same answer without a team lookup (so it also works for `ARI` and other
+  abbreviations the utils don't know).
+- `app-player-stats` lost its `player` input (the template never used it), `app-player-career` takes `seasons` and
+  `app-recent-player-games` takes `games`. Both build their rows in `ngOnChanges`, so the `imagesLoaded` flags, the
+  `@ViewChild` resets and the `FileReader` code are gone, along with the `NhlStatsService` / `NhlImageService`
+  injections.
+- The career season cell holds one 34px logo per team (26px at phone width), with the season label on one line. A
+  traded season fits at 375px without horizontal scrolling.
+- Checked in the browser: `/player/8477964` (Barbashev, playoff recent games and both season cards),
+  `/player/8476460` (Scheifele, no playoff card because WPG missed the 2026 playoffs), `/player/8476945`
+  (Hellebuyck: goalie cards, saves by strength ratings, "Catches", and no playoff card since his last playoffs was
+  2024-25), `/player/8477496` (Lindholm, the 2023-24 `CGY,VAN` row with both logos) and `/player/8470638` (Bergeron:
+  no team link or color, his 2022-23 cards, career, and no recent games). `/player/1` shows "This player couldn't be
+  loaded" and makes no stats request. Only the header search's dead statsapi calls still log errors (phase 13).
+- One fixture was added: `player-8477964-landing.json`, so a skater's landing and stats fixtures are the same player.
 
 Two requests: api-web `player/{id}/landing` for the header and bio, then `/api/nhl-stats/player/{id}?position=…`
 (`skater`, or `goalie` when the landing's `position` is `G`) for the season cards, career and recent games.
@@ -580,8 +601,9 @@ Regular Season toggle.
   per player keeps repeat views free.
 - **Historical abbreviations:** the stats API uses abbreviations like `ATL` and `PHX` that `NhlTeamUtils` doesn't
   know, so those rows get the fallback logo. `UTA` maps to 68 even for Utah Hockey Club (59) seasons.
-- **Retired and inactive players:** `currentTeamId` and `featuredStats` may be missing from the landing. Capture a
-  retired player in phase 9 and test the empty states.
+- **Retired and inactive players:** `currentTeamId` and `featuredStats` may be missing from the landing. Checked in
+  phase 11 with Bergeron (8470638), captured in phase 9: his page shows no team link or color, and the cards of his
+  last season.
 - **Relocated teams:** `/team/53` (Arizona) and Utah's first season's `previousSeason` fill-in, with the same caveat as
   the first plan's team form risk.
 - **Brackets in the picker's range:** only 2014, 2020, 2021, 2022 and 2026 were checked. Phase 14 opens every
@@ -606,7 +628,7 @@ add one in phase 9.
 |---|---|---|---|---|---|
 | 9 | Foundation: search proxy, stats API client with the player stats and leaders endpoints, new models, move `NhlTeamCustomModel`, `NhlTeamUtils.getActiveTeamIds`, `StatsUtils` mappers, fixtures | **Done** | new `NhlSearchController.cs` / `NhlStatsController.cs` (or `NhlController.cs`), `NhlApiClient.cs` + new clients, `Program.cs`, `models/nhl-web-api/*`, `models/nhl-stats-api/*`, `nhl-team-utils`, `stats-utils`, `nhl-api-mocks/*` | `ng build`, `dotnet build`. `/api/nhl-search/player?q=mac` returns players, and disallowed parameters are dropped. `/api/nhl-stats/player/8477496?position=skater` has the 2023-24 `CGY,VAN` row with hits. `/api/nhl-stats/player/8477964?position=skater` returns 10 games starting with `2025030416`, with scores. `/api/nhl-stats/player/8476945?position=goalie` has saves by strength. `/api/nhl-stats/leaders?season=20252026&gameType=2` starts with Trenin (413 hits). `/api/nhl-stats/teams?season=20252026&gameType=2` returns 32 rows | `nhl-team-utils` (active IDs); `StatsUtils.toBoxscoreSkater/Goalie` + ratings vs the `2025030414` boxscore; `formatSeconds`; fixture accessors |
 | 10 | Team page: header, conference standings, form, schedule, next game, team stats card (new) | **Done** | `team`, `team-next-game`, `single-team-form`, `team-schedule`, new `team-stats`, `nhl-game.service.ts`, new team stats service method, `nhl-game-info-utils` | `/team/6` (stats card ranks), `/team/68`, `/team/53` (no card), `/team/999`; off-season (form and stats from 2025-26) | Service schedule/form generalization and teams stats URL; `team` (loading, conference pick, failures, unknown team, 10s live refresh), real `team-next-game`, `single-team-form`, `team-schedule` specs; `team-stats` (values and ranks from the fixture, ties, lower-is-better stats, no row, failure) |
-| 11 | Player page: header and bio (landing), season cards, career and recent games (stats endpoint) | Not started | `player`, `player-bio`, `player-stats`, `player-career`, `recent-player-games`, new player service methods | `/player/8476460` (skater), `/player/8476945` (goalie), `/player/8477496` (traded season), `/player/8477964` (playoff games), a retired player | Service (landing, stats URL and position, failures); draft label, height, one logo per `teamAbbrevs` entry (traded season, unknown abbreviation), scores with the player's team first, GAA from TOI; real specs for all five components |
+| 11 | Player page: header and bio (landing), season cards, career and recent games (stats endpoint) | **Done** | `player`, `player-bio`, `player-stats`, `player-career`, `recent-player-games`, new player service methods | `/player/8476460` (skater), `/player/8476945` (goalie), `/player/8477496` (traded season), `/player/8477964` (playoff games), a retired player | Service (landing, stats URL and position, failures); draft label, height, one logo per `teamAbbrevs` entry (traded season, unknown abbreviation), scores with the player's team first, GAA from TOI; real specs for all five components |
 | 12 | Stats page: api-web leaders, hits and shots from the stats endpoint, leaderboard entries | Not started | `stats`, `stat-leaderboard`, new service methods, delete `beta-nhl-stats.service`, `nhl-stat-type.enum` | `/stats` regular season, `?gameType=P` (2025-26 playoffs), empty categories, one source failing | Service URLs and categories; entry conversion for both sources; `stats` (toggle, failure clears spinner), real `stat-leaderboard` spec (formats, team from abbrev, empty) |
 | 13 | Header search: static teams, player search via proxy, headshot URLs | Not started | `nhl-search.service.ts`, `search-input`, `search-result`, `search-result.model.ts` | Typing "bos", "mac", "zz" (no results), a failed search | Service (URL, params, errors); `search-input` (debounce, min length, stale responses, teams first), real `search-result` spec |
 | 14 | Playoffs page: bracket by year with fallback, season picker (2013-14 on), letter lookup, 2020 qualifiers note, labels from the bracket, TBD series cards | Not started | `nhl-standing-and-playoff.service.ts`, `playoffs`, `playoff-series` | `/playoffs` today (falls back to 2025-26), `?season=` 20132014, 20192020 (note), 20202021 (no conferences), 20222023; an invalid season | Service conversion, fallback and round 0 filtering; `playoffs` (letters in the right slots, picker options and query parameter, invalid season, late responses, empty bracket, failure, 2020 note, 2021 labels), `playoff-series` TBD case |

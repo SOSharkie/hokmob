@@ -22,7 +22,7 @@ mappings, proposed decisions). Read both plans before working on those pages.
   syntax (`cayenneExp`, `isAggregate`, `isGame`, `sort`) and fields. The stats API sends no CORS header, so it's
   only called from the backend, which builds the queries.
 
-- Unmigrated pages (team, player, stats, playoffs bracket, search) still call dead APIs. Their `ERR_NAME_NOT_RESOLVED` /
+- Unmigrated pages (stats, playoffs bracket, search) still call dead APIs. Their `ERR_NAME_NOT_RESOLVED` /
   `statsapi.web.nhl.com` console errors are expected noise, not regressions.
 - Out-of-scope code that breaks because a shared component changed gets the smallest compile fix plus a `// TODO:`
   comment pointing at the plan (see `team.component.ts` for the format).
@@ -112,6 +112,10 @@ mappings, proposed decisions). Read both plans before working on those pages.
   - `tsconfig.spec.json` must not include `"node"` in `types` (it clashes with the DOM lib and changes `setInterval`'s
     return type), and needs `resolveJsonModule` for the fixtures. `src/test.ts` only sets up the test environment;
     the Angular 15 Karma builder finds the spec files.
+  - **Local times and days:** CI runs on UTC, a dev machine doesn't, so never hard-code a string formatted from
+    a `startTimeUTC`. Derive the expected value from the same instant (`toLocaleTimeString('en-US', …)`), as
+    `team-next-game.component.spec.ts` does. A date-only string like `"2026-06-14"` parses as local midnight,
+    so those are safe.
   - Gotcha: a default parameter replaces `undefined`, so pass `null` to test a missing input through a helper.
 - **Browser verification** (Claude Code Browser pane):
   - Use `read_network_requests` with `urlPattern: "/api/nhl"` to confirm calls return 200.

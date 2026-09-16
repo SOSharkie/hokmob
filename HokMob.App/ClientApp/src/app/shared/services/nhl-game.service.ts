@@ -94,8 +94,9 @@ export class NhlGameService {
   }
 
   /**
-   * Gets a player's bio (country, birth date, headshot, ...) from player/{id}/landing, for the player game dialog.
-   * Kept here instead of the player service, which still calls the dead stats API.
+   * Gets a player's bio (country, birth date, headshot, draft, current team, ...) from player/{id}/landing, for the
+   * player page header and bio and the player game dialog. The stats themselves come from the stats API
+   * (NhlStatsApiService.getPlayerStats).
    *
    * @param playerId - The player ID.
    */
