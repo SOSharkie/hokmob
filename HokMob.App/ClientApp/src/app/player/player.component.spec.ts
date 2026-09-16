@@ -1,7 +1,9 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
-import { ActivatedRoute, Params, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
+import { RouterExtensionService } from '@shared/services/router-extension.service';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
@@ -159,6 +161,25 @@ describe('PlayerComponent', () => {
     expect(child('app-recent-player-games')).toBeNull();
     expect(child('app-player-career')).toBeNull();
     expect(console.error).toHaveBeenCalled();
+  });
+
+  it('should go back in the browser history, labeled with the previous page', async () => {
+    spyOn(TestBed.inject(RouterExtensionService), 'getPreviousUrl').and.returnValue('/team/28');
+    const back = spyOn(TestBed.inject(Location), 'back');
+    open(8477964);
+    await flushPlayerPage(8477964);
+    expect(text('.games-back-button .games-label')).toBe('Team');
+    component.backToPrevious();
+    expect(back).toHaveBeenCalled();
+  });
+
+  it('should go to the stats page without a previous page', async () => {
+    const navigateByUrl = spyOn(TestBed.inject(Router), 'navigateByUrl').and.resolveTo(true);
+    open(8477964);
+    await flushPlayerPage(8477964);
+    expect(text('.games-back-button .games-label')).toBe('Stats');
+    component.backToPrevious();
+    expect(navigateByUrl).toHaveBeenCalledWith('/stats');
   });
 
   it('should load the next player when the route changes, and not show the previous one', async () => {

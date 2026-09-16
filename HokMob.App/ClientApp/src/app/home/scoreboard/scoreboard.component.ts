@@ -1,4 +1,15 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
 import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
@@ -11,7 +22,7 @@ import {DateTimeUtils} from "@shared/utils/date-time-utils";
   styleUrls: ['./scoreboard.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class ScoreboardComponent implements OnInit, OnDestroy {
+export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
 
   /**
    * The date picker component.
@@ -20,13 +31,14 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
   public datePicker: MatDatepicker<any>;
 
   /**
-   * The current selected day of the scoreboard.
+   * The selected day, like "20260315", from the URL. When it changes (the browser's back or forward button), the
+   * scoreboard shows that day.
    */
   @Input()
   public selectedDayString: string;
 
   /**
-   * Outputs the new date when the selected day is changed;
+   * Outputs the new date when the user changes the selected day. Not emitted for selectedDayString changes.
    */
   @Output()
   public selectedDayChange = new EventEmitter<Date>();
@@ -56,12 +68,31 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
    */
   private readonly nhlGameRefreshTime = 10000;
 
+  /**
+   * Whether a day has been shown, so the first selectedDayString always loads.
+   */
+  private hasLoaded: boolean = false;
+
   constructor(private nhlGameService: NhlGameService) {
   }
 
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedDayString'] && this.selectedDayString) {
+      const day = dayjs(this.selectedDayString, "YYYYMMDD");
+      if (day.isValid() && !(this.hasLoaded && day.isSame(this.selectedDay, 'day'))) {
+        this.selectedDay = day.toDate();
+        this.showSelectedDay();
+      }
+    }
+  }
+
+  /**
+   * Shows today when no day was given.
+   */
   public ngOnInit() {
-    this.selectedDay = dayjs(this.selectedDayString, "YYYYMMDD").toDate();
-    this.handleDateChange();
+    if (!this.hasLoaded) {
+      this.showSelectedDay();
+    }
   }
 
   public ngOnDestroy() {
@@ -101,23 +132,38 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
     this.handleDateChange();
   }
 
+  /**
+   * Shows the day the user picked and outputs it, so the page can put it in the URL.
+   */
   private handleDateChange(): void {
     this.selectedDayChange.emit(this.selectedDay);
+    this.showSelectedDay();
+  }
+
+  /**
+   * Loads the selected day's games, refreshing them while the day is today.
+   */
+  private showSelectedDay(): void {
+    this.hasLoaded = true;
     this.updateDisplayDayLabel();
     this.retrieveNhlGames();
+    this.stopContinuousNhlGameUpdates();
     if (this.displayDayLabel === "Today") {
       this.startContinuousNhlGameUpdates();
-    } else {
-      this.stopContinuousNhlGameUpdates();
     }
   }
 
   private retrieveNhlGames(): void {
-    this.nhlGameService.getNhlGames(this.selectedDay).then(games => {
-      this.currentDayGames = games;
+    const day = this.selectedDay;
+    this.nhlGameService.getNhlGames(day).then(games => {
+      if (day === this.selectedDay) {
+        this.currentDayGames = games;
+      }
     }).catch(() => {
       // The service logs the error. Show no games rather than another day's games
-      this.currentDayGames = [];
+      if (day === this.selectedDay) {
+        this.currentDayGames = [];
+      }
     });
   }
 
@@ -127,7 +173,11 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
    */
   private startContinuousNhlGameUpdates(): void {
     this.nhlGameUpdateTimerId = setInterval(() => {
-      this.nhlGameService.getNhlGames(this.selectedDay).then(games => {
+      const day = this.selectedDay;
+      this.nhlGameService.getNhlGames(day).then(games => {
+        if (day !== this.selectedDay) {
+          return;
+        }
         this.currentDayGames.forEach(existingGame  => {
           let updatedGame = games.find(item => item.id === existingGame.id);
           if (updatedGame) {

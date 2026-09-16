@@ -1,10 +1,12 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
+import { RouterExtensionService } from '@shared/services/router-extension.service';
 import { ClubScheduleSeason } from '@shared/models/nhl-web-api/club-schedule.model';
 import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import {
@@ -213,6 +215,23 @@ describe('TeamComponent', () => {
 
     expect(console.error).toHaveBeenCalled();
     expect(child('app-team-stats').teamStats).toEqual([]);
+  });
+
+  it('should go back in the browser history, labeled with the previous page', async () => {
+    spyOn(TestBed.inject(RouterExtensionService), 'getPreviousUrl').and.returnValue('/game/2025021057');
+    const back = spyOn(TestBed.inject(Location), 'back');
+    open('999');
+    expect(text('.games-label')).toBe('Game');
+    component.backToPrevious();
+    expect(back).toHaveBeenCalled();
+  });
+
+  it("should go to today's games without a previous page", () => {
+    const navigateByUrl = spyOn(TestBed.inject(Router), 'navigateByUrl').and.resolveTo(true);
+    open('999');
+    expect(text('.games-label')).toBe('Games');
+    component.backToPrevious();
+    expect(navigateByUrl).toHaveBeenCalledWith('/');
   });
 
   it('should load the new team when the route changes', async () => {

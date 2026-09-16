@@ -48,6 +48,9 @@ export class StatsComponent implements OnInit {
   /** The game type of the last request, so a response of the other one is ignored. */
   private requestedGameType: number;
 
+  /** Whether the season is in playoff mode, which makes the playoffs the default game type. */
+  private isPlayoffMode: boolean = false;
+
   private readonly skaterCategories = ["points", "goals", "assists", "toi"];
 
   private readonly goalieCategories = ["savePctg", "goalsAgainstAverage", "wins"];
@@ -76,20 +79,20 @@ export class StatsComponent implements OnInit {
       // The service logs the error
       return false;
     }).then(isPlayoffMode => {
+      this.isPlayoffMode = isPlayoffMode;
       this.showFilters = isPlayoffMode;
-      this.playoffsSelected = isPlayoffMode;
       this.subscribeToGameType();
     });
   }
 
   /**
-   * Loads the leaders whenever the gameType query parameter changes ("P" for the playoffs, "R" for the regular season).
+   * Loads the leaders whenever the gameType query parameter changes ("P" for the playoffs, "R" for the regular season),
+   * including with the browser's back and forward buttons. Without the parameter, it's the default game type.
    */
   private subscribeToGameType(): void {
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
-      if (params.has("gameType")) {
-        this.playoffsSelected = params.get("gameType") === "P";
-      }
+      const gameType = params.get("gameType");
+      this.playoffsSelected = gameType === "P" || gameType === "R" ? gameType === "P" : this.isPlayoffMode;
       this.updateStats();
     });
   }

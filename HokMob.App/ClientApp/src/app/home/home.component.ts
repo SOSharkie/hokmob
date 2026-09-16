@@ -26,15 +26,21 @@ export class HomeComponent implements OnInit {
       // The service logs the error. Show the standings summary
       this.isPlayoffs = false;
     });
+    // Also runs for the browser's back and forward buttons, which the scoreboard follows through selectedDayString
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
-      if (params.has("date") && params.get("date").length === 8) {
-        this.selectedDayString = params.get("date");
+      const date = params.get("date");
+      if (/^\d{8}$/.test(date ?? "") && dayjs(date, "YYYYMMDD").isValid()) {
+        this.selectedDayString = date;
       } else {
         this.selectedDayString = dayjs().format("YYYYMMDD");
       }
     });
   }
 
+  /**
+   * Puts the day the user picked in the URL (without a date for today), as a new history entry, so the back button of
+   * a game opened from it returns to that day.
+   */
   public onSelectedDayChange(date: Date): void {
     let currentDay = dayjs().format("YYYYMMDD");
     this.selectedDayString = dayjs(date).format("YYYYMMDD");

@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, HostListener, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
-import {ActivatedRoute, Params, Router} from "@angular/router";
+import {ActivatedRoute, Params} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
@@ -172,16 +172,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public get backButtonLabel(): string {
-    if (this.previousUrl) {
-      if (this.previousUrl.includes("playoffs")) {
-        return "Playoffs";
-      } else if (this.previousUrl.includes("player")) {
-        return "Player";
-      } else if (this.previousUrl.includes("team")) {
-        return "Team";
-      }
-    }
-    return "Games";
+    return RouterExtensionService.getBackLabel(this.routerExtensionService.getPreviousUrl(), "Games");
   }
 
   /**
@@ -211,17 +202,13 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return !this.completedGame && (this.homeTeamFormGames.length > 0 || this.awayTeamFormGames.length > 0);
   }
 
-  private previousUrl: string;
-
   constructor(public seriesDialog: MatDialog,
               private route: ActivatedRoute,
-              private router: Router,
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService) {
   }
 
   public ngOnInit(): void {
-    this.previousUrl = this.routerExtensionService.getPreviousUrl();
     this.route.params.subscribe((params: Params) => {
       this.gameId = params['id'];
       this.loadGame();
@@ -237,18 +224,13 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.stopNhlIntermissionTimer();
   }
 
+  /**
+   * Goes back to the previous page, or without one (the game was opened directly) to the games of the game day.
+   */
   public backToPrevious(): void {
-    if (this.previousUrl) {
-      this.router.navigateByUrl(this.previousUrl);
-    } else {
-      const dateParam = this.landing ? {date: dayjs(this.landing.startTimeUTC).format("YYYYMMDD")} : {};
-      this.router.navigate([''],
-          {
-            relativeTo: this.route,
-            queryParams: dateParam
-          }
-      );
-    }
+    const gameDay = this.landing ? dayjs(this.landing.startTimeUTC).format("YYYYMMDD") : undefined;
+    const isToday = !gameDay || gameDay === dayjs().format("YYYYMMDD");
+    this.routerExtensionService.back(isToday ? "/" : "/?date=" + gameDay);
   }
 
   /**

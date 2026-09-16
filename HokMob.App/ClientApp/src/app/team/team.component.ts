@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Params, Router} from "@angular/router";
+import {ActivatedRoute, Params} from "@angular/router";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
@@ -31,8 +31,6 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   /** The team from NhlTeamUtils, or undefined for a route with an unknown team ID. */
   public team: NhlTeamCustomModel;
-
-  public previousUrl: string;
 
   public teamLogo: string;
 
@@ -66,14 +64,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   private readonly nextGameRefreshTime = 10000;
 
   public get backButtonLabel(): string {
-    if (this.previousUrl) {
-      if (this.previousUrl.includes("stats")) {
-        return "Stats";
-      } else if (this.previousUrl.includes("game")) {
-        return "Game";
-      }
-    }
-    return "Games";
+    return RouterExtensionService.getBackLabel(this.routerExtensionService.getPreviousUrl(), "Games");
   }
 
   public get teamName(): string {
@@ -81,14 +72,12 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   constructor(private route: ActivatedRoute,
-              private router: Router,
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
               private nhlStandingAndPlayoffService: NhlStandingAndPlayoffService,
               private nhlStatsApiService: NhlStatsApiService) {}
 
   public ngOnInit(): void {
-    this.previousUrl = this.routerExtensionService.getPreviousUrl();
     this.route.params.subscribe((params: Params) => {
       this.stopContinuousNextGameUpdates();
       this.teamId = Number(params['id']);
@@ -109,19 +98,11 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.stopContinuousNextGameUpdates();
   }
 
+  /**
+   * Goes back to the previous page, or without one (the team was opened directly) to today's games.
+   */
   public backToPrevious(): void {
-    if (this.previousUrl) {
-      this.router.navigateByUrl(this.previousUrl);
-    } else {
-      let dateString = dayjs().format("YYYYMMDD");
-      const dateParam = {date: dateString};
-      this.router.navigate([''],
-          {
-            relativeTo: this.route,
-            queryParams: dateParam
-          }
-      );
-    }
+    this.routerExtensionService.back("/");
   }
 
   /**

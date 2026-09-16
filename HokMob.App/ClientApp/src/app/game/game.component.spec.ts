@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import * as dayjs from 'dayjs';
@@ -323,7 +324,7 @@ describe('GameComponent', () => {
     open('2025021057');
     flushBundle('2025021057', {...mockGameBundle(2025021057), landing: undefined});
     await settle();
-    expect(text('.game-load-error')).toBe("This game couldn't be loaded.");
+    expect(text('.game-load-error-message')).toBe("This game couldn't be loaded.");
     expect(element('.game-header')).toBeNull();
     expect(component.landing).toBeUndefined();
   });
@@ -540,21 +541,23 @@ describe('GameComponent', () => {
     expect(component.landing.id).toBe(2025020952);
   });
 
-  it('should go back to the games of the game day without a previous page', async () => {
-    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+  it('should go to the games of the game day without a previous page', async () => {
+    const navigateByUrl = spyOn(TestBed.inject(Router), 'navigateByUrl').and.resolveTo(true);
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
     flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     await settle();
 
+    expect(text('.games-label')).toBe('Games');
     component.backToPrevious();
     const date = dayjs(mockGameLanding(2025021057).startTimeUTC).format('YYYYMMDD');
-    expect(navigate).toHaveBeenCalledWith([''], jasmine.objectContaining({queryParams: {date}}));
+    expect(navigateByUrl).toHaveBeenCalledWith('/?date=' + date);
   });
 
-  it('should go back to the previous page when there is one', async () => {
+  it('should go back in the browser history, not to a new entry, when there is a previous page', async () => {
     spyOn(TestBed.inject(RouterExtensionService), 'getPreviousUrl').and.returnValue('/playoffs');
+    const back = spyOn(TestBed.inject(Location), 'back');
     const navigateByUrl = spyOn(TestBed.inject(Router), 'navigateByUrl').and.resolveTo(true);
     open('2025030414');
     flushBundle('2025030414', mockGameBundle(2025030414));
@@ -564,6 +567,19 @@ describe('GameComponent', () => {
 
     expect(text('.games-label')).toBe('Playoffs');
     component.backToPrevious();
-    expect(navigateByUrl).toHaveBeenCalledWith('/playoffs');
+    expect(back).toHaveBeenCalled();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('should show a back button when the game fails to load', async () => {
+    spyOn(TestBed.inject(RouterExtensionService), 'getPreviousUrl').and.returnValue('/?date=20260301');
+    const back = spyOn(TestBed.inject(Location), 'back');
+    open('2025021057');
+    flushBundle('2025021057', {});
+    await settle();
+
+    expect(text('.game-load-error .games-label')).toBe('Games');
+    fixture.nativeElement.querySelector('.game-load-error .games-back-button').click();
+    expect(back).toHaveBeenCalled();
   });
 });

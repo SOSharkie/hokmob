@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, Params, Router} from "@angular/router";
+import {ActivatedRoute, Params} from "@angular/router";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
@@ -27,8 +27,6 @@ import {
 export class PlayerComponent implements OnInit {
 
   public playerId: number;
-
-  public previousUrl: string;
 
   /** The player's bio. Undefined until the landing loads, or when it fails. */
   public player: PlayerLanding;
@@ -65,14 +63,7 @@ export class PlayerComponent implements OnInit {
   }
 
   public get backButtonLabel(): string {
-    if (this.previousUrl) {
-      if (this.previousUrl.includes("stats")) {
-        return "Stats";
-      } else if (this.previousUrl.includes("game")) {
-        return "Game";
-      }
-    }
-    return "Stats";
+    return RouterExtensionService.getBackLabel(this.routerExtensionService.getPreviousUrl(), "Stats");
   }
 
   /** The season the cards show, like "2025-2026". Empty for a player who has never played an NHL game. */
@@ -98,16 +89,11 @@ export class PlayerComponent implements OnInit {
   }
 
   constructor(private route: ActivatedRoute,
-              private router: Router,
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
               private nhlStatsApiService: NhlStatsApiService) {}
 
   public ngOnInit(): void {
-    this.previousUrl = this.routerExtensionService.getPreviousUrl();
-    if (this.previousUrl === '/') {
-      this.previousUrl = null;
-    }
     this.route.params.subscribe((params: Params) => {
       this.playerId = Number(params['id']);
       this.resetPlayerData();
@@ -115,12 +101,11 @@ export class PlayerComponent implements OnInit {
     });
   }
 
+  /**
+   * Goes back to the previous page, or without one (the player was opened directly) to the stats page.
+   */
   public backToPrevious(): void {
-    if (this.previousUrl) {
-      this.router.navigateByUrl(this.previousUrl);
-    } else {
-      this.router.navigate(['stats']);
-    }
+    this.routerExtensionService.back("/stats");
   }
 
   public showBlankHeadshot(event: Event): void {
