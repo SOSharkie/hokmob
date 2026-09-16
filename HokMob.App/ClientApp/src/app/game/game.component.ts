@@ -47,6 +47,12 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public seriesStatus: SeriesStatus;
 
   /**
+   * The NHL.com path of the game's recap video (or its condensed game) from score/{gameDate}. Only loaded for finished
+   * games, and missing until NHL.com posts the video.
+   */
+  public highlightsPath: string;
+
+  /**
    * The home team's players with their ratings, best first. Empty without a boxscore or player stats.
    */
   public homePlayers: GamePlayer[] = [];
@@ -86,6 +92,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   private nextPeriod: string;
 
   private readonly nhlGameRefreshTime = 10000;
+
+  private readonly nhlSiteUrl = "https://www.nhl.com";
 
   public get gameInfoLabel(): string {
     if (this.landing) {
@@ -141,13 +149,26 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.landing?.venue?.default ?? "N/A";
   }
 
-  public get gameStreamLink(): string {
-    if (this.landing) {
-      let homeTeam = this.landing.homeTeam;
-      let homeTeamLink = (homeTeam.placeName?.default + " " + homeTeam.commonName?.default).toLowerCase().replaceAll(' ', '-');
-      return "https://720pstream.nu/nhl/live-" + homeTeamLink + "-stream";
+  /**
+   * The watch link: the recap video for a finished game once it's posted, else the NHL.com game center, which lists
+   * where to watch a game. The API has no stream links.
+   */
+  public get watchLink(): string {
+    if (this.completedGame && this.highlightsPath) {
+      return this.nhlSiteUrl + this.highlightsPath;
     }
-    return "N/A";
+    return this.landing ? this.nhlSiteUrl + "/gamecenter/" + this.landing.id : "";
+  }
+
+  public get watchLabel(): string {
+    if (this.completedGame) {
+      return this.highlightsPath ? "Highlights" : "NHL.com Game Center";
+    }
+    return "Where to Watch";
+  }
+
+  public get watchIcon(): string {
+    return this.completedGame && this.highlightsPath ? "smart_display" : "tv";
   }
 
   public get backButtonLabel(): string {
@@ -263,7 +284,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       this.leagueRouterLink = this.landing.gameType === NhlGameTypeEnum.PLAYOFFS ? "/playoffs" : "/standings";
       this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.homeTeam.id);
       this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.awayTeam.id);
-      this.loadSeriesStatus();
+      this.loadScoreGame();
       this.loadTeamForm();
       if (!this.completedGame && (this.liveGame || this.gameDay === "Today")) {
         this.startContinuousNhlGameUpdates();
@@ -281,6 +302,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.boxscore = undefined;
     this.rightRail = undefined;
     this.seriesStatus = undefined;
+    this.highlightsPath = undefined;
     this.homePlayers = [];
     this.awayPlayers = [];
     this.homeTeamFormGames = [];
@@ -307,16 +329,18 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Loads the series status of a playoff game. If it fails, the league label falls back to "NHL Playoffs".
+   * Loads the game from score/{gameDate} for the series status of a playoff game and the highlights of a finished game.
+   * If it fails, the league label falls back to "NHL Playoffs" and the watch link to the NHL.com game center.
    */
-  private loadSeriesStatus(): void {
-    if (this.landing.gameType !== NhlGameTypeEnum.PLAYOFFS) {
+  private loadScoreGame(): void {
+    if (this.landing.gameType !== NhlGameTypeEnum.PLAYOFFS && !this.completedGame) {
       return;
     }
     const gameId = this.gameId;
-    this.nhlGameService.getSeriesStatus(this.landing.id, this.landing.gameDate).then(seriesStatus => {
+    this.nhlGameService.getScoreGame(this.landing.id, this.landing.gameDate).then(scoreGame => {
       if (gameId === this.gameId) {
-        this.seriesStatus = seriesStatus;
+        this.seriesStatus = scoreGame?.seriesStatus;
+        this.highlightsPath = scoreGame?.threeMinRecap ?? scoreGame?.condensedGame;
       }
     }).catch(() => {
       // Already logged by the service
@@ -344,8 +368,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Refreshes the game every 10 seconds. Stops once the game is over, after reloading the series status. A failed
-   * refresh keeps the data already shown.
+   * Refreshes the game every 10 seconds. Stops once the game is over, after reloading the series status and
+   * highlights. A failed refresh keeps the data already shown.
    */
   private startContinuousNhlGameUpdates(): void {
     this.nhlGameUpdateTimerId = setInterval(() => {
@@ -357,7 +381,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         this.applyGameBundle(bundle);
         if (this.completedGame) {
           this.stopContinuousNhlGameUpdates();
-          this.loadSeriesStatus();
+          this.loadScoreGame();
         }
       }).catch(() => {
         // Already logged by the service

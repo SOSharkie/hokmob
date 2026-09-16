@@ -54,8 +54,8 @@
           <span>{{gameVenue}}</span>
         </div>
         <div class="game-info-item game-tv-container">
-          <mat-icon fontIcon="tv"></mat-icon>
-          <a class="stream-link" [href]="gameStreamLink">Game Stream</a>
+          <mat-icon [fontIcon]="watchIcon"></mat-icon>
+          <a class="watch-link" [href]="watchLink" target="_blank" rel="noopener">{{watchLabel}}</a>
         </div>
       </div>
     </div>

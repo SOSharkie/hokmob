@@ -143,7 +143,7 @@ $central-info-width: 130px;
       }
 
       .game-tv-container {
-        .stream-link {
+        .watch-link {
           color: $gray-04;
           text-decoration-line: none;
         }
@@ -152,7 +152,7 @@ $central-info-width: 130px;
       .game-tv-container:hover {
         color: white;
 
-        .stream-link {
+        .watch-link {
           color: white;
           text-decoration-line: underline;
         }

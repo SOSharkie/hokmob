@@ -17,6 +17,7 @@ import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import scoreWithOvertimeAndShootout from './score-2026-03-01.json';
 import scorePlayoffs from './score-2026-06-09.json';
 import scoreFuture from './score-2026-10-08.json';
+import scoreRegularSeason from './score-2026-03-15.json';
 import standingsNow from './standings-now.json';
 import playoffCarousel from './playoff-series-carousel-20252026.json';
 import playoffBracket from './playoff-bracket-2026.json';
@@ -110,6 +111,14 @@ export function mockOvertimeFinal(): ScoreGame {
 /** Game 2025020952: CGY 2 @ ANA 3, final in a shootout. */
 export function mockShootoutFinal(): ScoreGame {
   return mockScoreResponse().games[2];
+}
+
+/**
+ * score/2026-03-15, trimmed to 2 finals: STL @ WPG (game 2025021057, like the gamecenter fixtures) and SJS @ OTT. Both
+ * have their recap and condensed game video paths.
+ */
+export function mockRegularSeasonScoreResponse(): ScoreResponse {
+  return copy(scoreRegularSeason);
 }
 
 /**
