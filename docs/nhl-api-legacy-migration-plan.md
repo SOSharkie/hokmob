@@ -1,6 +1,6 @@
 # NHL API Migration Plan, Part 2: Remaining Legacy APIs
 
-Status: **Phases 9 to 14 done** (planned 2026-09-15, phases 9–12 built 2026-09-15, 13–14 built 2026-09-16). Phases 9–15 continue
+Status: **Done** (planned 2026-09-15, phases 9–12 built 2026-09-15, 13–15 built 2026-09-16). Phases 9–15 continue
 [`nhl-api-migration-plan.md`](nhl-api-migration-plan.md). Phases 0–8 in that plan migrated the home and game pages.
 Scope: every remaining caller of a dead API: the team page, player page, stats page, header search and playoffs page.
 Then the old services and models get deleted.
@@ -19,7 +19,7 @@ live game checklist (section 10). This plan only adds what's new. The decisions 
 
 Section 3 compares the two APIs for each need of the remaining pages.
 
-## 1. What's still broken
+## 1. What was broken (2026-09-15, all fixed)
 
 | Page / feature | Components | Dead calls | What the user sees |
 |---|---|---|---|
@@ -578,7 +578,27 @@ Built on 2026-09-16 as described below, with these notes:
 - Test inputs: 2023 (all finished), 2026 (existing fixture), 2027 (empty → falls back to 2026), 2020 (qualifiers
   hidden, note shown), 2021 (no conferences), `?season=20122013` and `?season=abc` (fall back to the default).
 
-## 11. Cleanup (phase 15)
+## 11. Cleanup (phase 15, done)
+
+Built on 2026-09-16 as described below, with these notes:
+- Already gone before this phase: the old half of `NhlSearchService` (phase 13) and every TODO pointing at a dead
+  API (phases 10–14).
+- `NhlImageService` was still injected, unused, by `ScoreboardComponent`, `ScorecardComponent` and
+  `StandingsComponent`. The injections were removed with the service.
+- The grep below used to say `models/nhl-(…|stats|…)` without a trailing `/`, which also matches the new
+  `models/nhl-stats-api/`. It now ends in `/` and returns nothing. `NhlPlayerHeadshotUtils`' comment no longer names
+  the old headshot host.
+- Also deleted `StatsUtils.getPlayerLastName`, which had no callers.
+- No spec tested the deleted code, so none were removed. `test:ci`: 526 specs pass; production `ng build` passes.
+- The TODOs left are the live checks (`game`, `game-header` power play, `period-utils`, `nhl-game-info-utils`,
+  `nhl-api-mocks`), rating approach B (`stats-utils`) and the Utah logo (`nhl-team-logo-utils`).
+- The placeholder specs left are `about`, `footer`, `header`, `home` and `navigation-menu`, plus the CLI's
+  `app` spec.
+- Checked in the browser: `/`, `/game/2025030414`, `/team/6`, `/player/8476460`, `/player/8476945`,
+  `/player/8477496`, `/stats`, `/playoffs`, `/standings` and a search for "mac": no console errors, 28 `/api/nhl*`
+  responses all 200, no request to an `nhl.com` host.
+
+The plan:
 
 - Delete:
   - `NhlStatsService` and `NhlImageService` (and their providers in `AppModule` and `AppTestingModule`);
@@ -587,7 +607,7 @@ Built on 2026-09-16 as described below, with these notes:
   - the old `StatsUtils` methods (`calculatePlayerHokmobRating`, `calculatePlayerGoalieHokMobRating`, `sortByField`,
     `sortByTimeField`);
   - all old model folders.
-- `grep -r "statsapi\|bamgrid\|suggest.svc\|models/nhl-\(general\|stats\|schedule\|live-feed\|linescore\|boxscore\|playoffs\)" src`
+- `grep -r "statsapi\|bamgrid\|suggest.svc\|models/nhl-\(general\|stats\|schedule\|live-feed\|linescore\|boxscore\|playoffs\)/" src`
   returns nothing. No Angular code calls `api.nhle.com` directly.
 - No TODO points at a dead API. The TODOs left are the live checks (first plan, section 10), rating approach B and
   the Utah logo.
@@ -636,7 +656,9 @@ Built on 2026-09-16 as described below, with these notes:
 6. **Seasons come from responses, not the calendar.** **Decided 2026-09-15** (not optional).
    `DateTimeUtils.getCurrentNhlSeason()` is wrong between the
    season start (2026-09-29) and October 10. New code uses `now`/`current` endpoints and the returned `seasonId` /
-   `featuredStats.season`. The util stays only for display formatting until cleanup.
+   `featuredStats.season`. The util stays only for display formatting until cleanup. After phase 15 it still picks
+   the home playoff summary's season (only shown in playoff mode, when it's right), the series dialog's fallback
+   season and the playoffs page's default year (which falls back a year when the bracket is empty); see 15.
 7. **The playoffs page shows the latest bracket that has series, with a season picker from 2013-14 on** (phase 14).
    **Decided 2026-09-15.**
    - The picker covers the current divisional and wild card era, whose brackets use today's layout. In 2020, the
@@ -696,7 +718,7 @@ add one in phase 9.
 | 12 | Stats page: api-web leaders, hits and shots from the stats endpoint, leaderboard entries | **Done** | `stats`, `stat-leaderboard`, new `nhl-leaders.service`, `nhl-stats-api.service`, deleted `beta-nhl-stats.service` and `nhl-stat-type.enum` | `/stats` regular season, `?gameType=P` (2025-26 playoffs), empty categories, one source failing | Service URLs and categories; entry conversion for both sources; `stats` (toggle, failure clears spinner), real `stat-leaderboard` spec (formats, team from abbrev, empty) |
 | 13 | Header search: static teams, player search via proxy, headshot URLs | **Done** | `nhl-search.service.ts`, `search-input`, `search-result`, `search-result.model.ts` | Typing "bos", "mac", "zz" (no results), a failed search | Service (URL, params, errors); `search-input` (debounce, min length, stale responses, teams first), real `search-result` spec |
 | 14 | Playoffs page: bracket by year with fallback, season picker (2013-14 on), letter lookup, 2020 qualifiers note, labels from the bracket, TBD series cards | **Done** | `nhl-standing-and-playoff.service.ts`, `playoffs`, `playoff-series`, new `nhl-playoff-bracket-utils` | `/playoffs` today (falls back to 2025-26), `?season=` 20132014, 20192020 (note), 20202021 (no conferences), 20222023; an invalid season | Service conversion, fallback and round 0 filtering; `playoffs` (letters in the right slots, picker options and query parameter, invalid season, late responses, empty bracket, failure, 2020 note, 2021 labels), `playoff-series` TBD case |
-| 15 | Cleanup: delete old services, methods, `StatsUtils` helpers and model folders; docs | Not started | `nhl-stats.service`, `nhl-image.service`, `nhl-game.service.ts`, `stats-utils`, `models/nhl-*` (old), `app.module`, `app-testing.module`, `CLAUDE.md`, both plans | The grep in section 11 is empty; every route and search in the browser with no console errors | Remove specs for deleted code; full `test:ci` |
+| 15 | Cleanup: delete old services, methods, `StatsUtils` helpers and model folders; docs | **Done** | `nhl-stats.service`, `nhl-image.service`, `nhl-game.service.ts`, `stats-utils`, `models/nhl-*` (old), `app.module`, `app-testing.module`, `CLAUDE.md`, both plans | The grep in section 11 is empty; every route and search in the browser with no console errors | Remove specs for deleted code; full `test:ci` |
 
 ## 15. Open items
 
@@ -708,3 +730,6 @@ add one in phase 9.
   - A local Utah logo.
   - `DateTimeUtils.isPlayoffMode()` from season dates (api-web `schedule/{date}` or the stats API `season`).
   - An in-progress playoff series check during the 2027 playoffs.
+- `DateTimeUtils.getCurrentNhlSeason()` (decision 6) is still used by the home playoff summary, the series dialog and
+  the playoffs page's default year. None of them shows a wrong season today, but they could use `now` endpoints
+  instead.

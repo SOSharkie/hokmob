@@ -3,15 +3,14 @@
 Hockey stats site (like Fotmob, for the NHL). `HokMob.App/` is an ASP.NET Core (.NET 7) backend that serves the Angular
 app and proxies the NHL API. `HokMob.App/ClientApp/` is the Angular 15 frontend (Angular Material, dayjs, chart.js).
 
-## NHL API migration (home and game pages done)
+## NHL API migration (done)
 
-The old NHL APIs (`statsapi.web.nhl.com`, `cms.nhl.bamgrid.com`, `suggest.svc.nhl.com`) are dead. The home and game
-pages were moved to `api-web.nhle.com` in phases 0–8. **Read `docs/nhl-api-migration-plan.md` before working on any
-page**: it has field mappings, decisions, known risks, and in section 10 the open live game checks and follow-ups.
-Update it when you change a migrated page or finish an open item.
-
-The remaining pages are planned as phases 9–15 in `docs/nhl-api-legacy-migration-plan.md` (inventory, field
-mappings, proposed decisions). Read both plans before working on those pages.
+The old NHL APIs (`statsapi.web.nhl.com`, `cms.nhl.bamgrid.com`, `suggest.svc.nhl.com`) are dead, and nothing calls
+them anymore. The home and game pages moved in phases 0–8 (`docs/nhl-api-migration-plan.md`); the team, player, stats
+and playoffs pages and the header search moved in phases 9–14, and phase 15 deleted the old code
+(`docs/nhl-api-legacy-migration-plan.md`). **Read both plans before working on a page**: they have field mappings,
+decisions, known risks, and the open live game checks and follow-ups (first plan section 10, second plan section 15).
+Update them when you change a page or finish an open item.
 
 - **APIs** ([reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md)):
   - `api-web.nhle.com/v1` for everything live, game, team, schedule, standings and playoff data.
@@ -22,10 +21,9 @@ mappings, proposed decisions). Read both plans before working on those pages.
   syntax (`cayenneExp`, `isAggregate`, `isGame`, `sort`) and fields. The stats API sends no CORS header, so it's
   only called from the backend, which builds the queries.
 
-- Every page and the header search use the new APIs (phases 0–14). The old services, methods and `models/nhl-*`
-  folders stay until the cleanup (phase 15), so a new `statsapi.web.nhl.com` console error is a regression.
+- Every page and the header search use the new APIs. A request to an old host is a regression.
 - Out-of-scope code that breaks because a shared component changed gets the smallest compile fix plus a `// TODO:`
-  comment pointing at the plan (see `team.component.ts` for the format).
+  comment pointing at the plan (like `// TODO: ... (see docs/nhl-api-migration-plan.md, 5.2)`).
 
 ## Layout
 
@@ -33,9 +31,14 @@ mappings, proposed decisions). Read both plans before working on those pages.
   first path segments in `AllowedRoots` are proxied, so add new roots there. Empty segments are dropped, so a
   trailing `/` is fine.
 - `HokMob.App/Services/NhlApiClient.cs`: HTTP client with in-memory caching per path root (10s for live data).
+- `HokMob.App/Controllers/NhlSearchController.cs`: `/api/nhl-search/player?q=…` → `search.d3.nhle.com` player search
+  (`NhlSearchApiClient`, cached 5 minutes). Only allowlisted query parameters are forwarded.
+- `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders` and `/teams`, built from
+  the stats API (`NhlStatsApiClient`, cached 5 minutes). The controller builds every upstream query and merges the
+  reports a page needs into one response.
 - `ClientApp/src/app/shared/`:
-  - `models/nhl-web-api/`: typed models for the new API. The older `models/nhl-*` folders hold old API models, kept
-    only for unmigrated pages.
+  - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the
+    `/api/nhl-stats/*` responses.
   - `services/`: Angular services.
   - `utils/`: static helpers: `PeriodUtils`, `NhlGameInfoUtils`, `NhlTeamUtils`, `NhlTeamLogoUtils`,
     `NhlTeamColorUtils`, `NhlPlayerHeadshotUtils`, `DateTimeUtils`, `StatsUtils`, `PlayByPlayUtils`.
@@ -131,8 +134,9 @@ mappings, proposed decisions). Read both plans before working on those pages.
   "https://api.nhle.com/stats/rest/en/skater/summary?isAggregate=false&isGame=false&cayenneExp=playerId=8477496%20and%20gameTypeId=2"`
   (URL-encode spaces as `%20`). For api-web: `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>` and inspect
   with `node -e`. Useful test inputs are listed in the plan's phases table. No live games until the preseason starts
-  on 2026-09-29; the 2025-26 playoffs are all finished. During a live game, `npm run capture-live-fixtures -- --watch`
-  (from `HokMob.App/ClientApp`) saves live responses for the plan's section 10 checks.
+  on 2026-09-19 (the regular season starts 2026-09-29); the 2025-26 playoffs are all finished. During a live game,
+  `npm run capture-live-fixtures -- --watch` (from `HokMob.App/ClientApp`) saves live responses for the first plan's
+  section 10 checks.
 
 ## Git
 

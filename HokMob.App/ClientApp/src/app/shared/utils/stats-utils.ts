@@ -1,5 +1,3 @@
-import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
-import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
 import {
   Boxscore,
   BoxscoreGoalie,
@@ -60,42 +58,6 @@ export class StatsUtils {
   }
 
   /**
-   * Calculates hokmob rating for historical skater stats. Does not include takeaways or giveaways.
-   */
-  public static calculatePlayerHokmobRating(skaterStats: NhlPlayerStatsModel): number {
-    let hokmobRating = 5;
-    hokmobRating += (skaterStats.goals * 1.1);
-    hokmobRating += (skaterStats.assists * 0.5);
-    hokmobRating += ((skaterStats.shots - skaterStats.goals) * 0.3);
-    hokmobRating += (skaterStats.hits * 0.2);
-    hokmobRating += (skaterStats.blocked * 0.2);
-    // hokmobRating += (skaterStats.takeaways * 0.2);
-
-    if (skaterStats.pim) {
-      let penaltyDeduction = skaterStats.pim;
-      if (skaterStats.pim === 5 || skaterStats.pim === 7 || skaterStats.pim === 9 || skaterStats.pim === 11) {
-        penaltyDeduction -= 5;
-      }
-      hokmobRating -= Math.min(3, penaltyDeduction * 0.25);
-    }
-
-    let realPlusMinus = (skaterStats.plusMinus - skaterStats.goals - skaterStats.assists + skaterStats.powerPlayPoints);
-    if (skaterStats.plusMinus > 0) {
-      hokmobRating += (realPlusMinus * 0.3);
-    } else {
-      hokmobRating += (skaterStats.plusMinus * 0.5);
-    }
-
-    // hokmobRating -= (skaterStats.giveaways * 0.2);
-
-    if (skaterStats.faceOffPct) {
-      hokmobRating += (-0.5 + (skaterStats.faceOffPct / 100));
-    }
-
-    return parseFloat(Math.min(10.0, hokmobRating).toFixed(1));
-  }
-
-  /**
    * Calculates the HokMob rating of a goalie for a single live or past game, from 0 to 10. A goalie who faced no
    * shots (no savePctg) gets 0.
    *
@@ -111,22 +73,6 @@ export class StatsUtils {
     hokmobRating -= ((goalie.shotsAgainst ?? 0) - (goalie.saves ?? 0));
 
     return parseFloat(Math.max(0, Math.min(10.0, hokmobRating)).toFixed(1));
-  }
-
-  /**
-   * Calculate hokmob rating for historical goalie stats.
-   */
-  public static calculatePlayerGoalieHokMobRating(goalieStats: NhlPlayerStatsModel): number {
-    let hokmobRating = 5;
-    if (goalieStats.savePercentage) {
-      hokmobRating += (goalieStats.evenSaves / 6);
-      hokmobRating += (goalieStats.powerPlaySaves / 5)
-      hokmobRating -= (goalieStats.shotsAgainst - goalieStats.saves);
-
-      return parseFloat(Math.max(0, Math.min(10.0, hokmobRating)).toFixed(1));
-    } else {
-      return 0;
-    }
   }
 
   /**
@@ -297,22 +243,6 @@ export class StatsUtils {
     } else {
       return "#e55b5b";
     }
-  }
-
-  public static getPlayerLastName(fullName: string): string {
-    return fullName.substring(fullName.lastIndexOf(' '));
-  }
-
-  public static sortByField(playerA: NhlPlayerModel, playerB: NhlPlayerModel, field: string): number {
-    return playerB.person.stats[0].splits[0].stat[field] - playerA.person.stats[0].splits[0].stat[field];
-  }
-
-  public static sortByTimeField(playerA: NhlPlayerModel, playerB: NhlPlayerModel, field: string): number {
-    let fieldA: string = playerA.person.stats[0].splits[0].stat[field];
-    let valueA = Number(fieldA.replace(":", "."));
-    let fieldB: string = playerB.person.stats[0].splits[0].stat[field];
-    let valueB = Number(fieldB.replace(":", "."));
-    return valueB - valueA;
   }
 
   /**

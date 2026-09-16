@@ -3,7 +3,6 @@ import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
-import {NhlImageService} from "@shared/services/nhl-image.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
 @Component({
@@ -57,8 +56,7 @@ export class ScoreboardComponent implements OnInit, OnDestroy {
    */
   private readonly nhlGameRefreshTime = 10000;
 
-  constructor(private nhlGameService: NhlGameService,
-              private nhlLogoService: NhlImageService) {
+  constructor(private nhlGameService: NhlGameService) {
   }
 
   public ngOnInit() {
