@@ -142,7 +142,8 @@ $central-info-width: 130px;
   .home-team-header {
     flex-direction: row;
     font-size: x-large;
-    width: 380px;
+    flex: 0 1 380px;
+    min-width: 0;
 
     .home-team-logo {
       width: 60px;
@@ -152,7 +153,8 @@ $central-info-width: 130px;
   .away-team-header {
     flex-direction: row;
     font-size: x-large;
-    width: 380px;
+    flex: 0 1 380px;
+    min-width: 0;
 
     .away-team-logo {
       width: 60px;
@@ -177,6 +179,30 @@ $central-info-width: 130px;
     min-width: 80px;
     text-align: center;
     font-size: xx-large;
+  }
+}
+
+// Narrow desktop styling: the game page's main column is squeezed by the side column, so stack each team's logo
+// above its name
+@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint) {
+  .score-container:not(.dropdown-score-container) {
+    .home-team-header, .away-team-header {
+      font-size: large;
+
+      .home-team-logo, .away-team-logo {
+        width: 50px;
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+
+    .home-team-banner {
+      flex-direction: column-reverse;
+    }
+
+    .away-team-banner {
+      flex-direction: column;
+    }
   }
 }
 

@@ -44,9 +44,11 @@
         .team-shots {
           display: flex;
           align-items: center;
+          min-width: 0;
 
           .team-logo {
             width: 85px;
+            max-width: 100%;
             margin: $spacing-x-small;
           }
         }
@@ -94,7 +96,7 @@
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $small-display-breakpoint) {
   .all-stats-container {
     flex-direction: row;
 
@@ -118,8 +120,8 @@
   }
 }
 
-// Mobile Styling
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+// Mobile and narrow desktop styling (the game page's main column is squeezed by the side column there)
+@media only screen and (max-width: $small-display-breakpoint) {
   .all-stats-container {
     flex-direction: column;
 

@@ -74,6 +74,8 @@ Update them when you change a page or finish an open item.
   It sets `DOTNET_ROLL_FORWARD=Major`, so a newer .NET runtime works.
 - In Claude Code, start it with the Browser pane's `preview_start` using the `hokmob` config in `.claude/launch.json`.
   Don't start dev servers from Bash. The first start takes ~20s; wait before navigating, or reload.
+- **Always stop your dev server when the work is done** (`preview_stop` with its `serverId`), as the last step. A
+  server left running holds port 4200 and blocks other sessions from starting their own.
 - `dotnet run` from `HokMob.App` is the HTTPS/SPA-proxy route (port 44424) and needs a trusted dev certificate; see
   `README.md` troubleshooting.
 - Check the proxy alone: `https://localhost:7157/api/nhl/score/now`, or `fetch('/api/nhl/...')` from the page.

@@ -2,7 +2,7 @@
   <div *ngIf="!miniStandings" class="standings-type-container">
     <span>{{standingsTableTitle(standingDivision)}}</span>
   </div>
-  <table class="standings-table">
+  <table class="standings-table" [class.mini-standings]="miniStandings">
     <thead>
     <tr class="standings-header">
       <th class="rank-header stat-cell"><span>#</span></th>

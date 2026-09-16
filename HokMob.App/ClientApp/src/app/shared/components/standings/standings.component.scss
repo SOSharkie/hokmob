@@ -61,6 +61,22 @@
       }
     }
 
+    // The mini standings are narrow: keep long names like "Golden Knights" on one line, and use less side padding so
+    // the table still fits inside the card's padding
+    &.mini-standings {
+      .standings-header th,
+      .standings-row td {
+        padding-left: $spacing-medium;
+        padding-right: $spacing-medium;
+      }
+
+      .standings-row .team-name-cell {
+        white-space: nowrap;
+        // The logo is pulled 10px left of the cell's content, so keep the room for it
+        padding-left: $spacing-large;
+      }
+    }
+
     .standings-row:hover {
       background-color: $black-04;
     }

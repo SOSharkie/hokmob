@@ -134,6 +134,17 @@ describe('MomentumComponent', () => {
     expect(component.momentumData[3]).toBe(30);
   });
 
+  it('should leave room for a goal puck at the max momentum', () => {
+    const playByPlay = withPlays(2025021057, [80]);
+    playByPlay.plays = new Array(4).fill(playByPlay.plays[0]);
+    show(playByPlay);
+    const momentumChart = Chart.getChart(canvas());
+    const point = momentumChart.getDatasetMeta(0).data[3];
+    // The puck image is 22px tall, centered on its point
+    expect(point.y - 11).toBeGreaterThanOrEqual(0);
+    expect(momentumChart.data.datasets[0].clip).toBeGreaterThanOrEqual(11);
+  });
+
   it('should add the overtime but not the shootout of a real shootout game', () => {
     show(mockGamePlayByPlay(2025020952));
     // The overtime ended at 5:00
