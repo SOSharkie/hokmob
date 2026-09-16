@@ -16,5 +16,56 @@
 
   .chart-container {
     height: 280px;
+    position: relative;
+
+    .goal-tooltip {
+      position: absolute;
+      z-index: 1;
+      box-sizing: border-box;
+      padding: $spacing-medium $spacing-large;
+      color: white;
+      font-size: small;
+      text-align: center;
+      background-color: $black-04;
+      border: 1px solid $gray-01;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      // The tooltip only shows while hovering the chart, so it must not take the pointer from it
+      pointer-events: none;
+
+      .goal {
+        padding: $spacing-small 0;
+      }
+
+      .goal + .goal {
+        border-top: 1px solid $gray-01;
+      }
+
+      .goal-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: $spacing-medium;
+        color: $gray-03;
+        margin-bottom: $spacing-small;
+
+        .team-logo {
+          width: 24px;
+          height: 24px;
+        }
+      }
+
+      .goal-scorer {
+        margin-bottom: $spacing-x-small;
+      }
+
+      .goal-assists {
+        color: $gray-03;
+      }
+
+      .color-green {
+        color: $green-01;
+      }
+    }
   }
 }

@@ -4,6 +4,7 @@ import { Chart } from 'chart.js';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayByPlay } from '@shared/models/nhl-web-api/play-by-play.model';
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
+import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import {
   derivedLivePlayByPlay,
   MockGamecenterGameId,
@@ -174,6 +175,104 @@ describe('MomentumComponent', () => {
     const dataset = Chart.getChart(canvas()).data.datasets[0];
     expect(dataset.data).toEqual(component.momentumData);
     expect(dataset['pointRadius']).toEqual(component.goalData);
+  });
+
+  /** Hovers the chart point at the index, as a mouse over it would, and renders the tooltip. */
+  function hover(index: number): void {
+    const momentumChart = Chart.getChart(canvas());
+    const point = momentumChart.getDatasetMeta(0).data[index];
+    momentumChart.tooltip.setActiveElements([{datasetIndex: 0, index}], {x: point.x, y: point.y});
+    fixture.detectChanges();
+  }
+
+  function tooltip(): HTMLElement {
+    return fixture.nativeElement.querySelector('.goal-tooltip');
+  }
+
+  /** The text of each goal in the tooltip, with its normalized rows joined by spaces. */
+  function tooltipGoals(): string[] {
+    return Array.from<Element>(tooltip()?.querySelectorAll('.goal') ?? [])
+        .map(goal => Array.from(goal.children).map(row => row.textContent.replace(/\s+/g, ' ').trim()).join(' '));
+  }
+
+  it('should group the goals of each minute', () => {
+    show(mockGamePlayByPlay(2025021057));
+    expect(component.goalPlays[3].map(play => play.eventId)).toEqual([80]);
+    expect(component.goalPlays[60].map(play => play.eventId)).toEqual([989]);
+    expect(component.goalPlays.filter(goals => goals.length > 0).length).toBe(5);
+  });
+
+  it('should show a home goal when hovering its point', () => {
+    show(mockGamePlayByPlay(2025021057));
+    expect(tooltip()).toBeNull();
+
+    // WPG (home): Fleury from Lambert and Barron at 2:31 of the 1st
+    hover(3);
+    expect(tooltipGoals()).toEqual(['1st · 2:31 Haydn Fleury (1 - 0) Assists: Brad Lambert, Morgan Barron']);
+    expect(tooltip().querySelector('.team-logo').getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    expect(Array.from<Element>(tooltip().querySelectorAll('.score-update .color-green')).map(score => score.textContent))
+        .toEqual(['1']);
+  });
+
+  it('should show an away goal and highlight the away score', () => {
+    show(mockGamePlayByPlay(2025021057));
+    // STL (away): Dvorsky from Berggren and Suter at 5:17 of the 3rd
+    hover(46);
+    expect(tooltipGoals()).toEqual(['3rd · 5:17 Dalibor Dvorsky (2 - 1) Assists: Jonatan Berggren, Pius Suter']);
+    expect(tooltip().querySelector('.team-logo').getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
+    expect(Array.from<Element>(tooltip().querySelectorAll('.score-update .color-green')).map(score => score.textContent))
+        .toEqual(['1']);
+  });
+
+  it('should show one assist', () => {
+    show(mockGamePlayByPlay(2025021057));
+    // Scheifele from Morrissey at 7:51 of the 1st
+    hover(8);
+    expect(tooltipGoals()).toEqual(['1st · 7:51 Mark Scheifele (2 - 0) Assists: Josh Morrissey']);
+  });
+
+  it('should show every goal of the hovered minute', () => {
+    // Dvorsky's goal moved to 2:50 of the 1st, the same minute as Fleury's
+    const playByPlay = withPlays(2025021057, [80, 804]);
+    playByPlay.plays[1].periodDescriptor = playByPlay.plays[0].periodDescriptor;
+    playByPlay.plays[1].timeInPeriod = '02:50';
+    show(playByPlay);
+    hover(3);
+    expect(tooltipGoals().length).toBe(2);
+    expect(tooltipGoals()[0]).toContain('Haydn Fleury');
+    expect(tooltipGoals()[1]).toContain('Dalibor Dvorsky');
+  });
+
+  it('should show an unassisted goal', () => {
+    const playByPlay = withPlays(2025021057, [80]);
+    delete playByPlay.plays[0].details.assist1PlayerId;
+    delete playByPlay.plays[0].details.assist2PlayerId;
+    show(playByPlay);
+    hover(3);
+    expect(tooltipGoals()).toEqual(['1st · 2:31 Haydn Fleury (1 - 0) Unassisted']);
+  });
+
+  it('should hide the tooltip when hovering a point without a goal', () => {
+    show(mockGamePlayByPlay(2025021057));
+    hover(3);
+    expect(tooltip()).not.toBeNull();
+    hover(20);
+    expect(tooltip()).toBeNull();
+    expect(component.hoveredGoals).toEqual([]);
+  });
+
+  it('should keep the tooltip inside the chart', () => {
+    show(mockGamePlayByPlay(2025021057));
+    const momentumChart = Chart.getChart(canvas());
+    [3, 46, 60].forEach(index => {
+      hover(index);
+      const {left, width, top, bottom} = component.tooltipPosition;
+      expect(left).toBeGreaterThanOrEqual(0);
+      expect(left + width).toBeLessThanOrEqual(momentumChart.width);
+      // Below points in the top half of the chart, above the others
+      const pointY = momentumChart.getDatasetMeta(0).data[index].y;
+      expect(pointY < momentumChart.height / 2 ? top : bottom).toBeGreaterThan(0);
+    });
   });
 
   it('should destroy the chart with the component', () => {
