@@ -19,13 +19,13 @@
       <div class="team-line-2" [ngStyle]="{'border-bottom-color': teamColor}"></div>
     </div>
     <div class="player-headshot-container">
-      <img [src]="playerHeadshot" class="player-headshot">
+      <img [src]="playerHeadshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
     </div>
     <div class="player-info">
-      <span class="player-name">{{player.fullName}}</span>
-      <div class="player-team" [routerLink]="['/team', this.player.currentTeam.id]">
-        <img [src]="teamLogo" class="player-team-logo">
-        <span class="player-team-label">{{player.currentTeam.name}}</span>
+      <span class="player-name">{{playerName}}</span>
+      <div *ngIf="player.currentTeamId" class="player-team" [routerLink]="['/team', player.currentTeamId]">
+        <img [src]="teamLogo" alt="" class="player-team-logo">
+        <span class="player-team-label">{{teamName}}</span>
       </div>
     </div>
   </div>
@@ -36,44 +36,42 @@
         [countryFlagPath]="countryFlagPath"
       ></app-player-bio>
     </div>
-    <div *ngIf="currentPlayoffStats" class="playoff-stats">
+    <div *ngIf="statsFailed" class="stats-error">
+      <span>Stats couldn't be loaded</span>
+    </div>
+    <div *ngIf="playoffStats" class="playoff-stats">
       <app-player-stats
-          [statTitle]="currentPlayoffs + ' NHL Playoffs Stats'"
-          [player]="player"
-          [stats]="currentPlayoffStats"
+          [statTitle]="playoffsLabel + ' NHL Playoffs Stats'"
+          [stats]="playoffStats"
           [teamColor]="teamColor"
           [isGoalie]="isGoalie"
       ></app-player-stats>
     </div>
-    <div *ngIf="currentYearStats" class="regular-season-stats">
+    <div *ngIf="regularSeasonStats" class="regular-season-stats">
       <app-player-stats
-          [statTitle]="currentSeason + ' NHL Regular Season Stats'"
-          [player]="player"
-          [stats]="currentYearStats"
+          [statTitle]="seasonLabel + ' NHL Regular Season Stats'"
+          [stats]="regularSeasonStats"
           [teamColor]="teamColor"
           [isGoalie]="isGoalie"
       ></app-player-stats>
     </div>
   </div>
   <div class="player-games-and-career-container">
-    <div class="match-stats-container">
+    <div *ngIf="stats?.recentGames?.length" class="match-stats-container">
       <app-recent-player-games
-          #recentPlayerGamesComponent
-          [regularSeasonGames]="regularSeasonGames"
-          [playoffGames]="playoffGames"
-          [recentGames]="recentGames"
-          [teamId]="player.currentTeam.id"
+          [games]="stats.recentGames"
           [teamColor]="teamColor"
           [isGoalie]="isGoalie"
       ></app-recent-player-games>
     </div>
-    <div class="career-totals" [ngClass]="{'shift-career-up': !currentPlayoffStats}">
-    <app-player-career
-        #playerCareerComponent
-        [careerRegularSeasonStats]="careerRegularSeasonStats"
-        [isGoalie]="isGoalie"
-        [teamLogo]="teamLogo"
+    <div *ngIf="stats?.regularSeasons?.length" class="career-totals" [ngClass]="{'shift-career-up': !playoffStats}">
+      <app-player-career
+          [seasons]="stats.regularSeasons"
+          [isGoalie]="isGoalie"
       ></app-player-career>
     </div>
   </div>
+</div>
+<div *ngIf="playerFailed" class="player-error">
+  <span>This player couldn't be loaded</span>
 </div>

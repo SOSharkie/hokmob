@@ -12,6 +12,18 @@ builder.Services.AddHttpClient<NhlApiClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(10);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("HokMob/1.0");
 });
+builder.Services.AddHttpClient<NhlStatsApiClient>(client =>
+{
+    client.BaseAddress = new Uri(NhlStatsApiClient.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("HokMob/1.0");
+});
+builder.Services.AddHttpClient<NhlSearchApiClient>(client =>
+{
+    client.BaseAddress = new Uri(NhlSearchApiClient.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("HokMob/1.0");
+});
 
 var app = builder.Build();
 

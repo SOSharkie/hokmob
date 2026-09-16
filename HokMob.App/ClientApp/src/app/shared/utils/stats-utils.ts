@@ -7,6 +7,7 @@ import {
   GamePlayer
 } from "@shared/models/nhl-web-api/boxscore.model";
 import {RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
+import {GoalieGameStats, SkaterGameStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 
@@ -134,6 +135,108 @@ export class StatsUtils {
   public static getSaves(savesAndShots: string): number {
     const saves = parseInt((savesAndShots ?? "").split("/")[0], 10);
     return isNaN(saves) ? 0 : saves;
+  }
+
+  /**
+   * Formats seconds as "m:ss" (or "mm:ss"), like 1181.6133 to "19:42". The stats API gives every time in seconds, and
+   * so does the NHL web API's time on ice leaderboard. Returns "-" without a time.
+   *
+   * @param seconds - The time in seconds.
+   */
+  public static formatSeconds(seconds: number): string {
+    if (seconds == null || isNaN(seconds) || seconds < 0) {
+      return "-";
+    }
+    const wholeSeconds = Math.round(seconds);
+    return Math.floor(wholeSeconds / 60) + ":" + String(wholeSeconds % 60).padStart(2, "0");
+  }
+
+  /**
+   * Maps a stats API skater game row to a boxscore skater, so a past game gets its HokMob rating from the same
+   * formula as a live one (calculateSkaterHokmobRating). The stats API names several fields differently.
+   *
+   * @param game - The skater's stats for one game.
+   */
+  public static toBoxscoreSkater(game: SkaterGameStats): BoxscoreSkater {
+    return {
+      playerId: game?.playerId,
+      sweaterNumber: undefined,
+      name: {default: game?.skaterFullName},
+      position: game?.positionCode,
+      goals: game?.goals ?? 0,
+      assists: game?.assists ?? 0,
+      points: game?.points ?? 0,
+      plusMinus: game?.plusMinus ?? 0,
+      pim: game?.penaltyMinutes ?? 0,
+      hits: game?.hits ?? 0,
+      powerPlayGoals: game?.ppGoals ?? 0,
+      sog: game?.shots ?? 0,
+      faceoffWinningPctg: game?.faceoffWinPct ?? 0,
+      toi: StatsUtils.formatSeconds(game?.timeOnIcePerGame),
+      blockedShots: game?.blockedShots ?? 0,
+      shifts: undefined,
+      giveaways: game?.giveaways ?? 0,
+      takeaways: game?.takeaways ?? 0
+    };
+  }
+
+  /**
+   * Maps a stats API goalie game row to a boxscore goalie, for calculateGoalieHokMobRating. The saves by strength
+   * come as counts, and the boxscore's "saves/shots" strings are built from them.
+   *
+   * @param game - The goalie's stats for one game.
+   */
+  public static toBoxscoreGoalie(game: GoalieGameStats): BoxscoreGoalie {
+    return {
+      playerId: game?.playerId,
+      sweaterNumber: undefined,
+      name: {default: game?.goalieFullName},
+      position: "G",
+      evenStrengthShotsAgainst: StatsUtils.getSavesAndShots(game?.evSaves, game?.evShotsAgainst),
+      powerPlayShotsAgainst: StatsUtils.getSavesAndShots(game?.ppSaves, game?.ppShotsAgainst),
+      shorthandedShotsAgainst: StatsUtils.getSavesAndShots(game?.shSaves, game?.shShotsAgainst),
+      saveShotsAgainst: StatsUtils.getSavesAndShots(game?.saves, game?.shotsAgainst),
+      savePctg: game?.savePct,
+      evenStrengthGoalsAgainst: StatsUtils.getGoalsAgainst(game?.evSaves, game?.evShotsAgainst),
+      powerPlayGoalsAgainst: StatsUtils.getGoalsAgainst(game?.ppSaves, game?.ppShotsAgainst),
+      shorthandedGoalsAgainst: StatsUtils.getGoalsAgainst(game?.shSaves, game?.shShotsAgainst),
+      pim: 0,
+      goalsAgainst: game?.goalsAgainst ?? 0,
+      toi: StatsUtils.formatSeconds(game?.timeOnIce),
+      starter: !!game?.gamesStarted,
+      decision: StatsUtils.getGoalieDecision(game),
+      shotsAgainst: game?.shotsAgainst ?? 0,
+      saves: game?.saves ?? 0
+    };
+  }
+
+  /**
+   * Returns a boxscore "saves/shots" string, like "28/30", or undefined when the counts are missing.
+   */
+  private static getSavesAndShots(saves: number, shots: number): string {
+    return saves == null || shots == null ? undefined : saves + "/" + shots;
+  }
+
+  /**
+   * Returns the goals against of one strength, or undefined when the counts are missing.
+   */
+  private static getGoalsAgainst(saves: number, shots: number): number {
+    return saves == null || shots == null ? undefined : shots - saves;
+  }
+
+  /**
+   * Returns a goalie's decision for a game: "W", "O" (an overtime or shootout loss), "L", or undefined when the
+   * goalie didn't get one.
+   */
+  private static getGoalieDecision(game: GoalieGameStats): string {
+    if (game?.wins) {
+      return "W";
+    } else if (game?.otLosses) {
+      return "O";
+    } else if (game?.losses) {
+      return "L";
+    }
+    return undefined;
   }
 
   /**

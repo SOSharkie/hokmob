@@ -189,6 +189,26 @@ describe('NhlGameService', () => {
     });
   });
 
+  describe('getTeamSchedule', () => {
+    it('should resolve the real schedule of the current season', async () => {
+      const schedule = service.getTeamSchedule('BOS');
+      httpMock.expectOne('/api/nhl/club-schedule-season/BOS/now').flush(mockClubScheduleSeason('BOS', 20262027));
+      const response = await schedule;
+      expect(response.currentSeason).toBe(20262027);
+      expect(response.previousSeason).toBe(20252026);
+      expect(response.games[0].id).toBe(2026010013);
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const schedule = service.getTeamSchedule('BOS');
+      const rejection = expectAsync(schedule).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne('/api/nhl/club-schedule-season/BOS/now')
+          .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
   describe('getTeamFormGames', () => {
     const scheduleUrl = '/api/nhl/club-schedule-season/';
 
@@ -232,6 +252,25 @@ describe('NhlGameService', () => {
       httpMock.expectOne(scheduleUrl + 'BOS/20262027')
           .flush({...mockClubScheduleSeason('BOS', 20262027), games: undefined, previousSeason: undefined});
       expect(await formGames).toEqual([]);
+    });
+
+    it('should use a schedule it is given instead of loading the season again', async () => {
+      const schedule = mockClubScheduleSeason('BOS', 20252026);
+      const reference = {season: 20252026, startTimeUTC: '2026-04-24T00:00:00Z'};
+      const formGames = service.getTeamFormGames('BOS', reference, schedule);
+      expect(await formGames).toEqual(jasmine.any(Array));
+      expect((await formGames).map(item => item.id))
+          .toEqual([2025030113, 2025030112, 2025030111, 2025021292, 2025021278]);
+    });
+
+    it('should fill in from the previous season of a schedule it is given', async () => {
+      const schedule = mockClubScheduleSeason('BOS', 20262027);
+      const reference = {season: 20262027, startTimeUTC: '2026-09-15T12:00:00Z'};
+      const formGames = service.getTeamFormGames('BOS', reference, schedule);
+      await nextRequest();
+      httpMock.expectOne(scheduleUrl + 'BOS/20252026').flush(mockClubScheduleSeason('BOS', 20252026));
+      expect((await formGames).map(item => item.id))
+          .toEqual([2025030116, 2025030115, 2025030114, 2025030113, 2025030112]);
     });
 
     it('should log and reject when the season request fails', async () => {

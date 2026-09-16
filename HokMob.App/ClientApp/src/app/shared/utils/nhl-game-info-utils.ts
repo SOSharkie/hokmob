@@ -1,7 +1,12 @@
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
-import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
+import {
+  ClubScheduleGame,
+  ClubScheduleTeam,
+  TeamFormReference
+} from "@shared/models/nhl-web-api/club-schedule.model";
+import {ScoreGame, ScoreTeam} from "@shared/models/nhl-web-api/score.model";
 
 export class NhlGameInfoUtils {
 
@@ -56,27 +61,68 @@ export class NhlGameInfoUtils {
   }
 
   /**
-   * Returns a team's last finished games before a game, most recent first, for the team form. Preseason games only
-   * count for a preseason game.
+   * Returns a team's last finished games before a point in time, most recent first, for the team form. On the game
+   * page that point is the game the form leads up to, on the team page it's now. Preseason games only count when the
+   * reference is a preseason game.
    *
    * @param games - Games from the team's club schedule, in any order.
-   * @param game - The game the form is shown for, like its landing.
+   * @param reference - The game the form is shown for (like its landing), or the season and time of a team page.
    * @param count - The maximum number of games to return.
    */
-  public static getTeamFormGames(games: ClubScheduleGame[],
-                                 game: Pick<ClubScheduleGame, "id" | "gameType" | "startTimeUTC">,
+  public static getTeamFormGames(games: ClubScheduleGame[], reference: TeamFormReference,
                                  count: number = 5): ClubScheduleGame[] {
-    if (!game) {
+    if (!reference) {
       return [];
     }
-    const gameStart = Date.parse(game.startTimeUTC);
-    const includePreseason = game.gameType === NhlGameTypeEnum.PRESEASON;
+    const referenceStart = Date.parse(reference.startTimeUTC);
+    const includePreseason = reference.gameType === NhlGameTypeEnum.PRESEASON;
     return (games ?? [])
-        .filter(item => item.id !== game.id && NhlGameInfoUtils.isCompletedGame(item.gameState) &&
+        .filter(item => item.id !== reference.id && NhlGameInfoUtils.isCompletedGame(item.gameState) &&
             (includePreseason || item.gameType !== NhlGameTypeEnum.PRESEASON) &&
-            Date.parse(item.startTimeUTC) < gameStart)
+            Date.parse(item.startTimeUTC) < referenceStart)
         .sort((a, b) => Date.parse(b.startTimeUTC) - Date.parse(a.startTimeUTC))
         .slice(0, count);
+  }
+
+  /**
+   * Returns a team's next games, the ones that aren't over, soonest first.
+   *
+   * @param games - Games from the team's club schedule, in any order.
+   * @param count - The maximum number of games to return.
+   */
+  public static getUpcomingGames(games: ClubScheduleGame[], count: number = 5): ClubScheduleGame[] {
+    return (games ?? [])
+        .filter(game => !NhlGameInfoUtils.isCompletedGame(game.gameState))
+        .sort((gameA, gameB) => Date.parse(gameA.startTimeUTC) - Date.parse(gameB.startTimeUTC))
+        .slice(0, count);
+  }
+
+  /**
+   * Converts a club schedule game to the score response shape that app-scorecard and the team page's next game
+   * expect. The club schedule names teams with a common name and a place name instead of the score response's single
+   * name, and has no clock, period or series status: those come from score/{gameDate} for a live game.
+   *
+   * @param game - A game from a club schedule.
+   */
+  public static toScoreGame(game: ClubScheduleGame): ScoreGame {
+    if (!game) {
+      return undefined;
+    }
+    return {
+      ...game,
+      homeTeam: NhlGameInfoUtils.toScoreTeam(game.homeTeam),
+      awayTeam: NhlGameInfoUtils.toScoreTeam(game.awayTeam)
+    };
+  }
+
+  private static toScoreTeam(team: ClubScheduleTeam): ScoreTeam {
+    return {
+      id: team?.id,
+      name: team?.commonName,
+      abbrev: team?.abbrev,
+      score: team?.score,
+      logo: team?.logo
+    };
   }
 
   /**

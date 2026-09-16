@@ -1,4 +1,4 @@
-<div *ngIf="teamData" class="team-container">
+<div class="team-container">
   <div class="team-header">
     <div class="back-container">
       <div class="games-back-button" (click)="backToPrevious()">
@@ -8,47 +8,48 @@
         <span class="games-label">{{backButtonLabel}}</span>
       </div>
     </div>
-    <div class="team-logo-container">
-      <img [src]="teamLogo" class="team-logo">
+    <div *ngIf="team" class="team-logo-container">
+      <img [src]="teamLogo" class="team-logo" alt="">
     </div>
     <div class="team-info">
-      <span class="team-name">{{teamData.name}}</span>
-      <div class="team-division">
-        <span class="team-division-label">{{teamData.division.name}} Division</span>
+      <span class="team-name">{{team ? teamName : 'Team not found'}}</span>
+      <div *ngIf="divisionName" class="team-division">
+        <span class="team-division-label">{{divisionName}} Division</span>
       </div>
     </div>
   </div>
-  <div class="team-data-container">
-    <div *ngIf="standings" class="team-standings">
+  <div *ngIf="team" class="team-data-container">
+    <div *ngIf="standings?.length" class="team-standings">
       <app-standings
-          [selectedTeamId]="teamData.id"
+          [selectedTeamId]="teamId"
           [standings]="standings"
           [defaultStandingsType]="NhlStandingsTypeEnum.BY_CONFERENCE"
           [showFormAndNext]="false"
       ></app-standings>
     </div>
     <div class="team-info-container">
-      <div *ngIf="nextGameLiveFeed" class="next-game-container">
+      <div *ngIf="nextGame" class="next-game-container">
         <app-team-next-game
-            [team]="teamData"
-            [gameModel]="nextGame"
-            [gameLiveData]="nextGameLiveFeed"
-            [gameLinescore]="nextGameLiveFeed.liveData.linescore"
+            [game]="nextGame"
         ></app-team-next-game>
       </div>
       <div class="team-form-container">
         <app-single-team-form
-          [team]="teamData"
-          [teamGames]="pastTeamGames"
+          [teamId]="teamId"
+          [games]="formGames"
         ></app-single-team-form>
       </div>
       <div class="team-next-game-container">
         <app-team-schedule
-          [team]="teamData"
-          [teamGames]="futureTeamGames"
+          [games]="scheduleGames"
         ></app-team-schedule>
+      </div>
+      <div class="team-stats-container">
+        <app-team-stats
+          [teamId]="teamId"
+          [teamStats]="teamStats"
+        ></app-team-stats>
       </div>
     </div>
   </div>
-
 </div>

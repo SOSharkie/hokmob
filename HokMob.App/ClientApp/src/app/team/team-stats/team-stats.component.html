@@ -1,0 +1,12 @@
+<div *ngIf="rows.length" class="team-stats">
+  <div class="team-stats-header">
+    <span>{{title}}</span>
+  </div>
+  <div *ngFor="let row of rows" class="team-stat-row">
+    <span class="stat-label">{{row.label}}</span>
+    <div class="stat-values">
+      <span class="stat-value">{{row.value}}</span>
+      <span class="stat-rank">{{row.rank}}</span>
+    </div>
+  </div>
+</div>

@@ -1,21 +1,24 @@
-import {Component, OnInit, QueryList, ViewChild, ViewChildren} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
-import * as dayjs from "dayjs";
-import {NhlStatsService} from "@shared/services/nhl-stats.service";
-import {NhlPersonModel} from "@shared/models/nhl-general/nhl-person.model";
-import {NhlImageService} from "@shared/services/nhl-image.service";
-import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
-import {NhlPlayerStatsModel} from "@shared/models/nhl-stats/nhl-player-stats.model";
 import {NhlGameService} from "@shared/services/nhl-game.service";
-import {NhlStatsSplitModel} from "@shared/models/nhl-stats/nhl-stats-split.model";
-import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
-import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
-import {StatLeaderboardComponent} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
-import {RecentPlayerGamesComponent} from "@app/player/recent-player-games/recent-player-games.component";
-import {PlayerCareerComponent} from "@app/player/player-career/player-career.component";
+import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
+import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
+import {
+  GoalieSeasonStats,
+  PlayerStats,
+  SkaterSeasonStats
+} from "@shared/models/nhl-stats-api/player-stats.model";
 
+/**
+ * The player page. Two requests: player/{id}/landing for the header and bio, and /api/nhl-stats/player/{id} for the
+ * season cards, the career table and the recent games. The bio stays when the stats fail, and the season shown is the
+ * landing's featuredStats season, so the off-season shows the last season played.
+ */
 @Component({
   selector: 'app-player',
   templateUrl: './player.component.html',
@@ -23,43 +26,43 @@ import {PlayerCareerComponent} from "@app/player/player-career/player-career.com
 })
 export class PlayerComponent implements OnInit {
 
-  public playerId: string;
+  public playerId: number;
 
   public previousUrl: string;
 
-  public player: NhlPersonModel;
+  /** The player's bio. Undefined until the landing loads, or when it fails. */
+  public player: PlayerLanding;
 
-  public playerHeadshot: any;
+  /** Whether the landing failed, so the page shows that the player couldn't be loaded. */
+  public playerFailed: boolean = false;
 
-  public teamLogo: any;
+  /** The player's stats. Undefined until they load, or when the request fails. */
+  public stats: PlayerStats;
+
+  /** Whether the stats request failed, so the cards, career and recent games are replaced by a message. */
+  public statsFailed: boolean = false;
 
   public teamColor: string = "#000000";
 
+  public teamLogo: string;
+
   public countryFlagPath: string;
 
-  public careerRegularSeasonStats: NhlStatsSplitModel[];
+  public get playerName(): string {
+    return (this.player?.firstName?.default ?? "") + " " + (this.player?.lastName?.default ?? "");
+  }
 
-  public currentYearStats: NhlPlayerStatsModel;
+  public get playerHeadshot(): string {
+    return this.player?.headshot || NhlPlayerHeadshotUtils.blankHeadshot;
+  }
 
-  public currentPlayoffStats: NhlPlayerStatsModel;
+  public get teamName(): string {
+    return this.player?.fullTeamName?.default;
+  }
 
-  public playoffGames: NhlStatsSplitModel[];
-
-  public regularSeasonGames: NhlStatsSplitModel[];
-
-  public recentGames: NhlGameModel[];
-
-  public currentSeason: string;
-
-  public currentPlayoffs: string;
-
-  @ViewChild('recentPlayerGamesComponent')
-  public recentPlayerGamesComponent: RecentPlayerGamesComponent;
-
-  @ViewChild('playerCareerComponent')
-  public playerCareerComponent: PlayerCareerComponent;
-
-  private readonly nhlLeagueId: number = 133;
+  public get isGoalie(): boolean {
+    return this.player?.position === "G";
+  }
 
   public get backButtonLabel(): string {
     if (this.previousUrl) {
@@ -72,19 +75,33 @@ export class PlayerComponent implements OnInit {
     return "Stats";
   }
 
-  public get isGoalie(): boolean {
-    if (this.player) {
-      return this.player.primaryPosition.code === "G";
-    }
-    return false;
+  /** The season the cards show, like "2025-2026". Empty for a player who has never played an NHL game. */
+  public get seasonLabel(): string {
+    const season = this.player?.featuredStats?.season;
+    return season ? DateTimeUtils.getNhlSeasonDisplayValue(String(season)) : "";
+  }
+
+  /** The playoffs of the season the cards show, like "2026". */
+  public get playoffsLabel(): string {
+    const season = this.player?.featuredStats?.season;
+    return season ? String(season).substring(4) : "";
+  }
+
+  /** The featured season's regular season row, or undefined when there is none. */
+  public get regularSeasonStats(): SkaterSeasonStats | GoalieSeasonStats {
+    return this.findFeaturedSeason(this.stats?.regularSeasons);
+  }
+
+  /** The featured season's playoff row, or undefined when the player didn't play in those playoffs. */
+  public get playoffStats(): SkaterSeasonStats | GoalieSeasonStats {
+    return this.findFeaturedSeason(this.stats?.playoffSeasons);
   }
 
   constructor(private route: ActivatedRoute,
               private router: Router,
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
-              private nhlImageService: NhlImageService,
-              private nhlStatsService: NhlStatsService) {}
+              private nhlStatsApiService: NhlStatsApiService) {}
 
   public ngOnInit(): void {
     this.previousUrl = this.routerExtensionService.getPreviousUrl();
@@ -92,41 +109,9 @@ export class PlayerComponent implements OnInit {
       this.previousUrl = null;
     }
     this.route.params.subscribe((params: Params) => {
-      this.initProperties(params['id']);
-      this.nhlStatsService.getNhlPlayerStats(this.playerId).then(result => {
-        this.player = result;
-        this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.player.currentTeam.id);
-        this.countryFlagPath =  "assets/flags/" + this.player.birthCountry + ".png";
-        this.setCurrentStatModels();
-        this.loadImages();
-        const yesterday = dayjs().subtract(1, 'day');
-        const sixtyDaysAgo = yesterday.subtract(60, 'days');
-        this.nhlGameService.getTeamGames(sixtyDaysAgo.toDate(), yesterday.toDate(), this.player.currentTeam.id).then(games => {
-          this.recentGames = games.dates.map(date => date.games[0]).reverse().slice(0, 10);
-
-          if (this.recentGames.length < 10) {
-            const twoHundredDaysAgo = yesterday.subtract(200, 'days');
-            this.nhlGameService.getTeamGames(twoHundredDaysAgo.toDate(), yesterday.toDate(), this.player.currentTeam.id).then(games => {
-              this.recentGames = games.dates.map(date => date.games[0]).reverse().slice(0, 10);
-            });
-          }
-        });
-      });
-    });
-  }
-
-  public loadImages(): void {
-    if (!this.player) {
-      return;
-    }
-    this.playerHeadshot = 'assets/blank_headshot.png';
-    this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.player.currentTeam.id);
-    this.nhlImageService.getNhlPlayerHeadshot(this.player.id).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.playerHeadshot = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
+      this.playerId = Number(params['id']);
+      this.resetPlayerData();
+      this.retrievePlayer();
     });
   }
 
@@ -138,52 +123,68 @@ export class PlayerComponent implements OnInit {
     }
   }
 
-  private initProperties(playerId: string): void {
-    this.currentPlayoffStats = null;
-    this.currentYearStats = null;
-    this.careerRegularSeasonStats = [];
-    this.playoffGames = [];
-    this.regularSeasonGames = [];
-    this.recentGames = [];
-    this.playerId = playerId;
-    this.currentSeason = DateTimeUtils.getCurrentNhlSeasonDisplayValue();
-    this.currentPlayoffs = DateTimeUtils.getCurrentNhlPlayoffsDisplayValue();
-    if (this.recentPlayerGamesComponent && this.playerCareerComponent) {
-      this.recentPlayerGamesComponent.imagesLoaded = false;
-      this.playerCareerComponent.imagesLoaded = false;
-    }
+  public showBlankHeadshot(event: Event): void {
+    NhlPlayerHeadshotUtils.showBlankHeadshot(event);
   }
 
-  private setCurrentStatModels(): void {
-    let currentSeason = DateTimeUtils.getCurrentNhlSeason();
-
-    // Current Regular Season
-    let latestRegularSeason = this.player.stats[0].splits[this.player.stats[0].splits.length - 1];
-    if (latestRegularSeason && latestRegularSeason.season === currentSeason && latestRegularSeason.league.id === this.nhlLeagueId) {
-      this.currentYearStats = latestRegularSeason.stat;
-    } else {
-      latestRegularSeason = this.player.stats[0].splits[this.player.stats[0].splits.length - 2];
-      if (latestRegularSeason && latestRegularSeason.season === currentSeason && latestRegularSeason.league.id === this.nhlLeagueId) {
-        this.currentYearStats = latestRegularSeason.stat;
+  /**
+   * Loads the player's bio, then their stats. A retired player has no current team, so the team link, logo and color
+   * are only set when the landing has one.
+   */
+  private retrievePlayer(): void {
+    const playerId = this.playerId;
+    this.nhlGameService.getPlayerLanding(playerId).then(player => {
+      if (this.playerId !== playerId) {
+        return;
       }
-    }
-
-    // Current Playoffs
-    let latestPlayoffs = this.player.stats[1].splits[this.player.stats[1].splits.length - 1];
-    if (latestPlayoffs && latestPlayoffs.season === currentSeason && latestPlayoffs.league.id === this.nhlLeagueId) {
-      this.currentPlayoffStats = latestPlayoffs.stat;
-    } else {
-      latestPlayoffs = this.player.stats[1].splits[this.player.stats[1].splits.length - 2];
-      if (latestPlayoffs && latestPlayoffs.season === currentSeason && latestPlayoffs.league.id === this.nhlLeagueId) {
-        this.currentPlayoffStats = latestPlayoffs.stat;
+      this.player = player;
+      if (player.currentTeamId) {
+        this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(player.currentTeamId);
+        this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(player.currentTeamId);
       }
+      this.countryFlagPath = player.birthCountry ? "assets/flags/" + player.birthCountry + ".png" : undefined;
+      this.retrieveStats();
+    }).catch(() => {
+      // The service logs the error. Without the landing there's no player to show at all
+      if (this.playerId === playerId) {
+        this.playerFailed = true;
+      }
+    });
+  }
+
+  private retrieveStats(): void {
+    const playerId = this.playerId;
+    this.nhlStatsApiService.getPlayerStats(playerId, this.isGoalie).then(stats => {
+      if (this.playerId === playerId) {
+        this.stats = stats;
+      }
+    }).catch(() => {
+      // The service logs the error. The header and bio stay, the stats sections show a message
+      if (this.playerId === playerId) {
+        this.statsFailed = true;
+      }
+    });
+  }
+
+  /**
+   * The row of the landing's featured season, which is the player's latest season.
+   */
+  private findFeaturedSeason(seasons: SkaterSeasonStats[] | GoalieSeasonStats[]): SkaterSeasonStats | GoalieSeasonStats {
+    const season = this.player?.featuredStats?.season;
+    if (!season) {
+      return undefined;
     }
+    return (seasons as (SkaterSeasonStats | GoalieSeasonStats)[] ?? [])
+        .find(row => row.seasonId === season);
+  }
 
-    // Current season game by game breakdowns
-    this.regularSeasonGames = this.player.stats[3].splits;
-    this.playoffGames = this.player.stats[4].splits;
-
-    // Career Regular Season
-    this.careerRegularSeasonStats = this.player.stats[0].splits.reverse().filter(season => season.league.id === 133);
+  private resetPlayerData(): void {
+    this.player = undefined;
+    this.playerFailed = false;
+    this.stats = undefined;
+    this.statsFailed = false;
+    this.teamColor = "#000000";
+    this.teamLogo = undefined;
+    this.countryFlagPath = undefined;
   }
 }

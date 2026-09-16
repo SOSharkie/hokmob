@@ -3,14 +3,15 @@
     <span>Team Form</span>
   </div>
   <div class="previous-games-container">
-    <div *ngIf="teamGames" class="prev-games">
-      <div *ngFor="let gameDay of last5TeamGames; let isLast = last">
+    <div class="prev-games">
+      <div *ngFor="let game of games; let isLast = last">
         <app-previous-game
-            [teamId]="team?.id"
-            [game]="$any(gameDay)"
+            [teamId]="teamId"
+            [game]="game"
             [isLast]="isLast"
         ></app-previous-game>
       </div>
+      <div *ngIf="!games?.length" class="no-games">No recent games</div>
     </div>
   </div>
 </div>

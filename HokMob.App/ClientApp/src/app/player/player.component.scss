@@ -130,11 +130,19 @@
     justify-content: flex-start;
     align-items: flex-start;
 
-    .player-bio-container, .regular-season-stats, .playoff-stats, .career-totals {
+    .player-bio-container, .regular-season-stats, .playoff-stats, .career-totals, .stats-error {
       min-height: 240px;
       width: 32%;
       min-width: 375px;
       margin: $spacing-small;
+    }
+
+    .stats-error {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $gray-04;
+      font-size: large;
     }
 
     .match-stats-container {
@@ -143,6 +151,12 @@
       margin: $spacing-small;
     }
   }
+}
+
+.player-error {
+  margin: $spacing-large;
+  color: $gray-04;
+  font-size: large;
 }
 
 // Small Desktop Styling

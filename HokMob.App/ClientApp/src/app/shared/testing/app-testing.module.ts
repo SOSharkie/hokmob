@@ -12,6 +12,7 @@ import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {BetaNhlStatsService} from "@shared/services/beta-nhl-stats.service";
 import {NhlStatsService} from "@shared/services/nhl-stats.service";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {NhlSearchService} from "@shared/services/nhl-search.service";
 import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
@@ -44,6 +45,7 @@ const modules = [
     NhlStandingAndPlayoffService,
     BetaNhlStatsService,
     NhlStatsService,
+    NhlStatsApiService,
     RouterExtensionService,
     NhlSearchService,
     {provide: MatDialogRef, useValue: {close: () => {}}},

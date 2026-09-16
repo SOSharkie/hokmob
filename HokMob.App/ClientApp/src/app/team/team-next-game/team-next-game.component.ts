@@ -1,154 +1,109 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {NhlTeamModel} from "@shared/models/nhl-general/nhl-team.model";
-import {NhlGameModel} from "@shared/models/nhl-schedule/nhl-game.model";
-import {NhlLiveFeedModel} from "@shared/models/nhl-live-feed/nhl-live-feed.model";
-import {NhlLinescoreModel} from "@shared/models/nhl-linescore/nhl-linescore.model";
+import {Component, Input} from '@angular/core';
 import * as dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
+import {ScoreGame, ScoreTeam} from "@shared/models/nhl-web-api/score.model";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
+import {PeriodUtils} from "@shared/utils/period-utils";
 
-// TODO: Not yet migrated to the new NHL API (see docs/nhl-api-migration-plan.md). NhlGameInfoUtils' game state checks
-//  no longer take the old status model, so the old abstractGameState is compared directly to compile. Fix: take the
-//  next game from club-schedule-season/{abbrev}/now and its gamecenter/{id}/landing, and use
-//  NhlGameInfoUtils.isLiveGame/isCompletedGame/isFutureGame(landing.gameState).
+/**
+ * The team page's next game: the start time before it starts, the score and period while it's on, and the final score
+ * once it's over. A live game's clock, period and series status come from score/{gameDate} (see
+ * TeamComponent.retrieveLiveNextGame).
+ */
 @Component({
   selector: 'app-team-next-game',
   templateUrl: './team-next-game.component.html',
   styleUrls: ['./team-next-game.component.scss']
 })
-export class TeamNextGameComponent implements OnChanges {
+export class TeamNextGameComponent {
 
+  /**
+   * The team's first game that isn't over, from its club schedule.
+   */
   @Input()
-  public team: NhlTeamModel;
+  public game: ScoreGame;
 
-  @Input()
-  public gameLiveData: NhlLiveFeedModel;
-
-  @Input()
-  public gameLinescore: NhlLinescoreModel;
-
-  @Input()
-  public gameModel: NhlGameModel;
-
-  public homeTeamLogo;
-
-  public awayTeamLogo;
+  public get header(): string {
+    if (this.liveGame) {
+      return "Ongoing Game";
+    } else if (this.completedGame) {
+      return "Latest Game";
+    }
+    return "Next Game";
+  }
 
   public get liveGame(): boolean {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status?.abstractGameState === "Live";
-    }
-    return false;
+    return NhlGameInfoUtils.isLiveGame(this.game?.gameState);
   }
 
   public get completedGame(): boolean {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status?.abstractGameState === "Final";
-    }
-    return false;
+    return NhlGameInfoUtils.isCompletedGame(this.game?.gameState);
   }
 
   public get futureGame(): boolean {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.status?.abstractGameState === "Preview";
-    }
-    return false;
+    return NhlGameInfoUtils.isFutureGame(this.game?.gameState);
+  }
+
+  public get homeTeamLogo(): string {
+    return NhlTeamLogoUtils.getTeamPrimaryLogo(this.game?.homeTeam?.id);
+  }
+
+  public get awayTeamLogo(): string {
+    return NhlTeamLogoUtils.getTeamPrimaryLogo(this.game?.awayTeam?.id);
   }
 
   public get homeTeamShortName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.home.teamName;
-    }
-    return "N/A";
+    return TeamNextGameComponent.getShortName(this.game?.homeTeam);
   }
 
   public get awayTeamShortName(): string {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.teams.away.teamName;
-    }
-    return "N/A";
+    return TeamNextGameComponent.getShortName(this.game?.awayTeam);
   }
 
   public get gameTime(): string {
-    if (this.gameLiveData) {
-      return dayjs(this.gameLiveData.gameData.datetime.dateTime).format("h:mm A");
-    }
-    return "N/A";
+    return this.game ? dayjs(this.game.startTimeUTC).format("h:mm A") : "N/A";
   }
 
   public get gameDay(): string {
-    if (this.gameLiveData) {
-      return DateTimeUtils.getDayDisplayValue(dayjs(this.gameLiveData.gameData.datetime.dateTime).toDate());
-    }
-    return "N/A";
-  }
-
-  public get playoffSeriesDetails(): string {
-    if (this.gameModel) {
-      if (this.gameModel.seriesSummary.gameNumber === 1 || this.gameModel.seriesSummary.seriesStatusShort.length === 0) {
-        return "Series (0-0)";
-      } else {
-        return this.gameModel.seriesSummary.seriesStatusShort;
-      }
-    }
-    return "";
+    return this.game ? DateTimeUtils.getDayDisplayValue(dayjs(this.game.startTimeUTC).toDate()) : "N/A";
   }
 
   public get isPlayoffGame(): boolean {
-    if (this.gameLiveData) {
-      return this.gameLiveData.gameData.game.type === "P";
-    }
-    return false;
+    return this.game?.gameType === NhlGameTypeEnum.PLAYOFFS;
+  }
+
+  /**
+   * The playoff series status, like "CAR leads 3-1" or "Series (0-0)" before the series starts. Empty without a
+   * series status, which only the score response has.
+   */
+  public get playoffSeriesDetails(): string {
+    const status = NhlGameInfoUtils.getSeriesStatusShort(this.game?.seriesStatus);
+    return status === "(0-0)" ? "Series (0-0)" : status;
   }
 
   public get gameScore(): string {
-    if (this.gameLinescore) {
-      return this.gameLinescore.teams.home.goals + " - " + this.gameLinescore.teams.away.goals;
+    if (this.game?.homeTeam?.score == null || this.game?.awayTeam?.score == null) {
+      return "N/A";
     }
-    return "N/A"
+    return this.game.homeTeam.score + " - " + this.game.awayTeam.score;
   }
 
   public get completedGameStatus(): string {
-    if (this.gameLinescore) {
-      if (this.gameLinescore.currentPeriod === 5 && this.gameLinescore.hasShootout) {
-        return "Final SO";
-      } else if (this.gameLinescore.currentPeriod === 4 && !this.gameLinescore.hasShootout) {
-        return "Final OT";
-      } else if (this.gameLinescore.currentPeriod > 4) {
-        return "Final " + (this.gameLinescore.currentPeriod - 3) + "OT";
-      } else {
-        return "Final";
-      }
-    }
-    return "N/A"
+    return PeriodUtils.getFinalLabel(this.game?.gameOutcome, this.game?.periodDescriptor);
   }
 
   public get liveGameStatus(): string {
-    if (this.gameLinescore) {
-      if (this.gameLinescore.hasShootout) {
-        return "SO";
-      } else if (this.gameLinescore.currentPeriodTimeRemaining === "END") {
-        return "End " + this.gameLinescore.currentPeriodOrdinal;
-      } else {
-        return this.gameLinescore.currentPeriodOrdinal + " - " + this.formatTimeRemaining();
-      }
-    }
-    return "N/A"
+    return PeriodUtils.getLiveLabel(this.game?.periodDescriptor, this.game?.clock);
   }
 
-  public ngOnChanges(changes:SimpleChanges): void {
-    if (changes['gameLinescore']) {
-      this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.gameLinescore.teams.home.team.id);
-      this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.gameLinescore.teams.away.team.id);
-    }
-  }
-
-  private formatTimeRemaining(): string {
-    if (this.gameLinescore.currentPeriodTimeRemaining.startsWith("0")) {
-      return this.gameLinescore.currentPeriodTimeRemaining.substring(1);
-    } else {
-      return this.gameLinescore.currentPeriodTimeRemaining;
-    }
+  /**
+   * The team's common name from the score response, like "Bruins", or from the team utils when it's missing.
+   */
+  private static getShortName(team: ScoreTeam): string {
+    return team?.name?.default ?? NhlTeamUtils.getTeam(team?.id).teamName;
   }
 
 }

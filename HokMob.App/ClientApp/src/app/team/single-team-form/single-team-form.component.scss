@@ -18,6 +18,12 @@
 
     .prev-games {
       width: 95%;
+
+      .no-games {
+        text-align: center;
+        padding: $spacing-large;
+        color: $gray-01;
+      }
     }
   }
 }

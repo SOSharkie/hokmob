@@ -5,7 +5,10 @@ the preseason starts on 2026-09-29.
 Scope: home page (scoreboard, standings summary, playoff summary and series dialog) and game page (header, goals, stats,
 momentum, event timelines, top players, player dialog, team form). Player and team pages are out of scope.
 
-Reference: [Zmalski/NHL-API-Reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md).
+Reference: [Zmalski/NHL-API-Reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md), section
+[api-web.nhle.com](https://github.com/Zmalski/NHL-API-Reference#nhl-web-api-documentation). Phases 0–8 only use
+api-web. The stats API (`api.nhle.com/stats/rest`) is compared with it in section 3 of
+[`nhl-api-legacy-migration-plan.md`](nhl-api-legacy-migration-plan.md).
 All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-web.nhle.com/v1/<path>`
 (`HokMob.App/Controllers/NhlController.cs`, cached by `HokMob.App/Services/NhlApiClient.cs`).
 
@@ -608,7 +611,8 @@ in `nhl-api-mocks.ts`, replace the live `derived*` helpers, make the specs asser
 assumption, remove the TODOs and update this section. Don't commit the untrimmed `live/` folder.
 
 ### Follow-ups outside this plan
-- Migrate the team, player, playoffs and stats pages and header search (TODOs on `TeamComponent`, `TeamScheduleComponent`,
+- Migrate the team, player, playoffs and stats pages and header search. Planned as phases 9–15 in
+  [`nhl-api-legacy-migration-plan.md`](nhl-api-legacy-migration-plan.md) (TODOs on `TeamComponent`, `TeamScheduleComponent`,
   `SingleTeamFormComponent`, `TeamNextGameComponent`, `PlayoffsComponent`, `SearchInputComponent`, `NhlSearchService`,
   `NhlImageService`), then delete the remaining old models and the dead-API methods in `NhlGameService`.
 - HokMob rating approach B (decision 1).

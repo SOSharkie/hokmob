@@ -33,6 +33,7 @@ import {RouterExtensionService} from "@shared/services/router-extension.service"
 import { StatsComponent } from './stats/stats.component';
 import {BetaNhlStatsService} from "@shared/services/beta-nhl-stats.service";
 import {NhlStatsService} from "@shared/services/nhl-stats.service";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import { StatLeaderboardComponent } from '@app/stats/stat-leaderboard/stat-leaderboard.component';
 import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.component';
 import { PlayerComponent } from './player/player.component';
@@ -52,6 +53,7 @@ import { StandingsComponent } from './shared/components/standings/standings.comp
 import { LeagueStandingsComponent } from './league-standings/league-standings.component';
 import {SingleTeamFormComponent} from "@app/team/single-team-form/single-team-form.component";
 import { TeamScheduleComponent } from './team/team-schedule/team-schedule.component';
+import { TeamStatsComponent } from './team/team-stats/team-stats.component';
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
 import { StandingsSummaryComponent } from './home/standings-summary/standings-summary.component';
 import { GameTopPlayersComponent } from './game/game-top-players/game-top-players.component';
@@ -98,6 +100,7 @@ import { PlayerCareerComponent } from './player/player-career/player-career.comp
     LeagueStandingsComponent,
     SingleTeamFormComponent,
     TeamScheduleComponent,
+    TeamStatsComponent,
     TeamNextGameComponent,
     StandingsSummaryComponent,
     GameTopPlayersComponent,
@@ -123,6 +126,7 @@ import { PlayerCareerComponent } from './player/player-career/player-career.comp
     NhlStandingAndPlayoffService,
     BetaNhlStatsService,
     NhlStatsService,
+    NhlStatsApiService,
     RouterExtensionService,
       NhlSearchService
   ],
