@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayoffCarousel } from '@shared/models/nhl-web-api/playoffs.model';
-import { DateTimeUtils } from '@shared/utils/date-time-utils';
+import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 import { mockPlayoffBracket, mockPlayoffCarousel } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { PlayoffSummaryComponent } from './playoff-summary.component';
@@ -14,6 +14,7 @@ describe('PlayoffSummaryComponent', () => {
   let component: PlayoffSummaryComponent;
   let fixture: ComponentFixture<PlayoffSummaryComponent>;
   let httpMock: HttpTestingController;
+  let currentSeason: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -23,7 +24,8 @@ describe('PlayoffSummaryComponent', () => {
     })
     .compileComponents();
 
-    spyOn(DateTimeUtils, 'getCurrentNhlSeason').and.returnValue('20252026');
+    currentSeason = spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason')
+        .and.resolveTo({season: 20252026, isPlayoffMode: true});
     spyOn(console, 'error');
     fixture = TestBed.createComponent(PlayoffSummaryComponent);
     component = fixture.componentInstance;
@@ -37,6 +39,7 @@ describe('PlayoffSummaryComponent', () => {
   /** Loads the playoffs, answering the carousel request with the given carousel, or with an error for null. */
   async function load(carousel: PlayoffCarousel | null = mockPlayoffCarousel()): Promise<void> {
     fixture.detectChanges();
+    await new Promise(resolve => setTimeout(resolve));
     const carouselRequest = httpMock.expectOne('/api/nhl/playoff-series/carousel/20252026/');
     if (carousel) {
       carouselRequest.flush(carousel);
@@ -97,6 +100,16 @@ describe('PlayoffSummaryComponent', () => {
 
   it('should show a plain title and no series when the carousel fails', async () => {
     await load(null);
+    expect(title()).toBe('Playoffs');
+    expect(seriesCards().length).toBe(0);
+  });
+
+  it('should show a plain title and ask for no carousel when the current season fails', async () => {
+    currentSeason.and.rejectWith(new Error('Bad gateway'));
+    fixture.detectChanges();
+    await new Promise(resolve => setTimeout(resolve));
+    fixture.detectChanges();
+    httpMock.expectNone(() => true);
     expect(title()).toBe('Playoffs');
     expect(seriesCards().length).toBe(0);
   });

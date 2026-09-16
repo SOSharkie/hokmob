@@ -1,6 +1,5 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
-import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -50,8 +49,6 @@ export class StandingsComponent implements OnChanges {
     }
     return "";
   }
-
-  constructor(private nhlImageService: NhlImageService) {}
 
   public ngOnChanges(changes: SimpleChanges) {
     if (changes['standings'] && this.standings && this.standings[0]) {

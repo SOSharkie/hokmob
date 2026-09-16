@@ -5,8 +5,11 @@ import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {
   PlayoffBracket,
   PlayoffBracketSeries,
+  PlayoffBracketTeam,
+  PlayoffBracketSeason,
   PlayoffCarousel,
   PlayoffCarouselSeed,
+  PlayoffCarouselSeries,
   PlayoffSeriesSchedule
 } from "@shared/models/nhl-web-api/playoffs.model";
 
@@ -60,6 +63,37 @@ export class NhlStandingAndPlayoffService {
   }
 
   /**
+   *  Gets the playoff bracket of a season, with its series converted to the carousel series model that the series cards
+   *  and dialog use. Only rounds 1 to 4 are kept: the qualifying round of 2020 (round 0) is left out and flagged.
+   *
+   * @param year - The year the season ends in, like 2026 for 2025-26.
+   */
+  public getNhlPlayoffBracket(year: number): Promise<PlayoffBracketSeason> {
+    return this.get<PlayoffBracket>(this.nhlPlayoffBracketUrl + year).then(bracket => {
+      const series = bracket?.series ?? [];
+      return {
+        year: year,
+        season: (year - 1) * 10000 + year,
+        series: series.filter(item => item.playoffRound >= 1 && item.playoffRound <= 4)
+            .map(item => this.toCarouselSeries(item)),
+        hasQualifyingRound: series.some(item => item.playoffRound === 0)
+      };
+    });
+  }
+
+  /**
+   *  Gets the latest playoff bracket with series: the bracket of the given year, or the previous year's while the given
+   *  year's has no series yet (before its playoffs start).
+   *
+   * @param year - The year the latest season ends in, like 2027 for 2026-27.
+   */
+  public getLatestNhlPlayoffBracket(year: number): Promise<PlayoffBracketSeason> {
+    return this.getNhlPlayoffBracket(year).then(bracket => {
+      return bracket.series.length ? bracket : this.getNhlPlayoffBracket(year - 1);
+    });
+  }
+
+  /**
    *  Gets the schedule and games of a playoff series.
    *
    * @param season - The season of the series, like 20252026.
@@ -81,6 +115,33 @@ export class NhlStandingAndPlayoffService {
         this.setSeedRank(series.bottomSeed, match);
       }
     }));
+  }
+
+  /**
+   * Converts a bracket series to the carousel model. A seed whose team isn't known yet is left undefined. The bracket
+   * has no wins needed, which has been 4 in every round since 1987.
+   */
+  private toCarouselSeries(series: PlayoffBracketSeries): PlayoffCarouselSeries {
+    const toSeed = (team: PlayoffBracketTeam, wins: number, rank: number): PlayoffCarouselSeed => team ? {
+      id: team.id,
+      abbrev: team.abbrev,
+      logo: team.logo,
+      darkLogo: team.darkLogo,
+      wins: wins ?? 0,
+      rank: rank
+    } : undefined;
+    return {
+      seriesLetter: series.seriesLetter,
+      roundNumber: series.playoffRound,
+      seriesLabel: series.seriesTitle,
+      seriesLink: series.seriesUrl,
+      conferenceName: series.conferenceName,
+      topSeed: toSeed(series.topSeedTeam, series.topSeedWins, series.topSeedRank),
+      bottomSeed: toSeed(series.bottomSeedTeam, series.bottomSeedWins, series.bottomSeedRank),
+      neededToWin: 4,
+      winningTeamId: series.winningTeamId,
+      losingTeamId: series.losingTeamId
+    };
   }
 
   private setSeedRank(seed: PlayoffCarouselSeed, bracketSeries: PlayoffBracketSeries): void {

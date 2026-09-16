@@ -1,5 +1,5 @@
 /**
- * Player headshot URLs. Headshots are plain image URLs now (the old cms.nhl.bamgrid.com host is gone), so they're
+ * Player headshot URLs. Headshots are plain image URLs on assets.nhle.com, so they're
  * used directly as <img src>, with the blank headshot as the fallback.
  */
 export class NhlPlayerHeadshotUtils {

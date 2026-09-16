@@ -1,12 +1,30 @@
-import {Component, OnInit, QueryList, ViewChildren} from '@angular/core';
-import {NhlStatsService} from "@shared/services/nhl-stats.service";
-import {NhlPlayerModel} from "@shared/models/nhl-stats/nhl-player.model";
-import {StatsUtils} from "@shared/utils/stats-utils";
-import {StatLeaderboardComponent} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
-import * as dayjs from "dayjs";
-import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlLeadersService} from "@shared/services/nhl-leaders.service";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
+import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
+import {GoalieStatsLeaders, SkaterStatsLeaders, StatsLeader} from "@shared/models/nhl-web-api/stats-leaders.model";
+import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
+import {SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
+import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
+import {LeaderboardEntry, LeaderboardFormat} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
 
+/**
+ * One leaderboard of the stats page.
+ */
+export interface Leaderboard {
+  title: string;
+  entries: LeaderboardEntry[];
+  format: LeaderboardFormat;
+}
+
+/**
+ * The stats page. Three requests: the NHL web API's skater and goalie leaders, which carry the NHL's own
+ * qualification rules, headshots and logos, and the stats API's hits and shots leaders, which the web API has no
+ * category for. The season is the standings season, so the off-season shows the last season played.
+ */
 @Component({
   selector: 'app-stats',
   templateUrl: './stats.component.html',
@@ -14,30 +32,7 @@ import {DateTimeUtils} from "@shared/utils/date-time-utils";
 })
 export class StatsComponent implements OnInit {
 
-  @ViewChildren('statLeaderboardComponent')
-  public statLeaderboards: QueryList<StatLeaderboardComponent>;
-
-  public fullSkaterList: NhlPlayerModel[];
-
-  public fullGoalieList: NhlPlayerModel[];
-
-  public topPointsList: NhlPlayerModel[];
-
-  public topGoalsList: NhlPlayerModel[];
-
-  public topAssistsList: NhlPlayerModel[];
-
-  public topShotsList: NhlPlayerModel[];
-
-  public topHitsList: NhlPlayerModel[];
-
-  public timeOnIcePerGameList: NhlPlayerModel[];
-
-  public savePercentageList: NhlPlayerModel[];
-
-  public goalsAgainstList: NhlPlayerModel[];
-
-  public winsList: NhlPlayerModel[];
+  public leaderboards: Leaderboard[] = [];
 
   public showFilters: boolean = false;
 
@@ -47,95 +42,180 @@ export class StatsComponent implements OnInit {
 
   public isLoading: boolean = false;
 
-  private minimumGoalieSavesPlayoffs = 20;
+  /** The season the leaderboards are for, from the standings. Undefined until they load. */
+  private season: number;
 
-  private minimumGoalieSavesRegularSeason = 100;
+  /** The game type of the last request, so a response of the other one is ignored. */
+  private requestedGameType: number;
 
-  private readonly topNumberOfPlayers = 25;
+  private readonly skaterCategories = ["points", "goals", "assists", "toi"];
 
-  constructor(private nhlStatsService: NhlStatsService,
+  private readonly goalieCategories = ["savePctg", "goalsAgainstAverage", "wins"];
+
+  private readonly leaderCount = 5;
+
+  private get gameType(): number {
+    return this.playoffsSelected ? 3 : 2;
+  }
+
+  constructor(private nhlLeadersService: NhlLeadersService,
+              private nhlStatsApiService: NhlStatsApiService,
+              private nhlStandingAndPlayoffService: NhlStandingAndPlayoffService,
               private activatedRoute: ActivatedRoute,
               private router: Router) {
   }
 
+  /**
+   * Waits for playoff mode, which shows the game type filters and selects the playoffs by default, then loads the
+   * leaders of the game type in the query parameter. When the season dates fail, it's the regular season without
+   * filters.
+   */
   public ngOnInit(): void {
-    this.setDateDependentFields();
+    this.isLoading = true;
+    this.nhlStatsApiService.getCurrentSeason().then(currentSeason => currentSeason.isPlayoffMode).catch(() => {
+      // The service logs the error
+      return false;
+    }).then(isPlayoffMode => {
+      this.showFilters = isPlayoffMode;
+      this.playoffsSelected = isPlayoffMode;
+      this.subscribeToGameType();
+    });
+  }
+
+  /**
+   * Loads the leaders whenever the gameType query parameter changes ("P" for the playoffs, "R" for the regular season).
+   */
+  private subscribeToGameType(): void {
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
       if (params.has("gameType")) {
         this.playoffsSelected = params.get("gameType") === "P";
       }
-      this.isLoading = true;
       this.updateStats();
     });
   }
 
+  /**
+   * Switches between the regular season and the playoffs. The game type is a query parameter, so the leaders are
+   * loaded by the query parameter subscription rather than here.
+   */
   public updateGameType(isPlayoffs: boolean): void {
     if (this.filtersEnabled && (isPlayoffs !== this.playoffsSelected)) {
-      this.isLoading = true;
       this.playoffsSelected = isPlayoffs;
+      this.isLoading = true;
       this.disableFiltersForTwoSeconds();
-      let gameTypeParam = this.playoffsSelected ? "P" : "R";
+      const gameTypeParam = this.playoffsSelected ? "P" : "R";
       this.router.navigate([],
           {
             relativeTo: this.activatedRoute,
             queryParams: {gameType: gameTypeParam},
           }
       );
-      this.statLeaderboards.forEach(leaderboard => {
-        leaderboard.imagesLoaded = false;
-      });
-      this.updateStats();
     }
   }
 
-  private setDateDependentFields(): void {
-    this.showFilters = DateTimeUtils.isPlayoffMode();
-    this.playoffsSelected = DateTimeUtils.isPlayoffMode();
-
-    if (dayjs().month() === 9) {
-      this.minimumGoalieSavesRegularSeason = dayjs().date();
-    } else if (dayjs().month() === 10) {
-      this.minimumGoalieSavesRegularSeason = 50;
-    } else {
-      this.minimumGoalieSavesRegularSeason = 100;
-    }
-  }
-
+  /**
+   * Loads the leaderboards of the selected game type. The season comes from the standings, which are only asked for
+   * once: switching between the regular season and the playoffs reloads the leaders alone.
+   */
   private updateStats(): void {
-    this.fullSkaterList = [];
-    this.fullGoalieList = [];
-    this.nhlStatsService.getNhlStats(DateTimeUtils.getCurrentNhlSeason(), this.playoffsSelected).then(result  => {
-      let fullPlayerList = [];
-      result.forEach((team) => {
-        fullPlayerList = fullPlayerList.concat(team.roster.roster);
-      });
+    this.isLoading = true;
+    this.requestedGameType = this.gameType;
+    if (this.season) {
+      this.retrieveLeaders(this.season, this.gameType);
+      return;
+    }
+    this.nhlStandingAndPlayoffService.getNhlStandings(NhlStandingsTypeEnum.BY_LEAGUE).then(standings => {
+      this.season = standings[0]?.teams[0]?.seasonId;
+      if (!this.season) {
+        this.showEmptyLeaderboards();
+        return;
+      }
+      this.retrieveLeaders(this.season, this.requestedGameType);
+    }).catch(() => {
+      // The service logs the error. Without a season there's nothing to ask the leaders for
+      this.showEmptyLeaderboards();
+    });
+  }
 
-      this.fullSkaterList = fullPlayerList.filter(player => {
-        return player.person.stats[0].splits[0] && player.person.stats[0].splits[0].stat.points > 0;
-      });
-      this.fullGoalieList = fullPlayerList.filter(player => {
-        return player.person.stats[0].splits[0] && player.person.stats[0].splits[0].stat.saves >
-            (this.playoffsSelected ? this.minimumGoalieSavesPlayoffs : this.minimumGoalieSavesRegularSeason);
-      });
-
-      this.topPointsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "points")).slice(0, this.topNumberOfPlayers);
-      this.topGoalsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "goals")).slice(0, this.topNumberOfPlayers);
-      this.topAssistsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "assists")).slice(0, this.topNumberOfPlayers);
-      this.savePercentageList = this.fullGoalieList.sort((a, b) => StatsUtils.sortByField(a, b, "savePercentage")).slice(0, this.topNumberOfPlayers);
-      this.goalsAgainstList = this.fullGoalieList.sort((a, b) => StatsUtils.sortByField(b, a, "goalAgainstAverage")).slice(0, this.topNumberOfPlayers);
-      this.winsList = this.fullGoalieList.sort((a, b) => StatsUtils.sortByField(a, b, "wins")).slice(0, this.topNumberOfPlayers);
-      this.topShotsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "shots")).slice(0, this.topNumberOfPlayers);
-      this.topHitsList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByField(a, b, "hits")).slice(0, this.topNumberOfPlayers);
-      this.timeOnIcePerGameList = this.fullSkaterList.sort((a, b) => StatsUtils.sortByTimeField(a, b, "timeOnIcePerGame")).slice(0, this.topNumberOfPlayers);
+  /**
+   * Loads the three sources at once and builds every leaderboard from what came back, so a source that fails only
+   * leaves its own boards empty.
+   */
+  private retrieveLeaders(season: number, gameType: number): void {
+    const skaterLeaders = this.nhlLeadersService
+        .getSkaterLeaders(season, gameType, this.skaterCategories, this.leaderCount)
+        .catch(() => null);
+    const goalieLeaders = this.nhlLeadersService
+        .getGoalieLeaders(season, gameType, this.goalieCategories, this.leaderCount)
+        .catch(() => null);
+    const hitsAndShots = this.nhlStatsApiService.getHitsAndShotsLeaders(season, gameType, this.leaderCount)
+        .catch(() => null);
+    Promise.all([skaterLeaders, goalieLeaders, hitsAndShots]).then(([skaters, goalies, hitsAndShotsLeaders]) => {
+      if (this.requestedGameType !== gameType) {
+        return;
+      }
+      this.leaderboards = this.buildLeaderboards(skaters, goalies, hitsAndShotsLeaders);
       this.isLoading = false;
     });
   }
 
-  private disableFiltersForTwoSeconds() {
+  private buildLeaderboards(skaters: SkaterStatsLeaders, goalies: GoalieStatsLeaders,
+                            hitsAndShots: HitsAndShotsLeaders): Leaderboard[] {
+    return [
+      {title: "Points", entries: this.toEntries(skaters?.points), format: "number"},
+      {title: "Goals", entries: this.toEntries(skaters?.goals), format: "number"},
+      {title: "Assists", entries: this.toEntries(skaters?.assists), format: "number"},
+      {title: "Save Percentage", entries: this.toEntries(goalies?.savePctg), format: "savePctg"},
+      {title: "Goals Against Average", entries: this.toEntries(goalies?.goalsAgainstAverage), format: "gaa"},
+      {title: "Wins", entries: this.toEntries(goalies?.wins), format: "number"},
+      {title: "Shots", entries: this.toSkaterEntries(hitsAndShots?.shots, "shots"), format: "number"},
+      {title: "Hits", entries: this.toSkaterEntries(hitsAndShots?.hits, "hits"), format: "number"},
+      {title: "Time On Ice Per Game", entries: this.toEntries(skaters?.toi), format: "toi"}
+    ];
+  }
+
+  /**
+   * Converts NHL web API leaders, which bring their own headshot and a team abbreviation.
+   */
+  private toEntries(leaders: StatsLeader[]): LeaderboardEntry[] {
+    return (leaders ?? []).map(leader => ({
+      playerId: leader.id,
+      name: (leader.firstName?.default ?? "") + " " + (leader.lastName?.default ?? ""),
+      teamId: NhlTeamUtils.getTeamIdByAbbrev(leader.teamAbbrev),
+      headshot: leader.headshot,
+      value: leader.value
+    }));
+  }
+
+  /**
+   * Converts stats API rows, which have no headshot and list every team of the season ("CGY,VAN"). The headshot is
+   * built from the player's last team of that season.
+   */
+  private toSkaterEntries(rows: SkaterSeasonStats[], field: "hits" | "shots"): LeaderboardEntry[] {
+    return (rows ?? []).map(row => {
+      const teamAbbrev = row.teamAbbrevs?.split(",").pop()?.trim();
+      return {
+        playerId: row.playerId,
+        name: row.skaterFullName,
+        teamId: NhlTeamUtils.getTeamIdByAbbrev(teamAbbrev),
+        headshot: NhlPlayerHeadshotUtils.getHeadshotUrl(row.seasonId ?? this.season, teamAbbrev, row.playerId),
+        value: row[field]
+      };
+    });
+  }
+
+  /**
+   * Shows every leaderboard's empty state, for when there is no season to ask the leaders for.
+   */
+  private showEmptyLeaderboards(): void {
+    this.leaderboards = this.buildLeaderboards(null, null, null);
+    this.isLoading = false;
+  }
+
+  private disableFiltersForTwoSeconds(): void {
     this.filtersEnabled = false;
     setTimeout(() => {
       this.filtersEnabled = true;
     }, 2000);
   }
 }
-

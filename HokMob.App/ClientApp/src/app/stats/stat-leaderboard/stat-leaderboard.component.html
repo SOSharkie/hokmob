@@ -2,40 +2,43 @@
   <div class="stat-title">
     <span>{{statTitle}}</span>
   </div>
-  <div *ngIf="topPlayersList" class="stat-players">
-    <div *ngIf="statLeader" class="stat-leader stat-player" [routerLink]="['/player', statLeader.person.id]">
+  <div class="stat-players">
+    <div *ngIf="statLeader" class="stat-leader stat-player" [routerLink]="['/player', statLeader.playerId]">
       <div class="player-container">
         <div class="leader-headshot-container">
-          <img [src]="playerHeadshots[0]" class="leader-headshot">
+          <img [src]="statLeader.headshot" (error)="showBlankHeadshot($event)" alt="" class="leader-headshot">
         </div>
         <div class="player-info">
-          <span class="leader-name">{{statLeader.person.fullName}}</span>
+          <span class="leader-name">{{statLeader.name}}</span>
           <div class="leader-team">
-            <img [src]="teamLogos[0]" class="leader-team-logo">
-            <span class="leader-team-label">{{statLeader.person.currentTeam.name}}</span>
+            <img [src]="statLeader.teamLogo" alt="" class="leader-team-logo">
+            <span class="leader-team-label">{{statLeader.teamName}}</span>
           </div>
         </div>
       </div>
-      <div class="stat-container" [ngStyle]="{'background-color': getPlayerTeamColor(statLeader)}">
-        <span>{{getPlayerStatField(statLeader)}}</span>
+      <div class="stat-container" [ngStyle]="{'background-color': statLeader.teamColor}">
+        <span>{{statLeader.value}}</span>
       </div>
     </div>
-    <div *ngFor="let player of statRunnerUps, let i = index" class="stat-player" [routerLink]="['/player', player.person.id]">
+    <div *ngFor="let player of statRunnerUps" class="stat-player" [routerLink]="['/player', player.playerId]">
       <div class="player-container">
         <div class="player-headshot-container">
-          <img [src]="playerHeadshots[i+1]" class="player-headshot">
+          <img [src]="player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
         </div>
         <div class="player-info">
-          <span class="player-name">{{player.person.fullName}}</span>
+          <span class="player-name">{{player.name}}</span>
           <div class="player-team">
-            <img [src]="teamLogos[i+1]" class="player-team-logo">
-            <span class="player-team-label">{{player.person.currentTeam.name}}</span>
+            <img [src]="player.teamLogo" alt="" class="player-team-logo">
+            <span class="player-team-label">{{player.teamName}}</span>
           </div>
         </div>
       </div>
       <div class="stat-container">
-        <span>{{getPlayerStatField(player)}}</span>
+        <span>{{player.value}}</span>
       </div>
+    </div>
+    <div *ngIf="!statLeader" class="no-stats">
+      <span>No stats yet</span>
     </div>
   </div>
 </div>

@@ -76,6 +76,11 @@
   background-color: $black-04;
 }
 
+.undecided-series:hover {
+  cursor: default;
+  background-color: $black-03;
+}
+
 // Desktop Styling
 @media only screen and (min-width: $tiny-display-breakpoint) {
   .series-container {

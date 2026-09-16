@@ -4,6 +4,70 @@
   width: 100%;
   overflow-x: auto;
 
+  .playoffs-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-large;
+    box-sizing: border-box;
+    margin: $spacing-large $spacing-large 0;
+    padding: $spacing-large $spacing-xx-large;
+    border-radius: 25px;
+    background-color: $black-02;
+    color: white;
+
+    .playoffs-title-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .playoffs-title {
+      margin: 0;
+      font-size: x-large;
+      font-weight: normal;
+    }
+
+    .qualifying-round-note {
+      margin-top: $spacing-small;
+      color: $gray-03;
+      font-size: small;
+    }
+
+    .season-picker {
+      padding: $spacing-medium $spacing-large;
+      border: none;
+      border-radius: 15px;
+      background-color: $black-04;
+      color: white;
+      font-size: medium;
+      cursor: pointer;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+
+    .loading-gif {
+      margin-top: $spacing-xx-large;
+      width: 100px;
+      height: 100px;
+    }
+  }
+
+  .playoffs-message {
+    margin: $spacing-huge;
+    text-align: center;
+    color: $gray-03;
+  }
+
+  .series-title {
+    color: $gray-03;
+    font-size: small;
+    text-align: center;
+  }
+
   .standard-playoffs-tree {
     justify-content: center;
     margin: $spacing-large;
@@ -45,6 +109,20 @@
     .stanley-cup-final {
       display: flex;
       align-items: center;
+    }
+
+    // The title sits above the card without moving it, so the connectors stay level with the card
+    .labeled-series {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+
+      .series-title {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(100% - #{$spacing-xx-large} + #{$spacing-small});
+      }
     }
 
     .connector-container {
@@ -152,6 +230,16 @@
       align-items: center;
     }
 
+    .labeled-series {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .series-title {
+        margin: $spacing-small 0;
+      }
+    }
+
     .connector-container {
       position: relative;
       display: flex;
@@ -226,7 +314,12 @@
 @media only screen and (min-width: $small-display-breakpoint) {
   .playoffs-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+
+    .playoffs-header {
+      width: 1200px;
+    }
   }
 }
 

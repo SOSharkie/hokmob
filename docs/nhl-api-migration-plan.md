@@ -1,7 +1,7 @@
 # NHL API Migration Plan: Home Page & Game Page
 
 Status: **Done** · Phases 0–8 done with unit tests (2026-09-15). The live game checks in section 10 stay open until
-the preseason starts on 2026-09-29.
+the preseason starts on 2026-09-19 (the regular season starts 2026-09-29).
 Scope: home page (scoreboard, standings summary, playoff summary and series dialog) and game page (header, goals, stats,
 momentum, event timelines, top players, player dialog, team form). Player and team pages are out of scope.
 
@@ -18,7 +18,8 @@ All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-w
   `suggest.svc.nhl.com` (search) no longer resolve in DNS. Unmigrated pages don't work.
 - **No 1:1 replacement.** The old `/game/{id}/feed/live` returned everything in one response. The new API splits it
   across four gamecenter endpoints: `landing`, `play-by-play`, `boxscore` and `right-rail`.
-- **The shapes are completely different.** Old models under `shared/models/nhl-*` can't be reused for these pages.
+- **The shapes are completely different.** Old models under `shared/models/nhl-*` (deleted in the second plan's phase
+  15) can't be reused for these pages.
   New models live under `shared/models/nhl-web-api/`.
 - **What stays the same:**
   - Game IDs use the same format (`2025021057`), so `/game/:id` routes keep working.
@@ -29,7 +30,7 @@ All new calls go through the backend proxy: `/api/nhl/<path>` → `https://api-w
 - **Trailing slashes don't matter.** The proxy drops empty path segments, and upstream accepts paths with or without
   the trailing `/` shown in the reference.
 - **Live-game fields are unverified.** Every sample so far is a finished (`OFF`) or future (`FUT`) game.
-  The preseason starts 2026-09-29. `clock` and intermission behavior must be checked against a real live game
+  The preseason starts 2026-09-19. `clock` and intermission behavior must be checked against a real live game
   (checklist in section 10).
 
 ## 2. Endpoint mapping
@@ -190,8 +191,8 @@ but its team data still comes from the dead API (see its TODO).
   Bracket `topSeedRankAbbrev` looks like `D1` (division) or `WC1` (wild card), and `topSeedRank` is the number
   shown on the card. Both wild cards can have the same rank: BOS (`WC1`) and LAK (`WC2`) are both rank 4.
 
-`DateTimeUtils.isPlayoffMode()` is still hard-coded to dates (May 21 to end of September). Optionally drive it from the
-`schedule/{date}` response instead (`regularSeasonEndDate`, `playoffEndDate`).
+`DateTimeUtils.isPlayoffMode()` was hard-coded to dates (May 21 to end of September). It now works from season dates:
+see section 11.1 of [`nhl-api-legacy-migration-plan.md`](nhl-api-legacy-migration-plan.md).
 
 ## 5. Game page (phases 4–8 done)
 
@@ -256,7 +257,7 @@ The old code timed from the `PERIOD_END` play's wall-clock `about.dateTime`.
 - `isIntermission` is `landing.clock.inIntermission` for a live game. The countdown starts from
   `clock.secondsRemaining`, which is expected to count down the intermission, and a 1s timer moves it between
   refreshes ("16:40 till 2nd"). **Not verified yet:** there are no live games before the preseason starts on
-  2026-09-29, so phases 5 and 8 couldn't check it. It's the first check in section 10 (TODO in
+  2026-09-19, so phases 5 and 8 couldn't check it. It's the first check in section 10 (TODO in
   `GameComponent.updateIntermission`).
 - The next-period label is `PeriodUtils.getNextPeriodLabel(periodDescriptor, gameType)`.
 
@@ -450,9 +451,8 @@ Headshots: `NhlImageService.getNhlPlayerHeadshot` (dead host, blob + FileReader)
   `GameOutcome`, `TvBroadcast`, `GamecenterTeam`, `SeriesStatus`).
   Don't adapt the new data into the old models; too many fields have no equivalent. Converting between new models is
   fine when a shared component needs it (the series dialog converts series schedule games to `ScoreGame`).
-- **Keep the old models** for now. Player and team pages still import them, and they get removed when those pages migrate.
-  Phase 8 deleted the ones nothing imports anymore: `game-player`, `nhl-general/nhl-standings` and the `nhl-playoffs`
-  models except `nhl-series-summary`.
+- **Old models:** phase 8 deleted the ones nothing imported anymore: `game-player`, `nhl-general/nhl-standings` and
+  the `nhl-playoffs` models except `nhl-series-summary`. Phase 15 (second plan) deleted the rest.
 - **Services.** Use relative `/api/nhl/...` URLs and keep the Promise-based style. `NhlStandingAndPlayoffService` has a
   private `get<T>(url)` helper that wraps `HttpClient` the same way.
 - **Backend (done).** `AllowedRoots` in `NhlController.cs` already allows `score`, `scoreboard`, `schedule`,
@@ -549,9 +549,9 @@ A phase is done only when all of these are true:
     or playoff team, so early regular season games fill in from last season instead.
 18. **The plan closed without a live game.** Phase 8 did the cleanup and turned the live checks into a checklist
     (section 10), with TODOs at each assumption in the code and a script that captures the responses, instead of
-    waiting until 2026-09-29.
-19. **Only unused old models were deleted.** Models still imported by the team, player, stats or search pages stay until
-    those pages migrate.
+    waiting until 2026-09-19.
+19. **Only unused old models were deleted.** Models still imported by the team, player, stats or search pages stayed until
+    those pages migrated; phase 15 of the second plan deleted them.
 
 ## 9. Risks
 
@@ -584,7 +584,7 @@ A phase is done only when all of these are true:
 ## 10. Open items
 
 ### Live game checklist
-Nothing below could be checked before the preseason starts on 2026-09-29. Each assumption has a `TODO` in the code
+Nothing below could be checked before the preseason starts on 2026-09-19. Each assumption has a `TODO` in the code
 pointing here. During a live game, run this from `HokMob.App/ClientApp`:
 
 ```bash
@@ -611,11 +611,9 @@ in `nhl-api-mocks.ts`, replace the live `derived*` helpers, make the specs asser
 assumption, remove the TODOs and update this section. Don't commit the untrimmed `live/` folder.
 
 ### Follow-ups outside this plan
-- Migrate the team, player, playoffs and stats pages and header search. Planned as phases 9–15 in
-  [`nhl-api-legacy-migration-plan.md`](nhl-api-legacy-migration-plan.md) (TODOs on `TeamComponent`, `TeamScheduleComponent`,
-  `SingleTeamFormComponent`, `TeamNextGameComponent`, `PlayoffsComponent`, `SearchInputComponent`, `NhlSearchService`,
-  `NhlImageService`), then delete the remaining old models and the dead-API methods in `NhlGameService`.
+- ~~Migrate the team, player, playoffs and stats pages and header search, then delete the old code.~~ Done in phases
+  9–15 of [`nhl-api-legacy-migration-plan.md`](nhl-api-legacy-migration-plan.md).
 - HokMob rating approach B (decision 1).
 - A local Utah logo (`NhlTeamLogoUtils` TODO).
-- Optionally drive `DateTimeUtils.isPlayoffMode()` from `schedule/{date}` (4.3).
+- ~~Drive `DateTimeUtils.isPlayoffMode()` from season dates (4.3).~~ Done (second plan, 11.1).
 - Check an in-progress playoff series (next game date, unplayed games in the series dialog) during the 2027 playoffs.

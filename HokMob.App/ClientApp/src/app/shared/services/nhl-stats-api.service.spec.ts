@@ -1,7 +1,12 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {NhlStatsApiService} from '@shared/services/nhl-stats-api.service';
-import {mockPlayerStats, mockTeamStats} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  mockHitsAndShotsLeaders,
+  mockPlayerStats,
+  mockSeasonDates,
+  mockTeamStats
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {
   GoalieGameStats,
   SkaterGameStats,
@@ -84,6 +89,44 @@ describe('NhlStatsApiService', () => {
     });
   });
 
+  describe('getHitsAndShotsLeaders', () => {
+    it('should resolve the real hits and shots leaders of a season', async () => {
+      const leaders = service.getHitsAndShotsLeaders(20252026, 2, 5);
+      httpMock.expectOne('/api/nhl-stats/leaders?season=20252026&gameType=2&limit=5')
+          .flush(mockHitsAndShotsLeaders());
+
+      const hitsAndShots = await leaders;
+      expect(hitsAndShots.hits.length).toBe(5);
+      expect(hitsAndShots.hits[0].skaterFullName).toBe('Yakov Trenin');
+      expect(hitsAndShots.hits[0].hits).toBe(413);
+      expect(hitsAndShots.hits[0].teamAbbrevs).toBe('MIN');
+      expect(hitsAndShots.shots[0].skaterFullName).toBe('Nathan MacKinnon');
+      expect(hitsAndShots.shots[0].shots).toBe(350);
+    });
+
+    it('should ask for the regular season and five leaders by default', async () => {
+      const leaders = service.getHitsAndShotsLeaders('20252026');
+      httpMock.expectOne('/api/nhl-stats/leaders?season=20252026&gameType=2&limit=5')
+          .flush(mockHitsAndShotsLeaders());
+      await leaders;
+    });
+
+    it('should resolve empty lists for a season without stats', async () => {
+      const leaders = service.getHitsAndShotsLeaders(20262027, 3);
+      httpMock.expectOne('/api/nhl-stats/leaders?season=20262027&gameType=3&limit=5').flush({});
+      expect(await leaders).toEqual({hits: [], shots: []});
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const leaders = service.getHitsAndShotsLeaders(20252026, 2);
+      const rejection = expectAsync(leaders).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne('/api/nhl-stats/leaders?season=20252026&gameType=2&limit=5')
+          .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
   describe('getTeamStats', () => {
     it('should resolve every real team of the season', async () => {
       const teamStats = service.getTeamStats(20252026);
@@ -116,6 +159,81 @@ describe('NhlStatsApiService', () => {
           .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getSeasonDates and getCurrentSeason', () => {
+    const seasonsUrl = '/api/nhl-stats/seasons';
+
+    afterEach(() => {
+      jasmine.clock().uninstall();
+    });
+
+    /** Pins today to a local day. The month is 1-based. */
+    function setToday(year: number, month: number, date: number): void {
+      jasmine.clock().install();
+      jasmine.clock().mockDate(new Date(year, month - 1, date, 12));
+    }
+
+    it('should resolve the real seasons, newest first', async () => {
+      const seasonDates = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      const seasons = await seasonDates;
+      expect(seasons.map(season => season.id)).toEqual([20262027, 20252026]);
+      expect(seasons[1].firstPlayoffGameDate).toBe('2026-04-18');
+    });
+
+    it('should share one request between callers', async () => {
+      const first = service.getCurrentSeason();
+      const second = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      await Promise.all([first, second]);
+      await service.getCurrentSeason();
+      httpMock.expectNone(seasonsUrl);
+    });
+
+    it('should ask again after an hour', async () => {
+      setToday(2026, 9, 16);
+      const first = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      await first;
+      jasmine.clock().tick(60 * 60 * 1000);
+      const second = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      await second;
+    });
+
+    it('should resolve the new season outside playoff mode on the day the fixture was captured', async () => {
+      setToday(2026, 9, 16);
+      const currentSeason = service.getCurrentSeason();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      expect(await currentSeason).toEqual({season: 20262027, isPlayoffMode: false});
+    });
+
+    it('should resolve the previous season in playoff mode during its playoffs', async () => {
+      setToday(2026, 5, 1);
+      const currentSeason = service.getCurrentSeason();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      expect(await currentSeason).toEqual({season: 20252026, isPlayoffMode: true});
+    });
+
+    it('should reject when no season is listed', async () => {
+      const currentSeason = service.getCurrentSeason();
+      const rejection = expectAsync(currentSeason).toBeRejected();
+      httpMock.expectOne(seasonsUrl).flush({seasons: []});
+      await rejection;
+    });
+
+    it('should log, reject and not reuse a failed request', async () => {
+      const currentSeason = service.getCurrentSeason();
+      const rejection = expectAsync(currentSeason).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne(seasonsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+
+      const retry = service.getSeasonDates();
+      httpMock.expectOne(seasonsUrl).flush(mockSeasonDates());
+      expect((await retry).length).toBe(2);
     });
   });
 });

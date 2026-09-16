@@ -1,61 +1,42 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {SearchResultModel} from "@shared/models/search-result.model";
-import {NhlImageService} from "@shared/services/nhl-image.service";
 import {SearchResultTypeEnum} from "@shared/enums/search-result-type.enum";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 
+/**
+ * One header search result: a team with its logo, or a player with their headshot and position.
+ */
 @Component({
   selector: 'app-search-result',
   templateUrl: './search-result.component.html',
   styleUrls: ['./search-result.component.scss']
 })
-export class SearchResultComponent implements OnChanges {
+export class SearchResultComponent {
 
   @Input()
   public searchResult: SearchResultModel;
 
-  public teamLogo: any;
-
-  public playerHeadshot: any;
-
   public get isPlayer(): boolean {
-    if (this.searchResult) {
-      return this.searchResult.resultType === SearchResultTypeEnum.PLAYER;
-    }
-    return false;
+    return this.searchResult?.resultType === SearchResultTypeEnum.PLAYER;
   }
+
   public get isTeam(): boolean {
-    if (this.searchResult) {
-      return this.searchResult.resultType === SearchResultTypeEnum.TEAM;
-    }
-    return false;
+    return this.searchResult?.resultType === SearchResultTypeEnum.TEAM;
   }
 
-  constructor(private nhlImageService: NhlImageService) {
+  public get teamLogo(): string {
+    return NhlTeamLogoUtils.getTeamPrimaryLogo(Number(this.searchResult?.teamId));
   }
 
-  public ngOnChanges(changes: SimpleChanges) {
-    if (changes['searchResult'] && this.searchResult) {
-      if (this.isPlayer) {
-        this.loadPlayerImage();
-      } else if (this.isTeam) {
-        this.loadTeamLogo();
-      }
-    }
+  public get playerHeadshot(): string {
+    return this.searchResult?.headshot || NhlPlayerHeadshotUtils.blankHeadshot;
   }
 
-  public loadPlayerImage(): void {
-    this.playerHeadshot = 'assets/blank_headshot.png';
-    this.nhlImageService.getNhlPlayerHeadshot(Number(this.searchResult.playerId)).then(data => {
-      let reader = new FileReader();
-      reader.addEventListener("load", () => {
-        this.playerHeadshot = reader.result;
-      }, false);
-      reader.readAsDataURL(data);
-    });
-  }
-
-  public loadTeamLogo(): void {
-    this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(Number(this.searchResult.teamId));
+  /**
+   * Replaces a headshot that failed to load with the blank headshot.
+   */
+  public showBlankHeadshot(event: Event): void {
+    NhlPlayerHeadshotUtils.showBlankHeadshot(event);
   }
 }

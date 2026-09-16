@@ -1,4 +1,5 @@
 import * as dayjs from "dayjs";
+import {SeasonDates} from "@shared/models/nhl-stats-api/season-dates.model";
 
 export class DateTimeUtils {
 
@@ -40,41 +41,55 @@ export class DateTimeUtils {
     }
   }
 
+  /** How many days before a season's first game the season starts. */
+  public static readonly seasonStartLeadDays = 14;
+
+  /** How many days before a season's first playoff game playoff mode starts. */
+  public static readonly playoffModeLeadDays = 2;
+
   /**
-   * Gets the current NHL season string, like "20222023". New seasons generally start around Oct 10th.
+   * Gets the current NHL season: the newest season whose first game (the first preseason game) is at most 2 weeks
+   * away or already played. When no listed season has started, it's the oldest one listed.
+   *
+   * @param seasons - The latest seasons, newest first (NhlStatsApiService.getSeasonDates).
+   * @param today - The day to work it out for.
    */
-  public static getCurrentNhlSeason(): string {
-    let today = dayjs();
-    let currentYear = today.get('year');
-    let nextYear = today.add(1, 'year').get('year');
-    let prevYear = today.subtract(1, 'year').get('year');
-    if (today.month() < 9 || (today.month() === 9 && today.date() < 10)) {
-      return prevYear.toString() + currentYear.toString();
-    } else {
-      return currentYear.toString() + nextYear.toString();
-    }
+  public static getCurrentNhlSeason(seasons: SeasonDates[], today: Date = new Date()): SeasonDates {
+    const list = seasons ?? [];
+    return list.find(season => DateTimeUtils.isOnOrAfterLeadDay(today, season.firstGameDate,
+        DateTimeUtils.seasonStartLeadDays)) ?? list[list.length - 1];
   }
 
-  public static getCurrentNhlSeasonDisplayValue(): string {
-    return this.getCurrentNhlSeason().substring(0, 4) + "-" + this.getCurrentNhlSeason().substring(4);
-  }
-
-  public static getCurrentNhlPlayoffsDisplayValue(): string {
-    return this.getCurrentNhlSeason().substring(4);
+  /**
+   * Whether the site is in playoff mode: from 2 days before the current season's first playoff game until the next
+   * season starts (see getCurrentNhlSeason).
+   *
+   * @param seasons - The latest seasons, newest first (NhlStatsApiService.getSeasonDates).
+   * @param today - The day to work it out for.
+   */
+  public static isPlayoffMode(seasons: SeasonDates[], today: Date = new Date()): boolean {
+    const currentSeason = DateTimeUtils.getCurrentNhlSeason(seasons, today);
+    return DateTimeUtils.isOnOrAfterLeadDay(today, currentSeason?.firstPlayoffGameDate,
+        DateTimeUtils.playoffModeLeadDays);
   }
 
   public static getNhlSeasonDisplayValue(season: string): string {
     return season.substring(0, 4) + "-" + season.substring(4);
   }
 
-  public static isPlayoffMode(): boolean {
-    let today = dayjs();
-    if (today.month() < 4 || today.month() > 8) {
+  /**
+   * Whether a day is on or after the day that is some days before a game day, comparing local days. False for a
+   * missing game day.
+   *
+   * @param today - The day to check.
+   * @param gameDate - A game day, like "2026-09-19", which parses as local midnight.
+   * @param leadDays - How many days before the game day to start.
+   */
+  private static isOnOrAfterLeadDay(today: Date, gameDate: string, leadDays: number): boolean {
+    if (!gameDate) {
       return false;
-    } else if (today.month() === 4 && today.date() < 21) {
-      return false;
-    } else {
-      return true;
     }
+    const leadDay = dayjs(gameDate).subtract(leadDays, "day");
+    return !dayjs(today).startOf("day").isBefore(leadDay);
   }
 }

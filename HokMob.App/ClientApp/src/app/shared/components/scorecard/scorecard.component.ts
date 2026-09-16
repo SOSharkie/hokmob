@@ -1,6 +1,5 @@
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import * as dayjs from 'dayjs'
-import {NhlImageService} from "@shared/services/nhl-image.service";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
@@ -143,9 +142,6 @@ export class ScorecardComponent implements OnChanges {
       return PeriodUtils.getLiveLabel(this.game.periodDescriptor, this.game.clock);
     }
     return "Live"
-  }
-
-  constructor(private nhlLogoService: NhlImageService) {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {

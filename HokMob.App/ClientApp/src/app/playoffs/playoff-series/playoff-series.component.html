@@ -1,4 +1,4 @@
-<div class="series-container" [ngClass]="{'smaller-version': smallerVersion}" (click)="openSeriesDialog()">
+<div class="series-container" [ngClass]="{'smaller-version': smallerVersion, 'undecided-series': !hasBothTeams}" (click)="openSeriesDialog()">
   <div class="series-header">
     <img [src]="logoA" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoALoaded, 'loser': teamALost}">
     <span *ngIf="!smallerVersion" class="next-game">{{nextGameDay}}</span>

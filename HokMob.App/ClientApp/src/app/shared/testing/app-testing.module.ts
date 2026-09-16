@@ -8,11 +8,9 @@ import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from "@angular/material/
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {MaterialModule} from "@shared/modules/material.module";
 import {NhlGameService} from "@shared/services/nhl-game.service";
-import {NhlImageService} from "@shared/services/nhl-image.service";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
-import {BetaNhlStatsService} from "@shared/services/beta-nhl-stats.service";
-import {NhlStatsService} from "@shared/services/nhl-stats.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {NhlLeadersService} from "@shared/services/nhl-leaders.service";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {NhlSearchService} from "@shared/services/nhl-search.service";
 import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
@@ -41,11 +39,9 @@ const modules = [
   exports: [...modules, SavePercentagePipe, GoalsAgainstAveragePipe],
   providers: [
     NhlGameService,
-    NhlImageService,
     NhlStandingAndPlayoffService,
-    BetaNhlStatsService,
-    NhlStatsService,
     NhlStatsApiService,
+    NhlLeadersService,
     RouterExtensionService,
     NhlSearchService,
     {provide: MatDialogRef, useValue: {close: () => {}}},
