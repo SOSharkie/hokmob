@@ -38,15 +38,16 @@ export class TeamStatsComponent implements OnChanges {
   public title: string = "Team Stats";
 
   /**
-   * The stats shown, in order. A lower value is better for goals and shots against.
+   * The stats shown, in order. Per-game stats have two decimals unless `decimals` says otherwise. A lower value is
+   * better for goals and shots against.
    */
-  private static readonly stats: {label: string, field: keyof TeamSeasonStats, percentage?: boolean, lowerIsBetter?: boolean}[] = [
+  private static readonly stats: {label: string, field: keyof TeamSeasonStats, percentage?: boolean, decimals?: number, lowerIsBetter?: boolean}[] = [
     {label: "Power Play %", field: "powerPlayPct", percentage: true},
     {label: "Penalty Kill %", field: "penaltyKillPct", percentage: true},
     {label: "Goals For / Game", field: "goalsForPerGame"},
     {label: "Goals Against / Game", field: "goalsAgainstPerGame", lowerIsBetter: true},
-    {label: "Shots For / Game", field: "shotsForPerGame"},
-    {label: "Shots Against / Game", field: "shotsAgainstPerGame", lowerIsBetter: true},
+    {label: "Shots For / Game", field: "shotsForPerGame", decimals: 1},
+    {label: "Shots Against / Game", field: "shotsAgainstPerGame", decimals: 1, lowerIsBetter: true},
     {label: "Faceoff %", field: "faceoffWinPct", percentage: true}
   ];
 
@@ -59,19 +60,19 @@ export class TeamStatsComponent implements OnChanges {
     this.title = DateTimeUtils.getNhlSeasonDisplayValue(String(team.seasonId)) + " Team Stats";
     this.rows = TeamStatsComponent.stats.map(stat => ({
       label: stat.label,
-      value: TeamStatsComponent.formatValue(team[stat.field] as number, stat.percentage),
+      value: TeamStatsComponent.formatValue(team[stat.field] as number, stat.percentage, stat.decimals),
       rank: this.getRank(team[stat.field] as number, stat.field, stat.lowerIsBetter)
     }));
   }
 
   /**
-   * A percentage as "23.4", any other stat with two decimals. Missing values show a dash.
+   * A percentage as "23.4%", any other stat with the given decimals (two by default). Missing values show a dash.
    */
-  private static formatValue(value: number, percentage: boolean): string {
+  private static formatValue(value: number, percentage: boolean, decimals: number = 2): string {
     if (value == null) {
       return "-";
     }
-    return percentage ? (value * 100).toFixed(1) : value.toFixed(2);
+    return percentage ? (value * 100).toFixed(1) + "%" : value.toFixed(decimals);
   }
 
   /**

@@ -1,26 +1,35 @@
 @import "variables";
 
+// Pill-shaped search box styled like Fotmob's header search: the icon sits inside the pill on the left.
 .search-container {
+  position: relative;
   display: flex;
   align-content: center;
   align-items: center;
   background-color: $black-03;
-  padding-left: $spacing-large;
-  padding-right: $spacing-small;
-  border: none;
-  border-radius: 25px;
+  border: 1px solid transparent;
+  border-radius: 22px;
+  transition: border-color 0.15s ease-in-out;
 
   .search-icon {
     position: absolute;
+    left: $spacing-x-large;
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+    color: $gray-03;
+    pointer-events: none;
   }
 
   .search-input {
-    height: 50px;
+    height: 44px;
     border: none;
-    border-radius: 25px;
-    background-color: $black-03;
+    border-radius: 22px;
+    background-color: transparent;
     color: white;
-    font-size: medium;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 400;
   }
 
   .search-input:focus {
@@ -28,8 +37,14 @@
   }
 
   .search-input::placeholder {
-    color: $gray-02;
+    color: $gray-03;
+    font-weight: 400;
   }
+}
+
+.search-container:hover,
+.search-container:focus-within {
+  border-color: $gray-01;
 }
 
 .mdc-menu-surface.mat-mdc-autocomplete-panel.mdc-menu-surface--open {
@@ -50,28 +65,25 @@
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .search-container {
-    justify-content: space-between;
-
     .search-input {
-      width: 300px;
-      padding-left: $spacing-huge;
-    }
-    .search-input::placeholder {
-      font-size: larger;
+      width: 340px;
+      padding-left: 50px;
+      padding-right: $spacing-x-large;
     }
   }
 }
 
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .search-input {
-    width: 100%;
-    padding-left: $spacing-small;
-  }
-  .search-input::placeholder {
-    font-size: small;
-  }
-  .search-icon {
-    display: none;
+  .search-container {
+    .search-input {
+      width: 100%;
+      padding-left: $spacing-x-large;
+      padding-right: $spacing-large;
+      font-size: 14px;
+    }
+    .search-icon {
+      display: none;
+    }
   }
 }

@@ -328,7 +328,8 @@ five requests to the dead API.
   - Rows, each with its league rank ("9th"): Power Play % (`powerPlayPct`), Penalty Kill % (`penaltyKillPct`),
     Goals For / Game (`goalsForPerGame`), Goals Against / Game (`goalsAgainstPerGame`), Shots For / Game
     (`shotsForPerGame`), Shots Against / Game (`shotsAgainstPerGame`) and Faceoff % (`faceoffWinPct`). Percentages
-    are × 100 with one decimal, per-game values have two decimals.
+    are × 100 with one decimal and a percent sign ("23.4%"), goals per game have two decimals and shots per game one.
+  - Placement: at the top of the larger left column, above the standings.
   - Ranks: 1 + the number of teams strictly better, so ties share a rank. Lower is better for goals and shots
     against. Checked for BOS in 2025-26: PP 9th, PK 24th, GF/G 10th, GA/G 14th.
   - Title: "<season> Team Stats". There's no card when the team has no row (the first days of a season before its

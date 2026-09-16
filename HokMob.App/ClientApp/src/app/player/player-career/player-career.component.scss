@@ -21,13 +21,14 @@
     .player-seasons-header {
       th {
         text-align: left;
-        padding: $spacing-large;
+        padding: $spacing-large $spacing-medium;
         color: $gray-03;
         font-weight: normal;
       }
 
       .season-header {
         width: 52%;
+        padding-left: $spacing-x-large;
       }
       .games-header {
         width: 12%;
@@ -48,12 +49,19 @@
 
       td {
         font-weight: lighter;
-        padding: $spacing-x-large;
+        padding: $spacing-x-large $spacing-medium;
       }
 
+      .season-cell {
+        padding-left: $spacing-x-large;
+      }
+
+      // Wraps so the season drops below the logos when a traded season's logos don't leave room for it
       .season-info {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
+        row-gap: $spacing-x-small;
         align-items: center;
 
         // A traded season shows a logo per team ("CGY,VAN"), so the container grows with them

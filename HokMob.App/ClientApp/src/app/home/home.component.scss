@@ -5,26 +5,21 @@
   justify-content: center;
   min-height: 500px;
   width: 100%;
+  box-sizing: border-box;
   background-color: black;
-  padding-top: $spacing-medium;
+  // The same gap above, below and between the cards, so vertical and horizontal spacing match
+  padding-top: $spacing-card-gap;
+  padding-bottom: $spacing-card-gap;
+  gap: $spacing-card-gap;
 
   .nav-menu {
     display: flex;
     flex-direction: column;
-    margin-right: $spacing-large;
-
-    .nav-menu-item {
-      color: white;
-      font-size: large;
-      margin-top: $spacing-large;
-      margin-bottom: $spacing-large;
-    }
   }
 
   .scores {
     display: flex;
     flex-direction: column;
-    margin-right: $spacing-large;
   }
 
   .news-and-standings {
@@ -41,10 +36,10 @@
       width: 200px;
     }
     .scores {
-      min-width: 665px;
+      min-width: 653px;
     }
     .news-and-standings {
-      width: 320px;
+      width: 308px;
     }
   }
 }
@@ -58,7 +53,7 @@
       width: 150px;
     }
     .scores {
-      min-width: 613px;
+      min-width: 601px;
     }
     .news-and-standings {
       display: none;
@@ -75,7 +70,7 @@
       width: 130px;
     }
     .scores {
-      min-width: 563px;
+      min-width: 551px;
     }
     .news-and-standings {
       display: none;
@@ -88,6 +83,8 @@
   .home-page {
     flex-direction: column;
     justify-content: flex-start;
+    padding: $spacing-medium;
+    gap: $spacing-medium;
 
     .nav-menu {
       display: none;

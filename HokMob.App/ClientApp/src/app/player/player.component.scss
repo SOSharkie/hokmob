@@ -3,12 +3,13 @@
 .player-container {
   display: flex;
   flex-direction: column;
+  row-gap: $spacing-large;
+  margin: $spacing-medium;
 
   .player-header {
     display: flex;
     align-items: flex-end;
     height: 100px;
-    margin: $spacing-medium $spacing-medium $spacing-x-small $spacing-medium;
     background-color: $black-02;
     border-radius: 25px;
     position: relative;
@@ -125,16 +126,14 @@
     }
   }
 
-  .player-info-container, .player-games-and-career-container {
+  // Every card sits in this one container, so its gap is the only spacing between cards, across and down
+  .player-cards {
     display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: $spacing-large;
 
     .player-bio-container, .regular-season-stats, .playoff-stats, .career-totals, .stats-error {
       min-height: 240px;
-      width: 32%;
-      min-width: 375px;
-      margin: $spacing-small;
     }
 
     .stats-error {
@@ -143,12 +142,6 @@
       justify-content: center;
       color: $gray-04;
       font-size: large;
-    }
-
-    .match-stats-container {
-      width: 65%;
-      min-width: 375px;
-      margin: $spacing-small;
     }
   }
 }
@@ -170,36 +163,43 @@
   }
 }
 
-// Wide Desktop Styling: only from here do three cards fit across at their 375px minimum, which is
-// what leaves the empty slot for the career table to slide up into when there are no playoff stats
+// Wide Desktop Styling: three equal columns. The bio and season stats cards share the first row and stretch to its
+// height; the recent games take two columns below them. Without playoff stats the career table fills the empty third
+// column of the first row and runs down beside the recent games (dense placement moves it up into that slot, and the
+// flexible second row keeps its height from stretching the first row)
 @media only screen and (min-width: $small-display-breakpoint) {
-  .shift-career-up {
-    margin-top: -244px !important;
+  .player-container .player-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    grid-auto-flow: row dense;
+
+    .match-stats-container {
+      grid-column: span 2;
+      align-self: start;
+    }
+
+    .career-totals {
+      align-self: start;
+    }
+
+    .career-beside-stats {
+      grid-row: span 2;
+    }
   }
 }
 
-// Small Desktop Display: the cards cannot shrink past their 375px minimum, so let them wrap onto as
-// many rows as they need instead of overflowing off the side of the row
+// Small Desktop Display: the cards cannot shrink past their 375px minimum, so let them wrap onto as many rows as they
+// need, stretching to fill each row
 @media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint) {
-  .player-container {
-    .player-info-container, .player-games-and-career-container {
-      flex-wrap: wrap;
+  .player-container .player-cards {
+    .player-bio-container, .playoff-stats, .regular-season-stats, .stats-error, .career-totals {
+      flex: 1 1 375px;
+    }
 
-      .player-bio-container, .playoff-stats, .regular-season-stats, .stats-error, .career-totals {
-        flex: 1 1 375px;
-        width: auto;
-      }
-
-      // The recent games table has the most columns, so it always gets a row to itself here
-      .match-stats-container {
-        flex: 1 1 100%;
-        width: auto;
-      }
-
-      // No empty slot to slide up into once the cards wrap, so the career table stays in place
-      .shift-career-up {
-        margin-top: $spacing-small !important;
-      }
+    // The recent games table has the most columns, so it always gets a row to itself here
+    .match-stats-container {
+      flex: 1 1 100%;
     }
   }
 }
@@ -244,18 +244,11 @@
       font-size: large !important;
     }
   }
-  .player-info-container, .player-games-and-career-container{
-    flex-direction: column;
+  .player-container {
+    margin: $spacing-small $spacing-x-small;
 
-    .player-header {
-      padding-left: $spacing-small;
-      padding-right: $spacing-small;
-    }
-    .player-bio-container, .regular-season-stats, .playoff-stats {
-      width: 98% !important;
-    }
-    .career-totals, .match-stats-container {
-      width: 98% !important;
+    .player-cards {
+      flex-direction: column;
     }
   }
 }

@@ -19,13 +19,21 @@
     </div>
   </div>
   <div *ngIf="team" class="team-data-container">
-    <div *ngIf="standings?.length" class="team-standings">
-      <app-standings
-          [selectedTeamId]="teamId"
-          [standings]="standings"
-          [defaultStandingsType]="NhlStandingsTypeEnum.BY_CONFERENCE"
-          [showFormAndNext]="false"
-      ></app-standings>
+    <div class="team-main-container">
+      <div class="team-stats-container">
+        <app-team-stats
+          [teamId]="teamId"
+          [teamStats]="teamStats"
+        ></app-team-stats>
+      </div>
+      <div *ngIf="standings?.length" class="team-standings">
+        <app-standings
+            [selectedTeamId]="teamId"
+            [standings]="standings"
+            [defaultStandingsType]="NhlStandingsTypeEnum.BY_CONFERENCE"
+            [showFormAndNext]="false"
+        ></app-standings>
+      </div>
     </div>
     <div class="team-info-container">
       <div *ngIf="nextGame" class="next-game-container">
@@ -43,12 +51,6 @@
         <app-team-schedule
           [games]="scheduleGames"
         ></app-team-schedule>
-      </div>
-      <div class="team-stats-container">
-        <app-team-stats
-          [teamId]="teamId"
-          [teamStats]="teamStats"
-        ></app-team-stats>
       </div>
     </div>
   </div>

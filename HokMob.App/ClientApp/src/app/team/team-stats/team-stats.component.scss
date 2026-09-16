@@ -5,6 +5,7 @@
   border-radius: 25px;
   overflow: hidden;
   color: white;
+  padding: 0 $spacing-xx-large $spacing-large $spacing-xx-large;
 
   .team-stats-header {
     display: flex;
@@ -17,7 +18,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: $spacing-small $spacing-large;
+    padding: $spacing-medium 0;
     border-bottom: 1px solid $gray-01;
 
     .stat-label {

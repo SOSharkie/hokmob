@@ -1,8 +1,8 @@
-
 export class NavMenuItemModel {
 
-  public name: String;
+  public name: string;
 
-  public iconName: String;
+  /** A Lucide icon name registered in `LUCIDE_ICONS` (`@shared/icons/lucide-icons`). */
+  public iconName: string;
 
 }
