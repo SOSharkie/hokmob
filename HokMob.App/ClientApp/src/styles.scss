@@ -18,3 +18,40 @@ button:focus {
   outline: none;
 }
 
+// The draft page's year and round menus. They render in the overlay, outside the component's styles. The height is
+// capped well above the bottom of the page, and the list scrolls.
+.mat-mdc-menu-panel.draft-picker-menu {
+  min-width: 96px;
+  max-height: min(320px, 55vh);
+  margin-top: $spacing-medium;
+  border: 1px solid $gray-01;
+  border-radius: 12px;
+  background-color: #1d1d1d;
+  scrollbar-width: thin;
+  scrollbar-color: $gray-01 transparent;
+
+  .mat-mdc-menu-content {
+    padding: $spacing-small 0;
+  }
+
+  // The page's font (body's), not the Material theme's, which the panel would pass down
+  .draft-picker-option, .draft-picker-option .mdc-list-item__primary-text {
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: white;
+  }
+
+  .draft-picker-option {
+    min-height: 36px;
+
+    &.selected {
+      background-color: $black-04;
+
+      .mdc-list-item__primary-text {
+        font-weight: 500;
+      }
+    }
+  }
+}
+

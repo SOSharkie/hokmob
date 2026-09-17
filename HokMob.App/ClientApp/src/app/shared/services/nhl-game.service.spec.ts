@@ -3,6 +3,7 @@ import {HttpClientTestingModule, HttpTestingController} from '@angular/common/ht
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {
   mockClubScheduleSeason,
+  mockDraftPicks,
   mockGameBoxscore,
   mockGameLanding,
   mockGamePlayByPlay,
@@ -192,6 +193,47 @@ describe('NhlGameService', () => {
       const playerLanding = service.getPlayerLanding(1);
       const rejection = expectAsync(playerLanding).toBeRejectedWith(jasmine.objectContaining({status: 404}));
       httpMock.expectOne('/api/nhl/player/1/landing').flush('Not found', {status: 404, statusText: 'Not Found'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getDraftPicks', () => {
+    it('should request the latest draft without a year', async () => {
+      const draft = service.getDraftPicks();
+      httpMock.expectOne('/api/nhl/draft/picks/now').flush(mockDraftPicks());
+      const response = await draft;
+      expect(response.draftYear).toBe(2026);
+      expect(response.picks.length).toBe(32);
+      expect(response.picks[0].firstName.default).toBe('Gavin');
+      expect(response.selectableRounds).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    });
+
+    it('should request a year and round', async () => {
+      const draft = service.getDraftPicks(2015, 3);
+      // Only round 1 is captured; the URL is what's checked here.
+      httpMock.expectOne('/api/nhl/draft/picks/2015/3').flush(mockDraftPicks(2015));
+      expect((await draft).draftYear).toBe(2015);
+    });
+
+    it('should request round 1 when only the year is given', async () => {
+      const draft = service.getDraftPicks(2015);
+      httpMock.expectOne('/api/nhl/draft/picks/2015/1').flush(mockDraftPicks(2015));
+      expect((await draft).picks[0].lastName.default).toBe('McDavid');
+    });
+
+    it('should resolve a forfeited pick', async () => {
+      const draft = service.getDraftPicks(2021, 1);
+      httpMock.expectOne('/api/nhl/draft/picks/2021/1').flush(mockDraftPicks(2021));
+      const forfeited = (await draft).picks.find(pick => pick.overallPick === 11);
+      expect(forfeited.lastName.default).toBe('Forfeited');
+      expect(forfeited.teamName.default).toBe('Arizona Coyotes');
+    });
+
+    it('should log and reject a year without picks', async () => {
+      const draft = service.getDraftPicks(2027, 1);
+      const rejection = expectAsync(draft).toBeRejectedWith(jasmine.objectContaining({status: 404}));
+      httpMock.expectOne('/api/nhl/draft/picks/2027/1').flush('Not found', {status: 404, statusText: 'Not Found'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
     });

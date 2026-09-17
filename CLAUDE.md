@@ -33,7 +33,8 @@ Update them when you change a page or finish an open item.
 - `HokMob.App/Services/NhlApiClient.cs`: HTTP client with in-memory caching per path root (10s for live data).
 - `HokMob.App/Controllers/NhlSearchController.cs`: `/api/nhl-search/player?q=…` → `search.d3.nhle.com` player search
   (`NhlSearchApiClient`, cached 5 minutes). Only allowlisted query parameters are forwarded.
-- `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/teams` and `/seasons`,
+- `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/teams`, `/seasons` and
+  `/draft?year=&round=` (career stats of a draft round, keyed by overall pick; see `docs/draft-page-plan.md`),
   built from the stats API (`NhlStatsApiClient`, cached 5 minutes). The controller builds every upstream query and merges the
   reports a page needs into one response.
 - `ClientApp/src/app/shared/`:
@@ -45,7 +46,7 @@ Update them when you change a page or finish an open item.
   - `enums/`: new API enums (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...).
   - `components/`: shared components (scorecard, standings, ...).
 - Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`,
-  `header`, `footer`, `about`.
+  `draft` (`docs/draft-page-plan.md`), `header`, `footer`, `about`.
 - Path aliases: `@shared/*`, `@app/*`, `@home/*`, `@header/*`.
 
 ## Editing conventions

@@ -14,6 +14,7 @@ import {
   TeamFormReference
 } from "@shared/models/nhl-web-api/club-schedule.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {DraftPicksResponse} from "@shared/models/nhl-web-api/draft-picks.model";
 
 @Injectable()
 export class NhlGameService {
@@ -26,6 +27,8 @@ export class NhlGameService {
   private readonly nhlPlayerUrl = "/api/nhl/player/";
 
   private readonly nhlClubScheduleSeasonUrl = "/api/nhl/club-schedule-season/";
+
+  private readonly nhlDraftPicksUrl = "/api/nhl/draft/picks/";
 
   private readonly teamFormGameCount = 5;
 
@@ -125,6 +128,19 @@ export class NhlGameService {
               this.teamFormGameCount))
           .catch(() => games);
     });
+  }
+
+  /**
+   * Gets the picks of one draft round, with the list of draft years and that year's rounds. Without a year, gets the
+   * latest draft's round 1 (draft/picks/now). The picks have no player IDs; match them to
+   * NhlStatsApiService.getDraftStats by overall pick. A year without picks yet rejects (404).
+   *
+   * @param year - The draft year, like 2015. The latest draft when missing.
+   * @param round - The round, 1 to 7. Round 1 when missing.
+   */
+  public getDraftPicks(year?: number, round?: number): Promise<DraftPicksResponse> {
+    const path = year ? year + "/" + (round ?? 1) : "now";
+    return this.get<DraftPicksResponse>(this.nhlDraftPicksUrl + path);
   }
 
   /**
