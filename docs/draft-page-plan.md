@@ -167,10 +167,13 @@ code.
     by the browser, can't be height-capped, and filled the screen with 21 years. The panel is capped at
     `min(320px, 55vh)` and scrolls, opens scrolled to the selected option, and flips above the button when there's no
     room below. Options are `menuitemradio` with `aria-checked`; the menu handles arrow keys, Escape and outside clicks.
-  - The panel renders in the overlay, so its styles are global: `.draft-picker-menu` in `styles.scss`. It sets the
-    page font explicitly, because the Material theme's font (GT Walsheim, not loaded, so Arial) would otherwise apply.
+  - The panel renders in the overlay, so its styles are global. It sets the page font explicitly, because the Material
+    theme's font (GT Walsheim, not loaded, so Arial) would otherwise apply.
   - Each menu has its own class (`year-menu`, `round-menu`), so scrolling to the selected option can't pick the other
     menu while that one's close animation is still running.
+  - Shared since the playoffs season picker adopted it: the classes `.pill-picker` (button), `.pill-picker-menu`
+    (panel) and `.pill-picker-option` are in `styles.scss`, and `PickerMenuUtils.scrollToSelectedOption(menuClass)`
+    does the scrolling. Reuse them for any other picker.
 
 ## 4. Decisions (confirmed 2026-09-17)
 

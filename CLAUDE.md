@@ -42,7 +42,8 @@ Update them when you change a page or finish an open item.
     `/api/nhl-stats/*` responses.
   - `services/`: Angular services.
   - `utils/`: static helpers: `PeriodUtils`, `NhlGameInfoUtils`, `NhlTeamUtils`, `NhlTeamLogoUtils`,
-    `NhlTeamColorUtils`, `NhlPlayerHeadshotUtils`, `NhlVideoUtils`, `DateTimeUtils`, `StatsUtils`, `PlayByPlayUtils`.
+    `NhlTeamColorUtils`, `NhlPlayerHeadshotUtils`, `NhlVideoUtils`, `DateTimeUtils`, `StatsUtils`, `PlayByPlayUtils`,
+    `PickerMenuUtils` (with the `.pill-picker` styles in `styles.scss`, for the draft and playoffs pickers).
   - `enums/`: new API enums (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...).
   - `components/`: shared components (scorecard, standings, ...).
 - Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`,

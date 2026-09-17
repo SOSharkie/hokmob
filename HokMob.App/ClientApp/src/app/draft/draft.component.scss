@@ -23,38 +23,10 @@
       font-weight: normal;
     }
 
+    // The pickers are .pill-picker buttons (styles.scss)
     .draft-pickers {
       display: flex;
       gap: $spacing-medium;
-    }
-
-    // A pill with a chevron, like Fotmob's season dropdown. It opens a mat-menu, whose panel is styled globally
-    // (.draft-picker-menu in styles.scss) because it renders in the overlay.
-    .draft-picker {
-      height: 32px;
-      padding: 0 28px 0 12px;
-      border: 1px solid $gray-01;
-      border-radius: 20px;
-      background-color: #1d1d1d;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: calc(100% - 9px) 50%;
-      background-size: 14px;
-      color: white;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 500;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: border-color 0.15s;
-
-      &:hover, &[aria-expanded="true"] {
-        border-color: $gray-02;
-      }
-
-      &:focus-visible {
-        border-color: $gray-04;
-      }
     }
   }
 

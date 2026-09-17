@@ -90,7 +90,7 @@ describe('DraftComponent', () => {
   function openMenu(name: 'year' | 'round'): HTMLButtonElement[] {
     picker(name).click();
     fixture.detectChanges();
-    return Array.from(document.querySelectorAll('.draft-picker-menu.' + name + '-menu .draft-picker-option'));
+    return Array.from(document.querySelectorAll('.pill-picker-menu.' + name + '-menu .pill-picker-option'));
   }
 
   function optionTexts(options: HTMLElement[]): string[] {

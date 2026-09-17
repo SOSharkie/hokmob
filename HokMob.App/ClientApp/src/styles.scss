@@ -18,9 +18,38 @@ button:focus {
   outline: none;
 }
 
-// The draft page's year and round menus. They render in the overlay, outside the component's styles. The height is
+// A picker button: a pill with a chevron, like Fotmob's season dropdown (draft year and round, playoffs season). It
+// opens a mat-menu with the .pill-picker-menu class, and its options have .pill-picker-option (see PickerMenuUtils).
+.pill-picker {
+  height: 32px;
+  padding: 0 28px 0 12px;
+  border: 1px solid $gray-01;
+  border-radius: 20px;
+  background-color: #1d1d1d;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 9px) 50%;
+  background-size: 14px;
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover, &[aria-expanded="true"] {
+    border-color: $gray-02;
+  }
+
+  &:focus-visible {
+    border-color: $gray-04;
+  }
+}
+
+// A picker's menu. It renders in the overlay, outside any component's styles, so it's styled here. The height is
 // capped well above the bottom of the page, and the list scrolls.
-.mat-mdc-menu-panel.draft-picker-menu {
+.mat-mdc-menu-panel.pill-picker-menu {
   min-width: 96px;
   max-height: min(320px, 55vh);
   margin-top: $spacing-medium;
@@ -35,14 +64,14 @@ button:focus {
   }
 
   // The page's font (body's), not the Material theme's, which the panel would pass down
-  .draft-picker-option, .draft-picker-option .mdc-list-item__primary-text {
+  .pill-picker-option, .pill-picker-option .mdc-list-item__primary-text {
     font-family: Roboto, "Helvetica Neue", sans-serif;
     font-size: 14px;
     font-weight: 400;
     color: white;
   }
 
-  .draft-picker-option {
+  .pill-picker-option {
     min-height: 36px;
 
     &.selected {

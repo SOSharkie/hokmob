@@ -2,21 +2,21 @@
   <div class="draft-header">
     <h1 class="draft-title">{{title}}</h1>
     <div class="draft-pickers">
-      <button *ngIf="yearOptions.length" type="button" class="draft-picker year-picker"
+      <button *ngIf="yearOptions.length" type="button" class="pill-picker year-picker"
               [attr.aria-label]="'Draft year, ' + selectedYear"
               [matMenuTriggerFor]="yearMenu"
               (menuOpened)="scrollToSelectedOption('year-menu')">{{selectedYear}}</button>
-      <mat-menu #yearMenu="matMenu" class="draft-picker-menu year-menu" xPosition="before">
-        <button *ngFor="let year of yearOptions" mat-menu-item role="menuitemradio" class="draft-picker-option"
+      <mat-menu #yearMenu="matMenu" class="pill-picker-menu year-menu" xPosition="before">
+        <button *ngFor="let year of yearOptions" mat-menu-item role="menuitemradio" class="pill-picker-option"
                 [class.selected]="year === selectedYear" [attr.aria-checked]="year === selectedYear"
                 (click)="selectYear(year)">{{year}}</button>
       </mat-menu>
-      <button *ngIf="roundOptions.length" type="button" class="draft-picker round-picker"
+      <button *ngIf="roundOptions.length" type="button" class="pill-picker round-picker"
               [attr.aria-label]="'Round, ' + requestedRound"
               [matMenuTriggerFor]="roundMenu"
               (menuOpened)="scrollToSelectedOption('round-menu')">Round {{requestedRound}}</button>
-      <mat-menu #roundMenu="matMenu" class="draft-picker-menu round-menu" xPosition="before">
-        <button *ngFor="let round of roundOptions" mat-menu-item role="menuitemradio" class="draft-picker-option"
+      <mat-menu #roundMenu="matMenu" class="pill-picker-menu round-menu" xPosition="before">
+        <button *ngFor="let round of roundOptions" mat-menu-item role="menuitemradio" class="pill-picker-option"
                 [class.selected]="round === requestedRound" [attr.aria-checked]="round === requestedRound"
                 (click)="selectRound(round)">Round {{round}}</button>
       </mat-menu>

@@ -6,6 +6,7 @@ import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {DraftPick, DraftPicksResponse} from "@shared/models/nhl-web-api/draft-picks.model";
 import {DraftPlayerStats} from "@shared/models/nhl-stats-api/draft-stats.model";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
+import {PickerMenuUtils} from "@shared/utils/picker-menu-utils";
 
 /**
  * A row of the picks table.
@@ -120,17 +121,10 @@ export class DraftComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Scrolls an opened picker menu to its selected option, so an older year is visible in the height-capped list. The
-   * menu panel renders in the overlay after the opened event, hence the timeout. The menu is found by its own class,
-   * because the other menu can still be in the overlay while its close animation runs.
-   *
-   * @param menuClass - The menu's class, "year-menu" or "round-menu".
+   * Scrolls an opened picker menu ("year-menu" or "round-menu") to its selected option.
    */
   public scrollToSelectedOption(menuClass: string): void {
-    setTimeout(() => {
-      document.querySelector('.draft-picker-menu.' + menuClass + ' .draft-picker-option.selected')
-          ?.scrollIntoView({block: 'nearest'});
-    });
+    PickerMenuUtils.scrollToSelectedOption(menuClass);
   }
 
   public showBlankHeadshot(event: Event): void {

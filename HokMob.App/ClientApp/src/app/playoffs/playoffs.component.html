@@ -4,13 +4,16 @@
       <h1 class="playoffs-title">{{title}}</h1>
       <span *ngIf="qualifyingRoundNote" class="qualifying-round-note">{{qualifyingRoundNote}}</span>
     </div>
-    <select class="season-picker"
-            aria-label="Season"
-            (change)="onSeasonChange($event)">
-      <option *ngFor="let option of seasonOptions; trackBy: trackSeason"
-              [value]="option.value"
-              [selected]="option.value === selectedSeason">{{option.label}}</option>
-    </select>
+    <button *ngIf="seasonOptions.length" type="button" class="pill-picker season-picker"
+            [attr.aria-label]="'Season, ' + selectedSeasonLabel"
+            [matMenuTriggerFor]="seasonMenu"
+            (menuOpened)="scrollToSelectedOption()">{{selectedSeasonLabel}}</button>
+    <mat-menu #seasonMenu="matMenu" class="pill-picker-menu season-menu" xPosition="before">
+      <button *ngFor="let option of seasonOptions; trackBy: trackSeason" mat-menu-item role="menuitemradio"
+              class="pill-picker-option" [class.selected]="option.value === selectedSeason"
+              [attr.aria-checked]="option.value === selectedSeason"
+              (click)="selectSeason(option.value)">{{option.label}}</button>
+    </mat-menu>
   </div>
   <div *ngIf="isLoading" class="loading-container">
     <img src="assets/loading.gif" alt="" class="loading-gif">
