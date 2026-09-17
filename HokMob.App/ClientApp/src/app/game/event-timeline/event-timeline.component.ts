@@ -3,7 +3,7 @@ import {KeyEventPeriod, Play, PlayByPlay, RosterSpot} from "@shared/models/nhl-w
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {PeriodUtils} from "@shared/utils/period-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
-import {PlayerHighlight} from "@shared/models/player-highlight.model";
+import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
   selector: 'app-event-timeline',
@@ -19,7 +19,7 @@ export class EventTimelineComponent implements OnChanges {
   public playByPlay: PlayByPlay;
 
   @Output()
-  public playerClicked = new EventEmitter<number>();
+  public playerClicked = new EventEmitter<PlayerClick>();
 
   /**
    * Emits the player hovered in an event, and null when the mouse leaves them.
@@ -63,8 +63,8 @@ export class EventTimelineComponent implements OnChanges {
     return play.eventId;
   }
 
-  public onPlayerClicked(playerId: number): void {
-    this.playerClicked.emit(playerId);
+  public onPlayerClicked(click: PlayerClick): void {
+    this.playerClicked.emit(click);
   }
 
   public onPlayerHovered(highlight: PlayerHighlight): void {

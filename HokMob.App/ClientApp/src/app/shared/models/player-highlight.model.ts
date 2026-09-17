@@ -9,3 +9,15 @@ export interface PlayerHighlight {
    */
   goalIndex?: number;
 }
+
+/**
+ * A player clicked in the goal scorers or an event timeline.
+ */
+export interface PlayerClick {
+  playerId: number;
+  /**
+   * The clicked goal's event ID, to look up its highlight clip (GameLandingGoal.eventId). Undefined when the click
+   * wasn't on a goal's main scorer, like an assist or a penalized player.
+   */
+  eventId?: number;
+}

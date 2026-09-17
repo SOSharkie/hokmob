@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GameLandingGoal, GameLandingScoringPeriod} from "@shared/models/nhl-web-api/gamecenter-landing.model";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
-import {PlayerHighlight} from "@shared/models/player-highlight.model";
+import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
   selector: 'app-goal-scorers',
@@ -17,8 +17,11 @@ export class GoalScorersComponent {
   @Input()
   public scoring: GameLandingScoringPeriod[];
 
+  /**
+   * Emits the clicked goal's scorer and event ID, to look up its highlight clip.
+   */
   @Output()
-  public scorerClicked = new EventEmitter<number>();
+  public scorerClicked = new EventEmitter<PlayerClick>();
 
   /**
    * Emits the hovered goal's scorer and goal index, and null when the mouse leaves it.
@@ -74,7 +77,7 @@ export class GoalScorersComponent {
   }
 
   public clickScorer(goal: GameLandingGoal): void {
-    this.scorerClicked.emit(goal.playerId);
+    this.scorerClicked.emit({playerId: goal.playerId, eventId: goal.eventId});
   }
 
   /**

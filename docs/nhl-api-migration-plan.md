@@ -286,6 +286,17 @@ skips `periodType === "SO"`. `GoalModel`, `game.calculateGoals` and the `numPeri
 
 The page shows goal scorers once any period other than the shootout has a goal.
 
+- **Goal highlight clips (done, see issue #85):** each goal has `highlightClip` (a Brightcove video ID), the matching
+  `highlightClipSharingUrl` (its NHL.com page), and French/alternate variants (`highlightClipFr`,
+  `highlightClipSharingUrlFr`, `discreteClip`, `discreteClipFr`, `pptReplayUrl`) not currently used. Clips are posted
+  some time after the goal, so live games and recent goals may not have one yet. `scorerClicked` (goal scorers) and
+  `playerClicked` (event timelines) now emit a `PlayerClick { playerId, eventId? }`: `eventId` is the play's/goal's
+  `eventId` for a goal's main scorer, and missing for an assist or a penalized player.
+  `NhlVideoUtils.getGoalHighlightVideo(goal)` builds the `HighlightVideo` from `highlightClip`/`highlightClipSharingUrl`,
+  or returns undefined without a clip. `GameComponent.openGoalOrPlayerDialog` looks the clicked `eventId` up in
+  `landing.summary.scoring`, opens the goal highlight dialog when a clip is found, and falls back to the player game
+  dialog otherwise (including every non-goal click, which never carries an `eventId`).
+
 ### 5.5 Game stats (`game-stats`): done (phase 6)
 Source: `right-rail.teamGameStats[]` (`{ category, awayValue, homeValue }`). Convert to a map keyed by `category`.
 Inputs: `teamGameStats`, `homeTeamId`, `awayTeamId` (right-rail has no team IDs, so they come from the landing) and the
@@ -400,11 +411,16 @@ Source: `boxscore.playerByGameStats.{homeTeam,awayTeam}.{forwards,defense,goalie
     order (the timelines use `PlayByPlayUtils.getGoalIndexes`), not `goalsToDate`. Assists and penalties have no index,
     and a 4th+ goal has no puck. It's desktop only: `highlightPlayer` ignores hovers unless `(hover: hover)` matches,
     because a tap fires `mouseenter` and would leave the player highlighted.
-- **Player dialog** data is `PlayerGameDialogData { player }`. The game stats show right away; `NhlGameService.getPlayerLanding`
-  then fills in the country (flag) and age, which show "-" until it loads or when it fails. The team logo and headshot
-  are the game's (Comrie played for WPG in `2025021057` but his landing now says SJS); the landing headshot is only a
-  fallback. The skater "Face Offs" wins/taken row became "Faceoff %", shown for centers and for other skaters with a
-  percentage above 0.
+- **Player dialog** data is `PlayerGameDialogData { player }`. Its bio and game stats are the shared
+  `PlayerGameStatsComponent` (`game/player-game-stats/`, extracted for issue #85): it takes `player` and loads
+  `NhlGameService.getPlayerLanding` itself, filling in the country (flag) and age, which show "-" until it loads or
+  when it fails. The team logo and headshot are the game's (Comrie played for WPG in `2025021057` but his landing now
+  says SJS); the landing headshot is only a fallback. The skater "Face Offs" wins/taken row became "Faceoff %", shown
+  for centers and for other skaters with a percentage above 0.
+- **Goal highlight dialog** (`game/goal-highlight-dialog/`, issue #85): opened instead of the player dialog when the
+  clicked goal has a posted highlight clip (see 5.4). It reuses `PlayerGameStatsComponent` for the scorer's bio and
+  stats, with the goal's video below in the same embedded Brightcove player as the highlights dialog
+  (`NhlVideoUtils.getEmbedUrl`). Data is `GoalHighlightDialogData { player, video: HighlightVideo }`.
 - **Headshots:** `NhlPlayerHeadshotUtils` (`shared/utils/nhl-player-headshot-utils.ts`) builds season headshot URLs and
   swaps a failed image for `assets/blank_headshot.png` (`(error)="showBlankHeadshot($event)"`).
   `NhlImageService.getNhlPlayerHeadshot` has a TODO; the player page, search results and stat leaderboards still call it.
@@ -639,6 +655,7 @@ It waits for a `LIVE` or `CRIT` game (or pass a game ID), then saves `score`, `l
 | A live boxscore has `playerByGameStats` and the right-rail has `teamGameStats` | `GameComponent.showTopPlayers` / `showGameStats` | Script output; both sections on the game page |
 | The score response has `clock` and `periodDescriptor` for the scoreboard | `derivedLiveGame`, scorecard live label | A `score-*` capture; home scoreboard |
 | Live plays have `situationCode` (for the power play badge) | `GameHeaderComponent` TODO (5.2) | Script output |
+| A goal's `highlightClip` shows up in `landing.summary.scoring` once NHL.com posts the clip, without a full page refresh | `NhlVideoUtils.getGoalHighlightVideo`, `GameComponent.openGoalOrPlayerDialog` (5.4, issue #85) | Click a recent goal during a live game before and after its clip is posted |
 
 When done: trim the captures (item counts only), move the ones worth keeping next to the other fixtures with accessors
 in `nhl-api-mocks.ts`, replace the live `derived*` helpers, make the specs assert captured values, fix any wrong

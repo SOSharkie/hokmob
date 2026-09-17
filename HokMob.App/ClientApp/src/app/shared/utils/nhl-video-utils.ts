@@ -1,4 +1,5 @@
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
+import {GameLandingGoal} from "@shared/models/nhl-web-api/gamecenter-landing.model";
 
 /**
  * A game video that can play in the highlights dialog.
@@ -60,5 +61,22 @@ export class NhlVideoUtils {
           nhlUrl: NhlVideoUtils.nhlSiteUrl + video.path
         }))
         .filter(video => !!video.videoId);
+  }
+
+  /**
+   * Returns a goal's highlight video, or undefined when NHL.com hasn't posted the clip yet (live games and recent
+   * goals).
+   *
+   * @param goal - The goal from gamecenter/{id}/landing's summary.scoring.
+   */
+  public static getGoalHighlightVideo(goal: GameLandingGoal): HighlightVideo {
+    if (!goal?.highlightClip) {
+      return undefined;
+    }
+    return {
+      label: "Highlight",
+      videoId: String(goal.highlightClip),
+      nhlUrl: goal.highlightClipSharingUrl ?? ""
+    };
   }
 }

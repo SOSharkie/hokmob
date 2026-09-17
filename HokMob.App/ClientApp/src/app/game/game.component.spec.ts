@@ -16,6 +16,7 @@ import { RouterExtensionService } from '@shared/services/router-extension.servic
 import { MatDialog } from '@angular/material/dialog';
 import { PlayerGameDialogComponent } from '@app/game/player-game-dialog/player-game-dialog.component';
 import { HighlightsDialogComponent } from '@app/game/highlights-dialog/highlights-dialog.component';
+import { GoalHighlightDialogComponent } from '@app/game/goal-highlight-dialog/goal-highlight-dialog.component';
 import {
   derivedIntermissionLanding,
   derivedLiveLanding,
@@ -173,15 +174,51 @@ describe('GameComponent', () => {
     expect(element('.side-game app-mini-event-timeline').awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
   });
 
-  it('should open the player dialog for a player clicked in an event timeline', async () => {
+  it('should open the player dialog for an assist clicked in an event timeline', async () => {
     const openDialog = spyOn(GameComponent.prototype, 'openPlayerGameDialog');
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
     flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     await settle();
-    fixture.debugElement.query(By.css('.side-game app-mini-event-timeline')).triggerEventHandler('playerClicked', 8478398);
+    // An assist click carries no event ID, so it always falls back to the player dialog
+    fixture.debugElement.query(By.css('.side-game app-mini-event-timeline')).triggerEventHandler('playerClicked', {playerId: 8478398});
     expect(openDialog).toHaveBeenCalledWith(8478398);
+  });
+
+  it('should open the goal highlight dialog for a clicked goal with a posted clip', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    // Scheifele's goal (eventId 141), which has a real highlight clip
+    fixture.debugElement.query(By.css('app-goal-scorers')).triggerEventHandler('scorerClicked', {playerId: 8476460, eventId: 141});
+    expect(openDialog).toHaveBeenCalledWith(GoalHighlightDialogComponent, jasmine.objectContaining({
+      data: {
+        player: jasmine.objectContaining({playerId: 8476460, name: 'Mark Scheifele'}),
+        video: {label: 'Highlight', videoId: '6390982926112',
+          nhlUrl: 'https://nhl.com/video/stl-wpg-scheifele-scores-goal-against-jordan-binnington-6390982926112'}
+      }
+    }));
+  });
+
+  it('should open the player dialog when the clicked goal has no highlight clip yet', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    const bundle = mockGameBundle(2025021057);
+    const goal = bundle.landing.summary.scoring.flatMap(period => period.goals).find(item => item.eventId === 141);
+    delete goal.highlightClip;
+    delete goal.highlightClipSharingUrl;
+    open('2025021057');
+    flushBundle('2025021057', bundle);
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    fixture.debugElement.query(By.css('app-goal-scorers')).triggerEventHandler('scorerClicked', {playerId: 8476460, eventId: 141});
+    expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
+      data: {player: jasmine.objectContaining({playerId: 8476460, name: 'Mark Scheifele'})}
+    }));
   });
 
   it('should pass the rated players with full names, the head coaches and the team logos to the top players', async () => {

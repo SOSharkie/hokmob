@@ -54,7 +54,7 @@
         <app-goal-scorers
             *ngIf="haveGoalsBeenScored"
             [scoring]="scoringPeriods"
-            (scorerClicked)="openPlayerGameDialog($event)"
+            (scorerClicked)="openGoalOrPlayerDialog($event)"
             (playerHovered)="highlightPlayer($event)">
         </app-goal-scorers>
       </div>
@@ -109,7 +109,7 @@
     <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
       <app-mini-event-timeline
           [playByPlay]="playByPlay"
-          (playerClicked)="openPlayerGameDialog($event)"
+          (playerClicked)="openGoalOrPlayerDialog($event)"
           (playerHovered)="highlightPlayer($event)"
       ></app-mini-event-timeline>
     </div>
@@ -119,7 +119,7 @@
         [playByPlay]="playByPlay"
         [homeTeamLogo]="homeTeamLogo"
         [awayTeamLogo]="awayTeamLogo"
-        (playerClicked)="openPlayerGameDialog($event)"
+        (playerClicked)="openGoalOrPlayerDialog($event)"
         (playerHovered)="highlightPlayer($event)"
     ></app-mini-event-timeline>
   </div>
