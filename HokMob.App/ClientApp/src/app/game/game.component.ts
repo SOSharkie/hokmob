@@ -24,6 +24,11 @@ import {
   PlayerGameDialogData
 } from "@app/game/player-game-dialog/player-game-dialog.component";
 import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
+import {HighlightVideo, NhlVideoUtils} from "@shared/utils/nhl-video-utils";
+import {
+  HighlightsDialogComponent,
+  HighlightsDialogData
+} from "@app/game/highlights-dialog/highlights-dialog.component";
 
 @Component({
   selector: 'app-game',
@@ -51,6 +56,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
    * games, and missing until NHL.com posts the video.
    */
   public highlightsPath: string;
+
+  /**
+   * The game's recap and condensed game that can play in the highlights dialog, from the same score/{gameDate} paths.
+   */
+  public highlightVideos: HighlightVideo[] = [];
 
   /**
    * The home team's players with their ratings, best first. Empty without a boxscore or player stats.
@@ -152,8 +162,15 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * The watch link: the recap video for a finished game once it's posted, else the NHL.com game center, which lists
-   * where to watch a game. The API has no stream links.
+   * Whether the watch button opens the highlights dialog: a finished game with a posted video.
+   */
+  public get showHighlightsDialog(): boolean {
+    return this.completedGame && this.highlightVideos.length > 0;
+  }
+
+  /**
+   * The watch link, when the highlights can't play in the dialog: the recap video for a finished game once it's
+   * posted, else the NHL.com game center, which lists where to watch a game. The API has no stream links.
    */
   public get watchLink(): string {
     if (this.completedGame && this.highlightsPath) {
@@ -244,6 +261,27 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Plays the game's highlights in a dialog, starting with the recap.
+   */
+  public openHighlightsDialog(): void {
+    if (!this.showHighlightsDialog) {
+      return;
+    }
+    const data: HighlightsDialogData = {
+      videos: this.highlightVideos,
+      subtitle: (this.landing.awayTeam?.abbrev ?? "") + " at " + (this.landing.homeTeam?.abbrev ?? "")
+    };
+    this.seriesDialog.open(HighlightsDialogComponent, {
+      width: "960px",
+      maxWidth: "94vw",
+      backdropClass: "dialog-backdrop",
+      panelClass: "highlights-dialog-panel",
+      autoFocus: false,
+      data
+    });
+  }
+
+  /**
    * Opens the player's game stats. Does nothing for a player without boxscore stats (or without a boxscore).
    */
   public openPlayerGameDialog(playerId: number): void {
@@ -295,6 +333,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.rightRail = undefined;
     this.seriesStatus = undefined;
     this.highlightsPath = undefined;
+    this.highlightVideos = [];
     this.homePlayers = [];
     this.awayPlayers = [];
     this.homeTeamFormGames = [];
@@ -333,6 +372,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       if (gameId === this.gameId) {
         this.seriesStatus = scoreGame?.seriesStatus;
         this.highlightsPath = scoreGame?.threeMinRecap ?? scoreGame?.condensedGame;
+        this.highlightVideos = NhlVideoUtils.getHighlightVideos(scoreGame);
       }
     }).catch(() => {
       // Already logged by the service

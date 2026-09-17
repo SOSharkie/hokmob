@@ -1,31 +1,190 @@
 @import "variables";
 
-.about-container {
-  padding: $spacing-large;
+.about-page {
+  box-sizing: border-box;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: $spacing-page-gap;
+  color: white;
 
-  .about-header {
-    color: white;
+  section {
+    margin-bottom: 64px;
   }
 
-  .about-text {
-    padding: $spacing-small;
-    width: 95%;
+  p {
+    margin: 0 0 $spacing-xx-large;
+  }
+
+  a {
     color: white;
+    text-decoration: underline;
+    text-decoration-color: $gray-02;
+    text-underline-offset: 3px;
+  }
+
+  a:hover {
+    text-decoration-color: white;
   }
 }
 
-// Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
-  .about-text {
-    font-size: 20px;
-    line-height: 26px;
+.about-hero {
+  padding-top: 48px;
+
+  .about-eyebrow {
+    display: block;
+    margin-bottom: $spacing-x-large;
+    color: $green-02;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
+
+  .about-headline {
+    margin: 0 0 $spacing-xx-large;
+    font-size: 56px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .about-lead {
+    max-width: 680px;
+    color: $gray-04;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.45;
+  }
+}
+
+.about-section-title {
+  margin: 0 0 $spacing-xx-large;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.about-story p {
+  max-width: 760px;
+  color: #d6d6d6;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $spacing-card-gap;
+
+  .feature-card {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-large;
+    padding: 24px;
+    border-radius: 25px;
+    background-color: $black-02;
+  }
+
+  .feature-title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .feature-description {
+    color: $gray-04;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+}
+
+.about-page .about-contact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-xx-large;
+  padding: 32px;
+  border-radius: 25px;
+  background-color: $black-02;
+
+  .about-section-title {
+    margin-bottom: $spacing-medium;
+  }
+
+  p {
+    margin: 0;
+    color: $gray-04;
+    font-size: 15px;
+    font-weight: 400;
+  }
+
+  // A white pill, like the game page's highlights button
+  .contact-button {
+    flex: none;
+    padding: $spacing-large $spacing-xx-large;
+    border-radius: 20px;
+    background-color: white;
+    color: #222222;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.15s;
+  }
+
+  .contact-button:hover {
+    background-color: #dcdcdc;
+  }
+}
+
+.about-page .about-disclaimer {
+  max-width: 760px;
+  margin: 0;
+  padding-top: $spacing-xx-large;
+  border-top: 1px solid $black-03;
+  color: $gray-03;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .about-text {
-    font-size: 15px;
-    line-height: 20px;
+  .about-page section {
+    margin-bottom: 40px;
+  }
+
+  .about-hero {
+    padding-top: $spacing-xx-large;
+
+    .about-headline {
+      font-size: 36px;
+    }
+
+    .about-lead {
+      font-size: 18px;
+    }
+  }
+
+  .about-section-title {
+    font-size: 22px;
+  }
+
+  .about-story p {
+    font-size: 16px;
+  }
+
+  .feature-grid {
+    grid-template-columns: minmax(0, 1fr);
+
+    .feature-card {
+      padding: $spacing-xx-large;
+    }
+  }
+
+  .about-page .about-contact {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
   }
 }

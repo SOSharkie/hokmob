@@ -32,7 +32,11 @@
           <img class="nhl-logo" src="assets/nhl_logo.png">
           <span class="league-info-label">{{gameInfoLabel}}</span>
         </div>
-        <a class="watch-button" [href]="watchLink" target="_blank" rel="noopener">
+        <button *ngIf="showHighlightsDialog" type="button" class="watch-button" (click)="openHighlightsDialog()">
+          <mat-icon class="watch-icon" [fontIcon]="watchIcon"></mat-icon>
+          <span class="watch-link">{{watchLabel}}</span>
+        </button>
+        <a *ngIf="!showHighlightsDialog" class="watch-button" [href]="watchLink" target="_blank" rel="noopener">
           <mat-icon class="watch-icon" [fontIcon]="watchIcon"></mat-icon>
           <span class="watch-link">{{watchLabel}}</span>
         </a>

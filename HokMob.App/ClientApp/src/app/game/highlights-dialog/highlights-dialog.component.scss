@@ -1,0 +1,112 @@
+@import "variables";
+
+.highlights-dialog-panel .mat-mdc-dialog-surface {
+  border-radius: 25px !important;
+  overflow: hidden;
+}
+
+.highlights-dialog-container {
+  background-color: $black-02;
+  color: white;
+
+  .highlights-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-large $spacing-large $spacing-large $spacing-xx-large;
+
+    .highlights-title-container {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .highlights-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .highlights-subtitle {
+      font-size: 13px;
+      color: $gray-04;
+    }
+
+    .close-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: none;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background-color: $black-03;
+      color: white;
+      cursor: pointer;
+    }
+
+    .close-button:hover {
+      background-color: $gray-01;
+    }
+  }
+
+  .video-tabs {
+    display: flex;
+    gap: $spacing-xx-large;
+    padding: 0 $spacing-xx-large;
+    border-bottom: 1px solid $black-03;
+
+    .video-tab {
+      padding: $spacing-medium 0 $spacing-large;
+      border: none;
+      border-bottom: 3px solid transparent;
+      background: none;
+      color: $gray-04;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .video-tab:hover {
+      color: white;
+    }
+
+    .video-tab.selected {
+      color: white;
+      border-bottom-color: $green-02;
+    }
+  }
+
+  .video-frame-container {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background-color: $black-01;
+
+    .video-frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  }
+
+  .highlights-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: $spacing-large $spacing-xx-large;
+
+    .nhl-link {
+      color: $gray-04;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .nhl-link:hover {
+      color: white;
+      text-decoration: underline;
+    }
+  }
+}

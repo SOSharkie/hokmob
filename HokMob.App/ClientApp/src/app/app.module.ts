@@ -37,6 +37,7 @@ import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.
 import { PlayerComponent } from './player/player.component';
 import { MomentumComponent } from './game/momentum/momentum.component';
 import { PlayerGameDialogComponent } from './game/player-game-dialog/player-game-dialog.component';
+import { HighlightsDialogComponent } from './game/highlights-dialog/highlights-dialog.component';
 import { PlayerStatsComponent } from './player/player-stats/player-stats.component';
 import { RecentPlayerGamesComponent } from './player/recent-player-games/recent-player-games.component';
 import { PlayerBioComponent } from './player/player-bio/player-bio.component';
@@ -87,6 +88,7 @@ import { DraftComponent } from './draft/draft.component';
     PlayerComponent,
     MomentumComponent,
     PlayerGameDialogComponent,
+    HighlightsDialogComponent,
     PlayerStatsComponent,
     RecentPlayerGamesComponent,
     PlayerBioComponent,
