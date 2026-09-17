@@ -4,6 +4,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ScoreGame, ScoreResponse } from '@shared/models/nhl-web-api/score.model';
+import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 import { derivedLiveGame, mockOvertimeFinal, mockScoreResponse } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { ScoreboardComponent } from './scoreboard.component';
@@ -20,6 +21,10 @@ describe('ScoreboardComponent', () => {
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
+
+    // NhlGameService classifies each fetched day for its cache against the current season; none of this file's
+    // fixture games are from 20262027, so nothing here is ever actually cached long-term.
+    spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason').and.resolveTo({season: 20262027, isPlayoffMode: false});
 
     fixture = TestBed.createComponent(ScoreboardComponent);
     component = fixture.componentInstance;

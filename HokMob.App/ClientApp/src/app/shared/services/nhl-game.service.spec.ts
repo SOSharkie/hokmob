@@ -1,6 +1,10 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import * as dayjs from 'dayjs';
 import {NhlGameService} from "@shared/services/nhl-game.service";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {
   mockClubScheduleSeason,
   mockGameBoxscore,
@@ -16,14 +20,22 @@ import {
 describe('NhlGameService', () => {
   let service: NhlGameService;
   let httpMock: HttpTestingController;
+  let getCurrentSeasonSpy: jasmine.Spy;
+
+  /** Waits for pending microtasks (like the caching that follows a resolved getNhlGames promise) to settle. */
+  function flushMicrotasks(): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve));
+  }
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [NhlGameService]
+      providers: [NhlGameService, NhlStatsApiService]
     });
     service = TestBed.inject(NhlGameService);
     httpMock = TestBed.inject(HttpTestingController);
+    getCurrentSeasonSpy = spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason')
+        .and.resolveTo({season: 20262027, isPlayoffMode: false});
     spyOn(console, 'error');
   });
 
@@ -60,6 +72,86 @@ describe('NhlGameService', () => {
       httpMock.expectOne('/api/nhl/score/2026-03-01').flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getNhlGames day caching', () => {
+    /** A day far enough in the past to have settled (past 1pm Eastern the next day) no matter when this runs. */
+    function daysAgo(days: number): Date {
+      return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    }
+
+    function urlFor(date: Date): string {
+      return '/api/nhl/score/' + dayjs(date).format('YYYY-MM-DD');
+    }
+
+    /** Real games (see mockScoreResponse), overridden to look like a settled day of the given season. */
+    function regularSeasonGames(season: number): ScoreGame[] {
+      return mockScoreResponse().games.map(game => ({...game, season, gameType: NhlGameTypeEnum.REGULAR_SEASON}));
+    }
+
+    it('should serve a settled current-season day from the cache instead of requesting it again', async () => {
+      const day = daysAgo(30);
+      const url = urlFor(day);
+
+      const first = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      await first;
+      await flushMicrotasks();
+
+      const second = service.getNhlGames(day);
+      expect((await second).length).toBe(3);
+      httpMock.expectNone(url);
+    });
+
+    it('should not cache today, so it is always refetched', async () => {
+      const today = new Date();
+      const url = urlFor(today);
+
+      const first = service.getNhlGames(today);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      await first;
+      await flushMicrotasks();
+
+      const second = service.getNhlGames(today);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      expect((await second).length).toBe(3);
+    });
+
+    it('should not cache a settled day of an earlier season', async () => {
+      const day = daysAgo(30);
+      const url = urlFor(day);
+
+      const first = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20252026)});
+      await first;
+      await flushMicrotasks();
+
+      const second = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20252026)});
+      expect((await second).length).toBe(3);
+    });
+
+    it('should clear the cache when the current season changes', async () => {
+      const day = daysAgo(30);
+      const url = urlFor(day);
+
+      const first = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      await first;
+      await flushMicrotasks();
+
+      getCurrentSeasonSpy.and.resolveTo({season: 20272028, isPlayoffMode: false});
+      const otherDay = daysAgo(31);
+      const otherUrl = urlFor(otherDay);
+      const triggerRequest = service.getNhlGames(otherDay);
+      httpMock.expectOne(otherUrl).flush({...mockScoreResponse(), games: []});
+      await triggerRequest;
+      await flushMicrotasks();
+
+      const second = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      expect((await second).length).toBe(3);
     });
   });
 

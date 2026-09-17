@@ -59,7 +59,11 @@ namespace HokMob.App.Services
 
             if (response.IsSuccessStatusCode)
             {
-                _cache.Set(cacheKey, result, CacheDuration);
+                _cache.Set(cacheKey, result, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = CacheDuration,
+                    Size = content.Length
+                });
             }
             else
             {
