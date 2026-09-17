@@ -244,8 +244,8 @@ describe('GameTopPlayersComponent', () => {
       return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.top-player.highlighted')).map(cardName);
     }
 
-    /** Whether each of the away player's pucks is red, in order. */
-    function redPucks(name: string): boolean[] {
+    /** Whether each of the away player's pucks is green, in order. */
+    function greenPucks(name: string): boolean[] {
       return Array.from<Element>(card('away', name).querySelectorAll('.player-goal-container'))
           .map(puck => puck.classList.contains('highlighted-goal'));
     }
@@ -255,29 +255,29 @@ describe('GameTopPlayersComponent', () => {
       show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
     });
 
-    it("should highlight the hovered player's spot and turn only the hovered goal's puck red", () => {
+    it("should highlight the hovered player's spot and turn only the hovered goal's puck green", () => {
       highlight({playerId: 8473533, goalIndex: 1});
       expect(highlightedNames()).toEqual(['Jordan Staal']);
-      expect(redPucks('Jordan Staal')).toEqual([false, true]);
-      expect(redPucks('Nikolaj Ehlers')).toEqual([false]);
+      expect(greenPucks('Jordan Staal')).toEqual([false, true]);
+      expect(greenPucks('Nikolaj Ehlers')).toEqual([false]);
 
       highlight({playerId: 8473533, goalIndex: 0});
-      expect(redPucks('Jordan Staal')).toEqual([true, false]);
+      expect(greenPucks('Jordan Staal')).toEqual([true, false]);
     });
 
-    it('should highlight the player without a red puck for a non-goal hover', () => {
+    it('should highlight the player without a green puck for a non-goal hover', () => {
       highlight({playerId: 8473533});
       expect(highlightedNames()).toEqual(['Jordan Staal']);
-      expect(redPucks('Jordan Staal')).toEqual([false, false]);
+      expect(greenPucks('Jordan Staal')).toEqual([false, false]);
     });
 
-    it('should highlight the player without a red puck for a goal past the third', () => {
+    it('should highlight the player without a green puck for a goal past the third', () => {
       const awayPlayers = gamePlayers(2025030414, false);
       awayPlayers.find(player => player.playerId === 8473533).skaterStats.goals = 4;
       show(gamePlayers(2025030414, true), awayPlayers);
       highlight({playerId: 8473533, goalIndex: 3});
       expect(highlightedNames()).toEqual(['Jordan Staal']);
-      expect(redPucks('Jordan Staal')).toEqual([false, false, false]);
+      expect(greenPucks('Jordan Staal')).toEqual([false, false, false]);
     });
 
     it('should highlight nothing for a player not in the top players, or after the hover ends', () => {

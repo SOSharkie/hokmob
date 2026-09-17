@@ -395,7 +395,7 @@ Source: `boxscore.playerByGameStats.{homeTeam,awayTeam}.{forwards,defense,goalie
     `gameInfo.{homeTeam,awayTeam}.headCoach`. They're hidden on phones, and when neither coach is known.
   - Hovering a player in the goal scorers or the event timelines highlights their spot (`highlightedPlayer`, a
     `PlayerHighlight { playerId, goalIndex? }` passed through `GameComponent.highlightPlayer`). Hovering a goal also
-    turns that goal's puck red: `goalIndex` is its index among the scorer's goals in this game, in scoring order (the
+    turns that goal's puck green: `goalIndex` is its index among the scorer's goals in this game, in scoring order (the
     timelines use `PlayByPlayUtils.getGoalIndexes`), not `goalsToDate`. Assists and penalties have no index, and a 4th+
     goal has no puck. It's desktop only: `highlightPlayer` ignores hovers unless `(hover: hover)` matches, because a
     tap fires `mouseenter` and would leave the player highlighted.
