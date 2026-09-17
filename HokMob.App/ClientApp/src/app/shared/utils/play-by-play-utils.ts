@@ -66,6 +66,38 @@ export class PlayByPlayUtils {
   }
 
   /**
+   * Maps each goal's event ID to its index among its scorer's goals in the game, in scoring order (0 for their first
+   * goal).
+   *
+   * @param periods - The key event periods (getKeyEventPeriods), which leave out the shootout.
+   */
+  public static getGoalIndexes(periods: KeyEventPeriod[]): Map<number, number> {
+    const goalCounts = new Map<number, number>();
+    const goalIndexes = new Map<number, number>();
+    (periods ?? []).flatMap(period => period.plays ?? []).filter(play => PlayByPlayUtils.isGoal(play)).forEach(play => {
+      const scorerId = play.details?.scoringPlayerId;
+      const goalIndex = goalCounts.get(scorerId) ?? 0;
+      goalCounts.set(scorerId, goalIndex + 1);
+      goalIndexes.set(play.eventId, goalIndex);
+    });
+    return goalIndexes;
+  }
+
+  /**
+   * Counts the faceoffs each player took (won or lost), by player ID. The boxscore only has a win percentage.
+   *
+   * @param playByPlay - The game's play-by-play.
+   */
+  public static getFaceoffCounts(playByPlay: PlayByPlay): Map<number, number> {
+    const faceoffCounts = new Map<number, number>();
+    (playByPlay?.plays ?? []).filter(play => play.typeDescKey === NhlPlayTypeEnum.FACEOFF).forEach(play => {
+      [play.details?.winningPlayerId, play.details?.losingPlayerId].filter(playerId => playerId != null)
+          .forEach(playerId => faceoffCounts.set(playerId, (faceoffCounts.get(playerId) ?? 0) + 1));
+    });
+    return faceoffCounts;
+  }
+
+  /**
    * Maps player IDs to the game's roster spots, for names and headshots.
    *
    * @param playByPlay - The game's play-by-play.

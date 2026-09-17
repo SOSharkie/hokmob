@@ -54,7 +54,8 @@
         <app-goal-scorers
             *ngIf="haveGoalsBeenScored"
             [scoring]="scoringPeriods"
-            (scorerClicked)="openPlayerGameDialog($event)">
+            (scorerClicked)="openPlayerGameDialog($event)"
+            (playerHovered)="highlightPlayer($event)">
         </app-goal-scorers>
       </div>
       <div class="game-info-container">
@@ -80,6 +81,7 @@
           [awayCoach]="awayCoach"
           [homeTeamLogo]="homeTeamLogo"
           [awayTeamLogo]="awayTeamLogo"
+          [highlightedPlayer]="highlightedPlayer"
           (playerClicked)="openPlayerGameDialog($event)"
       ></app-game-top-players>
     </div>
@@ -108,6 +110,7 @@
       <app-mini-event-timeline
           [playByPlay]="playByPlay"
           (playerClicked)="openPlayerGameDialog($event)"
+          (playerHovered)="highlightPlayer($event)"
       ></app-mini-event-timeline>
     </div>
   </div>
@@ -117,6 +120,7 @@
         [homeTeamLogo]="homeTeamLogo"
         [awayTeamLogo]="awayTeamLogo"
         (playerClicked)="openPlayerGameDialog($event)"
+        (playerHovered)="highlightPlayer($event)"
     ></app-mini-event-timeline>
   </div>
 </div>

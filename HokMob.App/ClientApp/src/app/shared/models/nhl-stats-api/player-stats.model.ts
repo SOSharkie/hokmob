@@ -120,6 +120,8 @@ export interface SkaterGameStats extends PlayerGameStatsRow {
   takeaways?: number;
   giveaways?: number;
   missedShots?: number;
+  /** Faceoffs won and lost, from the faceoffwins report; missing when that call failed. */
+  totalFaceoffs?: number;
 }
 
 export interface GoalieGameStats extends PlayerGameStatsRow {

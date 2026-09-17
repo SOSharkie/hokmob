@@ -3,13 +3,13 @@
     <div *ngFor="let period of periods" class="period-goals">
       <div class="home-goals-label">
         <ng-container *ngFor="let goal of getHomeTeamGoals(period); let isLast = last">
-          <span (click)="clickScorer(goal)" class="scorer-label">{{getScorerName(goal)}} <span class="goal-time">({{getGoalTime(goal)}})</span></span><span *ngIf="!isLast">, </span>
+          <span (click)="clickScorer(goal)" (mouseenter)="hoverScorer(goal)" (mouseleave)="leaveScorer()" class="scorer-label">{{getScorerName(goal)}} <span class="goal-time">({{getGoalTime(goal)}})</span></span><span *ngIf="!isLast">, </span>
         </ng-container>
       </div>
       <span class="period-label">{{getPeriodLabel(period)}}</span>
       <div class="away-goals-label">
         <ng-container *ngFor="let goal of getAwayTeamGoals(period); let isLast = last">
-          <span (click)="clickScorer(goal)" class="scorer-label">{{getScorerName(goal)}} <span class="goal-time">({{getGoalTime(goal)}})</span></span><span *ngIf="!isLast">, </span>
+          <span (click)="clickScorer(goal)" (mouseenter)="hoverScorer(goal)" (mouseleave)="leaveScorer()" class="scorer-label">{{getScorerName(goal)}} <span class="goal-time">({{getGoalTime(goal)}})</span></span><span *ngIf="!isLast">, </span>
         </ng-container>
       </div>
     </div>

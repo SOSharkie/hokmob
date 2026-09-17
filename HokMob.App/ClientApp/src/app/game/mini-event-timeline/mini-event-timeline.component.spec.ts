@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
+import { PlayerHighlight } from '@shared/models/player-highlight.model';
 import { PlayByPlay } from '@shared/models/nhl-web-api/play-by-play.model';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { derivedLivePlayByPlay, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
@@ -95,5 +96,25 @@ describe('MiniEventTimelineComponent', () => {
     show(mockGamePlayByPlay(2025030414));
     fixture.debugElement.query(By.css('app-mini-event')).triggerEventHandler('playerClicked', 8482702);
     expect(clickedIds).toEqual([8482702]);
+  });
+
+  it("should pass each goal's index among its scorer's goals to its event", () => {
+    show(mockGamePlayByPlay(2025030414));
+    const goalIndex = (eventId: number) => Array.from<any>(fixture.nativeElement.querySelectorAll('app-mini-event'))
+        .find(event => event.play.eventId === eventId).goalIndex;
+    // Jordan Staal scored in the 1st (448) and the 3rd (212)
+    expect(goalIndex(448)).toBe(0);
+    expect(goalIndex(212)).toBe(1);
+    expect(goalIndex(444)).toBeUndefined();
+  });
+
+  it('should emit the player hovered in an event', () => {
+    const hovered: PlayerHighlight[] = [];
+    component.playerHovered.subscribe(highlight => hovered.push(highlight));
+    show(mockGamePlayByPlay(2025030414));
+    const event = fixture.debugElement.query(By.css('app-mini-event'));
+    event.triggerEventHandler('playerHovered', {playerId: 8473533, goalIndex: 1});
+    event.triggerEventHandler('playerHovered', null);
+    expect(hovered).toEqual([{playerId: 8473533, goalIndex: 1}, null]);
   });
 });

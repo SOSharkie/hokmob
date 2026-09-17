@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameLandingScoringPeriod } from '@shared/models/nhl-web-api/gamecenter-landing.model';
+import { PlayerHighlight } from '@shared/models/player-highlight.model';
 import { mockGameLanding } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { GoalScorersComponent } from './goal-scorers.component';
@@ -91,5 +92,30 @@ describe('GoalScorersComponent', () => {
     delete scoring[0].goals;
     show(scoring);
     expect(rows()[0]).toEqual(['', '1st', '']);
+  });
+
+  it("should emit the scorer and the goal's index among their goals in this game on hover, and null on leave", () => {
+    const hovered: PlayerHighlight[] = [];
+    component.playerHovered.subscribe(highlight => hovered.push(highlight));
+    show(mockGameLanding(2025030414).summary.scoring);
+    const staalGoals = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.scorer-label'))
+        .filter(scorer => scorer.textContent.includes('Staal'));
+    expect(staalGoals.length).toBe(2);
+    staalGoals[1].dispatchEvent(new MouseEvent('mouseenter'));
+    staalGoals[1].dispatchEvent(new MouseEvent('mouseleave'));
+    staalGoals[0].dispatchEvent(new MouseEvent('mouseenter'));
+    expect(hovered).toEqual([{playerId: 8473533, goalIndex: 1}, null, {playerId: 8473533, goalIndex: 0}]);
+  });
+
+  it("should index a goal among the scorer's goals in this game, not by their season total", () => {
+    const hovered: PlayerHighlight[] = [];
+    component.playerHovered.subscribe(highlight => hovered.push(highlight));
+    const scoring = mockGameLanding(2025020952).summary.scoring;
+    show(scoring);
+    const gauthierGoals = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.scorer-label'))
+        .filter(scorer => scorer.textContent.includes('Gauthier'));
+    gauthierGoals.forEach(scorer => scorer.dispatchEvent(new MouseEvent('mouseenter')));
+    expect(hovered).toEqual([{playerId: 8483445, goalIndex: 0}, {playerId: 8483445, goalIndex: 1}]);
+    expect(scoring[2].goals[0].goalsToDate).not.toBe(2);
   });
 });

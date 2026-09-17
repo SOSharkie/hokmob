@@ -3,6 +3,7 @@ import {KeyEventPeriod, Play, PlayByPlay, RosterSpot} from "@shared/models/nhl-w
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {PeriodUtils} from "@shared/utils/period-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
+import {PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
   selector: 'app-mini-event-timeline',
@@ -26,9 +27,20 @@ export class MiniEventTimelineComponent implements OnChanges {
   @Output()
   public playerClicked = new EventEmitter<number>();
 
+  /**
+   * Emits the player hovered in an event, and null when the mouse leaves them.
+   */
+  @Output()
+  public playerHovered = new EventEmitter<PlayerHighlight>();
+
   public periods: KeyEventPeriod[] = [];
 
   public rosterSpots = new Map<number, RosterSpot>();
+
+  /**
+   * Each goal's index among its scorer's goals in this game, by event ID.
+   */
+  public goalIndexes = new Map<number, number>();
 
   public get homeTeamId(): number {
     return this.playByPlay?.homeTeam?.id;
@@ -42,6 +54,7 @@ export class MiniEventTimelineComponent implements OnChanges {
     if (changes['playByPlay']) {
       this.periods = PlayByPlayUtils.getKeyEventPeriods(this.playByPlay);
       this.rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
+      this.goalIndexes = PlayByPlayUtils.getGoalIndexes(this.periods);
     }
   }
 
@@ -58,6 +71,10 @@ export class MiniEventTimelineComponent implements OnChanges {
 
   public onPlayerClicked(playerId: number): void {
     this.playerClicked.emit(playerId);
+  }
+
+  public onPlayerHovered(highlight: PlayerHighlight): void {
+    this.playerHovered.emit(highlight);
   }
 
 }

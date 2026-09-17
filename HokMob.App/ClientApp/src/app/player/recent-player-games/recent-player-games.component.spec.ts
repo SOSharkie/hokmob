@@ -70,6 +70,19 @@ describe('RecentPlayerGamesComponent', () => {
     expect(row(9)).toEqual(['May 20', 'COL(4 - 2)', '16:25', '0', '0', '2', '2', '-1', '2', '4.6']);
   });
 
+  it('should scale the faceoff term of a center by the faceoffs taken in the game', () => {
+    const games = mockPlayerStats(8477496).recentGames as SkaterGameStats[];
+    // Lindholm, a center, won 4 of 12 faceoffs in game 3 against Buffalo. The same 33.3% on 3 faceoffs costs less, and
+    // without a count he gets the full term, like with 12.
+    const game = games[3];
+    expect(game.totalFaceoffs).toBe(12);
+    expect(game.faceoffWinPct).toBe(0.33333);
+    show([game, {...game, totalFaceoffs: 3}, {...game, totalFaceoffs: undefined}], false);
+    const ratings = component.rows.map(gameRow => gameRow.hokmobRating);
+    expect(ratings[0]).toBe(ratings[2]);
+    expect(ratings[1]).toBeGreaterThan(ratings[0]);
+  });
+
   it('should link every row to its game', () => {
     const games = mockPlayerStats(8477964).recentGames as SkaterGameStats[];
     show(games, false);

@@ -1,6 +1,6 @@
 
 /**
- * The new NHL API play typeDescKey values used by the game page. Plays have more types, like "faceoff" or "hit".
+ * The new NHL API play typeDescKey values used by the game page. Plays have more types, like "hit" or "giveaway".
  */
 export enum NhlPlayTypeEnum {
 
@@ -12,6 +12,8 @@ export enum NhlPlayTypeEnum {
 
     BLOCKED_SHOT = "blocked-shot",
 
-    PENALTY = "penalty"
+    PENALTY = "penalty",
+
+    FACEOFF = "faceoff"
 
 }
