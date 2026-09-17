@@ -18,12 +18,34 @@
 
     .home-players, .away-players {
       width: 50%;
+      padding-top: $spacing-large;
+    }
+
+    .top-player-list, .more-player-list {
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      padding-top: $spacing-large;
+    }
+
+    // Grows from zero to its content's height; grid rows can animate that, unlike height: auto
+    .more-players {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 220ms cubic-bezier(0.2, 0, 0, 1), opacity 160ms ease-out;
+
+      &.expanded {
+        grid-template-rows: 1fr;
+        opacity: 1;
+        transition: grid-template-rows 280ms cubic-bezier(0.2, 0, 0, 1), opacity 220ms ease-in 60ms;
+      }
+
+      .more-players-inner {
+        min-height: 0;
+        overflow: hidden;
+      }
     }
 
     // Matches the period lines on the momentum chart
@@ -124,6 +146,44 @@
     .top-player:hover {
       cursor: pointer;
       opacity: 0.7;
+    }
+  }
+
+  .expand-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: -$spacing-large;
+    padding-bottom: $spacing-small;
+
+    .expand-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 36px;
+      height: 22px;
+      padding: 0;
+      border: none;
+      border-radius: 11px;
+      background: transparent;
+      color: $gray-04;
+      cursor: pointer;
+      transition: background-color 150ms ease-out, color 150ms ease-out;
+
+      &:hover, &:focus-visible {
+        background-color: $black-04;
+        color: white;
+      }
+
+      .expand-icon {
+        font-size: 22px;
+        height: 22px;
+        width: 22px;
+        transition: transform 250ms cubic-bezier(0.2, 0, 0, 1);
+      }
+
+      &.expanded .expand-icon {
+        transform: rotate(180deg);
+      }
     }
   }
 }

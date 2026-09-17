@@ -30,16 +30,46 @@ export class GameTopPlayersComponent implements OnChanges {
   public topAwayPlayers: GamePlayer[] = [];
 
   /**
+   * The next best rated home players, shown when the card is expanded.
+   */
+  public moreHomePlayers: GamePlayer[] = [];
+
+  /**
+   * The next best rated away players, shown when the card is expanded.
+   */
+  public moreAwayPlayers: GamePlayer[] = [];
+
+  /**
+   * Whether the card shows the extra players.
+   */
+  public expanded = false;
+
+  /**
    * The best rated player of the game, shown with a star. The home player wins a tie.
    */
   public gameMvpPlayerId: number;
 
   public readonly numPlayersToShow = 6;
 
+  public readonly numMorePlayersToShow = 6;
+
   public ngOnChanges(changes: SimpleChanges): void {
     this.topHomePlayers = this.getTopPlayers(this.homePlayers);
     this.topAwayPlayers = this.getTopPlayers(this.awayPlayers);
+    this.moreHomePlayers = this.getMorePlayers(this.homePlayers, this.topHomePlayers);
+    this.moreAwayPlayers = this.getMorePlayers(this.awayPlayers, this.topAwayPlayers);
     this.gameMvpPlayerId = this.getGameMvpPlayerId();
+  }
+
+  /**
+   * Whether either team has players beyond the top ones, so the card can expand.
+   */
+  public get hasMorePlayers(): boolean {
+    return this.moreHomePlayers.length > 0 || this.moreAwayPlayers.length > 0;
+  }
+
+  public toggleExpanded(): void {
+    this.expanded = !this.expanded;
   }
 
   public getHokmobScoreColor(player: GamePlayer): string {
@@ -71,6 +101,17 @@ export class GameTopPlayersComponent implements OnChanges {
       topPlayers.splice(Math.min(topPlayers.length, this.numPlayersToShow - 1), 1, goalie);
     }
     return topPlayers;
+  }
+
+  /**
+   * Returns the best rated players that aren't already in the top players.
+   */
+  private getMorePlayers(players: GamePlayer[], topPlayers: GamePlayer[]): GamePlayer[] {
+    const topPlayerIds = new Set(topPlayers.map(player => player.playerId));
+    return [...(players ?? [])]
+        .filter(player => !topPlayerIds.has(player.playerId))
+        .sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB))
+        .slice(0, this.numMorePlayersToShow);
   }
 
   private getGameMvpPlayerId(): number {

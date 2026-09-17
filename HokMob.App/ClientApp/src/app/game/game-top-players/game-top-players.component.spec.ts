@@ -37,12 +37,23 @@ describe('GameTopPlayersComponent', () => {
   }
 
   function cards(side: 'home' | 'away'): HTMLElement[] {
-    return Array.from(fixture.nativeElement.querySelectorAll(`.${side}-players .top-player`));
+    return Array.from(fixture.nativeElement.querySelectorAll(`.${side}-players .top-player-list .top-player`));
   }
 
-  /** Each player card as [name, rating]. */
+  function moreCards(side: 'home' | 'away'): HTMLElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll(`.${side}-players .more-player-list .top-player`));
+  }
+
+  function cardName(card: HTMLElement): string {
+    return card.querySelector('.player-name').textContent.trim();
+  }
+
   function names(side: 'home' | 'away'): string[] {
-    return cards(side).map(card => card.querySelector('.player-name').textContent.trim());
+    return cards(side).map(cardName);
+  }
+
+  function expandButton(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('.expand-button');
   }
 
   function rating(card: HTMLElement): string {
@@ -121,5 +132,52 @@ describe('GameTopPlayersComponent', () => {
     const goalie = gamePlayers(2025021057, true).find(player => player.playerId === 8477480);
     show([...homePlayers, goalie].reverse(), gamePlayers(2025021057, false));
     expect(names('home')).toEqual(['Eric Comrie', 'Haydn Fleury', 'Mark Scheifele', 'Cole Koepke']);
+  });
+
+  it('should keep the next best players collapsed until the expand button is clicked', () => {
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    const morePlayers: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.more-players'));
+    expect(morePlayers.length).toBe(2);
+    expect(morePlayers.every(section => section.hasAttribute('inert'))).toBeTrue();
+    expect(morePlayers.some(section => section.classList.contains('expanded'))).toBeFalse();
+    expect(expandButton().getAttribute('aria-expanded')).toBe('false');
+
+    expandButton().click();
+    fixture.detectChanges();
+    expect(component.expanded).toBeTrue();
+    expect(morePlayers.every(section => section.classList.contains('expanded') && !section.hasAttribute('inert'))).toBeTrue();
+    expect(expandButton().getAttribute('aria-expanded')).toBe('true');
+    expect(expandButton().getAttribute('aria-label')).toBe('Show fewer players');
+
+    expandButton().click();
+    fixture.detectChanges();
+    expect(morePlayers.every(section => section.hasAttribute('inert'))).toBeTrue();
+  });
+
+  it('should show six more players per team, starting with the player the goalie replaced', () => {
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    expect(moreCards('home').length).toBe(6);
+    expect(moreCards('away').length).toBe(6);
+    expect(cardName(moreCards('away')[0])).toBe('Pius Suter');
+    expect(rating(moreCards('away')[0])).toBe('5.7');
+    const topAndMoreIds = [...component.topHomePlayers, ...component.moreHomePlayers].map(player => player.playerId);
+    expect(new Set(topAndMoreIds).size).toBe(12);
+    const moreRatings = component.moreHomePlayers.map(player => player.hokmobRating);
+    expect(moreRatings).toEqual([...moreRatings].sort((a, b) => b - a));
+  });
+
+  it('should emit the player ID when an extra player is clicked', () => {
+    const clickedIds: number[] = [];
+    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    moreCards('away')[0].click();
+    expect(clickedIds).toEqual([component.moreAwayPlayers[0].playerId]);
+  });
+
+  it('should hide the expand button when no team has more players', () => {
+    const homePlayers = gamePlayers(2025021057, true).slice(0, 4);
+    show(homePlayers, []);
+    expect(moreCards('home').length).toBe(0);
+    expect(expandButton()).toBeNull();
   });
 });
