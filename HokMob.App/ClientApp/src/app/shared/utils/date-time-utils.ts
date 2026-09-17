@@ -7,8 +7,10 @@ export class DateTimeUtils {
    * Formats a given date with the day of week, day and month, or a contextual day string.
    *
    * @param inputDate - The date to format.
+   * @param shortMonth - Whether to abbreviate the month, like "Sunday, Sep 20" instead of "Sunday, September 20". The
+   *   short month and day are joined by a non-breaking space, so a narrow label wraps after the day of week instead.
    */
-  public static getDayDisplayValue(inputDate: Date): string {
+  public static getDayDisplayValue(inputDate: Date, shortMonth: boolean = false): string {
     let today = dayjs();
     let day = dayjs(inputDate);
     if (today.isSame(day, 'day')) {
@@ -18,7 +20,7 @@ export class DateTimeUtils {
     } else if (today.subtract(1, 'day').isSame(day, 'day')) {
       return "Yesterday"
     } else {
-      return day.format('dddd, MMMM D');
+      return day.format(shortMonth ? 'dddd, MMM\u00a0D' : 'dddd, MMMM D');
     }
   }
 

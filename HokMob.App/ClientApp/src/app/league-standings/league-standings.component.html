@@ -1,32 +1,38 @@
 <div class="league-standings-container">
-  <div class="standings-filters-container">
-    <div (click)="updateStandingsType(NhlStandingsTypeEnum.BY_LEAGUE)"
-         class="standings-type-filter"
-         [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_LEAGUE}">
-      League
+  <div class="standings-card">
+    <div class="standings-filters-container">
+      <button type="button"
+              (click)="updateStandingsType(NhlStandingsTypeEnum.BY_LEAGUE)"
+              class="standings-type-filter"
+              [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_LEAGUE}">
+        League
+      </button>
+      <button type="button"
+              (click)="updateStandingsType(NhlStandingsTypeEnum.BY_CONFERENCE)"
+              class="standings-type-filter"
+              [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_CONFERENCE}">
+        Conference
+      </button>
+      <button type="button"
+              (click)="updateStandingsType(NhlStandingsTypeEnum.BY_DIVISION)"
+              class="standings-type-filter"
+              [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_DIVISION}">
+        Division
+      </button>
+      <button type="button"
+              (click)="updateStandingsType(NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS)"
+              class="standings-type-filter"
+              [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS}">
+        Playoffs
+      </button>
     </div>
-    <div (click)="updateStandingsType(NhlStandingsTypeEnum.BY_CONFERENCE)"
-         class="standings-type-filter"
-         [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_CONFERENCE}">
-     Conference
+    <div *ngIf="standings" class="main-standings">
+      <app-standings
+          class="embedded"
+          [standings]="standings"
+          [showFormAndNext]="true"
+          [defaultStandingsType]="currentStandingsType"
+      ></app-standings>
     </div>
-    <div (click)="updateStandingsType(NhlStandingsTypeEnum.BY_DIVISION)"
-         class="standings-type-filter"
-         [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_DIVISION}">
-      Division
-    </div>
-    <div (click)="updateStandingsType(NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS)"
-         class="standings-type-filter"
-         [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS}">
-      Playoffs
-    </div>
-  </div>
-  <div *ngIf="standings" class="main-standings">
-    <app-standings
-        class="standings-cards"
-        [standings]="standings"
-        [showFormAndNext]="true"
-        [defaultStandingsType]="currentStandingsType"
-    ></app-standings>
   </div>
 </div>

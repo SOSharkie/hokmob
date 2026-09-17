@@ -81,4 +81,18 @@ export class StandingsComponent implements OnChanges {
   public isPlayoffPosition(team: StandingsTeam): boolean {
     return ['x', 'y', 'z', 'p'].includes(team.clinchIndicator);
   }
+
+  public isEliminated(team: StandingsTeam): boolean {
+    return team.clinchIndicator === 'e';
+  }
+
+  /** Whether any team has clinched a playoff spot, so the legend explains the green bar. */
+  public get hasPlayoffPositions(): boolean {
+    return this.standings?.some(group => group.teams.some(team => this.isPlayoffPosition(team))) ?? false;
+  }
+
+  /** Whether any team is eliminated, so the legend explains the red bar. */
+  public get hasEliminatedTeams(): boolean {
+    return this.standings?.some(group => group.teams.some(team => this.isEliminated(team))) ?? false;
+  }
 }

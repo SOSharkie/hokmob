@@ -1,47 +1,50 @@
 @import "variables";
 
-// The gap around the page, around the filters and between the cards. It's the game page's 16px on desktop and shrinks
-// smoothly on phones, so nothing jumps at a breakpoint
-$page-gap: clamp(#{$spacing-medium}, 2.3vw, #{$spacing-card-gap});
-
 .league-standings-container {
-  display: flex;
-  flex-direction: column;
-  gap: $page-gap;
   box-sizing: border-box;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: $page-gap;
+  padding: $spacing-page-gap;
+
+  // One card with the filters above the standings, like Fotmob's league tables
+  .standings-card {
+    color: white;
+    background-color: $black-02;
+    border-radius: 25px;
+    overflow: hidden;
+  }
 
   .standings-filters-container {
     display: flex;
     align-items: center;
-    gap: clamp(#{$spacing-small}, 1.2vw, #{$spacing-x-large});
-    padding: clamp(#{$spacing-medium}, 1.2vw, #{$spacing-x-large});
-
-    background-color: $black-02;
-    border-radius: 25px;
+    gap: clamp(#{$spacing-small}, 0.8vw, #{$spacing-large});
+    min-height: 64px;
+    padding: 0 clamp(#{$spacing-large}, 2vw, 24px);
+    border-bottom: 1px solid $black-04;
 
     .standings-type-filter {
       min-width: 0;
-      padding: clamp(#{$spacing-large}, 1.4vw, #{$spacing-x-large}) clamp(#{$spacing-large}, 1.4vw, #{$spacing-xx-large});
-      // medium on phones, large on desktop
-      font-size: clamp(14px, 0.6vw + 12px, 18px);
+      height: 32px;
+      padding: 0 clamp(#{$spacing-large}, 1.5vw, #{$spacing-xx-large});
+      font-family: inherit;
+      font-size: clamp(13px, 0.2vw + 12px, 14px);
+      font-weight: 500;
       white-space: nowrap;
       color: white;
-      background-color: $black-04;
-      border-radius: 25px;
+      background-color: $gray-01;
+      border: none;
+      border-radius: 22px;
+      cursor: pointer;
     }
 
     .standings-type-filter:hover {
-      cursor: pointer;
-      background-color: $gray-01;
+      background-color: $gray-02;
     }
 
-    .selected-filter {
-      color: black !important;
-      background-color: white !important;
+    .selected-filter, .selected-filter:hover {
+      color: $black-02;
+      background-color: white;
     }
   }
 

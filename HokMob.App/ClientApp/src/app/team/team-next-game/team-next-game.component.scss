@@ -3,6 +3,8 @@
 $central-info-width: 205px;
 
 .team-next-game {
+  // Narrow cards stack each team's logo above its name, see the container query below
+  container: next-game / inline-size;
   background-color: $black-02;
   border-radius: 25px;
   overflow: hidden;
@@ -32,7 +34,10 @@ $central-info-width: 205px;
       justify-content: center;
       align-items: center;
       align-content: center;
-      width: $central-info-width;
+      // Keeps its content's width (up to the old fixed width), so the team sides shrink first
+      flex: none;
+      max-width: $central-info-width;
+      box-sizing: border-box;
       padding: $spacing-medium;
 
       .game-day-label {
@@ -49,7 +54,10 @@ $central-info-width: 205px;
       justify-content: center;
       align-items: center;
       align-content: center;
-      width: $central-info-width;
+      // Keeps its content's width (up to the old fixed width), so the team sides shrink first
+      flex: none;
+      max-width: $central-info-width;
+      box-sizing: border-box;
       padding-right: $spacing-x-small;
       padding-left: $spacing-x-small;
 
@@ -71,6 +79,17 @@ $central-info-width: 205px;
       margin-top: $spacing-small;
       font-size: medium;
       color: $gray-04;
+    }
+
+    // The team sides shrink and wrap long names instead of overflowing a narrow card. A word only breaks when it can't
+    // fit on its own
+    .home-team-header, .away-team-header {
+      min-width: 0;
+      overflow-wrap: break-word;
+
+      img {
+        flex: none;
+      }
     }
 
     .home-team-header {
@@ -111,15 +130,15 @@ $central-info-width: 205px;
   @media only screen and (min-width: $mobile-screen-breakpoint) {
 
     .home-team-header {
+      flex: 0 1 360px;
       flex-direction: row;
       font-size: large;
-      width: 360px;
     }
 
     .away-team-header {
+      flex: 0 1 360px;
       flex-direction: row;
       font-size: large;
-      width: 360px;
     }
 
     .game-time-label, .game-score-label {
@@ -145,6 +164,39 @@ $central-info-width: 205px;
     .game-time-label, .game-score-label {
       text-align: center;
       font-size: large;
+    }
+  }
+
+  // Narrow cards (e.g. the team page's side column at narrow desktop widths): stack each team's logo above its name, like
+  // on phones
+  @container next-game (max-width: 479.98px) {
+    // At least as wide as the logo and the longest word of the name, so the game time wraps before a name breaks mid-word
+    // or a logo overflows. Nested in the score container to override its min-width
+    .score-container .home-team-header, .score-container .away-team-header {
+      flex: 1 1 0;
+      min-width: min-content;
+      text-align: center;
+    }
+
+    .score-container .game-day-time-container, .score-container .game-score {
+      flex: 0 1 auto;
+      min-width: 0;
+    }
+
+    .home-team-header {
+      flex-direction: column-reverse;
+
+      .home-team-logo {
+        margin-left: 0;
+      }
+    }
+
+    .away-team-header {
+      flex-direction: column;
+
+      .away-team-logo {
+        margin-right: 0;
+      }
     }
   }
 }

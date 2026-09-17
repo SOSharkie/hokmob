@@ -67,6 +67,7 @@ describe('StandingsComponent', () => {
     expect(cell(0, '.losses-cell')).toBe('16');
     expect(cell(0, '.ot-cell')).toBe('11');
     expect(cell(0, '.rw-cell')).toBe('48');
+    expect(cell(0, '.gfga-cell')).toBe('302 / 203');
     expect(cell(0, '.gd-cell')).toBe('99');
     expect(cell(0, '.form-cell')).toBe('3W');
     expect(cell(0, '.points-cell')).toBe('121');
@@ -113,11 +114,40 @@ describe('StandingsComponent', () => {
     expect(rows()[31].querySelector('.rank-cell').classList).not.toContain('playoffPosition');
   });
 
+  it('should mark eliminated teams and explain both bars in the legend', () => {
+    expect(component.isEliminated(team('STL'))).toBeTrue();
+    expect(component.isEliminated(team('COL'))).toBeFalse();
+
+    render([leagueGroup()]);
+    expect(rows()[31].querySelector('.rank-cell').classList).toContain('eliminated');
+    expect(rows()[0].querySelector('.rank-cell').classList).not.toContain('eliminated');
+    const legendItems = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.standings-legend .legend-item'))
+        .map(item => item.textContent.trim());
+    expect(legendItems).toEqual(['Clinched playoff spot', 'Eliminated']);
+  });
+
+  it('should show no legend before any team clinches or is eliminated', () => {
+    const group = leagueGroup();
+    group.teams.forEach(standingsTeam => delete standingsTeam.clinchIndicator);
+    render([group]);
+    expect(component.hasPlayoffPositions).toBeFalse();
+    expect(component.hasEliminatedTeams).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.standings-legend')).toBeNull();
+  });
+
+  it('should put every group and the legend in one card', () => {
+    render([divisionGroup('Central'), divisionGroup('Pacific')], {defaultStandingsType: NhlStandingsTypeEnum.BY_DIVISION});
+    expect(fixture.nativeElement.querySelectorAll('.standings-container').length).toBe(1);
+    expect(fixture.nativeElement.querySelectorAll('.standings-group').length).toBe(2);
+    expect(fixture.nativeElement.querySelectorAll('.standings-legend').length).toBe(1);
+  });
+
   it('should show common names and hide record columns in mini standings', () => {
     render([leagueGroup()], {miniStandings: true, showFormAndNext: false});
     expect(fixture.nativeElement.querySelector('.standings-type-container')).toBeNull();
     expect(cell(0, '.team-name-text')).toBe('Avalanche');
     expect(rows()[0].querySelector('.wins-cell')).toBeNull();
+    expect(rows()[0].querySelector('.gfga-cell')).toBeNull();
     expect(rows()[0].querySelector('.gd-cell')).toBeNull();
     expect(rows()[0].querySelector('.form-cell')).toBeNull();
     expect(cell(0, '.points-cell')).toBe('121');

@@ -1,147 +1,252 @@
 @import "variables";
 
-// Cell padding and font sizes scale with the viewport width between their phone and desktop sizes, so the table resizes
-// smoothly instead of jumping at a breakpoint
-$header-cell-padding: clamp(#{$spacing-small}, 1.1vw, #{$spacing-x-large});
-$cell-padding: clamp(#{$spacing-small}, 0.8vw, #{$spacing-large});
+// Styled like Fotmob's league tables. The spacing scales with the card's width (cqi units) between its phone and desktop
+// sizes, so the table resizes smoothly instead of jumping at a breakpoint
 
-// A list of standings cards on its own page: space the cards like the page's other cards
-:host(.standings-cards) {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(#{$spacing-medium}, 2.3vw, #{$spacing-card-gap});
+// Space between the card's edges and the first and last columns
+$row-side-padding: clamp(#{$spacing-large}, 2cqi, 24px);
+// Half the space between two columns
+$column-half-gap: clamp(3px, 0.5cqi, #{$spacing-medium});
+$logo-size: 24px;
 
-  .standings-container {
-    margin-bottom: 0;
-  }
+// Inside another card (e.g. under the standings page's filters), so no card of its own
+:host(.embedded) .standings-container {
+  background-color: transparent;
+  border-radius: 0;
 }
 
 .standings-container {
   color: white;
   background-color: $black-02;
   border-radius: 25px;
-  padding: $spacing-medium clamp(#{$spacing-medium}, 1vw, #{$spacing-large});
-  margin-bottom: $spacing-medium;
+  padding-bottom: $spacing-card-gap;
+
+  .standings-group + .standings-group {
+    margin-top: $spacing-large;
+    border-top: 1px solid $black-04;
+  }
 
   .standings-type-container {
-    padding: $spacing-large;
-    font-size: clamp(16px, 0.45vw + 13px, 19px);
-    border-bottom: 1px solid $black-03;
+    padding: $spacing-card-gap $row-side-padding $spacing-small;
+    font-size: 16px;
+    font-weight: 500;
   }
 
   .standings-table {
     width: 100%;
-    border-spacing: 0 $spacing-small;
-
-    .standings-header {
-      text-align: left;
-
-      th {
-        padding: $header-cell-padding;
-        color: $gray-03;
-        font-weight: normal;
-        font-size: clamp(13px, 0.4vw + 10.5px, 16px);
-      }
-
-      // Every stat column gets the same share, and the team column takes the rest
-      .stat-cell {
-        width: 8%;
-      }
-
-      .rank-header {
-        width: 6%;
-      }
-    }
-
-    .standings-row {
-      height: 50px;
-
-      td {
-        font-weight: lighter;
-        padding: $cell-padding;
-        font-size: clamp(13px, 0.4vw + 10.5px, 16px);
-      }
-
-      .rank-cell {
-        border-top-left-radius: 4px;
-        border-bottom-left-radius: 4px;
-      }
-
-      .playoffPosition {
-        border-left: 4px solid $green-02;
-      }
-
-      .team-name-cell {
-        white-space: nowrap;
-
-        :hover {
-          cursor: pointer;
-          color: $gray-03;
-        }
-        .team-logo {
-          position: absolute;
-          width: 30px;
-          margin-top: -4px;
-        }
-        .team-name-text {
-          // Room for the logo, which is taken out of the flow
-          margin-left: 30px + $spacing-medium;
-        }
-      }
-
-      .points-cell {
-        font-size: clamp(16px, 0.45vw + 13px, 19px);
-        font-weight: bolder;
-        border-top-right-radius: 5px;
-        border-bottom-right-radius: 5px;
-      }
-    }
-
-    // The mini standings are narrow: use less side padding so the table still fits inside the card's padding
-    &.mini-standings {
-      .standings-header th,
-      .standings-row td {
-        padding-left: $spacing-medium;
-        padding-right: $spacing-medium;
-      }
-    }
-
-    .standings-row:hover {
-      background-color: $black-04;
-    }
-
-    .selected-row {
-      background-color: $black-01;
-
-      .points-value {
-        text-align: center;
-        padding: $spacing-medium $spacing-large;
-        border-radius: 15px;
-      }
-    }
+    border-collapse: separate;
+    border-spacing: 0;
 
     .stat-cell {
       text-align: center;
     }
+
+    // Wide enough for values like "-100" and "10OT", so the columns line up across groups. The team column takes all
+    // the spare width, so the minimum is set on the cells' contents
+    .stat-cell > span {
+      display: inline-block;
+      min-width: clamp(22px, 3cqi, 32px);
+    }
+
+    .gfga-header > span, .gfga-cell > span {
+      min-width: clamp(60px, 6cqi, 72px);
+    }
+
+    .form-header > span, .form-cell > span {
+      min-width: clamp(30px, 3.6cqi, 38px);
+    }
+
+    th, td {
+      padding: 0 $column-half-gap;
+      white-space: nowrap;
+    }
+
+    // The first and last columns keep the card's side padding
+    th:first-child, td:first-child {
+      padding-left: $row-side-padding;
+    }
+
+    th:last-child, td:last-child {
+      padding-right: $row-side-padding;
+    }
+
+    .standings-header {
+      height: 48px;
+      text-align: left;
+
+      th {
+        color: $gray-04;
+        font-size: 13px;
+        font-weight: 500;
+      }
+    }
+
+    .standings-row {
+      height: 36px;
+      font-size: clamp(13px, 0.2cqi + 12px, 14px);
+
+      td:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+      }
+
+      td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+
+      .rank-cell {
+        position: relative;
+        font-weight: 500;
+      }
+
+      // A small bar at the card's edge for clinched and eliminated teams
+      .playoffPosition::before, .eliminated::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 4px;
+        bottom: 4px;
+        width: 2px;
+        border-radius: 1px;
+      }
+
+      .playoffPosition::before {
+        background-color: $green-02;
+      }
+
+      .eliminated::before {
+        background-color: $red-01;
+      }
+
+      .team-logo-cell, .team-name-cell {
+        cursor: pointer;
+      }
+
+      .team-logo-cell {
+        width: $logo-size;
+        padding-right: 0;
+        text-align: center;
+        line-height: 0;
+
+        .team-logo {
+          width: $logo-size;
+          height: $logo-size;
+          object-fit: contain;
+          vertical-align: middle;
+        }
+      }
+
+      // Takes the rest of the width, and cuts long names short instead of widening the table
+      .team-name-cell {
+        width: 100%;
+        max-width: 0;
+        padding-left: clamp(#{$spacing-large}, 1.2cqi, #{$spacing-card-gap});
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .team-name-cell:hover {
+        color: $gray-03;
+      }
+
+      .points-cell {
+        font-weight: 500;
+      }
+    }
+
+    .standings-row:hover td {
+      background-color: $black-04;
+    }
+
+    .selected-row td {
+      background-color: $black-01;
+    }
+
+    .selected-row .points-value {
+      padding: $spacing-x-small $spacing-medium;
+      border-radius: 10px;
+    }
+
+    // The mini standings are narrow: use less side padding
+    &.mini-standings {
+      th:first-child, td:first-child {
+        padding-left: $spacing-large;
+      }
+
+      th:last-child, td:last-child {
+        padding-right: $spacing-large;
+      }
+    }
+  }
+
+  .standings-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-medium 24px;
+    padding: $spacing-large $row-side-padding 0;
+    color: $gray-03;
+    font-size: 13px;
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: $spacing-large;
+    }
+
+    .legend-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .playoff-dot {
+      background-color: $green-02;
+    }
+
+    .eliminated-dot {
+      background-color: $red-01;
+    }
   }
 }
 
-// Wide enough for full team names, goal differential and form
-@media only screen and (min-width: $tiny-display-breakpoint) {
-  .show-mobile {
+// Data is dropped by the card's own width, not the viewport's, because the card is narrower than the page next to other
+// columns (e.g. on the team page). Each step drops only what no longer fits
+.standings-container {
+  container: standings / inline-size;
+}
+
+.short-name {
+  display: none;
+}
+
+// Too narrow for goals for and against, the first column to go
+@container standings (max-width: 531.98px) {
+  .gfga-header, .gfga-cell {
     display: none;
   }
 }
 
-// Narrower: show team common names, and drop goal differential and form
-@media only screen and (max-width: #{$tiny-display-breakpoint - 0.02px}) {
-  .gd-header, .form-header, .hide-mobile {
+// Too narrow for full team names
+@container standings (max-width: 459.98px) {
+  .full-name {
+    display: none;
+  }
+
+  .short-name {
+    display: inline;
+  }
+}
+
+// Too narrow for goal differential and form
+@container standings (max-width: 419.98px) {
+  .gd-header, .gd-cell, .form-header, .form-cell {
     display: none;
   }
 }
 
-// Small phones: drop regulation wins so the table still fits
-@media only screen and (max-width: 374.98px) {
+// Too narrow for regulation wins
+@container standings (max-width: 343.98px) {
   .rw-header, .rw-cell {
     display: none;
   }

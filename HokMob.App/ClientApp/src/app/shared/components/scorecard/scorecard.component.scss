@@ -1,5 +1,11 @@
 @import "variables";
 
+// Narrow cards stack each team's logo above its name, see the container query at the end
+:host {
+  display: block;
+  container: scorecard / inline-size;
+}
+
 .scorecard-container {
   display: flex;
   justify-content: center;
@@ -114,10 +120,10 @@
     min-width: 60px;
   }
   .home-team {
-    width: 280px;
+    flex: 0 1 280px;
   }
   .away-team {
-    width: 280px;
+    flex: 0 1 280px;
   }
 }
 
@@ -143,5 +149,54 @@
     .smaller-text {
       font-size: smaller;
     }
+  }
+}
+
+// Narrow cards: too narrow for a logo and a long name like "Philadelphia" side by side, so stack each team's logo above
+// its name
+@mixin stacked-scorecard {
+  .scorecard-container {
+    height: auto;
+    min-height: 90px;
+    padding: $spacing-small 0;
+
+    &.smaller-scorecard {
+      height: auto !important;
+      min-height: 75px;
+    }
+
+    .home-team, .away-team {
+      flex: 1 1 0;
+      min-width: min-content;
+      width: auto;
+      padding: 0 $spacing-small;
+      text-align: center;
+
+      .logo-container {
+        min-width: 0;
+      }
+    }
+
+    .home-team {
+      flex-direction: column-reverse;
+    }
+
+    .away-team {
+      flex-direction: column;
+    }
+  }
+}
+
+// Measured with the widest name words: side by side fits cards down to 384px on desktop (e.g. the team page's schedule
+// next to other columns) and 358px on phones, which have a narrower middle column
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  @container scorecard (max-width: 389.98px) {
+    @include stacked-scorecard;
+  }
+}
+
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  @container scorecard (max-width: 359.98px) {
+    @include stacked-scorecard;
   }
 }

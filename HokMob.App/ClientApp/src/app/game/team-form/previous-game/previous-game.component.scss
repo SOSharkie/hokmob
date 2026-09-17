@@ -7,25 +7,30 @@
   min-height: 45px;
   border-bottom: 1px solid $gray-01;
   margin: $spacing-medium;
+  // The score's margins scale with the row's width (cqi), and narrow rows stack the logos, see the container query below
+  container: previous-game / inline-size;
   padding-bottom: $spacing-large;
   padding-top: $spacing-large;
 
-  .home-team {
+  // The team sides share the width left by the score. In a narrow row the logo slots give up their spare width first
+  // and the names wrap between words, but never narrower than a logo and the longest word
+  .home-team, .away-team {
     display: flex;
+    flex: 1 1 0;
     align-items: center;
+    min-width: min-content;
+  }
+
+  .home-team {
     justify-content: right;
-    width: 45%;
   }
 
   .away-team {
-    display: flex;
-    align-items: center;
     justify-content: left;
-    width: 45%;
   }
 
   .team-name {
-    min-width: 65px;
+    overflow-wrap: break-word;
   }
 
   .home {
@@ -33,7 +38,8 @@
   }
 
   .logo-container {
-    width: 60px;
+    flex: 0 100 60px;
+    min-width: min-content;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -44,11 +50,11 @@
   }
 
   .score-container {
-    width: 10%;
+    flex: none;
     min-width: 32px;
     padding: $spacing-medium;
-    margin-left: $spacing-large;
-    margin-right: $spacing-large;
+    margin-left: clamp(#{$spacing-small}, 2cqi, #{$spacing-large});
+    margin-right: clamp(#{$spacing-small}, 2cqi, #{$spacing-large});
     border-radius: 10px;
     text-align: center;
   }
@@ -69,6 +75,43 @@
 
 .last-previous-game {
   border-bottom: none !important;
+}
+
+// Narrow rows: too narrow for a logo and a long name like "Blackhawks" side by side, so stack each team's logo above its
+// name
+@mixin stacked-previous-game {
+  .previous-game-container {
+    .home-team, .away-team {
+      justify-content: center;
+      text-align: center;
+
+      .logo-container {
+        flex: none;
+      }
+    }
+
+    .home-team {
+      flex-direction: column-reverse;
+    }
+
+    .away-team {
+      flex-direction: column;
+    }
+  }
+}
+
+// Measured with "Blackhawks" and "Hurricanes": side by side fits rows down to 301px on desktop and 269px on phones, which
+// use a smaller font
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  @container previous-game (max-width: 309.98px) {
+    @include stacked-previous-game;
+  }
+}
+
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  @container previous-game (max-width: 279.98px) {
+    @include stacked-previous-game;
+  }
 }
 
 // Desktop Styling

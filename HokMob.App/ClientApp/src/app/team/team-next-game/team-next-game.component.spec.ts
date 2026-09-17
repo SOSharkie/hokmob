@@ -59,9 +59,9 @@ describe('TeamNextGameComponent', () => {
         .replace(/[\u202f\u00a0]/g, ' ');
   }
 
-  /** A game's local day, like "September 20". */
+  /** A game's local day with a short month, like "Sep 20". */
   function localDay(startTimeUTC: string): string {
-    return new Date(startTimeUTC).toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
+    return new Date(startTimeUTC).toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
   }
 
   it('should show the day and start time of a real future game', () => {
@@ -74,6 +74,8 @@ describe('TeamNextGameComponent', () => {
     expect(component.gameTime).toMatch(/^\d{1,2}:\d{2} (AM|PM)$/);
     expect(component.gameTime).toBe(localTime(game.startTimeUTC));
     expect(text('.game-day-label')).toContain(localDay(game.startTimeUTC));
+    // The short month and day stay on one line
+    expect(component.gameDay).toContain(localDay(game.startTimeUTC).replace(' ', '\u00a0'));
     expect(fixture.nativeElement.querySelector('.game-score')).toBeNull();
     expect(fixture.nativeElement.querySelector('.playoff-series-label')).toBeNull();
   });
