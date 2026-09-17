@@ -84,6 +84,20 @@ export class PlayByPlayUtils {
   }
 
   /**
+   * Counts the faceoffs each player took (won or lost), by player ID. The boxscore only has a win percentage.
+   *
+   * @param playByPlay - The game's play-by-play.
+   */
+  public static getFaceoffCounts(playByPlay: PlayByPlay): Map<number, number> {
+    const faceoffCounts = new Map<number, number>();
+    (playByPlay?.plays ?? []).filter(play => play.typeDescKey === NhlPlayTypeEnum.FACEOFF).forEach(play => {
+      [play.details?.winningPlayerId, play.details?.losingPlayerId].filter(playerId => playerId != null)
+          .forEach(playerId => faceoffCounts.set(playerId, (faceoffCounts.get(playerId) ?? 0) + 1));
+    });
+    return faceoffCounts;
+  }
+
+  /**
    * Maps player IDs to the game's roster spots, for names and headshots.
    *
    * @param playByPlay - The game's play-by-play.

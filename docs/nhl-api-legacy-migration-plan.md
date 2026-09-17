@@ -673,7 +673,8 @@ The plan:
      name, no hits), game logs for recent games (no hits or ratings) and `club-schedule-season` for scores (missing
      for games with a previous team). Recent-game ratings would need a boxscore per game: 10 requests.
    - Later, the same endpoint can add the `faceoffwins` and `powerplay` reports for rating approach B (faceoff counts
-     and power-play assists) without new client requests.
+     and power-play assists) without new client requests. **Faceoffs done (2026-09-16):** a skater's recent games get
+     `totalFaceoffs` from `skater/faceoffwins`, which has a row with 0 for a skater who took none.
 3. **Stats page Shots and Hits come from the stats API (phase 12).** **Decided 2026-09-15: A.**
    - **A (chosen):** `/api/nhl-stats/leaders` returns both boards in one request (2 upstream
      calls, cached). The other seven boards stay on api-web, which has headshots, logos and the NHL's qualification
@@ -757,8 +758,9 @@ add one in phase 9.
 - The first plan's live game checklist (its section 10) still applies. Its runs can start with preseason games on
   2026-09-19. During a live game, also check whether the stats API has per-game rows for it (13).
 - Carried over from the first plan:
-  - HokMob rating approach B. For finished games, the stats API's `faceoffwins` and `powerplay` reports have the
-    inputs (3); live games still need play-by-play.
+  - HokMob rating approach B, power-play assists half. Faceoffs are done (`faceoffwins` for recent games, play-by-play
+    on the game page). For finished games, the `powerplay` report has the power-play assists (3); live games still need
+    play-by-play.
   - A local Utah logo.
   - An in-progress playoff series check during the 2027 playoffs.
 - Check playoff mode in the browser when it starts (2 days before the 2027 playoffs), or with the override in

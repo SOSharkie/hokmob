@@ -27,7 +27,22 @@ describe('StatsUtils', () => {
       expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8476460))).toBe(7.0);
     });
 
-    it('should ignore the faceoff percentage of a player who is not a center', () => {
+    it('should scale the faceoff term by the faceoffs taken, up to 10', () => {
+      // Scheifele took 17, so his 70.6% counts fully.
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8476460), 17)).toBe(7.0);
+      // Holloway, a winger, won 2 of 10: 7.8 + (0.2 - 0.5) = 7.5.
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077), 10)).toBe(7.5);
+      // Suter won 1 of 4: 5.95 + (0.25 - 0.5) * 0.4 = 5.85.
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480459), 4)).toBe(5.8);
+    });
+
+    it('should not take the faceoff term from a center who took no faceoffs', () => {
+      // Vilardi: a center with 0% and no faceoff plays, who got the full -0.5 without a count.
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480014))).toBe(4.3);
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480014), 0)).toBe(4.8);
+    });
+
+    it('should ignore the faceoff percentage of a player who is not a center without a faceoff count', () => {
       const scheifele = boxscorePlayer<BoxscoreSkater>(8476460);
       scheifele.position = 'L';
       expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(6.8);
@@ -135,6 +150,22 @@ describe('StatsUtils', () => {
       expect(binnington.skaterStats).toBeUndefined();
     });
 
+    it('should scale the faceoff term by the play-by-play faceoff counts', () => {
+      const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(mockGamePlayByPlay(2025021057));
+      const rating = (players: GamePlayer[], playerId: number) =>
+          players.find(player => player.playerId === playerId).hokmobRating;
+      const home = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots(), faceoffCounts);
+      const away = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), false, rosterSpots(), faceoffCounts);
+      expect(rating(home, 8476460)).toBe(7.0); // Scheifele, 17 faceoffs
+      expect(rating(home, 8480014)).toBe(4.8); // Vilardi, a center without faceoffs
+      expect(rating(away, 8482077)).toBe(7.5); // Holloway, a winger who won 2 of 10
+
+      const withoutCounts = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots());
+      expect(rating(withoutCounts, 8480014)).toBe(4.3);
+      const ratings = home.map(player => player.hokmobRating);
+      expect(ratings).toEqual([...ratings].sort((ratingA, ratingB) => ratingB - ratingA));
+    });
+
     it('should use the short name and the season headshot without roster spots', () => {
       const players = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true);
       const scheifele = players.find(player => player.playerId === 8476460);
@@ -200,6 +231,15 @@ describe('StatsUtils', () => {
           .toBe(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer<BoxscoreSkater>(8477964, 2025030414)));
       // 5 + 1 shot * 0.3 + 1 hit * 0.2 - 1 giveaway * 0.2, with no faceoff term for a winger.
       expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(statsApiSkater()))).toBe(5.3);
+    });
+
+    it('should give a real game the same rating as its boxscore with faceoff counts', () => {
+      const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(mockGamePlayByPlay(2025030414));
+      const game = statsApiSkater();
+      expect(game.totalFaceoffs).toBe(0);
+      expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game), game.totalFaceoffs))
+          .toBe(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer<BoxscoreSkater>(8477964, 2025030414),
+              faceoffCounts.get(8477964) ?? 0));
     });
 
     it('should map a faceoff percentage, and treat a player without faceoffs as 0', () => {

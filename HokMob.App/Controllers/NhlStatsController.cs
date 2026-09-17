@@ -17,6 +17,9 @@ namespace HokMob.App.Controllers
         private static readonly string[] SkaterRealtimeFields =
             {"hits", "blockedShots", "takeaways", "giveaways", "missedShots"};
 
+        /// <summary>The faceoff count merged into a skater's per game rows, for the HokMob rating's faceoff term.</summary>
+        private static readonly string[] SkaterFaceoffFields = {"totalFaceoffs"};
+
         /// <summary>The saves by strength fields merged into a goalie's per game rows.</summary>
         private static readonly string[] GoalieSavesByStrengthFields =
             {"evSaves", "evShotsAgainst", "ppSaves", "ppShotsAgainst", "shSaves", "shShotsAgainst"};
@@ -39,8 +42,9 @@ namespace HokMob.App.Controllers
         /// <summary>
         /// Returns a player's NHL stats by season and for their last 10 games, as
         /// { regularSeasons, playoffSeasons, recentGames }. A skater's rows include the realtime stats (hits, blocks,
-        /// takeaways and giveaways), a goalie's per game rows the saves by strength. Recent games have the final
-        /// score, and are newest first with playoff and regular season games mixed.
+        /// takeaways and giveaways), and their per game rows the faceoffs taken. A goalie's per game rows include the saves
+        /// by strength. Recent games have the final score, and are newest first with playoff and regular season games
+        /// mixed.
         /// </summary>
         /// <param name="id">The NHL player ID.</param>
         /// <param name="position">"skater" (the default) or "goalie", from the player landing's position.</param>
@@ -66,9 +70,12 @@ namespace HokMob.App.Controllers
             var playoffSeasonExtrasTask = isGoalie
                 ? Task.FromResult<List<JsonObject>?>(null)
                 : _nhlStatsApiClient.GetReportAsync("skater/realtime", GetSeasonParameters(id, 3), cancellationToken);
+            var recentGameFaceoffsTask = isGoalie
+                ? Task.FromResult<List<JsonObject>?>(null)
+                : _nhlStatsApiClient.GetReportAsync("skater/faceoffwins", GetRecentGameParameters(id), cancellationToken);
 
             await Task.WhenAll(regularSeasonsTask, playoffSeasonsTask, recentGamesTask, recentGameExtrasTask,
-                regularSeasonExtrasTask, playoffSeasonExtrasTask);
+                regularSeasonExtrasTask, playoffSeasonExtrasTask, recentGameFaceoffsTask);
 
             var regularSeasons = regularSeasonsTask.Result;
             var playoffSeasons = playoffSeasonsTask.Result;
@@ -83,6 +90,7 @@ namespace HokMob.App.Controllers
             Merge(playoffSeasons, playoffSeasonExtrasTask.Result, "seasonId", seasonExtraFields);
             Merge(recentGames, recentGameExtrasTask.Result, "gameId",
                 isGoalie ? GoalieSavesByStrengthFields : SkaterRealtimeFields);
+            Merge(recentGames, recentGameFaceoffsTask.Result, "gameId", SkaterFaceoffFields);
             SortBySeason(regularSeasons);
             SortBySeason(playoffSeasons);
             await AddGameScores(recentGames, cancellationToken);

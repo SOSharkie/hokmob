@@ -435,6 +435,11 @@ a TODO is in `StatsUtils.calculateSkaterHokmobRating`.
   `powerPlayAssists` correction from real plus/minus.
 - **B (exact):** derive faceoff wins and losses from `faceoff` plays (`details.winningPlayerId` / `losingPlayerId`), and
   power-play assists from `goal` plays' `situationCode`.
+- **Faceoffs (done 2026-09-16):** the faceoff term, `faceoffWinningPctg - 0.5`, is scaled by the faceoffs taken, up to
+  10 (`StatsUtils.fullWeightFaceoffCount`), for any skater. A center who lost 2 of 2 now loses 0.1 instead of 0.5, and
+  one who took none loses nothing. The game page counts faceoffs with `PlayByPlayUtils.getFaceoffCounts`, and player
+  recent games use the stats API's `totalFaceoffs` (second plan, decision 2). Without a count (the play-by-play or the
+  report failed), it falls back to A: the full term, for centers only. The power-play assists half of B is still open.
 
 Player dialog: `nhlStatsService.getNhlPlayerStats` (dead) → `GET /api/nhl/player/{id}/landing`. Use
 `birthCountry` (`CAN`, flags still work), age from `birthDate`, `weightInPounds`, `position`, and `headshot`.
@@ -568,7 +573,7 @@ A phase is done only when all of these are true:
     players and the player dialog, like the old `homePlayerStats` / `awayPlayerStats`.
 14. **The player dialog shows the game's team and headshot**, not the player's current team from `player/{id}/landing`,
     which is only used for the bio (country, age).
-15. **Faceoffs in the player dialog are a percentage** until approach B derives counts from play-by-play. Centers
+15. **Faceoffs in the player dialog are a percentage.** The rating uses play-by-play counts, but the dialog doesn't. Centers
     always show it; other skaters only with a percentage above 0.
 16. **Team form fills in from the previous season.** `club-schedule-season/{abbrev}/now` has no finished games until
     the preseason starts, so a form limited to the current season would be empty or short for the first games. It uses
@@ -596,8 +601,8 @@ A phase is done only when all of these are true:
   data. Check during the 2027 playoffs.
 - **Carousel coverage.** It's unverified whether the carousel lists series before both teams are known. The home summary
   only shows known series; the playoffs page needs `playoff-bracket` for a full bracket.
-- **Rating approach A:** the boxscore has no faceoff counts, so a center who took no faceoffs (`faceoffWinningPctg` 0)
-  gets the same -0.5 as one who lost them all. Approach B fixes it.
+- **Rating approach A:** the faceoff term uses play-by-play counts since 2026-09-16, but real plus/minus still has no
+  power-play assists correction.
 - **Live boxscore and right-rail:** it's unverified that a live game's right-rail has `teamGameStats` and its boxscore
   has `playerByGameStats`. Without them, game stats and top players stay hidden. See section 10.
 - **Team form across seasons:** filling in from the previous season only goes back one season, and assumes the team

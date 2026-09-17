@@ -68,7 +68,8 @@ export class RecentPlayerGamesComponent implements OnChanges {
   }
 
   private static toSkaterRow(game: SkaterGameStats): RecentGameRow {
-    const hokmobRating = StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game));
+    const hokmobRating = StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game),
+        game.totalFaceoffs);
     return {
       ...RecentPlayerGamesComponent.toGameRow(game, hokmobRating),
       timeOnIce: StatsUtils.formatSeconds(game.timeOnIcePerGame),

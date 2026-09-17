@@ -19,16 +19,23 @@ export class StatsUtils {
   public static readonly hokmobRatingGreen = "#1ec854";
 
   /**
+   * The number of faceoffs a skater takes before his faceoff percentage counts fully in his rating.
+   */
+  public static readonly fullWeightFaceoffCount = 10;
+
+  /**
    * Calculates the HokMob rating of a skater for a single live or past game, from 0 to 10.
    *
-   * TODO: The new NHL API boxscore (gamecenter/{id}/boxscore) has no faceoff win/taken counts or powerPlayAssists.
-   *  For now use the simple version: faceoff term from faceoffWinningPctg (centers only) and drop the powerPlayAssists
-   *  correction from realPlusMinus. A new, exact version will be built later by deriving faceoff counts from
-   *  play-by-play "faceoff" plays (winningPlayerId/losingPlayerId) and PP assists from "goal" plays' situationCode.
+   * The faceoff term, (win percentage - 0.5), is scaled by the faceoffs taken up to fullWeightFaceoffCount, so losing
+   * 2 draws costs less than losing 20. Without a count, it falls back to the full term for centers only.
+   *
+   * TODO: The new NHL API boxscore (gamecenter/{id}/boxscore) has no powerPlayAssists, so the powerPlayAssists
+   *  correction from realPlusMinus is dropped. It can be derived from play-by-play "goal" plays' situationCode.
    *
    * @param skater - The skater's boxscore stats.
+   * @param faceoffsTaken - The faceoffs the skater took, from play-by-play or the stats API, if known.
    */
-  public static calculateSkaterHokmobRating(skater: BoxscoreSkater): number {
+  public static calculateSkaterHokmobRating(skater: BoxscoreSkater, faceoffsTaken?: number): number {
     const goals = skater.goals ?? 0;
     const assists = skater.assists ?? 0;
     const plusMinus = skater.plusMinus ?? 0;
@@ -57,8 +64,11 @@ export class StatsUtils {
 
     hokmobRating -= ((skater.giveaways ?? 0) * 0.2);
 
-    if (skater.position === "C") {
-      hokmobRating += (-0.5 + (skater.faceoffWinningPctg ?? 0));
+    const faceoffTerm = -0.5 + (skater.faceoffWinningPctg ?? 0);
+    if (faceoffsTaken != null) {
+      hokmobRating += faceoffTerm * Math.min(1, faceoffsTaken / StatsUtils.fullWeightFaceoffCount);
+    } else if (skater.position === "C") {
+      hokmobRating += faceoffTerm;
     }
 
     return parseFloat(Math.min(10.0, hokmobRating).toFixed(1));
@@ -208,8 +218,10 @@ export class StatsUtils {
    * @param boxscore - The game's boxscore.
    * @param isHome - Whether to return the home team's players.
    * @param rosterSpots - The play-by-play roster spots by player ID, if loaded.
+   * @param faceoffCounts - The faceoffs taken by player ID (PlayByPlayUtils.getFaceoffCounts), if loaded.
    */
-  public static getGamePlayers(boxscore: Boxscore, isHome: boolean, rosterSpots?: Map<number, RosterSpot>): GamePlayer[] {
+  public static getGamePlayers(boxscore: Boxscore, isHome: boolean, rosterSpots?: Map<number, RosterSpot>,
+                               faceoffCounts?: Map<number, number>): GamePlayer[] {
     const team = isHome ? boxscore?.homeTeam : boxscore?.awayTeam;
     const players = isHome ? boxscore?.playerByGameStats?.homeTeam : boxscore?.playerByGameStats?.awayTeam;
     if (!team || !players) {
@@ -230,7 +242,8 @@ export class StatsUtils {
     const skaters = [...(players.forwards ?? []), ...(players.defense ?? [])].map(skater => ({
       ...toGamePlayer(skater),
       skaterStats: skater,
-      hokmobRating: StatsUtils.calculateSkaterHokmobRating(skater)
+      hokmobRating: StatsUtils.calculateSkaterHokmobRating(skater,
+          faceoffCounts ? (faceoffCounts.get(skater.playerId) ?? 0) : undefined)
     }));
     const goalies = (players.goalies ?? []).map(goalie => ({
       ...toGamePlayer(goalie),

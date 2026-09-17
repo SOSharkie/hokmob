@@ -87,6 +87,21 @@ describe('PlayByPlayUtils', () => {
     });
   });
 
+  describe('getFaceoffCounts', () => {
+    it('should count the faceoffs each player of a real game won or lost', () => {
+      const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(mockGamePlayByPlay(2025021057));
+      expect(faceoffCounts.get(8476460)).toBe(17); // Scheifele
+      expect(faceoffCounts.get(8482077)).toBe(10); // Holloway
+      expect(faceoffCounts.get(8476897)).toBe(1); // Sundqvist
+      expect(faceoffCounts.has(8480014)).toBeFalse(); // Vilardi, a center who took none
+    });
+
+    it('should return an empty map without plays', () => {
+      expect(PlayByPlayUtils.getFaceoffCounts(mockGamePlayByPlay(2026020056)).size).toBe(0);
+      expect(PlayByPlayUtils.getFaceoffCounts(undefined).size).toBe(0);
+    });
+  });
+
   describe('getRosterSpotMap', () => {
     it('should map the player IDs of a real game to roster spots', () => {
       const rosterSpots = PlayByPlayUtils.getRosterSpotMap(mockGamePlayByPlay(2025021057));
