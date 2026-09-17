@@ -1,6 +1,7 @@
-import {Component, OnDestroy, ViewEncapsulation} from '@angular/core';
+import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {NhlSearchService} from "@shared/services/nhl-search.service";
 import {SearchResultModel} from "@shared/models/search-result.model";
+import {MatAutocompleteTrigger} from "@angular/material/autocomplete";
 
 /**
  * The header search box. Once the user stops typing, it shows the matching teams right away, then adds the players
@@ -14,6 +15,13 @@ import {SearchResultModel} from "@shared/models/search-result.model";
 })
 export class SearchInputComponent implements OnDestroy {
 
+  /** Emits when the user picks a result. */
+  @Output() public resultSelected = new EventEmitter<void>();
+
+  @ViewChild('input') public inputRef: ElementRef<HTMLInputElement>;
+
+  @ViewChild(MatAutocompleteTrigger) public autocompleteTrigger: MatAutocompleteTrigger;
+
   public searchValue: string = "";
 
   public filterResults: SearchResultModel[] = [];
@@ -26,6 +34,9 @@ export class SearchInputComponent implements OnDestroy {
 
   public readonly minSearchLength = 2;
 
+  /** The results panel width on desktop, wider than the 276px search pill so names and positions fit. */
+  public readonly desktopPanelWidth = 360;
+
   /** The number of the latest search, so a response of an older search is ignored. */
   private searchCount = 0;
 
@@ -34,6 +45,32 @@ export class SearchInputComponent implements OnDestroy {
 
   public ngOnDestroy(): void {
     clearTimeout(this.typingTimer);
+  }
+
+  /**
+   * The results panel width: wider than the input on desktop, and the input width on phones (null). 700px is
+   * `$mobile-screen-breakpoint`.
+   */
+  public get panelWidth(): number {
+    return window.matchMedia('(min-width: 700px)').matches ? this.desktopPanelWidth : null;
+  }
+
+  /**
+   * Focuses the input, e.g. when the header opens the phone search.
+   */
+  public focus(): void {
+    this.inputRef?.nativeElement.focus();
+  }
+
+  /**
+   * Clears the typed value and the results, closes the results panel, and ignores a search still in flight.
+   */
+  public clear(): void {
+    this.autocompleteTrigger?.closePanel();
+    clearTimeout(this.typingTimer);
+    this.searchCount++;
+    this.searchValue = "";
+    this.filterResults = [];
   }
 
   /**

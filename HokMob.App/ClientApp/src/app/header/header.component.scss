@@ -1,64 +1,131 @@
 @import "variables";
 
-.main-toolbar {
-  height: 100px;
+// Styled like Fotmob's header: an 80px bar with the logo and search pill on the left and bold links on the right. On
+// phones the search collapses to an icon that swaps the bar's content for the search pill and a Cancel button.
+.main-header {
+  height: 80px;
   background-color: $black-02;
 
-  .title-and-search-container {
+  .header-content {
     display: flex;
-    justify-content: space-between;
-    align-content: center;
     align-items: center;
-
-    .site-name {
-      color: white;
-    }
-
-    .site-name:hover {
-      cursor: pointer;
-      color: lightgray;
-    }
-
+    box-sizing: border-box;
+    height: 100%;
+    // Lines the logo and links up with the 1200px pages (home, team, standings) below
+    max-width: calc(1200px + 2 * #{$spacing-card-gap});
+    margin: 0 auto;
+    padding: 0 $spacing-card-gap;
   }
 
-  .about-and-login-container {
-    .about-label {
+  .site-name {
+    flex-shrink: 0;
+    color: white;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+  }
+
+  .site-name:hover {
+    opacity: 0.8;
+  }
+
+  .header-menu {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    margin-left: auto;
+
+    .menu-item {
       color: white;
+      font-size: 19px;
+      font-weight: 700;
+      text-decoration: none;
     }
 
-    .about-label:hover {
-      cursor: pointer;
+    .menu-item:hover {
       text-decoration: underline;
+    }
+  }
+
+  .cancel-search-button {
+    flex-shrink: 0;
+    margin-left: $spacing-x-large;
+    padding: 0;
+    border: none;
+    background: none;
+    color: $green-01;
+    font-family: inherit;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .mobile-actions {
+    align-items: center;
+    gap: $spacing-xx-large;
+    margin-left: auto;
+
+    .icon-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      background: none;
+      color: white;
+      cursor: pointer;
+
+      .mat-icon {
+        width: 20px;
+        height: 20px;
+      }
     }
   }
 }
 
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
-
-  .main-toolbar {
-    justify-content: space-around;
-
+  .main-header {
     .site-name {
-      font-size: xx-large;
-      margin-right: $spacing-huge;
+      margin-right: 48px;
+    }
+
+    .cancel-search-button,
+    .mobile-actions {
+      display: none;
     }
   }
 }
 
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-
-  .main-toolbar {
-    justify-content: center;
-
-    .site-name {
-      font-size: x-large;
-      margin-right: $spacing-large;
+  .main-header {
+    .header-search,
+    .cancel-search-button,
+    .header-menu {
+      display: none;
     }
 
-    .about-and-login-container {
+    .mobile-actions {
+      display: flex;
+    }
+  }
+
+  .main-header.search-open {
+    .site-name,
+    .mobile-actions {
       display: none;
+    }
+
+    .header-search {
+      display: block;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cancel-search-button {
+      display: block;
     }
   }
 }

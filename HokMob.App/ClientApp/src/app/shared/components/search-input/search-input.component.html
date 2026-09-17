@@ -1,13 +1,15 @@
 <div class="search-container">
-  <mat-icon class="search-icon" fontIcon="search"></mat-icon>
-  <input type="search"
-         placeholder="Teams, players, and more"
+  <mat-icon class="search-icon" svgIcon="lucide:search"></mat-icon>
+  <input #input
+         type="search"
+         placeholder="Search"
+         aria-label="Search teams and players"
          class="search-input"
          spellcheck="false"
          [(ngModel)]="searchValue"
          (input)="onInput()"
          [matAutocomplete]="auto">
-  <mat-autocomplete #auto="matAutocomplete">
+  <mat-autocomplete #auto="matAutocomplete" [panelWidth]="panelWidth" (optionSelected)="resultSelected.emit()">
     <mat-option *ngFor="let result of filterResults" [value]="result.displayValue">
       <app-search-result
           [searchResult]="result"
