@@ -7,10 +7,10 @@ $central-info-width: 130px;
   justify-content: center;
   align-items: center;
   align-content: center;
-  min-height: 90px;
+  min-height: 72px;
   background-color: $black-02;
-  padding-top: $spacing-small;
-  padding-bottom: $spacing-small;
+  padding-top: $spacing-medium;
+  padding-bottom: $spacing-x-small;
   border-bottom: 1px solid $black-03;
   color: white;
 
@@ -23,8 +23,9 @@ $central-info-width: 130px;
     padding: $spacing-medium;
 
     .game-day-label {
-      margin-top: $spacing-small;
-      font-size: large;
+      margin-top: $spacing-x-small;
+      font-size: 16px;
+      font-weight: 500;
       color: $gray-04;
       text-align: center;
     }
@@ -38,15 +39,17 @@ $central-info-width: 130px;
     align-content: center;
 
     .completed-status-label {
-      margin-top: $spacing-small;
-      font-size: large;
+      margin-top: $spacing-x-small;
+      font-size: 16px;
+      font-weight: 500;
       color: $gray-04;
       text-align: center;
     }
 
     .live-status-label {
-      margin-top: $spacing-small;
-      font-size: large;
+      margin-top: $spacing-x-small;
+      font-size: 16px;
+      font-weight: 500;
       color: $green-01;
       min-width: 80px;
       text-align: center;
@@ -61,8 +64,8 @@ $central-info-width: 130px;
   }
 
   .playoff-series-label {
-    margin-top: $spacing-small;
-    font-size: medium;
+    margin-top: $spacing-x-small;
+    font-size: 13px;
     color: $gray-04;
   }
 
@@ -141,23 +144,25 @@ $central-info-width: 130px;
 
   .home-team-header {
     flex-direction: row;
-    font-size: x-large;
+    font-size: 24px;
+    font-weight: 400;
     flex: 0 1 380px;
     min-width: 0;
 
     .home-team-logo {
-      width: 60px;
+      width: 52px;
     }
   }
 
   .away-team-header {
     flex-direction: row;
-    font-size: x-large;
+    font-size: 24px;
+    font-weight: 400;
     flex: 0 1 380px;
     min-width: 0;
 
     .away-team-logo {
-      width: 60px;
+      width: 52px;
     }
   }
 
@@ -178,7 +183,8 @@ $central-info-width: 130px;
   .game-time-label, .game-score-label {
     min-width: 80px;
     text-align: center;
-    font-size: xx-large;
+    font-size: 30px;
+    font-weight: 500;
   }
 }
 
@@ -187,7 +193,7 @@ $central-info-width: 130px;
 @media only screen and (min-width: $game-mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint) {
   .score-container:not(.dropdown-score-container) {
     .home-team-header, .away-team-header {
-      font-size: large;
+      font-size: 18px;
 
       .home-team-logo, .away-team-logo {
         width: 50px;
@@ -214,7 +220,8 @@ $central-info-width: 130px;
 
   .home-team-header {
     flex-direction: column-reverse;
-    font-size: medium;
+    font-size: 13px;
+    font-weight: 400;
     width: 40%;
 
     .home-team-logo {
@@ -224,7 +231,8 @@ $central-info-width: 130px;
 
   .away-team-header {
     flex-direction: column;
-    font-size: medium;
+    font-size: 13px;
+    font-weight: 400;
     width: 40%;
 
     .away-team-logo {
@@ -245,12 +253,18 @@ $central-info-width: 130px;
   .game-score-label {
     min-width: 80px;
     text-align: center;
-    font-size: x-large;
+    font-size: 26px;
+    font-weight: 500;
   }
 
   .game-time-label {
     min-width: 85px;
     text-align: center;
-    font-size: large;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .game-day-label, .completed-status-label, .live-status-label {
+    font-size: 13px !important;
   }
 }

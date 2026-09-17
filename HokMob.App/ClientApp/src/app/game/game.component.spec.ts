@@ -15,6 +15,7 @@ import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PlayerGameDialogComponent } from '@app/game/player-game-dialog/player-game-dialog.component';
+import { HighlightsDialogComponent } from '@app/game/highlights-dialog/highlights-dialog.component';
 import {
   derivedIntermissionLanding,
   derivedLiveLanding,
@@ -125,11 +126,12 @@ describe('GameComponent', () => {
 
     const landing = mockGameLanding(2025021057);
     expect(text('.league-info-label')).toBe('NHL Regular Season');
-    expect(text('.info-label')).toBe('TV: NHLN');
+    expect(text('.info-label')).toBe('NHLN');
     expect(text('.game-venue-container')).toContain('Canada Life Centre');
     expect(text('.game-date-time')).toContain(dayjs(landing.startTimeUTC).format('MMMM D, YYYY, h:mm A'));
     expect(text('.watch-link')).toBe('Highlights');
-    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/video/stl-at-wpg-recap-6390989103112');
+    expect(element('.watch-button').tagName).toBe('BUTTON');
+    expect(component.highlightVideos.map(video => video.videoId)).toEqual(['6390989103112', '6390990355112']);
     expect(component.watchIcon).toBe('smart_display');
     expect(text('.games-label')).toBe('Games');
     expect(text('.game-load-error')).toBeUndefined();
@@ -261,8 +263,8 @@ describe('GameComponent', () => {
     httpMock.expectOne('/api/nhl/score/2026-06-09').flush(mockPlayoffScoreResponse());
     await settle();
     expect(text('.league-info-label')).toBe('Stanley Cup Final: Tied 2-2');
-    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/video/car-at-vgk-recap-6398034433112');
-    expect(text('.info-label')).toBe('TV: ABC');
+    expect(element('.watch-button').tagName).toBe('BUTTON');
+    expect(text('.info-label')).toBe('ABC');
     expect(element('.game-header app-game-header').seriesStatus)
         .toEqual(jasmine.objectContaining({seriesLetter: 'O', gameNumberOfSeries: 4}));
   });
@@ -276,10 +278,30 @@ describe('GameComponent', () => {
     expect(text('.league-info-label')).toBe('NHL Playoffs');
     expect(component.seriesStatus).toBeUndefined();
     expect(text('.watch-link')).toBe('NHL.com Game Center');
-    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2025030414');
+    expect(element('.watch-button').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2025030414');
   });
 
-  it('should link the condensed game of a finished game without a recap', async () => {
+  it('should play the highlights of a real finished game in the highlights dialog', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    element('.watch-button').click();
+    expect(openDialog).toHaveBeenCalledWith(HighlightsDialogComponent, jasmine.objectContaining({
+      data: {
+        subtitle: 'STL at WPG',
+        videos: [
+          {label: 'Recap', videoId: '6390989103112', nhlUrl: 'https://www.nhl.com/video/stl-at-wpg-recap-6390989103112'},
+          {label: 'Condensed Game', videoId: '6390990355112',
+            nhlUrl: 'https://www.nhl.com/video/stl-at-wpg-condensed-game-6390990355112'}
+        ]
+      }
+    }));
+  });
+
+  it('should play only the condensed game of a finished game without a recap', async () => {
     const response = mockRegularSeasonScoreResponse();
     delete response.games[0].threeMinRecap;
     open('2025021057');
@@ -288,8 +310,24 @@ describe('GameComponent', () => {
     flushScore('2026-03-15', response);
     await settle();
     expect(text('.watch-link')).toBe('Highlights');
-    expect(element('.watch-link').getAttribute('href'))
-        .toBe('https://www.nhl.com/video/stl-at-wpg-condensed-game-6390990355112');
+    expect(element('.watch-button').tagName).toBe('BUTTON');
+    expect(component.highlightVideos.map(video => video.label)).toEqual(['Condensed Game']);
+  });
+
+  it('should link the highlights on NHL.com when their paths have no video ID', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    const response = mockRegularSeasonScoreResponse();
+    response.games[0].threeMinRecap = '/video/stl-at-wpg-recap';
+    delete response.games[0].condensedGame;
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', response);
+    await settle();
+    expect(text('.watch-link')).toBe('Highlights');
+    expect(element('.watch-button').getAttribute('href')).toBe('https://www.nhl.com/video/stl-at-wpg-recap');
+    component.openHighlightsDialog();
+    expect(openDialog).not.toHaveBeenCalled();
   });
 
   it('should link the NHL.com game center of a finished game without highlights', async () => {
@@ -302,7 +340,7 @@ describe('GameComponent', () => {
     flushScore('2026-03-15', response);
     await settle();
     expect(text('.watch-link')).toBe('NHL.com Game Center');
-    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2025021057');
+    expect(element('.watch-button').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2025021057');
     expect(component.watchIcon).toBe('tv');
   });
 
@@ -340,12 +378,12 @@ describe('GameComponent', () => {
     flushClubSchedule('BOS', 20262027);
     flushClubSchedule('UTA', 20262027);
     await settle();
-    expect(text('.info-label')).toBe('TV: NESN');
+    expect(text('.info-label')).toBe('NESN');
     // No score request for a future regular season game
     httpMock.expectNone(request => request.url.startsWith('/api/nhl/score/'));
     expect(text('.watch-link')).toBe('Where to Watch');
-    expect(element('.watch-link').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2026020056');
-    expect(element('.watch-link').getAttribute('target')).toBe('_blank');
+    expect(element('.watch-button').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2026020056');
+    expect(element('.watch-button').getAttribute('target')).toBe('_blank');
     expect(text('.game-venue-container')).toContain('TD Garden');
     expect(element('app-goal-scorers')).toBeNull();
     expect(component.showTopPlayers).toBeFalse();

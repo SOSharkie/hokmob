@@ -1,16 +1,52 @@
-<div class="about-container">
-  <h1 class="about-header">About</h1>
-  <div class="about-text">
-  <span>
-    HokMob was created by one individual, Sean Odnert. A Bay Area software engineer and hockey fan, I was motivated by a
-    lack of decent hockey info and stats websites with good user interfaces. Additionally I was inspired by one of my
-    favorite soccer (football) websites FotMob <a [href]="'https://www.fotmob.com'">https://www.fotmob.com/</a>. So after
-    doing some research and finding the publicly available NHL Stats API via
-    <a [href]="'https://gitlab.com/dword4/nhlapi'">https://gitlab.com/dword4/nhlapi</a>, and using Drew Hynes' extensive
-    documentation I created HokMob! It is still an active work in progress, but I and a few family + friends have been
-    using it to follow the NHL, and we've found it really useful. I hope if any other hockey fans stumble across this they
-    may find it interesting and informative as well! For any comments, requests, or suggestions feel free to reach out
-    to me at SOSharkie@gmail.com.
-  </span>
-  </div>
+<div class="about-page">
+  <section class="about-hero">
+    <span class="about-eyebrow">About HokMob</span>
+    <h1 class="about-headline">A cleaner way to follow the NHL.</h1>
+    <p class="about-lead">
+      Live scores, game stats, standings and player stats, all on one fast and easy-to-read site.
+    </p>
+  </section>
+
+  <section class="about-story">
+    <h2 class="about-section-title">Our story</h2>
+    <p>
+      HokMob was created by Sean Odnert, a Bay Area software engineer and lifelong hockey fan. It started with a simple
+      frustration: there wasn't a hockey stats site with a user interface that made following the game enjoyable.
+    </p>
+    <p>
+      The inspiration came from <a href="https://www.fotmob.com" target="_blank" rel="noopener">FotMob</a>, one of the
+      best ways to follow soccer (football). HokMob brings the same idea to hockey, built on the NHL's publicly available
+      data and the community documentation of it, from Drew Hynes' original
+      <a href="https://gitlab.com/dword4/nhlapi" target="_blank" rel="noopener">NHL API notes</a> to today's
+      <a href="https://github.com/Zmalski/NHL-API-Reference" target="_blank" rel="noopener">NHL API Reference</a>.
+    </p>
+    <p>
+      HokMob is still an active work in progress. It began as a site for family and friends, and it's now open to any
+      hockey fan who finds it useful.
+    </p>
+  </section>
+
+  <section class="about-features">
+    <h2 class="about-section-title">What you'll find</h2>
+    <div class="feature-grid">
+      <div *ngFor="let feature of features" class="feature-card">
+        <span class="feature-title">{{feature.title}}</span>
+        <span class="feature-description">{{feature.description}}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-contact">
+    <div class="contact-text">
+      <h2 class="about-section-title">Get in touch</h2>
+      <p>Comments, feature requests and suggestions are always welcome.</p>
+    </div>
+    <a class="contact-button" [href]="'mailto:' + contactEmail">{{contactEmail}}</a>
+  </section>
+
+  <p class="about-disclaimer">
+    HokMob is a free, non-commercial fan project and is not affiliated with or endorsed by the NHL or its teams. Stats
+    and scores come from the NHL's public APIs, and highlight videos play in the NHL's own video player from NHL.com.
+    NHL team names, logos, stats and videos belong to the NHL and its teams.
+  </p>
 </div>

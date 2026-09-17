@@ -205,7 +205,7 @@ The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team pag
 | `gamecenter/{id}/play-by-play` | Momentum chart, event timelines, OT length, player names (`rosterSpots`) |
 | `gamecenter/{id}/boxscore` | Per-player stats → top players, HokMob ratings, player dialog |
 | `gamecenter/{id}/right-rail` | Team stats (`teamGameStats`), shots/goals by period, season series |
-| `score/{gameDate}` (playoff and finished games) | `seriesStatus` for the header and league label; the highlights link (`threeMinRecap`, else `condensedGame`) |
+| `score/{gameDate}` (playoff and finished games) | `seriesStatus` for the header and league label; the highlight videos (`threeMinRecap`, `condensedGame`) |
 | `club-schedule-season/{abbrev}/{season}` per team (non-final only; the previous season too when needed) | Team form |
 
 - Service: `NhlGameService.getGameBundle(gameId)` requests landing, play-by-play, boxscore and right-rail in parallel
@@ -215,11 +215,15 @@ The game page no longer calls `getNhlGameLiveFeed` or `getNhlGame` (the team pag
 - Service: `NhlGameService.getScoreGame(gameId, gameDate)` → `score/{landing.gameDate}` → that game, or
   `undefined`. Called for playoff games (`seriesStatus`) and finished games (the recap video path). If it fails, the
   league label is "NHL Playoffs" and the watch link falls back to the NHL.com game center.
-- Watch link (info bar): the API has no stream links. Games that aren't over link "Where to Watch" to
-  `https://www.nhl.com/gamecenter/{id}`, which lists the broadcasters. Finished games link "Highlights" to
-  `https://www.nhl.com` + `threeMinRecap` (else `condensedGame`), or "NHL.com Game Center" until a video is posted.
-  Only `score` has the video paths with their slugs: `right-rail.gameVideo` has bare IDs, and `nhl.com/video/{id}`
-  without the slug is a 404 (checked 2026-09-16).
+- Watch button (top right of the header): the API has no stream links. Games that aren't over link "Where to Watch"
+  to `https://www.nhl.com/gamecenter/{id}`, which lists the broadcasters. Finished games show "Highlights", which
+  opens `HighlightsDialogComponent`: the NHL's Brightcove player
+  (`players.brightcove.net/6415718365001/D3UCGynRWU_default/index.html?videoId={id}`, the player nhl.com embeds) in
+  an iframe, with Recap and Condensed Game tabs and a "Watch on NHL.com" link. The video IDs are the numbers at the
+  end of the `score` paths (`NhlVideoUtils.getHighlightVideos`); `right-rail.gameVideo` has the same bare IDs. A path
+  without an ID falls back to linking `https://www.nhl.com` + the path, and no video to "NHL.com Game Center". The
+  player has no framing restrictions, plays from localhost and shows a pre-roll ad first (checked 2026-09-16).
+  `nhl.com/video/{id}` without the slug is a 404, so the NHL.com link needs the `score` path.
 - Refresh: every 10s while the game isn't over and is live or starts today. It reloads the whole bundle (gamecenter
   is cached 10s on the backend). Once the game is over, the refresh stops and the series status and highlights are
   reloaded. A failed refresh keeps the data shown, and a failed optional response keeps the previous one.

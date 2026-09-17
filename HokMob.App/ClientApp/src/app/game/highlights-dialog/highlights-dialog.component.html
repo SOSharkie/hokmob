@@ -1,0 +1,22 @@
+<div class="highlights-dialog-container">
+  <div class="highlights-header">
+    <div class="highlights-title-container">
+      <span class="highlights-title">Highlights</span>
+      <span class="highlights-subtitle">{{subtitle}}</span>
+    </div>
+    <button type="button" class="close-button" aria-label="Close" (click)="close()">
+      <mat-icon fontIcon="close"></mat-icon>
+    </button>
+  </div>
+  <div *ngIf="videos.length > 1" class="video-tabs">
+    <button *ngFor="let video of videos" type="button" class="video-tab" [class.selected]="video === selectedVideo"
+            (click)="selectVideo(video)">{{video.label}}</button>
+  </div>
+  <div *ngIf="selectedVideo" class="video-frame-container">
+    <iframe class="video-frame" [src]="embedUrl" [title]="selectedVideo.label"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <div *ngIf="selectedVideo" class="highlights-footer">
+    <a class="nhl-link" [href]="selectedVideo.nhlUrl" target="_blank" rel="noopener">Watch on NHL.com</a>
+  </div>
+</div>
