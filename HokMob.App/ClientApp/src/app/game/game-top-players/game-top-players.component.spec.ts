@@ -6,6 +6,8 @@ import { StatsUtils } from '@shared/utils/stats-utils';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
 import { MockGamecenterGameId, mockGameBoxscore, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
+import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
+
 import { GameTopPlayersComponent } from './game-top-players.component';
 
 describe('GameTopPlayersComponent', () => {
@@ -24,6 +26,9 @@ describe('GameTopPlayersComponent', () => {
     component = fixture.componentInstance;
   });
 
+  type Side = 'home' | 'away';
+  type PositionLine = 'goalies' | 'defense' | 'forwards';
+
   /** A real game's rated players, as the game page builds them. */
   function gamePlayers(gameId: MockGamecenterGameId, isHome: boolean): GamePlayer[] {
     return StatsUtils.getGamePlayers(mockGameBoxscore(gameId), isHome,
@@ -36,65 +41,166 @@ describe('GameTopPlayersComponent', () => {
     fixture.detectChanges();
   }
 
-  function cards(side: 'home' | 'away'): HTMLElement[] {
-    return Array.from(fixture.nativeElement.querySelectorAll(`.${side}-players .top-player`));
+  function cards(side: Side, line?: PositionLine): HTMLElement[] {
+    const lineSelector = line ? `.${line}` : '';
+    return Array.from(fixture.nativeElement.querySelectorAll(`.${side}-players .top-player${lineSelector}`));
   }
 
-  /** Each player card as [name, rating]. */
-  function names(side: 'home' | 'away'): string[] {
-    return cards(side).map(card => card.querySelector('.player-name').textContent.trim());
+  function spot(playerCard: HTMLElement): { length: string, across: string } {
+    return {length: playerCard.style.getPropertyValue('--length'), across: playerCard.style.getPropertyValue('--across')};
   }
 
-  function rating(card: HTMLElement): string {
-    return card.querySelector('.hokmob-score-container span').textContent.trim();
+  function bench(side: Side): HTMLElement {
+    return fixture.nativeElement.querySelector(`.${side}-bench`);
   }
 
-  it('should show the six best rated players of each team of a real game', () => {
+  function cardName(card: HTMLElement): string {
+    return card.querySelector('.player-name').textContent.trim();
+  }
+
+  function names(side: Side, line: PositionLine): string[] {
+    return cards(side, line).map(cardName);
+  }
+
+  function card(side: Side, name: string): HTMLElement {
+    return cards(side).find(playerCard => cardName(playerCard) === name);
+  }
+
+  function rating(playerCard: HTMLElement): string {
+    return playerCard.querySelector('.hokmob-score-container span').textContent.trim();
+  }
+
+  it('should line up the best rated goalie, two defensemen and three forwards of each team', () => {
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
-    expect(names('home'))
-        .toEqual(['Eric Comrie', 'Haydn Fleury', 'Mark Scheifele', 'Cole Koepke', 'Morgan Barron', 'Kyle Connor']);
-    expect(cards('home').map(rating)).toEqual(['7.9', '7.8', '7', '6.7', '6.5', '6.4']);
+    expect(names('home', 'goalies')).toEqual(['Eric Comrie']);
+    expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
+    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Morgan Barron']);
+    expect(cards('home').map(rating)).toEqual(['7.9', '7.8', '6', '7', '6.7', '6.5']);
+
+    expect(names('away', 'goalies')).toEqual(['Jordan Binnington']);
+    expect(names('away', 'defense')).toEqual(['Logan Mailloux', 'Colton Parayko']);
+    expect(names('away', 'forwards')).toEqual(['Dylan Holloway', 'Jimmy Snuggerud', 'Dalibor Dvorsky']);
   });
 
-  it('should replace the last player with the goalie who played the most when no goalie is in the top six', () => {
+  it('should place each line at its distance from the end boards and spread its players across the rink', () => {
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
-    // Binnington (4.1) played instead of Hofer, and replaces Pius Suter (5.7)
-    expect(names('away'))
-        .toEqual(['Dylan Holloway', 'Jimmy Snuggerud', 'Dalibor Dvorsky', 'Logan Mailloux', 'Colton Parayko', 'Jordan Binnington']);
-    expect(rating(cards('away')[5])).toBe('4.1');
-    expect(cards('away')[5].querySelector('.goalie-icon')).not.toBeNull();
-    expect(cards('away')[0].querySelector('.goalie-icon')).toBeNull();
+    const lengths = cards('home').map(playerCard => parseFloat(spot(playerCard).length));
+    // 17ft, 52ft and 85.6ft along a 200.13ft rink
+    expect(lengths.map(length => length.toFixed(1))).toEqual(['8.5', '26.0', '26.0', '42.8', '42.8', '42.8']);
+    expect(cards('home', 'defense').map(playerCard => spot(playerCard).across)).toEqual(['27.6%', '72.4%']);
+    expect(cards('away', 'forwards').map(playerCard => spot(playerCard).across)).toEqual(['18%', '50%', '82%']);
+    expect(spot(cards('away', 'goalies')[0])).toEqual(spot(cards('home', 'goalies')[0]));
   });
 
-  it('should star the best rated player of the game, preferring the home player in a tie', () => {
+  it('should center a line with fewer players', () => {
+    const homePlayers = gamePlayers(2025021057, true);
+    const forwards = homePlayers.filter(player => player.skaterStats && player.position !== 'D').slice(0, 2);
+    const defense = homePlayers.filter(player => player.position === 'D').slice(0, 1);
+    show([...forwards, ...defense], gamePlayers(2025021057, false));
+    expect(cards('home', 'defense').map(playerCard => spot(playerCard).across)).toEqual(['50%']);
+    expect(cards('home', 'forwards').map(playerCard => spot(playerCard).across)).toEqual(['27.6%', '72.4%']);
+  });
+
+  it('should show the head coaches on the team benches', () => {
+    fixture.componentRef.setInput('homeCoach', 'Scott Arniel');
+    fixture.componentRef.setInput('awayCoach', 'Jim Montgomery');
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    expect(bench('home').querySelector('.coach-name').textContent.trim()).toBe('Scott Arniel');
+    expect(bench('away').querySelector('.coach-name').textContent.trim()).toBe('Jim Montgomery');
+    expect(bench('home').querySelector('.coach-label').textContent.trim()).toBe('Head Coach');
+  });
+
+  it('should show the team logos next to the coaches, and no logo when one is missing', () => {
+    fixture.componentRef.setInput('homeCoach', 'Scott Arniel');
+    fixture.componentRef.setInput('awayCoach', 'Jim Montgomery');
+    fixture.componentRef.setInput('homeTeamLogo', NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    expect(bench('home').querySelector('.team-logo').getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    expect(bench('away').querySelector('.team-logo')).toBeNull();
+  });
+
+  it('should show a dash for a missing coach and hide the benches without either coach', () => {
+    fixture.componentRef.setInput('awayCoach', 'Jim Montgomery');
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    expect(bench('home').querySelector('.coach-name').textContent.trim()).toBe('-');
+
+    fixture.componentRef.setInput('awayCoach', undefined);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.benches')).toBeNull();
+  });
+
+  it('should draw a rink lying across the card and one standing up, each with its own markings', () => {
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    const lying: SVGElement = fixture.nativeElement.querySelector('.rink-markings:not(.standing)');
+    const standing: SVGElement = fixture.nativeElement.querySelector('.rink-markings.standing');
+    expect(lying.getAttribute('viewBox')).toBe('0 0 200.13 78.74');
+    expect(standing.getAttribute('viewBox')).toBe('0 0 200.13 98.42');
+    for (const svg of [lying, standing]) {
+      // Four end zone faceoff circles and the center circle, with a dot in each
+      expect(svg.querySelectorAll('.thin circle').length).toBe(5);
+      expect(svg.querySelectorAll('.dots circle').length).toBe(5);
+      expect(svg.querySelectorAll('.blue-line').length).toBe(2);
+      expect(svg.querySelectorAll('.crease').length).toBe(2);
+    }
+  });
+
+  it('should keep the faceoff dots 22ft from the middle of a full width rink, and closer on the narrower one', () => {
+    const [lying, standing] = component.rinkDrawings;
+    expect(standing.faceoffCircles.map(circle => [circle.x, circle.y]))
+        .toEqual([[35.1, 27.21], [35.1, 71.21], [165.03, 27.21], [165.03, 71.21]]);
+    expect(standing.creasePaths[0]).toBe('M13.1 43.21 A6 6 0 0 1 13.1 55.21 Z');
+    expect(standing.faceoffCircles[0].hashMarks).toBe('M33.6 12.46 v-2 M33.6 41.96 v2 M36.6 12.46 v-2 M36.6 41.96 v2');
+
+    // 78.74ft is 80% of 98.42ft, so the dots are 17.6ft from the middle
+    expect(lying.middle).toBe(39.37);
+    expect(lying.faceoffCircles.slice(0, 2).map(circle => circle.y)).toEqual([21.77, 56.97]);
+    expect(lying.goalY).toBe(36.37);
+  });
+
+  it('should pick the goalie who played over a better or equally rated backup who did not', () => {
+    // Hofer didn't play and is rated 0, below Binnington's 4.1
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    expect(rating(cards('away', 'goalies')[0])).toBe('4.1');
+    expect(cards('away', 'goalies')[0].querySelector('.goalie-icon')).not.toBeNull();
+    expect(cards('away', 'forwards')[0].querySelector('.goalie-icon')).toBeNull();
+
+    // Rated the same as Hellebuyck, Comrie still wins with his 59:52 on ice
+    const homePlayers = gamePlayers(2025021057, true);
+    homePlayers.find(player => player.playerId === 8477480).hokmobRating = 0;
+    show(homePlayers.reverse(), gamePlayers(2025021057, false));
+    expect(names('home', 'goalies')).toEqual(['Eric Comrie']);
+  });
+
+  it('should star the best rated player on the rink, preferring the home player in a tie', () => {
     show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
     expect(component.gameMvpPlayerId).toBe(8473533);
-    const stars = fixture.nativeElement.querySelectorAll('.star-icon');
-    expect(stars.length).toBe(1);
-    expect(cards('away')[0].querySelector('.star-icon')).not.toBeNull();
-    expect(names('away')[0]).toBe('Jordan Staal');
+    expect(fixture.nativeElement.querySelectorAll('.star-icon').length).toBe(1);
+    expect(card('away', 'Jordan Staal').querySelector('.star-icon')).not.toBeNull();
 
     const homePlayers = gamePlayers(2025030414, true);
-    homePlayers[0].hokmobRating = 9.1;
+    const homeForward = homePlayers.find(player => player.skaterStats && player.position !== 'D');
+    homeForward.hokmobRating = 9.1;
     show(homePlayers, gamePlayers(2025030414, false));
-    expect(component.gameMvpPlayerId).toBe(homePlayers[0].playerId);
+    expect(component.gameMvpPlayerId).toBe(homeForward.playerId);
   });
 
   it('should show a puck for each goal, up to three', () => {
     show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
     // Jordan Staal scored twice, Nikolaj Ehlers once, Jalen Chatfield didn't score
-    const pucks = (card: HTMLElement) => card.querySelectorAll('.puck-icon').length;
-    expect(cards('away').slice(0, 4).map(pucks)).toEqual([2, 1, 1, 0]);
+    const pucks = (playerCard: HTMLElement) => playerCard.querySelectorAll('.puck-icon').length;
+    expect(pucks(card('away', 'Jordan Staal'))).toBe(2);
+    expect(pucks(card('away', 'Nikolaj Ehlers'))).toBe(1);
+    expect(pucks(card('away', 'Jalen Chatfield'))).toBe(0);
 
     const awayPlayers = gamePlayers(2025030414, false);
-    awayPlayers[0].skaterStats.goals = 4;
+    awayPlayers.find(player => player.playerId === 8473533).skaterStats.goals = 4;
     show(gamePlayers(2025030414, true), awayPlayers);
-    expect(pucks(cards('away')[0])).toBe(3);
+    expect(pucks(card('away', 'Jordan Staal'))).toBe(3);
   });
 
   it('should show the roster headshots and fall back to the blank headshot', () => {
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
-    const headshot: HTMLImageElement = cards('home')[2].querySelector('.player-headshot');
+    const headshot: HTMLImageElement = card('home', 'Mark Scheifele').querySelector('.player-headshot');
     expect(headshot.getAttribute('src')).toBe('https://assets.nhle.com/mugs/nhl/20252026/WPG/8476460.png');
     headshot.dispatchEvent(new Event('error'));
     expect(headshot.src).toMatch(/assets\/blank_headshot\.png$/);
@@ -104,22 +210,26 @@ describe('GameTopPlayersComponent', () => {
     const clickedIds: number[] = [];
     component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
-    cards('home')[2].click();
-    cards('away')[5].click();
+    card('home', 'Mark Scheifele').click();
+    card('away', 'Jordan Binnington').click();
     expect(clickedIds).toEqual([8476460, 8476412]);
   });
 
-  it('should show no players and no star without player stats', () => {
+  it('should draw the rink with no players and no star without player stats', () => {
     show(undefined, []);
+    expect(fixture.nativeElement.querySelector('.rink')).not.toBeNull();
     expect(cards('home').length).toBe(0);
     expect(cards('away').length).toBe(0);
     expect(component.gameMvpPlayerId).toBeUndefined();
   });
 
-  it('should show a team with fewer than six players and add its goalie', () => {
-    const homePlayers = gamePlayers(2025021057, true).filter(player => player.skaterStats).slice(0, 3);
-    const goalie = gamePlayers(2025021057, true).find(player => player.playerId === 8477480);
-    show([...homePlayers, goalie].reverse(), gamePlayers(2025021057, false));
-    expect(names('home')).toEqual(['Eric Comrie', 'Haydn Fleury', 'Mark Scheifele', 'Cole Koepke']);
+  it('should leave spots empty when a team has too few players at a position', () => {
+    const homePlayers = gamePlayers(2025021057, true);
+    const forwards = homePlayers.filter(player => player.skaterStats && player.position !== 'D').slice(0, 2);
+    const defense = homePlayers.filter(player => player.position === 'D').slice(0, 1);
+    show([...forwards, ...defense], gamePlayers(2025021057, false));
+    expect(names('home', 'goalies')).toEqual([]);
+    expect(names('home', 'defense')).toEqual(['Haydn Fleury']);
+    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke']);
   });
 });

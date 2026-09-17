@@ -182,7 +182,7 @@ describe('GameComponent', () => {
     expect(openDialog).toHaveBeenCalledWith(8478398);
   });
 
-  it('should pass the rated players with full names to the top players', async () => {
+  it('should pass the rated players with full names, the head coaches and the team logos to the top players', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
@@ -192,6 +192,10 @@ describe('GameComponent', () => {
     expect(topPlayers.homePlayers.length).toBe(20);
     expect(topPlayers.homePlayers.slice(0, 2).map(player => player.name)).toEqual(['Eric Comrie', 'Haydn Fleury']);
     expect(topPlayers.awayPlayers[0].name).toBe('Dylan Holloway');
+    expect(topPlayers.homeCoach).toBe('Scott Arniel');
+    expect(topPlayers.awayCoach).toBe('Jim Montgomery');
+    expect(topPlayers.homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    expect(topPlayers.awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
   });
 
   it('should pass the right-rail team stats and team IDs to the game stats', async () => {

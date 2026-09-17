@@ -1,7 +1,7 @@
 import {NhlGameStateEnum} from "@shared/enums/nhl-game-state.enum";
 import {NhlGameScheduleStateEnum} from "@shared/enums/nhl-game-schedule-state.enum";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
-import {GameOutcome, PeriodDescriptor} from "@shared/models/nhl-web-api/common.model";
+import {GameOutcome, LocalizedString, PeriodDescriptor} from "@shared/models/nhl-web-api/common.model";
 
 /**
  * Response of gamecenter/{id}/right-rail.
@@ -13,6 +13,33 @@ export interface RightRail {
   shotsByPeriod?: PeriodTeamValues[];
   /** Missing for future games. */
   teamGameStats?: TeamGameStat[];
+  gameInfo?: RightRailGameInfo;
+}
+
+/**
+ * The game's officials and each team's head coach and scratches.
+ */
+export interface RightRailGameInfo {
+  referees?: GameOfficial[];
+  linesmen?: GameOfficial[];
+  awayTeam?: GameInfoTeam;
+  homeTeam?: GameInfoTeam;
+}
+
+export interface GameOfficial {
+  fullName: LocalizedString;
+  sweaterNumber?: number;
+}
+
+export interface GameInfoTeam {
+  headCoach?: LocalizedString;
+  scratches?: GameScratch[];
+}
+
+export interface GameScratch {
+  id: number;
+  firstName: LocalizedString;
+  lastName: LocalizedString;
 }
 
 export interface SeasonSeriesGame {

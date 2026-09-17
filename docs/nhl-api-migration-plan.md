@@ -379,9 +379,16 @@ Source: `boxscore.playerByGameStats.{homeTeam,awayTeam}.{forwards,defense,goalie
   rated first. Names and headshots come from the play-by-play roster spots. Without them it uses the boxscore's
   short name ("M. Scheifele") and `NhlPlayerHeadshotUtils.getHeadshotUrl(season, abbrev, id)`. Backup goalies are
   listed with rating 0.
-- **Top players** take `homePlayers` / `awayPlayers` and show each team's 6 best. When none is a goalie, the last one is
-  replaced by the goalie with the most time on ice (like the old code). The star goes to the best rated player of
-  the game; the home player wins a tie. It's no longer written into the stats objects.
+- **Top players** take `homePlayers` / `awayPlayers` and line up each team on a rink, like Fotmob's lineups: its best
+  rated goalie, 2 defensemen and 3 forwards (C, L or R). Backup goalies who didn't play are rated 0, so a tie goes to
+  the goalie with the most time on ice. The star goes to the best rated player on the rink; the home player wins a
+  tie. It's no longer written into the stats objects.
+  - The rink is drawn in feet from a 200.13ft by 98.42ft rink diagram. It lies across the card (home on the left) and
+    is drawn 20% narrower (78.74ft) there, so it isn't too tall. Below the 700px phone breakpoint it stands up (home
+    at the top) at full width, capped at 400px wide. Players are placed by distance from their own end boards
+    (goalie 17ft, defense 52ft, forwards 85.6ft) and across the rink.
+  - The benches below the lying rink show each team's logo and head coach from the right-rail
+    `gameInfo.{homeTeam,awayTeam}.headCoach`. They're hidden on phones, and when neither coach is known.
 - **Player dialog** data is `PlayerGameDialogData { player }`. The game stats show right away; `NhlGameService.getPlayerLanding`
   then fills in the country (flag) and age, which show "-" until it loads or when it fails. The team logo and headshot
   are the game's (Comrie played for WPG in `2025021057` but his landing now says SJS); the landing headshot is only a

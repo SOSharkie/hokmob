@@ -44,21 +44,21 @@
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) {
   .mini-event-timeline-container {
     width: 320px;
   }
 }
 
 // Narrow desktop styling: leave more room for the game page's main column
-@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint) {
   .mini-event-timeline-container {
     width: 280px;
   }
 }
 
 // Mobile Styling
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+@media only screen and (max-width: $game-mobile-screen-breakpoint) {
   .mini-event-timeline-container {
     width: 99vw;
   }

@@ -134,7 +134,7 @@ $central-info-width: 130px;
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) {
   .dropdown-score-container {
     width: min(100vw - 60px, $small-display-breakpoint);
   }
@@ -184,7 +184,7 @@ $central-info-width: 130px;
 
 // Narrow desktop styling: the game page's main column is squeezed by the side column, so stack each team's logo
 // above its name
-@media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint) {
   .score-container:not(.dropdown-score-container) {
     .home-team-header, .away-team-header {
       font-size: large;
@@ -207,7 +207,7 @@ $central-info-width: 130px;
 }
 
 // Mobile Styling
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+@media only screen and (max-width: $game-mobile-screen-breakpoint) {
   .dropdown-score-container {
     width: 100%;
   }
