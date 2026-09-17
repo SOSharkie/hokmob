@@ -1,11 +1,18 @@
-<div>
-  <mat-toolbar class="main-toolbar">
-    <div class="title-and-search-container">
-      <span class="site-name" [routerLink]="['/']">HOKMOB</span>
-      <app-search-input></app-search-input>
+<header class="main-header" [class.search-open]="isSearchOpen">
+  <div class="header-content">
+    <a class="site-name" [routerLink]="['/']">HOKMOB</a>
+    <app-search-input #searchInput class="header-search" (resultSelected)="onResultSelected()"></app-search-input>
+    <button type="button" class="cancel-search-button" (click)="closeSearch()">Cancel</button>
+    <nav class="header-menu">
+      <a class="menu-item" [routerLink]="['/about']">About</a>
+    </nav>
+    <div class="mobile-actions">
+      <button type="button" class="icon-button open-search-button" aria-label="Search" (click)="openSearch()">
+        <mat-icon svgIcon="lucide:search"></mat-icon>
+      </button>
+      <a class="icon-button" aria-label="About" [routerLink]="['/about']">
+        <mat-icon svgIcon="lucide:info"></mat-icon>
+      </a>
     </div>
-    <div class="about-and-login-container">
-      <span class="about-label" [routerLink]="['/about']">About</span>
-    </div>
-  </mat-toolbar>
-</div>
+  </div>
+</header>

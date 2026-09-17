@@ -4,47 +4,38 @@
 .search-container {
   position: relative;
   display: flex;
-  align-content: center;
   align-items: center;
-  background-color: $black-03;
-  border: 1px solid transparent;
-  border-radius: 22px;
-  transition: border-color 0.15s ease-in-out;
 
   .search-icon {
     position: absolute;
-    left: $spacing-x-large;
-    width: 22px;
-    height: 22px;
-    font-size: 22px;
+    left: 16px;
+    width: 16px;
+    height: 16px;
     color: $gray-03;
     pointer-events: none;
   }
 
   .search-input {
-    height: 44px;
+    box-sizing: border-box;
+    height: 40px;
+    padding: 0 $spacing-xx-large 0 44px;
     border: none;
-    border-radius: 22px;
-    background-color: transparent;
+    border-radius: 20px;
+    background-color: $black-04;
     color: white;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 400;
-  }
-
-  .search-input:focus {
-    border: none;
   }
 
   .search-input::placeholder {
     color: $gray-03;
     font-weight: 400;
   }
-}
 
-.search-container:hover,
-.search-container:focus-within {
-  border-color: $gray-01;
+  .search-input:focus::placeholder {
+    color: transparent;
+  }
 }
 
 .mdc-menu-surface.mat-mdc-autocomplete-panel.mdc-menu-surface--open {
@@ -66,9 +57,7 @@
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .search-container {
     .search-input {
-      width: 340px;
-      padding-left: 50px;
-      padding-right: $spacing-x-large;
+      width: 276px;
     }
   }
 }
@@ -78,12 +67,8 @@
   .search-container {
     .search-input {
       width: 100%;
-      padding-left: $spacing-x-large;
-      padding-right: $spacing-large;
-      font-size: 14px;
-    }
-    .search-icon {
-      display: none;
+      // 16px keeps iOS Safari from zooming in when the input gets focus
+      font-size: 16px;
     }
   }
 }

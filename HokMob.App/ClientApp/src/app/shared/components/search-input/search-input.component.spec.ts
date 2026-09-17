@@ -2,6 +2,9 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { registerLucideIcons } from '@shared/icons/lucide-icons';
 import { SearchResultTypeEnum } from '@shared/enums/search-result-type.enum';
 import { mockPlayerSearchResults } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
@@ -23,6 +26,7 @@ describe('SearchInputComponent', () => {
     .compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     spyOn(console, 'error');
     fixture = TestBed.createComponent(SearchInputComponent);
     component = fixture.componentInstance;
@@ -163,6 +167,56 @@ describe('SearchInputComponent', () => {
     expect(names()).toEqual(['Boston Bruins']);
     expect(console.error).toHaveBeenCalledTimes(1);
   }));
+
+  it('should clear the value and results, and close the results panel', fakeAsync(() => {
+    type('mac');
+    playerRequests()[0].flush(mockPlayerSearchResults());
+    flushMicrotasks();
+    fixture.detectChanges();
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('.search-input');
+    input.dispatchEvent(new Event('focusin'));
+    fixture.detectChanges();
+    expect(component.autocompleteTrigger.panelOpen).toBeTrue();
+
+    component.clear();
+    fixture.detectChanges();
+    expect(component.searchValue).toBe('');
+    expect(component.filterResults).toEqual([]);
+    expect(component.autocompleteTrigger.panelOpen).toBeFalse();
+    discardPeriodicTasks();
+    fixture.destroy();
+  }));
+
+  it('should ignore a search still in flight when cleared', fakeAsync(() => {
+    type('mac');
+    const macRequest = playerRequests()[0];
+    component.clear();
+    macRequest.flush(mockPlayerSearchResults());
+    flushMicrotasks();
+    expect(component.filterResults).toEqual([]);
+  }));
+
+  it('should cancel a pending search when cleared', fakeAsync(() => {
+    component.searchValue = 'mac';
+    component.onInput();
+    component.clear();
+    tick(component.doneTypingInterval);
+    expect(playerRequests().length).toBe(0);
+  }));
+
+  it('should focus the input', () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('.search-input');
+    component.focus();
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('should emit resultSelected when a result is picked', () => {
+    const emitted = jasmine.createSpy('resultSelected');
+    component.resultSelected.subscribe(emitted);
+    fixture.debugElement.query(element => element.name === 'mat-autocomplete')
+        .triggerEventHandler('optionSelected', {});
+    expect(emitted).toHaveBeenCalledTimes(1);
+  });
 
   it('should render a search result for each match', fakeAsync(() => {
     type('bos');
