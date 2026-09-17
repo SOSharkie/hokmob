@@ -33,14 +33,14 @@
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) {
   .team-form-container {
     width: 900px;
   }
 }
 
 // Mobile Styling
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+@media only screen and (max-width: $game-mobile-screen-breakpoint) {
 
   .team-form-container {
     width: 100%;

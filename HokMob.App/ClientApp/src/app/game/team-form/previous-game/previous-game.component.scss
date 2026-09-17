@@ -102,25 +102,25 @@
 
 // Measured with "Blackhawks" and "Hurricanes": side by side fits rows down to 301px on desktop and 269px on phones, which
 // use a smaller font
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) {
   @container previous-game (max-width: 309.98px) {
     @include stacked-previous-game;
   }
 }
 
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+@media only screen and (max-width: $game-mobile-screen-breakpoint) {
   @container previous-game (max-width: 279.98px) {
     @include stacked-previous-game;
   }
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) {
 
 }
 
 // Mobile Styling
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+@media only screen and (max-width: $game-mobile-screen-breakpoint) {
   .team-name {
     font-size: small;
   }

@@ -194,6 +194,14 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         (this.completedGame || (this.liveGame && this.playByPlay?.plays?.length > 10));
   }
 
+  public get homeCoach(): string {
+    return this.rightRail?.gameInfo?.homeTeam?.headCoach?.default;
+  }
+
+  public get awayCoach(): string {
+    return this.rightRail?.gameInfo?.awayTeam?.headCoach?.default;
+  }
+
   public get showGameStats(): boolean {
     return !this.futureGame && this.rightRail?.teamGameStats?.length > 0;
   }

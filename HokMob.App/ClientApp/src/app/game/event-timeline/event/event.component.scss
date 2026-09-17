@@ -86,7 +86,7 @@
 }
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) {
   .key-event-container {
     height: 50px;
     margin-top: $spacing-medium;
@@ -135,7 +135,7 @@
 }
 
 // Mobile Styling
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+@media only screen and (max-width: $game-mobile-screen-breakpoint) {
   .key-event-container {
     height: 45px;
     margin-top: $spacing-small;

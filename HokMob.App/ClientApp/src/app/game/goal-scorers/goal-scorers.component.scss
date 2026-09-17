@@ -64,7 +64,7 @@ $central-info-width: 130px;
 
 
 // Desktop Styling
-@media only screen and (min-width: $mobile-screen-breakpoint) {
+@media only screen and (min-width: $game-mobile-screen-breakpoint) {
   .goal-details-container {
     font-size: medium;
 
@@ -75,7 +75,7 @@ $central-info-width: 130px;
 }
 
 // Mobile Styling
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+@media only screen and (max-width: $game-mobile-screen-breakpoint) {
   .goal-details-container {
     font-size: smaller;
   }

@@ -2,42 +2,86 @@
   <div class="game-top-players-header">
     <span>Top Players</span>
   </div>
-  <div class="top-players-container">
-    <div class="home-players">
-      <ng-container *ngTemplateOutlet="playerList; context: {$implicit: topHomePlayers}"></ng-container>
+  <div class="rink">
+    <!-- Drawn in feet on a 200.13ft long rink, home end on the left -->
+    <div class="rink-surface" aria-hidden="true">
+      <svg *ngFor="let drawing of rinkDrawings" class="rink-markings" [class.standing]="drawing.standing"
+           [attr.viewBox]="drawing.viewBox">
+        <g class="thin">
+          <line x1="13.1" y1="0" x2="13.1" [attr.y2]="drawing.width"/>
+          <line x1="187.03" y1="0" x2="187.03" [attr.y2]="drawing.width"/>
+          <path *ngFor="let crease of drawing.creasePaths" class="crease" [attr.d]="crease"/>
+          <rect x="9.8" [attr.y]="drawing.goalY" width="3.3" height="6" rx="1.2"/>
+          <rect x="187.03" [attr.y]="drawing.goalY" width="3.3" height="6" rx="1.2"/>
+          <path d="M90.065 0 A10 10 0 0 0 110.065 0"/>
+          <ng-container *ngFor="let circle of drawing.faceoffCircles">
+            <circle [attr.cx]="circle.x" [attr.cy]="circle.y" r="14.75"/>
+            <path [attr.d]="circle.hashMarks"/>
+          </ng-container>
+          <circle cx="100.065" [attr.cy]="drawing.middle" r="14.75"/>
+        </g>
+        <g class="dots">
+          <circle *ngFor="let circle of drawing.faceoffCircles" [attr.cx]="circle.x" [attr.cy]="circle.y" r="1"/>
+          <circle cx="100.065" [attr.cy]="drawing.middle" r="0.6"/>
+        </g>
+        <line class="blue-line" x1="71.1" y1="0" x2="71.1" [attr.y2]="drawing.width"/>
+        <line class="blue-line" x1="129.03" y1="0" x2="129.03" [attr.y2]="drawing.width"/>
+        <line class="center-line" x1="100.065" y1="0" x2="100.065" [attr.y2]="drawing.width"/>
+      </svg>
     </div>
-    <div class="team-divider"></div>
-    <div class="away-players">
-      <ng-container *ngTemplateOutlet="playerList; context: {$implicit: topAwayPlayers}"></ng-container>
+    <div class="team-players home-players">
+      <ng-container *ngTemplateOutlet="playerSpots; context: {$implicit: homeSpots}"></ng-container>
+    </div>
+    <div class="team-players away-players">
+      <ng-container *ngTemplateOutlet="playerSpots; context: {$implicit: awaySpots}"></ng-container>
+    </div>
+  </div>
+  <div *ngIf="showBenches" class="benches">
+    <div class="bench home-bench">
+      <img *ngIf="homeTeamLogo" [src]="homeTeamLogo" alt="" class="team-logo">
+      <div class="coach-info">
+        <span class="coach-name">{{homeCoach || '-'}}</span>
+        <span class="coach-label">Head Coach</span>
+      </div>
+    </div>
+    <div class="bench away-bench">
+      <img *ngIf="awayTeamLogo" [src]="awayTeamLogo" alt="" class="team-logo">
+      <div class="coach-info">
+        <span class="coach-name">{{awayCoach || '-'}}</span>
+        <span class="coach-label">Head Coach</span>
+      </div>
     </div>
   </div>
 </div>
 
-<ng-template #playerList let-players>
-  <div *ngFor="let player of players; trackBy: trackByPlayerId" (click)="clickPlayer(player)" class="top-player">
-    <div class="player-headshot-container">
-      <img [src]="player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
-    </div>
-    <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(player)}">
-      <span>{{player.hokmobRating}}</span>
-      <mat-icon *ngIf="player.playerId === gameMvpPlayerId" class="star-icon">star</mat-icon>
-    </div>
-    <div *ngIf="player.skaterStats">
-      <div class="player-goal-container" *ngIf="player.skaterStats.goals > 0">
-        <img class="puck-icon" src="assets/puck.png">
+<ng-template #playerSpots let-spots>
+  <div *ngFor="let spot of spots; trackBy: trackBySpot" (click)="clickPlayer(spot.player)" class="top-player"
+       [ngClass]="spot.line" [style.--length.%]="spot.length" [style.--across.%]="spot.across">
+    <div class="player-avatar">
+      <div class="player-headshot-container">
+        <img [src]="spot.player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
       </div>
-      <div class="player-goal-container goal-2" *ngIf="player.skaterStats.goals > 1">
-        <img class="puck-icon" src="assets/puck.png">
+      <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(spot.player)}">
+        <span>{{spot.player.hokmobRating}}</span>
+        <mat-icon *ngIf="spot.player.playerId === gameMvpPlayerId" class="star-icon">star</mat-icon>
       </div>
-      <div class="player-goal-container goal-3" *ngIf="player.skaterStats.goals > 2">
-        <img class="puck-icon" src="assets/puck.png">
+      <div *ngIf="spot.player.skaterStats?.goals > 0" class="player-goals">
+        <div class="player-goal-container">
+          <img class="puck-icon" src="assets/puck.png" alt="">
+        </div>
+        <div class="player-goal-container" *ngIf="spot.player.skaterStats.goals > 1">
+          <img class="puck-icon" src="assets/puck.png" alt="">
+        </div>
+        <div class="player-goal-container" *ngIf="spot.player.skaterStats.goals > 2">
+          <img class="puck-icon" src="assets/puck.png" alt="">
+        </div>
       </div>
-    </div>
-    <div *ngIf="player.goalieStats" class="goalie-icon-container">
-      <img class="goalie-icon" src="assets/goalie_mask.png">
+      <div *ngIf="spot.player.goalieStats" class="goalie-icon-container">
+        <img class="goalie-icon" src="assets/goalie_mask.png" alt="">
+      </div>
     </div>
     <div class="player-name">
-      <span>{{player.name}}</span>
+      <span>{{spot.player.name}}</span>
     </div>
   </div>
 </ng-template>

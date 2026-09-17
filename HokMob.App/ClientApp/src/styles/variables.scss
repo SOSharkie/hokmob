@@ -36,6 +36,8 @@ $spacing-page-gap: clamp(#{$spacing-medium}, 2.3vw, #{$spacing-card-gap});
 
 // Screen breakpoint
 $mobile-screen-breakpoint: 700px;
+// The game page switches to its one-column phone layout earlier, since its side column squeezes the cards
+$game-mobile-screen-breakpoint: 1000px;
 $tiny-display-breakpoint: 950px;
 $small-display-breakpoint: 1200px;
 $medium-display-breakpoint: 1350px
