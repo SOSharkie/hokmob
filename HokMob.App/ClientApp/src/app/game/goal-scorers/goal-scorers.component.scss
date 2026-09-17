@@ -7,26 +7,30 @@ $central-info-width: 130px;
   justify-content: center;
   align-items: center;
   align-content: center;
-  min-height: 50px;
   background-color: $black-02;
+  // Text sizes and weights follow Fotmob's match header
   color: $gray-04;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 17.5px;
 
   .goals-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: wrap;
     width: 100%;
-    line-height: 1.5;
-    padding-right: $spacing-medium;
-    padding-left: $spacing-medium;
+    padding: 0 $spacing-medium $spacing-large;
 
     .period-goals {
       display: flex;
       flex-direction: row;
       justify-content: center;
       align-items: center;
-      margin-top: $spacing-medium;
-      margin-bottom: $spacing-medium;
+      margin-top: $spacing-x-small;
+      margin-bottom: $spacing-x-small;
+
+      .goal-time {
+        font-weight: 500;
+      }
 
       .home-goals-label {
         width: 47%;
@@ -47,7 +51,7 @@ $central-info-width: 130px;
         text-align: center;
         margin-left: $spacing-x-large;
         margin-right: $spacing-x-large;
-        font-weight: bolder;
+        font-weight: 500;
       }
     }
   }
@@ -61,22 +65,10 @@ $central-info-width: 130px;
   }
 }
 
-
-
-// Desktop Styling
-@media only screen and (min-width: $game-mobile-screen-breakpoint) {
-  .goal-details-container {
-    font-size: medium;
-
-    .period-goals {
-      height: 30px;
-    }
-  }
-}
-
 // Mobile Styling
 @media only screen and (max-width: $game-mobile-screen-breakpoint) {
   .goal-details-container {
-    font-size: smaller;
+    font-size: 13px;
+    line-height: 16.25px;
   }
 }

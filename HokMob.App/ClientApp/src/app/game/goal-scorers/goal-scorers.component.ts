@@ -49,12 +49,21 @@ export class GoalScorersComponent {
   }
 
   /**
-   * Returns the scorer's last name and the goal time, like "Fleury (2:31)".
+   * Returns the scorer's last name, like "Fleury".
    *
    * @param goal - The goal to label.
    */
-  public getGoalLabel(goal: GameLandingGoal): string {
-    return (goal.lastName?.default ?? "") + " (" + PeriodUtils.formatTimeRemaining(goal.timeInPeriod) + ")";
+  public getScorerName(goal: GameLandingGoal): string {
+    return goal.lastName?.default ?? "";
+  }
+
+  /**
+   * Returns the time in the period the goal was scored, like "2:31".
+   *
+   * @param goal - The goal to label.
+   */
+  public getGoalTime(goal: GameLandingGoal): string {
+    return PeriodUtils.formatTimeRemaining(goal.timeInPeriod);
   }
 
   public clickScorer(goal: GameLandingGoal): void {

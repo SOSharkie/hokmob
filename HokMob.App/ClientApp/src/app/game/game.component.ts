@@ -102,9 +102,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "";
   }
 
+  /**
+   * The first TV network broadcasting the game, like "NHLN", or empty if there is none.
+   */
   public get tvInfo(): string {
-    let network = this.landing?.tvBroadcasts?.[0]?.network;
-    return network ? "TV: " + network : "";
+    return this.landing?.tvBroadcasts?.[0]?.network ?? "";
   }
 
   public get liveGame(): boolean {

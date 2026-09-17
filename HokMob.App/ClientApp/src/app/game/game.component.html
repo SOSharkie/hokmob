@@ -32,7 +32,10 @@
           <img class="nhl-logo" src="assets/nhl_logo.png">
           <span class="league-info-label">{{gameInfoLabel}}</span>
         </div>
-        <span class="info-label">{{tvInfo}}</span>
+        <a class="watch-button" [href]="watchLink" target="_blank" rel="noopener">
+          <mat-icon class="watch-icon" [fontIcon]="watchIcon"></mat-icon>
+          <span class="watch-link">{{watchLabel}}</span>
+        </a>
       </div>
       <div class="expanded-scorecard-container">
         <app-game-header
@@ -59,9 +62,9 @@
           <mat-icon fontIcon="stadium"></mat-icon>
           <span>{{gameVenue}}</span>
         </div>
-        <div class="game-info-item game-tv-container">
-          <mat-icon [fontIcon]="watchIcon"></mat-icon>
-          <a class="watch-link" [href]="watchLink" target="_blank" rel="noopener">{{watchLabel}}</a>
+        <div *ngIf="tvInfo" class="game-info-item game-tv-container">
+          <mat-icon fontIcon="tv"></mat-icon>
+          <span class="info-label">{{tvInfo}}</span>
         </div>
       </div>
     </div>
@@ -79,12 +82,6 @@
     <div *ngIf="!futureGame && playByPlay" class="game-container">
       <app-momentum [playByPlay]="playByPlay"></app-momentum>
     </div>
-    <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
-      <app-mini-event-timeline
-          [playByPlay]="playByPlay"
-          (playerClicked)="openPlayerGameDialog($event)"
-      ></app-mini-event-timeline>
-    </div>
     <div *ngIf="showGameStats" class="game-container">
       <app-game-stats
           [teamGameStats]="rightRail.teamGameStats"
@@ -101,6 +98,13 @@
           [homeTeamGames]="homeTeamFormGames"
           [awayTeamGames]="awayTeamFormGames"
       ></app-team-form>
+    </div>
+    <!-- On mobile the event timeline comes last, below the stats -->
+    <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
+      <app-mini-event-timeline
+          [playByPlay]="playByPlay"
+          (playerClicked)="openPlayerGameDialog($event)"
+      ></app-mini-event-timeline>
     </div>
   </div>
   <div *ngIf="!futureGame && playByPlay" class="side-game">
