@@ -30,6 +30,9 @@ $spacing-huge: 30px;
 
 // Gap between cards, and around them, on pages built from cards (e.g. home)
 $spacing-card-gap: 16px;
+// The same gap, shrinking smoothly on phones: around the page, between its columns and between its cards (e.g. standings,
+// team)
+$spacing-page-gap: clamp(#{$spacing-medium}, 2.3vw, #{$spacing-card-gap});
 
 // Screen breakpoint
 $mobile-screen-breakpoint: 700px;

@@ -26,6 +26,14 @@
       padding-top: $spacing-large;
     }
 
+    // Matches the period lines on the momentum chart
+    .team-divider {
+      flex: none;
+      width: 1px;
+      margin: 22px 0;
+      background-color: $gray-01;
+    }
+
     .top-player {
       position: relative;
       display: flex;

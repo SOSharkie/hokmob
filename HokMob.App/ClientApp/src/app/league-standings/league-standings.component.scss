@@ -1,80 +1,54 @@
 @import "variables";
 
 .league-standings-container {
+  box-sizing: border-box;
   width: 100%;
-  overflow-x: auto;
-  margin-top: $spacing-medium;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-page-gap;
+
+  // One card with the filters above the standings, like Fotmob's league tables
+  .standings-card {
+    color: white;
+    background-color: $black-02;
+    border-radius: 25px;
+    overflow: hidden;
+  }
 
   .standings-filters-container {
     display: flex;
     align-items: center;
-    height: 70px;
-    margin-top: $spacing-large;
-    margin-bottom: $spacing-medium;
+    gap: clamp(#{$spacing-small}, 0.8vw, #{$spacing-large});
+    min-height: 64px;
+    padding: 0 clamp(#{$spacing-large}, 2vw, 24px);
+    border-bottom: 1px solid $black-04;
 
-    background-color: $black-02;
-    border-radius: 25px;
-
-    .standings-type-filter:hover {
-      cursor: pointer;
+    .standings-type-filter {
+      min-width: 0;
+      height: 32px;
+      padding: 0 clamp(#{$spacing-large}, 1.5vw, #{$spacing-xx-large});
+      font-family: inherit;
+      font-size: clamp(13px, 0.2vw + 12px, 14px);
+      font-weight: 500;
+      white-space: nowrap;
+      color: white;
       background-color: $gray-01;
+      border: none;
+      border-radius: 22px;
+      cursor: pointer;
     }
 
-    .selected-filter {
-      color: black !important;
-      background-color: white !important;
+    .standings-type-filter:hover {
+      background-color: $gray-02;
+    }
+
+    .selected-filter, .selected-filter:hover {
+      color: $black-02;
+      background-color: white;
     }
   }
 
   app-standings {
     width: 100%;
-  }
-}
-
-// Desktop Styling
-@media only screen and (min-width: $small-display-breakpoint) {
-  .standings-type-filter {
-    font-size: large;
-    color: white;
-    background-color: $black-04;
-    margin-left: $spacing-x-large;
-    padding: $spacing-x-large;
-    border-radius: 25px;
-  }
-  .main-standings {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 1200px;
-  }
-}
-
-// small display Styling
-@media only screen and (min-width: $tiny-display-breakpoint) and (max-width: $small-display-breakpoint){
-  .standings-type-filter {
-    font-size: large;
-    color: white;
-    background-color: $black-04;
-    margin-left: $spacing-x-large;
-    padding: $spacing-x-large;
-    border-radius: 25px;
-  }
-  .main-standings {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 950px;
-  }
-}
-
-// Mobile Styling
-@media only screen and (max-width: $tiny-display-breakpoint) {
-  .standings-type-filter {
-    font-size: medium;
-    color: white;
-    background-color: $black-04;
-    margin-left: $spacing-large;
-    padding: $spacing-large;
-    border-radius: 25px;
   }
 }

@@ -15,6 +15,19 @@ describe('DateTimeUtils', () => {
     return new Date(year, month - 1, date, hours);
   }
 
+  describe('getDayDisplayValue', () => {
+    it('should show the day of week with the full or short month', () => {
+      expect(DateTimeUtils.getDayDisplayValue(day(2030, 9, 22))).toBe('Sunday, September 22');
+      expect(DateTimeUtils.getDayDisplayValue(day(2030, 9, 22), true)).toBe('Sunday, Sep\u00a022');
+    });
+
+    it('should show contextual names for nearby days', () => {
+      const today = new Date();
+      expect(DateTimeUtils.getDayDisplayValue(today, true)).toBe('Today');
+      expect(DateTimeUtils.getDayDisplayValue(new Date(today.getTime() + 24 * 60 * 60 * 1000))).toBe('Tomorrow');
+    });
+  });
+
   describe('getCurrentNhlSeason', () => {
     it('should start the new season 2 weeks before its first game', () => {
       expect(DateTimeUtils.getCurrentNhlSeason(seasons, day(2026, 9, 4, 23)).id).toBe(20252026);

@@ -68,7 +68,7 @@ export class TeamNextGameComponent {
   }
 
   public get gameDay(): string {
-    return this.game ? DateTimeUtils.getDayDisplayValue(dayjs(this.game.startTimeUTC).toDate()) : "N/A";
+    return this.game ? DateTimeUtils.getDayDisplayValue(dayjs(this.game.startTimeUTC).toDate(), true) : "N/A";
   }
 
   public get isPlayoffGame(): boolean {

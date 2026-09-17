@@ -1,8 +1,16 @@
 @import "variables";
 
+// The same gap around the page, between the header and the columns, between the columns and between the cards, so the
+// spacing stays even at every width
 .team-container {
   display: flex;
   flex-direction: column;
+  gap: $spacing-page-gap;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-page-gap;
 
   .team-header {
     display: flex;
@@ -81,25 +89,17 @@
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
+    gap: $spacing-page-gap;
 
-    .team-main-container {
+    .team-main-container, .team-info-container {
       display: flex;
       flex-direction: column;
-
-      .team-stats-container, .team-standings {
-        margin-top: $spacing-large;
-      }
+      gap: $spacing-page-gap;
     }
 
     .team-info-container {
-      display: flex;
-      flex-direction: column;
       min-width: 250px;
       min-height: 700px;
-
-      .team-form-container, .team-next-game-container, .next-game-container {
-        margin-top: $spacing-large;
-      }
     }
   }
 }
@@ -107,8 +107,6 @@
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
   .team-header {
-    margin: $spacing-medium $spacing-medium 0 $spacing-medium;
-
     .back-container {
       width: 80px;
       margin-left: $spacing-x-large;
@@ -147,11 +145,8 @@
     }
   }
 
-  // The gap between the columns matches the $spacing-large between boxes, and the columns line up with the header
   .team-data-container {
     flex-direction: row;
-    column-gap: $spacing-large;
-    margin: 0 $spacing-medium;
 
     .team-info-container {
       flex: 42 1 0;
@@ -166,8 +161,6 @@
 // Mobile Display
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   .team-header {
-    margin: $spacing-small $spacing-x-small 0 $spacing-x-small;
-
     .back-container {
       width: 70px;
       margin-left: $spacing-large;
@@ -212,7 +205,6 @@
 
   .team-data-container {
     flex-direction: column-reverse;
-    margin: $spacing-x-small;
 
     .team-info-container {
       width: 100%;

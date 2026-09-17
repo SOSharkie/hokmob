@@ -93,6 +93,11 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   private readonly goalHitRadius: number = 10;
 
+  /**
+   * How far a goal puck can reach past the chart area: half the puck image's height, plus its border.
+   */
+  private readonly goalOverflow: number = 12;
+
   private readonly tooltipMaxWidth: number = 280;
 
   private readonly tooltipOffset: number = 14;
@@ -172,10 +177,18 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
             target: "origin"
           },
           borderWidth: 0,
+          // Let pucks at the max or min momentum draw past the chart area instead of being cut in half
+          clip: this.goalOverflow
         }]
       },
       options: {
         maintainAspectRatio: false,
+        layout: {
+          // Room above the chart area for a puck at the max momentum
+          padding: {
+            top: this.goalOverflow
+          }
+        },
         scales: {
           y: {
             display: false,
