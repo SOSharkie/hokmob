@@ -8,7 +8,9 @@
         [play]="play"
         [homeTeamId]="homeTeamId"
         [rosterSpots]="rosterSpots"
+        [goalIndex]="goalIndexes.get(play.eventId)"
         (playerClicked)="onPlayerClicked($event)"
+        (playerHovered)="onPlayerHovered($event)"
     ></app-event>
   </div>
   <div *ngIf="isGameFinal" class="period-start-container">

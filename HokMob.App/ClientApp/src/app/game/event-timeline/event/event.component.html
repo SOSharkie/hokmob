@@ -2,7 +2,7 @@
   <div class="home-event event-description">
     <div *ngIf="isHomeEvent" class="event-text">
       <div *ngIf="isEventGoal" class="goal-event event-text-home">
-        <div class="event-main-label home-label" (click)="onMainPlayerClicked()">
+        <div class="event-main-label home-label" (click)="onMainPlayerClicked()" (mouseenter)="onMainPlayerHovered()" (mouseleave)="onPlayerLeft()">
           <span class="color-green">{{eventPlayerName}}</span>
           <div class="score-update">
             <span> (</span>
@@ -16,12 +16,12 @@
           <span *ngIf="assistPlayerIds.length > 0" class="event-secondary-label">Assists: </span>
           <span *ngIf="assistPlayerIds.length === 0" class="event-secondary-label">Unassisted</span>
           <ng-container *ngFor="let assistId of assistPlayerIds; let isLast = last">
-            <span class="event-secondary-label assist-name" (click)="onAssistClicked(assistId)">{{getAssistName(assistId)}}</span><span *ngIf="!isLast" class="event-secondary-label">, </span>
+            <span class="event-secondary-label assist-name" (click)="onAssistClicked(assistId)" (mouseenter)="onAssistHovered(assistId)" (mouseleave)="onPlayerLeft()">{{getAssistName(assistId)}}</span><span *ngIf="!isLast" class="event-secondary-label">, </span>
           </ng-container>
         </div>
       </div>
       <div *ngIf="!isEventGoal" class="penalty-event event-text-home">
-        <span class="event-main-label home-label penalty" (click)="onMainPlayerClicked()">{{eventPlayerName}}</span>
+        <span class="event-main-label home-label penalty" (click)="onMainPlayerClicked()" (mouseenter)="onMainPlayerHovered()" (mouseleave)="onPlayerLeft()">{{eventPlayerName}}</span>
         <span class="event-secondary-label">{{penaltyType}}</span>
       </div>
     </div>
@@ -37,7 +37,7 @@
     <mat-icon *ngIf="!isHomeEvent" [fontIcon]="fontIcon" class="event-icon"></mat-icon>
     <div *ngIf="!isHomeEvent" class="event-text">
       <div *ngIf="isEventGoal" class="goal-event">
-        <div class="event-main-label away-label" (click)="onMainPlayerClicked()">
+        <div class="event-main-label away-label" (click)="onMainPlayerClicked()" (mouseenter)="onMainPlayerHovered()" (mouseleave)="onPlayerLeft()">
           <span class="color-green">{{eventPlayerName}}</span>
           <div class="score-update">
             <span> (</span>
@@ -51,12 +51,12 @@
           <span *ngIf="assistPlayerIds.length > 0" class="event-secondary-label">Assists: </span>
           <span *ngIf="assistPlayerIds.length === 0" class="event-secondary-label">Unassisted</span>
           <ng-container *ngFor="let assistId of assistPlayerIds; let isLast = last">
-            <span class="event-secondary-label assist-name" (click)="onAssistClicked(assistId)">{{getAssistName(assistId)}}</span><span *ngIf="!isLast" class="event-secondary-label">, </span>
+            <span class="event-secondary-label assist-name" (click)="onAssistClicked(assistId)" (mouseenter)="onAssistHovered(assistId)" (mouseleave)="onPlayerLeft()">{{getAssistName(assistId)}}</span><span *ngIf="!isLast" class="event-secondary-label">, </span>
           </ng-container>
         </div>
       </div>
       <div *ngIf="!isEventGoal" class="penalty-event">
-        <span class="event-main-label home-label penalty" (click)="onMainPlayerClicked()">{{eventPlayerName}}</span>
+        <span class="event-main-label home-label penalty" (click)="onMainPlayerClicked()" (mouseenter)="onMainPlayerHovered()" (mouseleave)="onPlayerLeft()">{{eventPlayerName}}</span>
         <span class="event-secondary-label">{{penaltyType}}</span>
       </div>
     </div>

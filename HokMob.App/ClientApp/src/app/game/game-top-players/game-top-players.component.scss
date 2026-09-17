@@ -153,11 +153,21 @@ $bench-length: 19.74%;
         margin-left: -6px;
       }
 
+      &.highlighted-goal {
+        border-color: $red-01;
+        background-color: $red-01;
+      }
+
       .puck-icon {
         width: 11px;
         height: 11px;
       }
     }
+  }
+
+  // The player hovered in the goal scorers or the event timeline
+  &.highlighted .player-headshot-container {
+    box-shadow: 0 0 0 2px $green-02, 0 0 10px 2px rgba($green-02, 0.6);
   }
 
   .goalie-icon-container {

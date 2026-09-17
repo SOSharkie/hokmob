@@ -200,6 +200,41 @@ describe('GameComponent', () => {
     expect(topPlayers.awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
   });
 
+  it('should highlight the player hovered in the goal scorers or an event timeline in the top players', async () => {
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    spyOn(window, 'matchMedia').and.returnValue({matches: true} as MediaQueryList);
+
+    fixture.debugElement.query(By.css('app-goal-scorers')).triggerEventHandler('playerHovered', {playerId: 8476460, goalIndex: 0});
+    fixture.detectChanges();
+    expect(element('app-game-top-players').highlightedPlayer).toEqual({playerId: 8476460, goalIndex: 0});
+
+    const timeline = fixture.debugElement.query(By.css('.side-game app-mini-event-timeline'));
+    timeline.triggerEventHandler('playerHovered', {playerId: 8478398});
+    fixture.detectChanges();
+    expect(element('app-game-top-players').highlightedPlayer).toEqual({playerId: 8478398});
+
+    timeline.triggerEventHandler('playerHovered', null);
+    fixture.detectChanges();
+    expect(element('app-game-top-players').highlightedPlayer).toBeNull();
+  });
+
+  it('should not highlight a hovered player on a device that cannot hover', async () => {
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    spyOn(window, 'matchMedia').and.returnValue({matches: false} as MediaQueryList);
+
+    fixture.debugElement.query(By.css('app-goal-scorers')).triggerEventHandler('playerHovered', {playerId: 8476460, goalIndex: 0});
+    fixture.detectChanges();
+    expect(element('app-game-top-players').highlightedPlayer).toBeNull();
+  });
+
   it('should pass the right-rail team stats and team IDs to the game stats', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));

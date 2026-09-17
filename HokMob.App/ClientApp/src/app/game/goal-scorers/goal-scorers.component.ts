@@ -2,6 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GameLandingGoal, GameLandingScoringPeriod} from "@shared/models/nhl-web-api/gamecenter-landing.model";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
+import {PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
   selector: 'app-goal-scorers',
@@ -18,6 +19,12 @@ export class GoalScorersComponent {
 
   @Output()
   public scorerClicked = new EventEmitter<number>();
+
+  /**
+   * Emits the hovered goal's scorer and goal index, and null when the mouse leaves it.
+   */
+  @Output()
+  public playerHovered = new EventEmitter<PlayerHighlight>();
 
   /**
    * The periods to show, in order. Shootout goals aren't listed.
@@ -68,5 +75,20 @@ export class GoalScorersComponent {
 
   public clickScorer(goal: GameLandingGoal): void {
     this.scorerClicked.emit(goal.playerId);
+  }
+
+  /**
+   * Emits the goal's scorer and the goal's index among their goals in this game, in scoring order.
+   *
+   * @param goal - The hovered goal.
+   */
+  public hoverScorer(goal: GameLandingGoal): void {
+    const scorerGoals = this.periods.flatMap(period => period.goals ?? []).filter(item => item.playerId === goal.playerId);
+    const goalIndex = scorerGoals.indexOf(goal);
+    this.playerHovered.emit({playerId: goal.playerId, goalIndex: goalIndex >= 0 ? goalIndex : undefined});
+  }
+
+  public leaveScorer(): void {
+    this.playerHovered.emit(null);
   }
 }

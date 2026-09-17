@@ -2,6 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {Play, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {PeriodUtils} from "@shared/utils/period-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
+import {PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
   selector: 'app-mini-event',
@@ -25,8 +26,20 @@ export class MiniEventComponent {
   @Input()
   public rosterSpots: Map<number, RosterSpot>;
 
+  /**
+   * For a goal, its index among the scorer's goals in this game (PlayByPlayUtils.getGoalIndexes).
+   */
+  @Input()
+  public goalIndex: number;
+
   @Output()
   public playerClicked = new EventEmitter<number>();
+
+  /**
+   * Emits the hovered player, with the goal index when the scorer is hovered, and null when the mouse leaves them.
+   */
+  @Output()
+  public playerHovered = new EventEmitter<PlayerHighlight>();
 
   public get isHomeEvent(): boolean {
     return this.play?.details?.eventOwnerTeamId === this.homeTeamId;
@@ -79,5 +92,20 @@ export class MiniEventComponent {
 
   public onAssistClicked(playerId: number): void {
     this.playerClicked.emit(playerId);
+  }
+
+  public onMainPlayerHovered(): void {
+    let playerId = PlayByPlayUtils.getMainPlayerId(this.play);
+    if (playerId) {
+      this.playerHovered.emit({playerId, goalIndex: this.isEventGoal ? this.goalIndex : undefined});
+    }
+  }
+
+  public onAssistHovered(playerId: number): void {
+    this.playerHovered.emit({playerId});
+  }
+
+  public onPlayerLeft(): void {
+    this.playerHovered.emit(null);
   }
 }

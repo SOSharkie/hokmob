@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GamePlayer } from '@shared/models/nhl-web-api/boxscore.model';
+import { PlayerHighlight } from '@shared/models/player-highlight.model';
 import { StatsUtils } from '@shared/utils/stats-utils';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
 import { MockGamecenterGameId, mockGameBoxscore, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
@@ -231,5 +232,61 @@ describe('GameTopPlayersComponent', () => {
     expect(names('home', 'goalies')).toEqual([]);
     expect(names('home', 'defense')).toEqual(['Haydn Fleury']);
     expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke']);
+  });
+
+  describe('highlighted player', () => {
+    function highlight(highlightedPlayer: PlayerHighlight): void {
+      fixture.componentRef.setInput('highlightedPlayer', highlightedPlayer);
+      fixture.detectChanges();
+    }
+
+    function highlightedNames(): string[] {
+      return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.top-player.highlighted')).map(cardName);
+    }
+
+    /** Whether each of the away player's pucks is red, in order. */
+    function redPucks(name: string): boolean[] {
+      return Array.from<Element>(card('away', name).querySelectorAll('.player-goal-container'))
+          .map(puck => puck.classList.contains('highlighted-goal'));
+    }
+
+    beforeEach(() => {
+      // Jordan Staal (8473533) scored twice for the away team, Nikolaj Ehlers once
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+    });
+
+    it("should highlight the hovered player's spot and turn only the hovered goal's puck red", () => {
+      highlight({playerId: 8473533, goalIndex: 1});
+      expect(highlightedNames()).toEqual(['Jordan Staal']);
+      expect(redPucks('Jordan Staal')).toEqual([false, true]);
+      expect(redPucks('Nikolaj Ehlers')).toEqual([false]);
+
+      highlight({playerId: 8473533, goalIndex: 0});
+      expect(redPucks('Jordan Staal')).toEqual([true, false]);
+    });
+
+    it('should highlight the player without a red puck for a non-goal hover', () => {
+      highlight({playerId: 8473533});
+      expect(highlightedNames()).toEqual(['Jordan Staal']);
+      expect(redPucks('Jordan Staal')).toEqual([false, false]);
+    });
+
+    it('should highlight the player without a red puck for a goal past the third', () => {
+      const awayPlayers = gamePlayers(2025030414, false);
+      awayPlayers.find(player => player.playerId === 8473533).skaterStats.goals = 4;
+      show(gamePlayers(2025030414, true), awayPlayers);
+      highlight({playerId: 8473533, goalIndex: 3});
+      expect(highlightedNames()).toEqual(['Jordan Staal']);
+      expect(redPucks('Jordan Staal')).toEqual([false, false, false]);
+    });
+
+    it('should highlight nothing for a player not in the top players, or after the hover ends', () => {
+      highlight({playerId: 1, goalIndex: 0});
+      expect(highlightedNames()).toEqual([]);
+      highlight({playerId: 8473533, goalIndex: 0});
+      highlight(null);
+      expect(highlightedNames()).toEqual([]);
+      expect(fixture.nativeElement.querySelectorAll('.highlighted-goal').length).toBe(0);
+    });
   });
 });

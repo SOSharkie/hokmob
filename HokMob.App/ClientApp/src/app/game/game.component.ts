@@ -29,6 +29,7 @@ import {
   HighlightsDialogComponent,
   HighlightsDialogData
 } from "@app/game/highlights-dialog/highlights-dialog.component";
+import {PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
   selector: 'app-game',
@@ -68,6 +69,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public homePlayers: GamePlayer[] = [];
 
   public awayPlayers: GamePlayer[] = [];
+
+  /**
+   * The player hovered in the goal scorers or an event timeline, highlighted in the top players.
+   */
+  public highlightedPlayer: PlayerHighlight = null;
 
   public homeTeamLogo: any;
 
@@ -282,6 +288,17 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Highlights the hovered player in the top players, or clears the highlight when given null. Only on devices that
+   * can hover: a tap on a touch screen also fires mouseenter, which would leave the player highlighted.
+   */
+  public highlightPlayer(highlight: PlayerHighlight): void {
+    if (highlight && !window.matchMedia?.("(hover: hover)").matches) {
+      return;
+    }
+    this.highlightedPlayer = highlight ?? null;
+  }
+
+  /**
    * Opens the player's game stats. Does nothing for a player without boxscore stats (or without a boxscore).
    */
   public openPlayerGameDialog(playerId: number): void {
@@ -336,6 +353,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.highlightVideos = [];
     this.homePlayers = [];
     this.awayPlayers = [];
+    this.highlightedPlayer = null;
     this.homeTeamFormGames = [];
     this.awayTeamFormGames = [];
     this.homeTeamLogo = undefined;

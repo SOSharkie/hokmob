@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { MatIcon } from '@angular/material/icon';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
+import { PlayerHighlight } from '@shared/models/player-highlight.model';
 import { MockGamecenterGameId, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { EventComponent } from './event.component';
@@ -115,5 +116,31 @@ describe('EventComponent', () => {
     fixture.detectChanges();
     expect(text('.home-event .event-main-label')).toBe('(1 - 0)');
     expect(texts('.home-event .assist-name')).toEqual(['', '']);
+  });
+
+  it('should emit the scorer with the goal index, and an assist without one, on hover, and null on leave', () => {
+    const hovered: PlayerHighlight[] = [];
+    component.playerHovered.subscribe(highlight => hovered.push(highlight));
+    // Staal's second goal of the game, from Ehlers
+    show(2025030414, 212);
+    fixture.componentRef.setInput('goalIndex', 1);
+    fixture.detectChanges();
+    const mainLabel = fixture.nativeElement.querySelector('.away-event .event-main-label');
+    mainLabel.dispatchEvent(new MouseEvent('mouseenter'));
+    mainLabel.dispatchEvent(new MouseEvent('mouseleave'));
+    const assist = fixture.nativeElement.querySelector('.assist-name');
+    assist.dispatchEvent(new MouseEvent('mouseenter'));
+    assist.dispatchEvent(new MouseEvent('mouseleave'));
+    expect(hovered).toEqual([{playerId: 8473533, goalIndex: 1}, null, {playerId: 8477940}, null]);
+  });
+
+  it('should emit a penalized player without a goal index on hover', () => {
+    const hovered: PlayerHighlight[] = [];
+    component.playerHovered.subscribe(highlight => hovered.push(highlight));
+    show(2025030414, 444);
+    fixture.componentRef.setInput('goalIndex', 0);
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('.penalty').dispatchEvent(new MouseEvent('mouseenter'));
+    expect(hovered).toEqual([{playerId: 8477964, goalIndex: undefined}]);
   });
 });

@@ -64,6 +64,29 @@ describe('PlayByPlayUtils', () => {
     });
   });
 
+  describe('getGoalIndexes', () => {
+    it("should index each goal of a real game among its scorer's goals, in scoring order", () => {
+      const goalIndexes = PlayByPlayUtils.getGoalIndexes(PlayByPlayUtils.getKeyEventPeriods(mockGamePlayByPlay(2025030414)));
+      // Jordan Staal scored in the 1st (448) and the 3rd (212), Nikolaj Ehlers once (215)
+      expect(goalIndexes.get(448)).toBe(0);
+      expect(goalIndexes.get(212)).toBe(1);
+      expect(goalIndexes.get(215)).toBe(0);
+      expect(goalIndexes.size).toBe(8);
+      // Penalties aren't indexed
+      expect(goalIndexes.has(444)).toBeFalse();
+    });
+
+    it('should leave out the shootout of a real shootout game', () => {
+      const goalIndexes = PlayByPlayUtils.getGoalIndexes(PlayByPlayUtils.getKeyEventPeriods(mockGamePlayByPlay(2025020952)));
+      expect(goalIndexes.size).toBe(4);
+    });
+
+    it('should return no indexes without periods', () => {
+      expect(PlayByPlayUtils.getGoalIndexes(undefined).size).toBe(0);
+      expect(PlayByPlayUtils.getGoalIndexes([]).size).toBe(0);
+    });
+  });
+
   describe('getRosterSpotMap', () => {
     it('should map the player IDs of a real game to roster spots', () => {
       const rosterSpots = PlayByPlayUtils.getRosterSpotMap(mockGamePlayByPlay(2025021057));

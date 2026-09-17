@@ -7,7 +7,7 @@
       <img class="puck-icon" src="assets/puck.png">
     </div>
     <div class="event-details">
-      <div class="event-main-label" (click)="onMainPlayerClicked()">
+      <div class="event-main-label" (click)="onMainPlayerClicked()" (mouseenter)="onMainPlayerHovered()" (mouseleave)="onPlayerLeft()">
         <span class="color-green">{{eventPlayerName}}</span>
         <span class="score-update">
           <span> (</span>
@@ -21,7 +21,7 @@
         <span *ngIf="assistPlayerIds.length > 0" class="event-secondary-label">Assists: </span>
         <span *ngIf="assistPlayerIds.length === 0" class="event-secondary-label">Unassisted</span>
         <ng-container *ngFor="let assistId of assistPlayerIds; let isLast = last">
-          <span class="event-secondary-label assist-name" (click)="onAssistClicked(assistId)">{{getAssistName(assistId)}}</span><span *ngIf="!isLast" class="event-secondary-label">, </span>
+          <span class="event-secondary-label assist-name" (click)="onAssistClicked(assistId)" (mouseenter)="onAssistHovered(assistId)" (mouseleave)="onPlayerLeft()">{{getAssistName(assistId)}}</span><span *ngIf="!isLast" class="event-secondary-label">, </span>
         </ng-container>
       </div>
     </div>
@@ -34,7 +34,7 @@
       <mat-icon [fontIcon]="'front_hand'"  class="penalty-icon"></mat-icon>
     </div>
     <div class="event-details">
-      <span class="event-main-label penalty" (click)="onMainPlayerClicked()">{{eventPlayerName}}</span>
+      <span class="event-main-label penalty" (click)="onMainPlayerClicked()" (mouseenter)="onMainPlayerHovered()" (mouseleave)="onPlayerLeft()">{{eventPlayerName}}</span>
       <span class="event-secondary-label">{{penaltyType}}</span>
     </div>
   </div>

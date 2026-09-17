@@ -2,6 +2,7 @@ import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '
 import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
+import {PlayerHighlight} from "@shared/models/player-highlight.model";
 
 export type TopPlayerLine = 'goalies' | 'defense' | 'forwards';
 
@@ -103,6 +104,12 @@ export class GameTopPlayersComponent implements OnChanges {
   @Input()
   public awayTeamLogo: string;
 
+  /**
+   * The player hovered elsewhere on the game page. Their spot is highlighted, and so is the puck of the hovered goal.
+   */
+  @Input()
+  public highlightedPlayer: PlayerHighlight;
+
   @Output()
   public playerClicked = new EventEmitter<number>();
 
@@ -118,6 +125,8 @@ export class GameTopPlayersComponent implements OnChanges {
   public readonly numForwardsToShow = 3;
 
   public readonly numDefenseToShow = 2;
+
+  public readonly maxGoalPucks = 3;
 
   public ngOnChanges(changes: SimpleChanges): void {
     this.homeSpots = this.getSpots(this.homePlayers);
@@ -135,6 +144,25 @@ export class GameTopPlayersComponent implements OnChanges {
 
   public showBlankHeadshot(event: Event): void {
     NhlPlayerHeadshotUtils.showBlankHeadshot(event);
+  }
+
+  /**
+   * Returns the indexes of the player's goal pucks: one per goal, up to three.
+   */
+  public getGoalPuckIndexes(player: GamePlayer): number[] {
+    const goals = Math.min(player.skaterStats?.goals ?? 0, this.maxGoalPucks);
+    return Array.from({length: Math.max(goals, 0)}, (_, index) => index);
+  }
+
+  public isHighlighted(player: GamePlayer): boolean {
+    return !!this.highlightedPlayer && this.highlightedPlayer.playerId === player.playerId;
+  }
+
+  /**
+   * Whether the puck at the given index is the hovered goal's.
+   */
+  public isHighlightedGoal(player: GamePlayer, puckIndex: number): boolean {
+    return this.isHighlighted(player) && this.highlightedPlayer.goalIndex === puckIndex;
   }
 
   public trackBySpot(index: number, spot: TopPlayerSpot): number {
