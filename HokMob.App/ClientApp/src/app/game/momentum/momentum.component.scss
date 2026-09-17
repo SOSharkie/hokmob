@@ -14,6 +14,46 @@
     padding-top: $spacing-large;
   }
 
+  .view-toggle {
+    position: absolute;
+    top: $spacing-xx-large;
+    right: $spacing-xx-large;
+    z-index: 1;
+    display: flex;
+    padding: $spacing-x-small;
+    gap: $spacing-x-small;
+    background-color: $black-04;
+    border-radius: 8px;
+
+    .view-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 24px;
+      padding: 0;
+      color: $gray-03;
+      background: none;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      &:hover {
+        color: white;
+      }
+
+      &.selected {
+        color: white;
+        background-color: $gray-01;
+      }
+    }
+  }
+
   .chart-container {
     height: 280px;
     position: relative;

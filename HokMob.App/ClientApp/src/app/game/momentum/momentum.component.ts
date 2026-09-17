@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild} from '@angular/core';
-import { Chart, registerables, TooltipModel } from 'chart.js';
+import { Chart, ChartDataset, registerables, TooltipModel } from 'chart.js';
 import {Play, PlayByPlay, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {PeriodDescriptor} from "@shared/models/nhl-web-api/common.model";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
@@ -19,6 +19,11 @@ interface ChartPeriod {
   minutes: number;
 }
 
+/**
+ * How the momentum is drawn: a filled curve, or a bar per minute.
+ */
+export type MomentumChartView = "line" | "bar";
+
 @Component({
   selector: 'app-momentum',
   templateUrl: './momentum.component.html',
@@ -31,6 +36,16 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
    */
   @Input()
   public playByPlay: PlayByPlay;
+
+  /**
+   * The key the picked chart view is saved under in session storage.
+   */
+  public static readonly chartViewStorageKey = "hokmob.momentumChartView";
+
+  /**
+   * The chart view picked with the toggle. Starts as the view saved this session, or the line view.
+   */
+  public chartView: MomentumChartView = MomentumComponent.loadChartView();
 
   /**
    * The momentum at the end of each game minute, from -30 to 30: positive for the home team, negative for the away
@@ -79,7 +94,7 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild("momentumChart")
   private chartCanvas: ElementRef<HTMLCanvasElement>;
 
-  private momentumChart: Chart<"line">;
+  private momentumChart: Chart<"bar" | "line", number[]>;
 
   private readonly goalImage = MomentumComponent.createGoalImage();
 
@@ -164,21 +179,56 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
     return goal.eventId;
   }
 
+  /**
+   * Switches the chart to the view, rebuilding it, since a line chart and a bar chart lay out the x-axis differently.
+   *
+   * @param view - The view to show.
+   */
+  public setChartView(view: MomentumChartView): void {
+    if (view === this.chartView) {
+      return;
+    }
+    this.chartView = view;
+    MomentumComponent.saveChartView(view);
+    this.hoveredGoals = [];
+    this.momentumChart?.destroy();
+    this.createChart();
+    this.updateChart();
+  }
+
   private createChart(): void {
-    this.momentumChart = new Chart(this.chartCanvas.nativeElement, {
-      type: 'line',
+    let momentumDataset: ChartDataset<"bar" | "line", number[]> = this.chartView === "bar"
+        ? {
+          type: 'bar',
+          data: this.momentumData,
+          barPercentage: 0.8,
+          categoryPercentage: 1,
+          borderRadius: 2,
+          order: 1
+        }
+        : {
+          type: 'line',
+          data: this.momentumData,
+          fill: {target: "origin"},
+          borderWidth: 0,
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointHitRadius: 0,
+          order: 1
+        };
+    this.momentumChart = new Chart<"bar" | "line", number[]>(this.chartCanvas.nativeElement, {
+      type: this.chartView,
       data: {
         labels: this.chartLabels,
-        datasets: [{
-          data: this.momentumData,
-          fill: {
-            above: 'blue',
-            below: 'red',
-            target: "origin"
-          },
-          borderWidth: 0,
+        datasets: [momentumDataset, {
+          // The goal pucks, drawn over the momentum at the end of their minute
+          type: 'line',
+          data: [],
+          showLine: false,
           // Let pucks at the max or min momentum draw past the chart area instead of being cut in half
-          clip: this.goalOverflow
+          clip: this.goalOverflow,
+          order: 0
         }]
       },
       options: {
@@ -216,11 +266,6 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
             }
           }
         },
-        elements: {
-          line: {
-            tension: 0.4
-          }
-        },
         plugins: {
           legend: {
             display: false
@@ -230,7 +275,7 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
             enabled: false,
             mode: "nearest",
             intersect: true,
-            filter: item => this.goalPlays[item.dataIndex]?.length > 0,
+            filter: item => item.datasetIndex === 1 && this.goalPlays[item.dataIndex]?.length > 0,
             external: context => this.onTooltipChanged(context.tooltip)
           },
           title: {
@@ -250,17 +295,22 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
     let homeTeamId = this.playByPlay?.homeTeam?.id;
     let awayTeamId = this.playByPlay?.awayTeam?.id;
-    let dataset = this.momentumChart.data.datasets[0];
-    dataset.fill = {
-      above: NhlTeamColorUtils.getTeamPrimaryColor(homeTeamId),
-      below: NhlTeamColorUtils.getTeamSecondaryColor(homeTeamId, awayTeamId),
-      target: "origin"
-    };
-    dataset.data = this.momentumData;
-    dataset.pointRadius = this.goalData;
-    dataset.pointHoverRadius = this.goalData;
-    dataset.pointHitRadius = this.goalData.map(radius => radius > 0 ? this.goalHitRadius : 0);
-    dataset.pointStyle = this.goalData.map(radius => radius > 0 ? this.goalImage : false);
+    let homeColor = NhlTeamColorUtils.getTeamPrimaryColor(homeTeamId);
+    let awayColor = NhlTeamColorUtils.getTeamSecondaryColor(homeTeamId, awayTeamId);
+    let [momentumDataset, goalDataset] =
+        this.momentumChart.data.datasets as [ChartDataset<"bar" | "line">, ChartDataset<"line">];
+    momentumDataset.data = this.momentumData;
+    if (momentumDataset.type === "line") {
+      momentumDataset.fill = {above: homeColor, below: awayColor, target: "origin"};
+    } else {
+      momentumDataset.backgroundColor = this.momentumData.map(value => value >= 0 ? homeColor : awayColor);
+    }
+    // Goal pucks sit on the momentum of their minute; minutes without a goal have no point
+    goalDataset.data = this.momentumData.map((value, index) => this.goalData[index] > 0 ? value : null);
+    goalDataset.pointRadius = this.goalData;
+    goalDataset.pointHoverRadius = this.goalData;
+    goalDataset.pointHitRadius = this.goalData.map(radius => radius > 0 ? this.goalHitRadius : 0);
+    goalDataset.pointStyle = this.goalData.map(radius => radius > 0 ? this.goalImage : false);
     this.momentumChart.data.labels = this.chartLabels;
     this.momentumChart.update();
   }
@@ -270,7 +320,7 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
    *
    * @param tooltip - The chart's tooltip, with the hovered points and the caret position in canvas pixels.
    */
-  private onTooltipChanged(tooltip: TooltipModel<"line">): void {
+  private onTooltipChanged(tooltip: TooltipModel<"bar" | "line">): void {
     let index = tooltip.opacity > 0 ? tooltip.dataPoints?.[0]?.dataIndex : undefined;
     let goals = this.goalPlays[index] ?? [];
     if (goals.length === 0) {
@@ -361,6 +411,28 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
   private static getSeconds(timeInPeriod: string): number {
     let [minutes, seconds] = (timeInPeriod ?? "").split(":").map(Number);
     return (minutes || 0) * 60 + (seconds || 0);
+  }
+
+  /**
+   * Returns the chart view saved this session, or the line view when none is saved or storage is blocked.
+   */
+  private static loadChartView(): MomentumChartView {
+    try {
+      return sessionStorage.getItem(MomentumComponent.chartViewStorageKey) === "bar" ? "bar" : "line";
+    } catch {
+      return "line";
+    }
+  }
+
+  /**
+   * Saves the chart view for the rest of the session. Blocked storage only means the pick isn't remembered.
+   */
+  private static saveChartView(view: MomentumChartView): void {
+    try {
+      sessionStorage.setItem(MomentumComponent.chartViewStorageKey, view);
+    } catch {
+      // Storage is blocked or full; keep the view for this page only
+    }
   }
 
   private static createGoalImage(): HTMLImageElement {

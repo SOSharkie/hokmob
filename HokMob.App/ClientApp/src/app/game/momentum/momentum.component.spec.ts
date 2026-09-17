@@ -18,6 +18,8 @@ describe('MomentumComponent', () => {
   let fixture: ComponentFixture<MomentumComponent>;
 
   beforeEach(async () => {
+    // The component reads the saved view when it's created
+    sessionStorage.removeItem(MomentumComponent.chartViewStorageKey);
     await TestBed.configureTestingModule({
       imports: [ AppTestingModule ],
       declarations: [ MomentumComponent ],
@@ -31,11 +33,16 @@ describe('MomentumComponent', () => {
 
   afterEach(() => {
     fixture.destroy();
+    sessionStorage.removeItem(MomentumComponent.chartViewStorageKey);
   });
 
   function show(playByPlay: PlayByPlay): void {
     fixture.componentRef.setInput('playByPlay', playByPlay);
     fixture.detectChanges();
+  }
+
+  function toggleButton(label: string): HTMLButtonElement {
+    return fixture.nativeElement.querySelector(`.view-toggle button[aria-label="${label}"]`);
   }
 
   function canvas(): HTMLCanvasElement {
@@ -72,11 +79,13 @@ describe('MomentumComponent', () => {
     expect(component.momentumData.some(value => value !== 0)).toBeTrue();
   });
 
-  it('should draw the chart with the home team color above the axis', () => {
+  it('should start with the line view, filled with the home team color above the axis', () => {
     show(mockGamePlayByPlay(2025021057));
     const momentumChart = Chart.getChart(canvas());
+    expect(component.chartView).toBe('line');
     expect(momentumChart).toBeDefined();
     expect(momentumChart.data.labels).toEqual(component.chartLabels);
+    expect(momentumChart.data.datasets[0].type).toBe('line');
     expect(momentumChart.data.datasets[0].data).toEqual(component.momentumData);
     // WPG (52) hosts STL (19)
     expect(momentumChart.data.datasets[0]['fill']).toEqual({
@@ -84,6 +93,25 @@ describe('MomentumComponent', () => {
       below: NhlTeamColorUtils.getTeamSecondaryColor(52, 19),
       target: 'origin'
     });
+    expect(toggleButton('Line chart').getAttribute('aria-pressed')).toBe('true');
+    expect(toggleButton('Bar chart').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('should color the bars by the team with the momentum in the bar view', () => {
+    show(mockGamePlayByPlay(2025021057));
+    toggleButton('Bar chart').click();
+    fixture.detectChanges();
+    const momentumChart = Chart.getChart(canvas());
+    expect(component.chartView).toBe('bar');
+    expect(momentumChart.data.datasets[0].type).toBe('bar');
+    expect(momentumChart.data.datasets[0].data).toEqual(component.momentumData);
+    expect(momentumChart.data.datasets[1]['pointRadius']).toEqual(component.goalData);
+    expect(toggleButton('Bar chart').getAttribute('aria-pressed')).toBe('true');
+    // WPG (52) hosts STL (19)
+    const colors = momentumChart.data.datasets[0].backgroundColor as string[];
+    component.momentumData.forEach((value, index) => expect(colors[index]).toBe(value >= 0
+        ? NhlTeamColorUtils.getTeamPrimaryColor(52)
+        : NhlTeamColorUtils.getTeamSecondaryColor(52, 19)));
   });
 
   it('should move the momentum toward the team that scored', () => {
@@ -139,10 +167,10 @@ describe('MomentumComponent', () => {
     playByPlay.plays = new Array(4).fill(playByPlay.plays[0]);
     show(playByPlay);
     const momentumChart = Chart.getChart(canvas());
-    const point = momentumChart.getDatasetMeta(0).data[3];
+    const point = momentumChart.getDatasetMeta(1).data[3];
     // The puck image is 22px tall, centered on its point
     expect(point.y - 11).toBeGreaterThanOrEqual(0);
-    expect(momentumChart.data.datasets[0].clip).toBeGreaterThanOrEqual(11);
+    expect(momentumChart.data.datasets[1].clip).toBeGreaterThanOrEqual(11);
   });
 
   it('should add the overtime but not the shootout of a real shootout game', () => {
@@ -183,16 +211,16 @@ describe('MomentumComponent', () => {
 
     show(mockGamePlayByPlay(2025021057));
     expect(goalPoints()).toEqual([3, 8, 46, 52, 60]);
-    const dataset = Chart.getChart(canvas()).data.datasets[0];
-    expect(dataset.data).toEqual(component.momentumData);
-    expect(dataset['pointRadius']).toEqual(component.goalData);
+    const [barDataset, goalDataset] = Chart.getChart(canvas()).data.datasets;
+    expect(barDataset.data).toEqual(component.momentumData);
+    expect(goalDataset['pointRadius']).toEqual(component.goalData);
   });
 
   /** Hovers the chart point at the index, as a mouse over it would, and renders the tooltip. */
   function hover(index: number): void {
     const momentumChart = Chart.getChart(canvas());
-    const point = momentumChart.getDatasetMeta(0).data[index];
-    momentumChart.tooltip.setActiveElements([{datasetIndex: 0, index}], {x: point.x, y: point.y});
+    const point = momentumChart.getDatasetMeta(1).data[index];
+    momentumChart.tooltip.setActiveElements([{datasetIndex: 1, index}], {x: point.x, y: point.y});
     fixture.detectChanges();
   }
 
@@ -281,9 +309,88 @@ describe('MomentumComponent', () => {
       expect(left).toBeGreaterThanOrEqual(0);
       expect(left + width).toBeLessThanOrEqual(momentumChart.width);
       // Below points in the top half of the chart, above the others
-      const pointY = momentumChart.getDatasetMeta(0).data[index].y;
+      const pointY = momentumChart.getDatasetMeta(1).data[index].y;
       expect(pointY < momentumChart.height / 2 ? top : bottom).toBeGreaterThan(0);
     });
+  });
+
+  it('should switch back to the line view and keep one chart on the canvas', () => {
+    show(mockGamePlayByPlay(2025021057));
+    const lineChart = Chart.getChart(canvas());
+    component.setChartView('bar');
+    expect(Chart.getChart(canvas())).not.toBe(lineChart);
+    component.setChartView('line');
+    fixture.detectChanges();
+    const momentumChart = Chart.getChart(canvas());
+    expect(momentumChart.data.datasets[0].type).toBe('line');
+    expect(momentumChart.data.datasets[0].data).toEqual(component.momentumData);
+    expect(toggleButton('Line chart').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('should save the picked view for the session', () => {
+    show(mockGamePlayByPlay(2025021057));
+    expect(sessionStorage.getItem(MomentumComponent.chartViewStorageKey)).toBeNull();
+    toggleButton('Bar chart').click();
+    expect(sessionStorage.getItem(MomentumComponent.chartViewStorageKey)).toBe('bar');
+    toggleButton('Line chart').click();
+    expect(sessionStorage.getItem(MomentumComponent.chartViewStorageKey)).toBe('line');
+  });
+
+  it('should start with the view saved this session', () => {
+    fixture.destroy();
+    sessionStorage.setItem(MomentumComponent.chartViewStorageKey, 'bar');
+    fixture = TestBed.createComponent(MomentumComponent);
+    component = fixture.componentInstance;
+    show(mockGamePlayByPlay(2025021057));
+    expect(component.chartView).toBe('bar');
+    expect(Chart.getChart(canvas()).data.datasets[0].type).toBe('bar');
+    expect(toggleButton('Bar chart').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('should start with the line view when the saved view is unknown', () => {
+    fixture.destroy();
+    sessionStorage.setItem(MomentumComponent.chartViewStorageKey, 'pie');
+    fixture = TestBed.createComponent(MomentumComponent);
+    component = fixture.componentInstance;
+    show(mockGamePlayByPlay(2025021057));
+    expect(component.chartView).toBe('line');
+    expect(Chart.getChart(canvas()).data.datasets[0].type).toBe('line');
+  });
+
+  it('should start with the line view when session storage is blocked', () => {
+    fixture.destroy();
+    spyOn(Storage.prototype, 'getItem').and.throwError('SecurityError');
+    spyOn(Storage.prototype, 'setItem').and.throwError('SecurityError');
+    fixture = TestBed.createComponent(MomentumComponent);
+    component = fixture.componentInstance;
+    show(mockGamePlayByPlay(2025021057));
+    expect(component.chartView).toBe('line');
+    component.setChartView('bar');
+    expect(component.chartView).toBe('bar');
+  });
+
+  it('should keep the chart when picking the view already shown', () => {
+    show(mockGamePlayByPlay(2025021057));
+    const momentumChart = Chart.getChart(canvas());
+    toggleButton('Line chart').click();
+    expect(Chart.getChart(canvas())).toBe(momentumChart);
+  });
+
+  it('should close the tooltip when switching views', () => {
+    show(mockGamePlayByPlay(2025021057));
+    hover(3);
+    expect(tooltip()).not.toBeNull();
+    toggleButton('Bar chart').click();
+    fixture.detectChanges();
+    expect(tooltip()).toBeNull();
+  });
+
+  it('should show goal tooltips in the bar view', () => {
+    show(mockGamePlayByPlay(2025021057));
+    component.setChartView('bar');
+    hover(60);
+    expect(component.hoveredGoals.map(goal => goal.eventId)).toEqual([989]);
+    expect(tooltip()).not.toBeNull();
   });
 
   it('should destroy the chart with the component', () => {
