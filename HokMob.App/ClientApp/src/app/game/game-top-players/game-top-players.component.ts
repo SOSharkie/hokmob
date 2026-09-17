@@ -159,6 +159,14 @@ export class GameTopPlayersComponent implements OnChanges {
   }
 
   /**
+   * The hovered player's highlight color, for their ring and the hovered goal's puck: the rating blue for the starred
+   * player, and the rating green for everyone else.
+   */
+  public getHighlightColor(player: GamePlayer): string {
+    return player.playerId === this.gameMvpPlayerId ? StatsUtils.hokmobRatingBlue : StatsUtils.hokmobRatingGreen;
+  }
+
+  /**
    * Whether the puck at the given index is the hovered goal's.
    */
   public isHighlightedGoal(player: GamePlayer, puckIndex: number): boolean {

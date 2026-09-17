@@ -154,8 +154,8 @@ $bench-length: 19.74%;
       }
 
       &.highlighted-goal {
-        border-color: $green-02;
-        background-color: $green-02;
+        border-color: var(--highlight-color);
+        background-color: var(--highlight-color);
       }
 
       .puck-icon {
@@ -165,9 +165,9 @@ $bench-length: 19.74%;
     }
   }
 
-  // The player hovered in the goal scorers or the event timeline
+  // The player hovered in the goal scorers or the event timeline, in their --highlight-color
   &.highlighted .player-headshot-container {
-    box-shadow: 0 0 0 2px $green-02, 0 0 10px 2px rgba($green-02, 0.6);
+    box-shadow: 0 0 0 2px var(--highlight-color), 0 0 10px 2px color-mix(in srgb, var(--highlight-color) 60%, transparent);
   }
 
   .goalie-icon-container {

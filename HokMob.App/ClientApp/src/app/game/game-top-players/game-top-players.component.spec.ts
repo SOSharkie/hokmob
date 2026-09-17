@@ -265,6 +265,17 @@ describe('GameTopPlayersComponent', () => {
       expect(greenPucks('Jordan Staal')).toEqual([true, false]);
     });
 
+    it('should highlight the starred player in the rating blue and everyone else in the rating green', () => {
+      // Jordan Staal is the game's starred player
+      expect(component.gameMvpPlayerId).toBe(8473533);
+      highlight({playerId: 8473533, goalIndex: 1});
+      expect(card('away', 'Jordan Staal').style.getPropertyValue('--highlight-color')).toBe(StatsUtils.hokmobRatingBlue);
+
+      highlight({playerId: 8477940, goalIndex: 0});
+      expect(card('away', 'Nikolaj Ehlers').style.getPropertyValue('--highlight-color')).toBe(StatsUtils.hokmobRatingGreen);
+      expect(card('away', 'Jordan Staal').style.getPropertyValue('--highlight-color')).toBe('');
+    });
+
     it('should highlight the player without a green puck for a non-goal hover', () => {
       highlight({playerId: 8473533});
       expect(highlightedNames()).toEqual(['Jordan Staal']);

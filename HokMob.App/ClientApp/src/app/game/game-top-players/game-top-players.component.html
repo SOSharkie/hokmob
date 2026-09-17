@@ -56,7 +56,8 @@
 
 <ng-template #playerSpots let-spots>
   <div *ngFor="let spot of spots; trackBy: trackBySpot" (click)="clickPlayer(spot.player)" class="top-player"
-       [ngClass]="spot.line" [class.highlighted]="isHighlighted(spot.player)" [style.--length.%]="spot.length" [style.--across.%]="spot.across">
+       [ngClass]="spot.line" [class.highlighted]="isHighlighted(spot.player)"
+       [style.--highlight-color]="isHighlighted(spot.player) ? getHighlightColor(spot.player) : null" [style.--length.%]="spot.length" [style.--across.%]="spot.across">
     <div class="player-avatar">
       <div class="player-headshot-container">
         <img [src]="spot.player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">

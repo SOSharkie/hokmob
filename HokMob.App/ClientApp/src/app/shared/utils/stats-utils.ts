@@ -12,6 +12,13 @@ import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 export class StatsUtils {
 
   /**
+   * The HokMob rating colors: blue for 8.5 and up, green for 7 and up.
+   */
+  public static readonly hokmobRatingBlue = "#0e87e0";
+
+  public static readonly hokmobRatingGreen = "#1ec854";
+
+  /**
    * Calculates the HokMob rating of a skater for a single live or past game, from 0 to 10.
    *
    * TODO: The new NHL API boxscore (gamecenter/{id}/boxscore) has no faceoff win/taken counts or powerPlayAssists.
@@ -235,9 +242,9 @@ export class StatsUtils {
 
   public static getHokmobRatingColor(score: number): string {
     if (score >= 8.5) {
-      return "#0e87e0";
+      return StatsUtils.hokmobRatingBlue;
     } else if (score >= 7) {
-      return "#1ec854";
+      return StatsUtils.hokmobRatingGreen;
     } else if (score >= 6) {
       return "#e68122";
     } else {
