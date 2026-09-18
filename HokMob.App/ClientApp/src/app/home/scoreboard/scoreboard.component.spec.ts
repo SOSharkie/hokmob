@@ -14,7 +14,17 @@ describe('ScoreboardComponent', () => {
   let fixture: ComponentFixture<ScoreboardComponent>;
   let httpMock: HttpTestingController;
 
+  /** Captured before the spy replaces it, so every other query still answers for the real window. */
+  const realMatchMedia = window.matchMedia.bind(window);
+
+  /** The answer the component's phone media query gets, so the label doesn't depend on the test browser's width. */
+  let isPhoneWidth: boolean;
+
   beforeEach(async () => {
+    isPhoneWidth = false;
+    spyOn(window, 'matchMedia').and.callFake((query: string) =>
+        query === '(max-width: 700px)' ? {matches: isPhoneWidth} as MediaQueryList : realMatchMedia(query));
+
     await TestBed.configureTestingModule({
       imports: [ AppTestingModule ],
       declarations: [ ScoreboardComponent ],
@@ -60,6 +70,13 @@ describe('ScoreboardComponent', () => {
     return fixture.nativeElement.querySelectorAll('app-scorecard').length;
   }
 
+  /** Narrows or widens the window past the phone breakpoint, as a real window resize does. */
+  function resizeTo(phone: boolean): void {
+    isPhoneWidth = phone;
+    window.dispatchEvent(new Event('resize'));
+    fixture.detectChanges();
+  }
+
   it('should load and show the games for the selected day', async () => {
     openDay('20260301');
     httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
@@ -68,6 +85,34 @@ describe('ScoreboardComponent', () => {
     expect(component.currentDayGames.map(game => game.id)).toEqual([2025020947, 2025020950, 2025020952]);
     expect(scorecardCount()).toBe(3);
     expect(text()).not.toContain('No Games');
+  });
+
+  it('should abbreviate the month on a phone, where the full month would wrap', async () => {
+    isPhoneWidth = true;
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    await settle();
+    expect(component.displayDayLabel).toBe('Sunday, Mar\u00a01');
+  });
+
+  it('should relabel the day when the window crosses the phone breakpoint', async () => {
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    await settle();
+    expect(component.displayDayLabel).toBe('Sunday, March 1');
+
+    resizeTo(true);
+    expect(component.displayDayLabel).toBe('Sunday, Mar\u00a01');
+    resizeTo(false);
+    expect(component.displayDayLabel).toBe('Sunday, March 1');
+  });
+
+  it('should keep the contextual label on a phone', async () => {
+    isPhoneWidth = true;
+    openDay(dayjs().format('YYYYMMDD'));
+    httpMock.expectOne('/api/nhl/score/' + dayjs().format('YYYY-MM-DD')).flush(scoreResponse([]));
+    await settle();
+    expect(component.displayDayLabel).toBe('Today');
   });
 
   it('should show No Games for a day without games', async () => {
