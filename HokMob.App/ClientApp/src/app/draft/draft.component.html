@@ -51,7 +51,7 @@
           <td class="pick-cell"><span>{{row.overallPick}}</span></td>
           <td class="team-cell">
             <div class="team-info">
-              <img [src]="row.teamLogo" alt="" class="team-logo">
+              <app-team-logo class="team-logo" [src]="row.teamLogo" [size]="logoSize"></app-team-logo>
               <span class="team-name">{{row.teamName}}</span>
             </div>
           </td>

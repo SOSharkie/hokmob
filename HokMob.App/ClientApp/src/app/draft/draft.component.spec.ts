@@ -151,7 +151,9 @@ describe('DraftComponent', () => {
     expect(rowElements().length).toBe(30);
     expect(rowCells(1)).toEqual(['1', 'Edmonton Oilers', '', 'Connor McDavid', 'C', '811', '409', '1220']);
     const mcDavid = rowElement(1);
-    expect(mcDavid.querySelector('.team-logo').getAttribute('src')).toBe(mockDraftPicks(2015).picks[0].teamLogoLight);
+    // app-team-logo isn't declared here, so the URL it was given is read off the element
+    expect(mcDavid.querySelector<HTMLElement & {src: string}>('.team-logo').src)
+        .toBe(mockDraftPicks(2015).picks[0].teamLogoLight);
     expect(mcDavid.querySelector('.player-headshot').getAttribute('src'))
         .toBe('https://assets.nhle.com/mugs/nhl/latest/8478402.png');
     expect(mcDavid.querySelector('a.player-name').getAttribute('href')).toBe('/player/8478402');
