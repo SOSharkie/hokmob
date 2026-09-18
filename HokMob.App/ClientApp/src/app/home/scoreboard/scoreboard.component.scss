@@ -25,6 +25,8 @@
 
         .selected-day {
           font-size: x-large;
+          // The label gets the one line between the day arrows, so it shrinks with the card instead of wrapping
+          white-space: nowrap;
         }
 
         .date-input {
@@ -142,5 +144,24 @@
   }
   .games-container {
     width: 100%;
+  }
+
+  // A smaller label and tighter margins, so the longest label, "Wednesday, Sep 30", fits the narrowest phone
+  .scores-container .day-select-container {
+    .date-container {
+      margin-left: $spacing-large;
+
+      .date-select-container .selected-day {
+        font-size: 20px;
+      }
+    }
+
+    .day-shift.left {
+      margin-left: $spacing-large;
+    }
+
+    .day-shift.right {
+      margin-right: $spacing-large;
+    }
   }
 }

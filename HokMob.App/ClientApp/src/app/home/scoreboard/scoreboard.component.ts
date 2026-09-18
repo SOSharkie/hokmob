@@ -1,6 +1,7 @@
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   OnDestroy,
@@ -97,6 +98,14 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
 
   public ngOnDestroy() {
     this.stopContinuousNhlGameUpdates();
+  }
+
+  /**
+   * Relabels the day when the window crosses the phone breakpoint, so the label keeps the month form that fits.
+   */
+  @HostListener("window:resize")
+  public onWindowResize(): void {
+    this.updateDisplayDayLabel();
   }
 
   /**
@@ -202,7 +211,12 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  /**
+   * Labels the selected day, abbreviating the month on phones, where the full month overflows the one line the label
+   * gets. 700px is `$mobile-screen-breakpoint`.
+   */
   private updateDisplayDayLabel(): void {
-    this.displayDayLabel = DateTimeUtils.getDayDisplayValue(this.selectedDay)
+    const isPhone = window.matchMedia('(max-width: 700px)').matches;
+    this.displayDayLabel = DateTimeUtils.getDayDisplayValue(this.selectedDay, isPhone);
   }
 }
