@@ -131,6 +131,10 @@ Update them when you change a page or finish an open item.
     1400×1000, then reset to `desktop` when done.
   - The console log persists across navigations, so old errors look new. To check for new errors, wrap `console.error`
     in the page right after navigating, then perform the action and read the captured list.
+  - **Breakpoints:** when adding, changing or testing a responsive breakpoint, check it visually 5px on either side of
+    it (e.g. 895px and 905px for a 900px breakpoint) and look for truncated text, overflow, horizontal scroll, wrapped
+    or clipped rows and anything else the layout shouldn't do at that width. Check both layouts, not just the one that
+    changed.
 - **Season-gated UI:** the current season and playoff mode come from `NhlStatsApiService.getCurrentSeason()`, worked
   out from `/api/nhl-stats/seasons` by `DateTimeUtils.getCurrentNhlSeason` / `isPlayoffMode`. A season starts 14
   days before its first (preseason) game; playoff mode runs from 2 days before its first playoff game until the next

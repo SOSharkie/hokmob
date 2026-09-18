@@ -2,7 +2,7 @@
 
 Status: **Done** (planned 2026-09-17, decisions confirmed the same day; D1–D3 built 2026-09-17). Builds
 `/draft`: the draft picks for one year and round, from 2006 on, with each player's NHL regular season career
-assists, goals and points. The route, the `DraftComponent` shell (an empty `.draft-container`), its placeholder
+games played, assists, goals and points. The route, the `DraftComponent` shell (an empty `.draft-container`), its placeholder
 spec, the "Draft" navigation menu entry and the router title already existed.
 
 The conventions of [`nhl-api-migration-plan.md`](nhl-api-migration-plan.md) (sections 6 and 7) and
@@ -13,9 +13,9 @@ The conventions of [`nhl-api-migration-plan.md`](nhl-api-migration-plan.md) (sec
 - Filter by **year** (2006 to the latest draft) and by **round**. The page opens on the **latest draft, round 1**.
 - A table of picks with these columns, in this order:
 
-  | Pick | Team | (face) | Player | Pos | A | G | P |
-  |---|---|---|---|---|---|---|---|
-  | overall pick number | picking team | player headshot | player name | position | career assists | career goals | career points |
+  | Pick | Team | (face) | Player | Pos | GP | A | G | P |
+  |---|---|---|---|---|---|---|---|---|
+  | overall pick number | picking team | player headshot | player name | position | career games played | career assists | career goals | career points |
 
 ## 2. Key findings (checked with curl on 2026-09-17)
 
@@ -154,12 +154,18 @@ code.
       `loading="lazy"`, since a round has up to 32 rows. `alt=""`, since the name is next to it.
     - Pos: the pick's `positionCode` as-is (`LW`, `RW`, `C/LW`, ..., decision 4). When it's `F` and there's a stats
       row, use the stats position mapped `L` → `LW`, `R` → `RW` (Toews: `C`); otherwise `F`.
-    - A, G, P: `assists`, `goals`, `points` from the stats row with the same `draftOverall`, or "-" (decision 3).
+    - GP, A, G, P: `gamesPlayed`, `assists`, `goals`, `points` from the stats row with the same `draftOverall`, or
+      "-" (decision 3). GP's column is a little wider than the others, since it can be four digits.
   - States: loading gif, "The draft couldn't be loaded" (picks failed), "No picks yet" (empty `picks`), and "-" in
     the stat cells when the stats request failed or the player has no NHL games.
 - **Table:** styled like `player-career`'s `career-seasons-table`. Numbers right-aligned.
-  - At phone width (700px and under) the Team column shows the logo only, the headshot and other columns shrink, and
-    a long name wraps to two lines, so there's no horizontal page scroll.
+  - The Team column is a fixed 210px, wide enough for the longest name beside the logo rather than growing with the
+    table, and Pos is 48px.
+  - Two narrow bands, since the table's nine columns leave too little room for the names before the usual 700px:
+    - `$draft-mobile-screen-breakpoint` (900px) and under: the headshot, the logo, the paddings and the other columns
+      shrink, and the Team column is 190px.
+    - `$mobile-screen-breakpoint` (700px) and under: the Team column shows the logo only and a long player name wraps
+      to two lines, so there's no horizontal page scroll.
 - **Pickers** (restyled 2026-09-17, after Fotmob's season dropdown on its league stats page):
   - The button is a 32px pill (1px `$gray-01` border, 20px radius, `#1d1d1d` fill) with 14px weight-500 text and an
     inline SVG chevron as the background. The border lightens on hover, focus and while open.

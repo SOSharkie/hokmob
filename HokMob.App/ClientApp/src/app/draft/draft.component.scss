@@ -71,18 +71,23 @@
       width: 56px;
       padding-left: $spacing-x-large !important;
     }
+    // Fits the longest team name beside the logo, rather than growing with the table
     .team-header {
-      width: 28%;
+      width: 210px;
     }
     .headshot-header {
       width: 50px;
     }
     .position-header {
-      width: 64px;
+      width: 48px;
     }
     .stat-header {
       width: 56px;
       text-align: center !important;
+    }
+    // Games played can be four digits, so it's wider than the other stats
+    .gp-header {
+      width: 64px;
     }
 
     .draft-pick-row {
@@ -175,8 +180,9 @@
   }
 }
 
-// Mobile Display: the team column shows only the logo, and the headshot and text shrink
-@media only screen and (max-width: $mobile-screen-breakpoint) {
+// Mobile Display: the team column shows only the logo, and the headshot and text shrink. It starts wider than the
+// usual breakpoint, since the table's eight other columns leave too little room for the names before that.
+@media only screen and (max-width: $draft-mobile-screen-breakpoint) {
   .draft-container {
     .draft-header {
       padding: $spacing-large;
@@ -200,10 +206,13 @@
         width: 32px;
       }
       .position-header {
-        width: 38px;
+        width: 34px;
       }
       .stat-header {
         width: 28px;
+      }
+      .gp-header {
+        width: 34px;
       }
       .draft-picks-header th {
         padding: $spacing-medium $spacing-x-small;
@@ -245,6 +254,23 @@
         .player-cell {
           white-space: normal;
           overflow-wrap: anywhere;
+        }
+      }
+
+      // Above phone width there's still room for the team name beside the smaller logo, and names fit on one line
+      @media only screen and (min-width: $mobile-screen-breakpoint + 1) {
+        .team-header {
+          width: 190px;
+        }
+
+        .draft-pick-row {
+          .team-info .team-name {
+            display: block;
+          }
+
+          .player-cell {
+            white-space: nowrap;
+          }
         }
       }
     }
