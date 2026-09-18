@@ -336,8 +336,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     const data: GoalHighlightDialogData = {player, video};
+    // The panel class sizes the dialog to its video (goal-highlight-dialog.component.scss)
     this.seriesDialog.open(GoalHighlightDialogComponent, {
-      width: "960px",
       maxWidth: "94vw",
       backdropClass: "dialog-backdrop",
       panelClass: "goal-highlight-dialog-panel",

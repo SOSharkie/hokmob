@@ -177,22 +177,24 @@ describe('PlayerGameStatsComponent', () => {
     fixture.componentRef.setInput('compact', true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.player-game-stats-wrapper').classList).toContain('compact');
-    expect(stats()[1]).toEqual(['Time On Ice', '22:12']);
+    expect(stats()[1]).toEqual(['TOI', '22:12']);
   });
 
-  it('should shorten the plus/minus and penalty minutes labels in the compact bar, with the full name as a tooltip', () => {
+  it('should shorten the longest labels in the compact bar, with the full name as a tooltip', () => {
     show(gamePlayer(8476460));
     httpMock.expectOne('/api/nhl/player/8476460/landing');
+    expect(labels()).toContain('Time On Ice');
     expect(labels()).toContain('Plus/Minus');
     expect(labels()).toContain('Penalty Minutes');
 
     fixture.componentRef.setInput('compact', true);
     fixture.detectChanges();
+    expect(labels()).toContain('TOI');
     expect(labels()).toContain('+/-');
     expect(labels()).toContain('PMs');
     const shortLabels = Array.from<Element>(fixture.nativeElement.querySelectorAll('.game-stat-label'))
-        .filter(label => ['+/-', 'PMs'].includes(label.textContent.trim()));
-    expect(shortLabels.map(label => label.getAttribute('title'))).toEqual(['Plus/Minus', 'Penalty Minutes']);
+        .filter(label => ['TOI', '+/-', 'PMs'].includes(label.textContent.trim()));
+    expect(shortLabels.map(label => label.getAttribute('title'))).toEqual(['Time On Ice', 'Plus/Minus', 'Penalty Minutes']);
   });
 
   it('should drop the least important stats, in order, to keep the compact bar on one row', () => {
@@ -207,7 +209,7 @@ describe('PlayerGameStatsComponent', () => {
     expect(labels()).not.toContain('Takeaways');
     expect(labels()).not.toContain('Blocks');
     // Everything else stays, even though the bar has to wrap to hold it
-    expect(labels()).toEqual(['HokMob Rating', 'Time On Ice', 'Goals', 'Assists', 'Shots', 'Hits', 'Faceoff %', '+/-', 'PMs']);
+    expect(labels()).toEqual(['HokMob Rating', 'TOI', 'Goals', 'Assists', 'Shots', 'Hits', 'Faceoff %', '+/-', 'PMs']);
 
     fixture.nativeElement.style.width = '2000px';
     component.fitCompactStats();

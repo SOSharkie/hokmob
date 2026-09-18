@@ -1,6 +1,7 @@
 <div class="goal-highlight-dialog-container">
   <div class="goal-highlight-header">
     <span class="goal-highlight-title">Goal Highlight</span>
+    <a *ngIf="video" class="nhl-link" [href]="video.nhlUrl" target="_blank" rel="noopener">Watch on NHL.com</a>
     <button type="button" class="close-button" aria-label="Close" (click)="close()">
       <mat-icon fontIcon="close"></mat-icon>
     </button>
@@ -9,8 +10,5 @@
   <div *ngIf="video" class="video-frame-container">
     <iframe class="video-frame" [src]="embedUrl" [title]="video.label"
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
-  </div>
-  <div *ngIf="video" class="goal-highlight-footer">
-    <a class="nhl-link" [href]="video.nhlUrl" target="_blank" rel="noopener">Watch on NHL.com</a>
   </div>
 </div>

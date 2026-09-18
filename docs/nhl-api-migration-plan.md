@@ -423,11 +423,14 @@ Source: `boxscore.playerByGameStats.{homeTeam,awayTeam}.{forwards,defense,goalie
   (`NhlVideoUtils.getEmbedUrl`). Data is `GoalHighlightDialogData { player, video: HighlightVideo }`.
   It passes `[compact]="true"` to `PlayerGameStatsComponent`, which lays the bio out on one row next to the headshot
   and the stats in a wide wrapping bar instead of the player dialog's tall scrolling list, so the 16:9 video still
-  fits on screen below it (the whole dialog is about 770px tall at 960px wide). On a short window the video shrinks
-  (`height: min(540px, calc(95vh - 290px))`) rather than pushing the footer off screen. The compact bar measures
+  fits on screen below it. The panel class sizes the dialog to its video
+  (`width: min(94vw, 1400px, calc((95vh - 210px) * 16 / 9))`, the subtraction being the header and stats above it),
+  so the video fills the dialog's width, runs to its bottom edge, and the whole dialog comes within about 30px of the
+  top and bottom of the window. The "Watch on NHL.com" link sits in the header, left of the close button. The compact
+  bar measures
   itself on view init and on a window resize (`fitCompactStats`), and drops Giveaways, then Takeaways, then Blocks,
-  to stay on one row; once all three are gone it wraps as before, which is what a phone gets. Its Plus/Minus and
-  Penalty Minutes labels shorten to "+/-" and "PMs", with the full name as the `title` tooltip.
+  to stay on one row; once all three are gone it wraps as before, which is what a phone gets. Its Time On Ice,
+  Plus/Minus and Penalty Minutes labels shorten to "TOI", "+/-" and "PMs", with the full name as the `title` tooltip.
 - **Headshots:** `NhlPlayerHeadshotUtils` (`shared/utils/nhl-player-headshot-utils.ts`) builds season headshot URLs and
   swaps a failed image for `assets/blank_headshot.png` (`(error)="showBlankHeadshot($event)"`).
   `NhlImageService.getNhlPlayerHeadshot` has a TODO; the player page, search results and stat leaderboards still call it.

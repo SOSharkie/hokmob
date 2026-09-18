@@ -39,7 +39,7 @@
         <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.hokmobRating)}">{{player.hokmobRating}}</span>
       </div>
       <div class="game-stat-item">
-        <span class="game-stat-label">Time On Ice</span>
+        <span class="game-stat-label" title="Time On Ice">{{compact ? 'TOI' : 'Time On Ice'}}</span>
         <span>{{skaterStats.toi}}</span>
       </div>
       <div class="game-stat-item">
@@ -89,7 +89,7 @@
         <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.hokmobRating)}">{{player.hokmobRating}}</span>
       </div>
       <div class="game-stat-item">
-        <span class="game-stat-label">Time On Ice</span>
+        <span class="game-stat-label" title="Time On Ice">{{compact ? 'TOI' : 'Time On Ice'}}</span>
         <span class="game-stat-value">{{goalieStats.toi}}</span>
       </div>
       <div class="game-stat-item">

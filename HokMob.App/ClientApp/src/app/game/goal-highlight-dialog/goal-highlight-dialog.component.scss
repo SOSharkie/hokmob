@@ -1,7 +1,10 @@
 @import "variables";
 
-.cdk-overlay-pane {
+// The dialog is exactly as wide as its 16:9 video, so the video fills the width and the whole dialog comes close to
+// the top and bottom edges of the window. The subtracted height is the header and the stats above the video.
+.cdk-overlay-pane.goal-highlight-dialog-panel {
   max-height: 95vh;
+  width: min(94vw, 1400px, calc((95vh - 210px) * 16 / 9));
 }
 
 .goal-highlight-dialog-panel .mat-mdc-dialog-surface {
@@ -17,13 +20,26 @@
 
   .goal-highlight-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: $spacing-x-large;
     padding: $spacing-large $spacing-large $spacing-x-small $spacing-xx-large;
 
     .goal-highlight-title {
       font-size: 16px;
       font-weight: 500;
+      margin-right: auto;
+    }
+
+    .nhl-link {
+      color: $gray-04;
+      font-size: 13px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nhl-link:hover {
+      color: white;
+      text-decoration: underline;
     }
 
     .close-button {
@@ -46,6 +62,7 @@
     }
   }
 
+  // Last in the dialog, so the video runs to its bottom edge, where the surface rounds off its corners
   .video-frame-container {
     position: relative;
     width: 100%;
@@ -59,32 +76,5 @@
       height: 100%;
       border: none;
     }
-  }
-
-  .goal-highlight-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding: $spacing-large $spacing-xx-large;
-
-    .nhl-link {
-      color: $gray-04;
-      font-size: 13px;
-      text-decoration: none;
-    }
-
-    .nhl-link:hover {
-      color: white;
-      text-decoration: underline;
-    }
-  }
-}
-
-// Desktop Styling: keep the whole dialog on screen on a short window by shrinking the video instead of scrolling it
-// off, and center it once it is narrower than the dialog.
-@media only screen and (min-width: $game-mobile-screen-breakpoint) {
-  .goal-highlight-dialog-container .video-frame-container {
-    width: auto;
-    height: min(540px, calc(95vh - 290px));
-    margin: 0 auto;
   }
 }
