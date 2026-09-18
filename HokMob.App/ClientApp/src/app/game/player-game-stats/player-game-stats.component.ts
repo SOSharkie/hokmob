@@ -52,7 +52,7 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
    */
   public droppedCompactStats: number = 0;
 
-  private refitTimerId: number;
+  private refitFrameId: number;
 
   /**
    * The player's bio from player/{id}/landing. Undefined until it loads, or when it fails.
@@ -144,17 +144,18 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
   }
 
   public ngOnDestroy(): void {
-    clearTimeout(this.refitTimerId);
+    cancelAnimationFrame(this.refitFrameId);
   }
 
   /**
-   * Refits the bar when the dialog gets narrower or wider with the window. The overlay resizes itself on the same
-   * event, so this waits for it to have done so, and refits once for a whole drag of the window edge.
+   * Refits the bar when the dialog gets narrower or wider with the window. Synchronously, so a wrapped bar is never
+   * painted, and again on the next frame (also before it paints) in case the overlay resized itself after this event.
    */
   @HostListener("window:resize")
   public onWindowResize(): void {
-    clearTimeout(this.refitTimerId);
-    this.refitTimerId = setTimeout(() => this.fitCompactStats(), 100);
+    this.fitCompactStats();
+    cancelAnimationFrame(this.refitFrameId);
+    this.refitFrameId = requestAnimationFrame(() => this.fitCompactStats());
   }
 
   /**
