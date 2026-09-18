@@ -113,8 +113,8 @@
           text-decoration: underline;
         }
 
+        // app-team-logo sizes itself from logoSize / logoMaxWidth
         .player-team-logo {
-          height: 40px;
           margin-right: $spacing-medium;
         }
 

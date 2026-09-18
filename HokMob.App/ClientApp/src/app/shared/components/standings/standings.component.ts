@@ -1,7 +1,6 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
-import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {StandingsGroup, StandingsTeam} from "@shared/models/nhl-web-api/standings.model";
@@ -28,12 +27,13 @@ export class StandingsComponent implements OnChanges {
   @Input()
   public miniStandings: boolean = false;
 
-  public teamLogos: any[][];
-
   /**
    * Team IDs by group and row. Standings rows have no team ID, so they're looked up from the team abbreviation.
    */
   public teamIds: number[][];
+
+  /** Matches $logo-size in the stylesheet, which sizes the column the logo sits in. */
+  public readonly logoSize: number = 24;
 
   public get seasonString(): string {
     const seasonId = this.standings[0]?.teams[0]?.seasonId;
@@ -54,7 +54,6 @@ export class StandingsComponent implements OnChanges {
     if (changes['standings'] && this.standings && this.standings[0]) {
       this.teamIds = this.standings.map(group =>
           group.teams.map(team => NhlTeamUtils.getTeamIdByAbbrev(team.teamAbbrev.default)));
-      this.teamLogos = this.teamIds.map(groupIds => groupIds.map(teamId => NhlTeamLogoUtils.getTeamPrimaryLogo(teamId)));
     }
   }
 

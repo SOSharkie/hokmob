@@ -109,11 +109,31 @@ describe('TeamNextGameComponent', () => {
     expect(text('.completed-status-label')).toBe('SO');
   });
 
+  it('should mark a real preseason game, but not a regular season one', () => {
+    const preseason = nextGame();
+    expect(preseason.id).toBe(2026010013);
+    show(preseason);
+    expect(text('.game-type-label')).toBe('PRE');
+
+    show(NhlGameInfoUtils.toScoreGame(
+        mockClubScheduleSeason('BOS', 20262027).games.find(game => game.id === 2026020003)));
+    expect(fixture.nativeElement.querySelector('.game-type-label')).toBeNull();
+  });
+
+  it('should mark a playoff game that has no series status yet', () => {
+    const playoffGame = mockPlayoffGame();
+    delete playoffGame.seriesStatus;
+    show(playoffGame);
+    expect(text('.game-type-label')).toBe('PLAYOFFS');
+  });
+
   it('should show the series status of a playoff game', () => {
     const playoffGame = mockPlayoffGame();
     show(playoffGame);
     expect(component.isPlayoffGame).toBeTrue();
     expect(text('.playoff-series-label')).toBe('Tied 2-2');
+    // The series status already says it's a playoff game
+    expect(fixture.nativeElement.querySelector('.game-type-label')).toBeNull();
   });
 
   it('should show a playoff series that has not started as 0-0', () => {

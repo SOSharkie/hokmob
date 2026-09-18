@@ -1,6 +1,5 @@
 import {Component, Input, OnChanges} from '@angular/core';
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
-import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {StatsUtils} from "@shared/utils/stats-utils";
@@ -35,7 +34,8 @@ export interface LeaderboardRow {
   name: string;
   headshot: string;
   teamName: string;
-  teamLogo: string;
+  /** The NHL team ID, or undefined for an abbreviation NhlTeamUtils doesn't know. */
+  teamId: number;
   teamColor: string;
   /** The value as shown, like "138", ".921", "2.02" or "27:44". */
   value: string;
@@ -51,6 +51,15 @@ export interface LeaderboardRow {
   styleUrls: ['./stat-leaderboard.component.scss']
 })
 export class StatLeaderboardComponent implements OnChanges {
+
+  /** The logo boxes, a little wider than they are tall so the widest crests keep the weight of the square ones. */
+  public readonly leaderLogoSize: number = 30;
+
+  public readonly leaderLogoMaxWidth: number = 39;
+
+  public readonly playerLogoSize: number = 25;
+
+  public readonly playerLogoMaxWidth: number = 33;
 
   @Input()
   public statTitle: string;
@@ -94,7 +103,7 @@ export class StatLeaderboardComponent implements OnChanges {
       name: entry.name,
       headshot: entry.headshot || NhlPlayerHeadshotUtils.blankHeadshot,
       teamName: NhlTeamUtils.getTeam(entry.teamId).name,
-      teamLogo: NhlTeamLogoUtils.getTeamPrimaryLogo(entry.teamId),
+      teamId: entry.teamId,
       teamColor: NhlTeamColorUtils.getTeamPrimaryColor(entry.teamId),
       value: this.formatValue(entry.value)
     };

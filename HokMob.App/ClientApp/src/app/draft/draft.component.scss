@@ -104,11 +104,7 @@
         gap: $spacing-medium;
         min-width: 0;
 
-        .team-logo {
-          flex-shrink: 0;
-          width: 34px;
-          height: 34px;
-        }
+        // app-team-logo sizes itself from logoSize, and fits the logo inside the box rather than stretching it to fit
 
         .team-name {
           overflow: hidden;
@@ -223,9 +219,10 @@
         }
 
         .team-info {
+          // The box is an inline style on the host, so overriding it needs !important
           .team-logo {
-            width: 28px;
-            height: 28px;
+            width: 28px !important;
+            height: 28px !important;
           }
 
           .team-name {

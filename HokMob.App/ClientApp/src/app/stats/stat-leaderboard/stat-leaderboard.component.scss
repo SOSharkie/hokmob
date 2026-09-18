@@ -74,8 +74,8 @@
             align-items: center;
             margin-top: $spacing-medium;
 
+            // app-team-logo sizes itself from playerLogoSize / playerLogoMaxWidth
             .player-team-logo {
-              height: 25px;
               margin-right: $spacing-medium;
             }
 
@@ -136,8 +136,8 @@
         align-items: center;
         margin-top: $spacing-medium;
 
+        // app-team-logo sizes itself from leaderLogoSize / leaderLogoMaxWidth
         .leader-team-logo {
-          height: 30px;
           margin-right: $spacing-medium;
         }
 

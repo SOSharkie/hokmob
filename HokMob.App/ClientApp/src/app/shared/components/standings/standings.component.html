@@ -29,7 +29,7 @@
           <span>{{getTeamRank(team)}}</span>
         </td>
         <td class="team-logo-cell" [routerLink]="['/team', teamIds[i][j]]">
-          <img class="team-logo" [src]="teamLogos[i][j]" alt="">
+          <app-team-logo class="team-logo" [teamId]="teamIds[i][j]" [size]="logoSize"></app-team-logo>
         </td>
         <td class="team-name-cell" [routerLink]="['/team', teamIds[i][j]]">
           <span *ngIf="!miniStandings" class="team-name-text full-name">{{team.teamName.default}}</span>

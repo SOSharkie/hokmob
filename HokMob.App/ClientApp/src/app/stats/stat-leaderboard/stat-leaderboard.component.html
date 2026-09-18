@@ -11,7 +11,8 @@
         <div class="player-info">
           <span class="leader-name">{{statLeader.name}}</span>
           <div class="leader-team">
-            <img [src]="statLeader.teamLogo" alt="" class="leader-team-logo">
+            <app-team-logo class="leader-team-logo" [teamId]="statLeader.teamId" [size]="leaderLogoSize"
+                           [width]="leaderLogoMaxWidth"></app-team-logo>
             <span class="leader-team-label">{{statLeader.teamName}}</span>
           </div>
         </div>
@@ -28,7 +29,8 @@
         <div class="player-info">
           <span class="player-name">{{player.name}}</span>
           <div class="player-team">
-            <img [src]="player.teamLogo" alt="" class="player-team-logo">
+            <app-team-logo class="player-team-logo" [teamId]="player.teamId" [size]="playerLogoSize"
+                           [width]="playerLogoMaxWidth"></app-team-logo>
             <span class="player-team-label">{{player.teamName}}</span>
           </div>
         </div>

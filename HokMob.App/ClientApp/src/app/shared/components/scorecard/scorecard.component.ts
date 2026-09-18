@@ -1,9 +1,8 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import * as dayjs from 'dayjs'
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
-import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {ScoreGame, ScoreTeam} from "@shared/models/nhl-web-api/score.model";
 import {NhlGameScheduleStateEnum} from "@shared/enums/nhl-game-schedule-state.enum";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
@@ -15,7 +14,7 @@ import {PeriodUtils} from "@shared/utils/period-utils";
   templateUrl: './scorecard.component.html',
   styleUrls: ['./scorecard.component.scss']
 })
-export class ScorecardComponent implements OnChanges {
+export class ScorecardComponent {
 
   @Input()
   public game: ScoreGame;
@@ -26,13 +25,21 @@ export class ScorecardComponent implements OnChanges {
   @Output()
   public scorecardClicked = new EventEmitter<boolean>();
 
-  public isHomeLogoLoaded: boolean = false;
+  /**
+   * The box the team logos sit in. A little wider than it is tall, so the widest crests keep roughly the visual weight
+   * of the square ones and only the extremes are capped.
+   */
+  public readonly logoSize: number = 35;
 
-  public isAwayLogoLoaded: boolean = false;
+  public readonly logoMaxWidth: number = 46;
 
-  public homeTeamLogo: any;
+  public get homeTeamId(): number {
+    return this.game?.homeTeam?.id;
+  }
 
-  public awayTeamLogo: any;
+  public get awayTeamId(): number {
+    return this.game?.awayTeam?.id;
+  }
 
   public get liveGame(): boolean {
     if (this.game) {
@@ -79,6 +86,17 @@ export class ScorecardComponent implements OnChanges {
   public get playoffSeriesDetails(): string {
     if (this.game) {
       return NhlGameInfoUtils.getSeriesStatusShort(this.game.seriesStatus);
+    }
+    return "";
+  }
+
+  /**
+   * A short label for a game that isn't part of the regular season, like "PRE". A playoff game with a series status
+   * shows that instead, since it already says the game is a playoff game.
+   */
+  public get gameTypeLabel(): string {
+    if (this.game && !this.isPlayoffGame) {
+      return NhlGameInfoUtils.getGameTypeLabel(this.game.gameType);
     }
     return "";
   }
@@ -142,15 +160,6 @@ export class ScorecardComponent implements OnChanges {
       return PeriodUtils.getLiveLabel(this.game.periodDescriptor, this.game.clock);
     }
     return "Live"
-  }
-
-  public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['game'] && !this.isHomeLogoLoaded && !this.isAwayLogoLoaded) {
-      this.homeTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.game.homeTeam.id);
-      this.isHomeLogoLoaded = true;
-      this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.game.awayTeam.id);
-      this.isAwayLogoLoaded = true;
-    }
   }
 
   public clickScorecard($event: any) {

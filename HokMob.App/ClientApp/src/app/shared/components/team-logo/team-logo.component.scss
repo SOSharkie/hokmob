@@ -1,0 +1,14 @@
+// The host is the fixed box (its width and height are bound from the inputs), and the logo is fitted inside it. A page
+// that has to resize a logo for its own breakpoints overrides the width and height on app-team-logo with !important,
+// since the box size is an inline style.
+:host {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

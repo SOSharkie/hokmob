@@ -9,7 +9,7 @@
       </div>
     </div>
     <div *ngIf="team" class="team-logo-container">
-      <img [src]="teamLogo" class="team-logo" alt="">
+      <app-team-logo class="team-logo" [teamId]="teamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
     </div>
     <div class="team-info">
       <span class="team-name">{{team ? teamName : 'Team not found'}}</span>

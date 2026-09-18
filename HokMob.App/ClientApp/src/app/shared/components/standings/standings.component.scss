@@ -129,10 +129,8 @@ $logo-size: 24px;
         text-align: center;
         line-height: 0;
 
+        // app-team-logo sizes itself from logoSize, which matches $logo-size
         .team-logo {
-          width: $logo-size;
-          height: $logo-size;
-          object-fit: contain;
           vertical-align: middle;
         }
       }

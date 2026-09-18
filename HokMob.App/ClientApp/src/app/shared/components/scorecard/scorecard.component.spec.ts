@@ -6,7 +6,6 @@ import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ScoreGame } from '@shared/models/nhl-web-api/score.model';
 import { NhlGameScheduleStateEnum } from '@shared/enums/nhl-game-schedule-state.enum';
-import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { DateTimeUtils } from '@shared/utils/date-time-utils';
 import {
   derivedLiveGame,
@@ -14,6 +13,7 @@ import {
   mockFutureGame,
   mockOvertimeFinal,
   mockPlayoffGame,
+  mockPreseasonGame,
   mockRegulationFinal,
   mockShootoutFinal
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
@@ -43,6 +43,16 @@ describe('ScorecardComponent', () => {
     return (fixture.nativeElement as HTMLElement).textContent;
   }
 
+  /** A side's app-team-logo. It isn't declared here, so its inputs are read off the element. */
+  function logo(side: string): HTMLElement & {teamId: number} {
+    return fixture.nativeElement.querySelector(side + ' app-team-logo');
+  }
+
+  /** The preseason or playoff label, or undefined when the scorecard has none. */
+  function label(): string {
+    return fixture.nativeElement.querySelector('.game-type-label')?.textContent.trim();
+  }
+
   it('should show full team names, logos, the score and Final for a regulation final', () => {
     const text = render(mockRegulationFinal());
     expect(component.completedGame).toBeTrue();
@@ -50,8 +60,8 @@ describe('ScorecardComponent', () => {
     expect(text).toContain('Vegas Golden Knights');
     expect(text).toContain('5 - 0');
     expect(text).toContain('Final');
-    expect(component.homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(5));
-    expect(component.awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(54));
+    expect(logo('.home-team').teamId).toBe(5);
+    expect(logo('.away-team').teamId).toBe(54);
   });
 
   it('should link to the game page by game ID', () => {
@@ -83,6 +93,32 @@ describe('ScorecardComponent', () => {
     delete game.seriesStatus;
     render(game);
     expect(component.isPlayoffGame).toBeFalse();
+  });
+
+  it('should mark a real preseason game', () => {
+    const text = render(mockPreseasonGame());
+    expect(text).toContain('St. Louis Blues');
+    expect(text).toContain('Dallas Stars');
+    expect(component.gameTypeLabel).toBe('PRE');
+    expect(label()).toBe('PRE');
+  });
+
+  it('should mark a playoff game without a series status, and show the status when there is one', () => {
+    const playoffGame = mockPlayoffGame();
+    delete playoffGame.seriesStatus;
+    render(playoffGame);
+    expect(label()).toBe('PLAYOFFS');
+
+    render(mockPlayoffGame());
+    expect(component.gameTypeLabel).toBe('');
+    expect(label()).toBeUndefined();
+    expect(fixture.nativeElement.querySelector('.playoff-series').textContent).toContain('Tied 2-2');
+  });
+
+  it('should not label a regular season game', () => {
+    render(mockRegulationFinal());
+    expect(component.gameTypeLabel).toBe('');
+    expect(label()).toBeUndefined();
   });
 
   it('should show the start time of a future game, including Utah', () => {

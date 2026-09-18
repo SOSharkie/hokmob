@@ -1,8 +1,10 @@
 <div class="series-container" [ngClass]="{'smaller-version': smallerVersion, 'undecided-series': !hasBothTeams}" (click)="openSeriesDialog()">
   <div class="series-header">
-    <img [src]="logoA" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoALoaded, 'loser': teamALost}">
+    <app-team-logo class="team-logo" [src]="logoA" [size]="logoSize"
+                   [ngClass]="{'placeholder-logo': !isLogoALoaded, 'loser': teamALost}"></app-team-logo>
     <span *ngIf="!smallerVersion" class="next-game">{{nextGameDay}}</span>
-    <img [src]="logoB" alt="" class="team-logo" [ngClass]="{'placeholder-logo': !isLogoBLoaded, 'loser': teamBLost}">
+    <app-team-logo class="team-logo" [src]="logoB" [size]="logoSize"
+                   [ngClass]="{'placeholder-logo': !isLogoBLoaded, 'loser': teamBLost}"></app-team-logo>
   </div>
   <div class="series-info">
     <div class="team-names">

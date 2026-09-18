@@ -37,26 +37,40 @@
     text-align: right;
   }
 
+  // app-team-logo sizes the logo itself. This slot keeps its spare width first as the row narrows, down to the logo
   .logo-container {
     flex: 0 100 60px;
     min-width: min-content;
     display: flex;
     justify-content: center;
     align-items: center;
-
-    .home-team-logo, .away-team-logo {
-      height: 30px;
-    }
   }
 
-  .score-container {
+  // The score, with the label of a preseason or playoff game above it, like the scorecard's
+  .score-column {
     flex: none;
-    min-width: 32px;
-    padding: $spacing-medium;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-left: clamp(#{$spacing-small}, 2cqi, #{$spacing-large});
     margin-right: clamp(#{$spacing-small}, 2cqi, #{$spacing-large});
-    border-radius: 10px;
-    text-align: center;
+
+    .score-container {
+      min-width: 32px;
+      padding: $spacing-medium;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    // Like the scorecard's label, a point smaller so it stays narrower than the score below it and never squeezes the
+    // team names of a narrow row
+    .game-type-label {
+      margin-bottom: $spacing-small;
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      color: $gray-03;
+    }
   }
 
   .green {

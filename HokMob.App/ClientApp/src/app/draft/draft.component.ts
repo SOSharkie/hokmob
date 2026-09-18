@@ -48,6 +48,9 @@ export class DraftComponent implements OnInit, OnDestroy {
   /** The first draft year in the year picker. */
   public static readonly firstDraftYear = 2006;
 
+  /** The logo box beside each pick's team. Phones shrink it, see the stylesheet. */
+  public readonly logoSize: number = 34;
+
   public draft: DraftPicksResponse;
 
   public rows: DraftPickRow[] = [];

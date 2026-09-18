@@ -4,7 +4,6 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { SearchResultModel } from '@shared/models/search-result.model';
 import { NhlSearchService } from '@shared/services/nhl-search.service';
-import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { NhlPlayerHeadshotUtils } from '@shared/utils/nhl-player-headshot-utils';
 import { mockPlayerSearchResults } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
@@ -41,6 +40,11 @@ describe('SearchResultComponent', () => {
     fixture.detectChanges();
   }
 
+  /** The team app-team-logo was given. It isn't declared here, so its inputs are read off the element. */
+  function teamLogo(): HTMLElement & {teamId: number} {
+    return (fixture.nativeElement as HTMLElement).querySelector('.team-logo');
+  }
+
   function text(selector: string): string {
     return fixture.nativeElement.querySelector(selector)?.textContent.trim();
   }
@@ -51,8 +55,7 @@ describe('SearchResultComponent', () => {
     expect(component.isTeam).toBeTrue();
     expect(component.isPlayer).toBeFalse();
     expect(text('.result-text')).toBe('Boston Bruins');
-    expect(fixture.nativeElement.querySelector('.team-logo').getAttribute('src'))
-        .toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(6));
+    expect(teamLogo().teamId).toBe(6);
     expect(fixture.nativeElement.querySelector('.player-headshot')).toBeNull();
     expect(fixture.nativeElement.querySelector('[ng-reflect-router-link]').getAttribute('ng-reflect-router-link'))
         .toBe('team/6');
