@@ -1,5 +1,6 @@
 import {NhlVideoUtils} from "@shared/utils/nhl-video-utils";
-import {mockPlayoffGame, mockRegularSeasonScoreResponse} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {mockGameLanding, mockPlayoffGame, mockRegularSeasonScoreResponse} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {GameLandingGoal} from "@shared/models/nhl-web-api/gamecenter-landing.model";
 
 describe('NhlVideoUtils', () => {
 
@@ -53,6 +54,31 @@ describe('NhlVideoUtils', () => {
 
     it('should return no videos without a game', () => {
       expect(NhlVideoUtils.getHighlightVideos(undefined)).toEqual([]);
+    });
+  });
+
+  describe('getGoalHighlightVideo', () => {
+    function findGoal(eventId: number): GameLandingGoal {
+      return mockGameLanding(2025030414).summary.scoring.flatMap(period => period.goals).find(goal => goal.eventId === eventId);
+    }
+
+    it("should return a real goal's highlight clip", () => {
+      // Ehlers' empty net goal, game 2025030414
+      expect(NhlVideoUtils.getGoalHighlightVideo(findGoal(215))).toEqual({
+        label: 'Highlight',
+        videoId: '6398033953112',
+        nhlUrl: 'https://nhl.com/video/car-vgk-ehlers-scores-empty-net-goal-6398033953112'
+      });
+    });
+
+    it('should return undefined when the clip is not posted yet', () => {
+      const goal = findGoal(215);
+      delete goal.highlightClip;
+      expect(NhlVideoUtils.getGoalHighlightVideo(goal)).toBeUndefined();
+    });
+
+    it('should return undefined without a goal', () => {
+      expect(NhlVideoUtils.getGoalHighlightVideo(undefined)).toBeUndefined();
     });
   });
 });

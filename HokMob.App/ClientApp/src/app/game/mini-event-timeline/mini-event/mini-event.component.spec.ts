@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
-import { PlayerHighlight } from '@shared/models/player-highlight.model';
+import { PlayerClick, PlayerHighlight } from '@shared/models/player-highlight.model';
 import { MockGamecenterGameId, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { MiniEventComponent } from './mini-event.component';
@@ -85,20 +85,20 @@ describe('MiniEventComponent', () => {
     expect(text('.penalty-event .event-secondary-label')).toBe('Too many men on the ice (bench minor)');
   });
 
-  it('should emit the player IDs when clicked', () => {
-    const clickedIds: number[] = [];
-    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+  it("should emit the scorer with the goal's event ID, and the assist and penalized player without one, when clicked", () => {
+    const clicked: PlayerClick[] = [];
+    component.playerClicked.subscribe(click => clicked.push(click));
     show(2025021057, 892);
     fixture.nativeElement.querySelector('.event-main-label').click();
     fixture.nativeElement.querySelectorAll('.assist-name')[1].click();
     show(2025021057, 92);
     fixture.nativeElement.querySelector('.penalty').click();
-    expect(clickedIds).toEqual([8478398, 8477938, 8475718]);
+    expect(clicked).toEqual([{playerId: 8478398, eventId: 892}, {playerId: 8477938}, {playerId: 8475718, eventId: undefined}]);
   });
 
   it('should not emit for a penalty without a player', () => {
-    const clickedIds: number[] = [];
-    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+    const clicked: PlayerClick[] = [];
+    component.playerClicked.subscribe(click => clicked.push(click));
     const playByPlay = mockGamePlayByPlay(2025030414);
     const benchMinor = playByPlay.plays.find(play => play.eventId === 444);
     delete benchMinor.details.servedByPlayerId;
@@ -107,7 +107,7 @@ describe('MiniEventComponent', () => {
     fixture.detectChanges();
     expect(text('.penalty')).toBe('Team penalty');
     fixture.nativeElement.querySelector('.penalty').click();
-    expect(clickedIds).toEqual([]);
+    expect(clicked).toEqual([]);
   });
 
   it('should emit the scorer with the goal index, and an assist without one, on hover, and null on leave', () => {

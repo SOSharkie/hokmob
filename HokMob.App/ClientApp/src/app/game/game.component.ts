@@ -29,7 +29,11 @@ import {
   HighlightsDialogComponent,
   HighlightsDialogData
 } from "@app/game/highlights-dialog/highlights-dialog.component";
-import {PlayerHighlight} from "@shared/models/player-highlight.model";
+import {
+  GoalHighlightDialogComponent,
+  GoalHighlightDialogData
+} from "@app/game/goal-highlight-dialog/goal-highlight-dialog.component";
+import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
   selector: 'app-game',
@@ -302,7 +306,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
    * Opens the player's game stats. Does nothing for a player without boxscore stats (or without a boxscore).
    */
   public openPlayerGameDialog(playerId: number): void {
-    const player = [...this.homePlayers, ...this.awayPlayers].find(item => item.playerId === playerId);
+    const player = this.findGamePlayer(playerId);
     if (!player) {
       return;
     }
@@ -312,6 +316,38 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       backdropClass: "dialog-backdrop",
       data
     });
+  }
+
+  /**
+   * Opens the combined goal highlight dialog (the scorer's stats and the goal's video) when the clicked goal has a
+   * posted highlight clip, or the player game dialog otherwise. Live games and recent goals may not have a clip yet.
+   */
+  public openGoalOrPlayerDialog(click: PlayerClick): void {
+    const goal = click?.eventId != null ?
+        this.scoringPeriods.flatMap(period => period.goals ?? []).find(item => item.eventId === click.eventId) :
+        undefined;
+    const video = NhlVideoUtils.getGoalHighlightVideo(goal);
+    if (!video) {
+      this.openPlayerGameDialog(click?.playerId);
+      return;
+    }
+    const player = this.findGamePlayer(click.playerId);
+    if (!player) {
+      return;
+    }
+    const data: GoalHighlightDialogData = {player, video};
+    // The panel class sizes the dialog to its video (goal-highlight-dialog.component.scss)
+    this.seriesDialog.open(GoalHighlightDialogComponent, {
+      maxWidth: "94vw",
+      backdropClass: "dialog-backdrop",
+      panelClass: "goal-highlight-dialog-panel",
+      autoFocus: false,
+      data
+    });
+  }
+
+  private findGamePlayer(playerId: number): GamePlayer {
+    return [...this.homePlayers, ...this.awayPlayers].find(item => item.playerId === playerId);
   }
 
   /**

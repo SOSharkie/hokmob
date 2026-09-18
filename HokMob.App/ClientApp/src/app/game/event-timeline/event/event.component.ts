@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {Play, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {PeriodUtils} from "@shared/utils/period-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
-import {PlayerHighlight} from "@shared/models/player-highlight.model";
+import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
   selector: 'app-event',
@@ -32,8 +32,12 @@ export class EventComponent {
   @Input()
   public goalIndex: number;
 
+  /**
+   * Emits the clicked player, with the play's event ID when its main player is a goal scorer, to look up the goal's
+   * highlight clip. Undefined for an assist or a penalized player.
+   */
   @Output()
-  public playerClicked = new EventEmitter<number>();
+  public playerClicked = new EventEmitter<PlayerClick>();
 
   /**
    * Emits the hovered player, with the goal index when the scorer is hovered, and null when the mouse leaves them.
@@ -92,12 +96,12 @@ export class EventComponent {
   public onMainPlayerClicked(): void {
     let playerId = PlayByPlayUtils.getMainPlayerId(this.play);
     if (playerId) {
-      this.playerClicked.emit(playerId);
+      this.playerClicked.emit({playerId, eventId: this.isEventGoal ? this.play.eventId : undefined});
     }
   }
 
   public onAssistClicked(playerId: number): void {
-    this.playerClicked.emit(playerId);
+    this.playerClicked.emit({playerId});
   }
 
   public onMainPlayerHovered(): void {

@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
-import { PlayerHighlight } from '@shared/models/player-highlight.model';
+import { PlayerClick, PlayerHighlight } from '@shared/models/player-highlight.model';
 import { PlayByPlay } from '@shared/models/nhl-web-api/play-by-play.model';
 import { derivedLivePlayByPlay, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
@@ -92,11 +92,11 @@ describe('EventTimelineComponent', () => {
   });
 
   it('should emit the player clicked in an event', () => {
-    const clickedIds: number[] = [];
-    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+    const clicked: PlayerClick[] = [];
+    component.playerClicked.subscribe(click => clicked.push(click));
     show(mockGamePlayByPlay(2025021057));
-    fixture.debugElement.queryAll(By.css('app-event'))[2].triggerEventHandler('playerClicked', 8476460);
-    expect(clickedIds).toEqual([8476460]);
+    fixture.debugElement.queryAll(By.css('app-event'))[2].triggerEventHandler('playerClicked', {playerId: 8476460, eventId: 141});
+    expect(clicked).toEqual([{playerId: 8476460, eventId: 141}]);
   });
 
   it("should pass each goal's index among its scorer's goals to its event", () => {

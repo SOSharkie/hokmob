@@ -68,6 +68,20 @@ export interface GameLandingGoal {
   goalModifier: string;
   isHome: boolean;
   assists: GameLandingAssist[];
+  /**
+   * The goal's highlight video, as a Brightcove video ID (NhlVideoUtils.getGoalHighlightVideo builds the embeddable
+   * player URL from it). Missing until NHL.com posts the clip, which can take a while after the goal, so live games
+   * and recent goals may not have one yet.
+   */
+  highlightClip?: number;
+  highlightClipFr?: number;
+  /** The clip's NHL.com page, like "https://nhl.com/video/vgk-car-ehlers-scores-goal-against-carter-hart-6397360131112". */
+  highlightClipSharingUrl?: string;
+  highlightClipSharingUrlFr?: string;
+  /** A shorter alternate clip, when NHL.com has posted one. */
+  discreteClip?: number;
+  discreteClipFr?: number;
+  pptReplayUrl?: string;
 }
 
 export interface GameLandingAssist {

@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameLandingScoringPeriod } from '@shared/models/nhl-web-api/gamecenter-landing.model';
-import { PlayerHighlight } from '@shared/models/player-highlight.model';
+import { PlayerClick, PlayerHighlight } from '@shared/models/player-highlight.model';
 import { mockGameLanding } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { GoalScorersComponent } from './goal-scorers.component';
@@ -69,15 +69,15 @@ describe('GoalScorersComponent', () => {
     expect(rows()[4]).toEqual(['Gauthier (11:14)', '2OT', '']);
   });
 
-  it('should emit the scorer ID when a goal is clicked', () => {
-    const clickedIds: number[] = [];
-    component.scorerClicked.subscribe(playerId => clickedIds.push(playerId));
+  it("should emit the scorer's ID and the goal's event ID when a goal is clicked", () => {
+    const clicked: PlayerClick[] = [];
+    component.scorerClicked.subscribe(click => clicked.push(click));
     show(mockGameLanding(2025021057).summary.scoring);
     const scorers = fixture.nativeElement.querySelectorAll('.scorer-label');
     expect(scorers.length).toBe(5);
     scorers[1].click();
     scorers[4].click();
-    expect(clickedIds).toEqual([8476460, 8482077]);
+    expect(clicked).toEqual([{playerId: 8476460, eventId: 141}, {playerId: 8482077, eventId: 989}]);
   });
 
   it('should show no periods without scoring data', () => {

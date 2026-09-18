@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { MatIcon } from '@angular/material/icon';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
-import { PlayerHighlight } from '@shared/models/player-highlight.model';
+import { PlayerClick, PlayerHighlight } from '@shared/models/player-highlight.model';
 import { MockGamecenterGameId, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { EventComponent } from './event.component';
@@ -93,21 +93,22 @@ describe('EventComponent', () => {
     expect(text('.home-event .penalty-event .event-secondary-label')).toBe('Too many men on the ice (bench minor)');
   });
 
-  it('should emit the scorer and assist IDs when clicked', () => {
-    const clickedIds: number[] = [];
-    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+  it("should emit the scorer with the goal's event ID, and the assists without one, when clicked", () => {
+    const clicked: PlayerClick[] = [];
+    component.playerClicked.subscribe(click => clicked.push(click));
+    // Fleury's goal (eventId 80), from Lambert and Barron
     show(2025021057, 80);
     fixture.nativeElement.querySelector('.home-event .event-main-label').click();
     fixture.nativeElement.querySelectorAll('.home-event .assist-name').forEach((assist: HTMLElement) => assist.click());
-    expect(clickedIds).toEqual([8477938, 8483471, 8480289]);
+    expect(clicked).toEqual([{playerId: 8477938, eventId: 80}, {playerId: 8483471}, {playerId: 8480289}]);
   });
 
-  it('should emit the player who served a bench minor when clicked', () => {
-    const clickedIds: number[] = [];
-    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+  it('should emit the player who served a bench minor when clicked, without an event ID', () => {
+    const clicked: PlayerClick[] = [];
+    component.playerClicked.subscribe(click => clicked.push(click));
     show(2025030414, 444);
     fixture.nativeElement.querySelector('.penalty').click();
-    expect(clickedIds).toEqual([8477964]);
+    expect(clicked).toEqual([{playerId: 8477964, eventId: undefined}]);
   });
 
   it('should show the score without roster spots', () => {
