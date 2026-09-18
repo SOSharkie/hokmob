@@ -57,7 +57,7 @@ export class PreviousGameComponent {
   }
 
   /**
-   * A short label for a game that isn't part of the regular season, like "PRE" or "PLAYOFFS", shown under the score.
+   * A short label for a game that isn't part of the regular season, like "PRE" or "PLAYOFFS", shown above the score.
    */
   public get gameTypeLabel(): string {
     return NhlGameInfoUtils.getGameTypeLabel(this.game?.gameType);

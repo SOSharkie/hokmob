@@ -6,10 +6,10 @@
     </div>
   </div>
   <div class="score-column">
+    <span *ngIf="gameTypeLabel" class="game-type-label">{{gameTypeLabel}}</span>
     <div class="score-container" [ngClass]="scoreColor">
       <span>{{score}}</span>
     </div>
-    <span *ngIf="gameTypeLabel" class="game-type-label">{{gameTypeLabel}}</span>
   </div>
   <div class="away-team">
     <div class="logo-container">
