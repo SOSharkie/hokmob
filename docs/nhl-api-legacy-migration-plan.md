@@ -535,8 +535,9 @@ Built on 2026-09-16 as described below, with these notes:
 - Labels: the conference finals and the final show their `seriesTitle` above the card ("Western Conference Finals",
   "Stanley Cup Semifinals" in 2021). The first two rounds have no labels, like before. The page title is
   "2025-26 Playoffs", and the picker's labels use the same short format.
-- The picker is a native `<select>` (Material's select isn't in the app), with each option's `selected` bound, because
-  `ngModel` didn't select an option rendered by `ngFor` reliably.
+- The picker was a native `<select>`. Since 2026-09-17 it's the shared pill picker from the draft page (a `.pill-picker`
+  button opening a height-capped `mat-menu`, labelled with the selected season; see `docs/draft-page-plan.md`, 3.3),
+  because a native list can't be height-capped or styled like the rest of the page.
 - `app-playoff-series` shows "TBD" for a missing team (also for an empty slot), loads no schedule and opens no dialog
   without both teams, and doesn't highlight on hover then.
 - Checked in the browser: `/playoffs` (2025-26), every season in the picker from 2013-14 to 2025-26 (15 cards each, and

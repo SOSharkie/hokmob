@@ -34,15 +34,7 @@
       font-size: small;
     }
 
-    .season-picker {
-      padding: $spacing-medium $spacing-large;
-      border: none;
-      border-radius: 15px;
-      background-color: $black-04;
-      color: white;
-      font-size: medium;
-      cursor: pointer;
-    }
+    // The season picker is a .pill-picker button (styles.scss)
   }
 
   .loading-container {

@@ -1,5 +1,5 @@
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
-import {mockGamePlayByPlay} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {mockGamePlayByPlay, mockPlayerLanding} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 
 describe('NhlPlayerHeadshotUtils', () => {
 
@@ -13,6 +13,17 @@ describe('NhlPlayerHeadshotUtils', () => {
       expect(NhlPlayerHeadshotUtils.getHeadshotUrl(undefined, 'WPG', 8478398)).toBe('assets/blank_headshot.png');
       expect(NhlPlayerHeadshotUtils.getHeadshotUrl(20252026, null, 8478398)).toBe('assets/blank_headshot.png');
       expect(NhlPlayerHeadshotUtils.getHeadshotUrl(20252026, 'WPG', undefined)).toBe('assets/blank_headshot.png');
+    });
+  });
+
+  describe('getLatestHeadshotUrl', () => {
+    it('should build the same URL as a player landing without a current team', () => {
+      expect(NhlPlayerHeadshotUtils.getLatestHeadshotUrl(8470638)).toBe(mockPlayerLanding(8470638).headshot);
+    });
+
+    it('should return the blank headshot without a player', () => {
+      expect(NhlPlayerHeadshotUtils.getLatestHeadshotUrl(null)).toBe('assets/blank_headshot.png');
+      expect(NhlPlayerHeadshotUtils.getLatestHeadshotUrl(0)).toBe('assets/blank_headshot.png');
     });
   });
 

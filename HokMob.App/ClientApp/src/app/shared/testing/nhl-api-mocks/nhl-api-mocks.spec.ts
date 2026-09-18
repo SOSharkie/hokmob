@@ -1,4 +1,6 @@
 import {
+  mockDraftPicks,
+  mockDraftStats,
   mockGoalieStatsLeaders,
   mockHitsAndShotsLeaders,
   mockPlayerLanding,
@@ -172,6 +174,57 @@ describe('nhl-api-mocks', () => {
       expect(seasons[1].firstPlayoffGameDate).toBe('2026-04-18');
       seasons[0].id = 0;
       expect(mockSeasonDates().seasons[0].id).toBe(20262027);
+    });
+  });
+
+  describe('mockDraftPicks', () => {
+    it('should return the latest draft by default', () => {
+      const draft = mockDraftPicks();
+      expect(draft.draftYear).toBe(2026);
+      expect(draft.picks.length).toBe(32);
+      expect(draft.picks[0].lastName.default).toBe('McKenna');
+      expect(draft.draftYears[draft.draftYears.length - 1]).toBe(2026);
+      expect(draft.selectableRounds).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    });
+
+    it('should return round 1 of every captured year', () => {
+      expect(mockDraftPicks(2006).picks[2].positionCode).toBe('F');
+      expect(mockDraftPicks(2015).picks[0].teamName.default).toBe('Edmonton Oilers');
+      expect(mockDraftPicks(2021).picks.length).toBe(32);
+    });
+
+    it('should return the forfeited 2021 pick without a first name or position', () => {
+      const forfeited = mockDraftPicks(2021).picks.find(pick => pick.overallPick === 11);
+      expect(forfeited.lastName.default).toBe('Forfeited');
+      expect(forfeited.firstName).toBeUndefined();
+      expect(forfeited.positionCode).toBeUndefined();
+    });
+
+    it('should return a fresh copy', () => {
+      mockDraftPicks(2015).picks.pop();
+      expect(mockDraftPicks(2015).picks.length).toBe(30);
+    });
+  });
+
+  describe('mockDraftStats', () => {
+    it('should return a player per 2015 pick, sorted by overall pick, with the goalie', () => {
+      const players = mockDraftStats().players;
+      expect(players.map(player => player.draftOverall)).toEqual(Array.from({length: 30}, (_, i) => i + 1));
+      expect(players[0]).toEqual(jasmine.objectContaining({name: 'Connor McDavid', goals: 409, assists: 811, points: 1220}));
+      expect(players[21]).toEqual(jasmine.objectContaining({name: 'Ilya Samsonov', positionCode: 'G', assists: 5}));
+    });
+
+    it('should leave out the 2006 players who never played', () => {
+      const overallPicks = mockDraftStats(2006).players.map(player => player.draftOverall);
+      expect(overallPicks.length).toBe(27);
+      expect(overallPicks).not.toContain(19);
+      expect(overallPicks).not.toContain(20);
+      expect(overallPicks).not.toContain(24);
+    });
+
+    it('should return a fresh copy', () => {
+      mockDraftStats().players.pop();
+      expect(mockDraftStats().players.length).toBe(30);
     });
   });
 });

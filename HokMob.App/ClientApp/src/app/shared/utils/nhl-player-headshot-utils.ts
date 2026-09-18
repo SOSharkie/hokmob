@@ -23,6 +23,20 @@ export class NhlPlayerHeadshotUtils {
   }
 
   /**
+   * Returns a player's latest headshot URL, like "https://assets.nhle.com/mugs/nhl/latest/8470638.png" (the player
+   * landing's headshot of a retired player). It needs no season or team. A player without a photo gets a generic
+   * silhouette from the same URL, not an error.
+   *
+   * @param playerId - The player ID.
+   */
+  public static getLatestHeadshotUrl(playerId: number): string {
+    if (!playerId) {
+      return NhlPlayerHeadshotUtils.blankHeadshot;
+    }
+    return "https://assets.nhle.com/mugs/nhl/latest/" + playerId + ".png";
+  }
+
+  /**
    * Replaces a headshot that failed to load with the blank headshot. Bind it to the image's (error) event.
    */
   public static showBlankHeadshot(event: Event): void {

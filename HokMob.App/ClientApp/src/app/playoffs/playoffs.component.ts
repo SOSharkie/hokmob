@@ -5,6 +5,7 @@ import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-pl
 import {PlayoffBracketSeason} from "@shared/models/nhl-web-api/playoffs.model";
 import {NhlPlayoffBracketUtils, PlayoffBracketSlots} from "@shared/utils/nhl-playoff-bracket-utils";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {PickerMenuUtils} from "@shared/utils/picker-menu-utils";
 
 /**
  * A season in the season picker.
@@ -73,6 +74,14 @@ export class PlayoffsComponent implements OnInit, OnDestroy {
     return year ? String((year - 1) * 10000 + year) : "";
   }
 
+  /**
+   * The season picker's label: the selected season, like "2025-26".
+   */
+  public get selectedSeasonLabel(): string {
+    const year = this.bracket?.year ?? this.requestedYear;
+    return year ? this.getSeasonLabel(year) : "";
+  }
+
   public get title(): string {
     const year = this.bracket?.year ?? this.requestedYear;
     return year ? this.getSeasonLabel(year) + " Playoffs" : "Playoffs";
@@ -128,10 +137,10 @@ export class PlayoffsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Shows the season picked in the season picker.
+   * Scrolls the opened season menu to the selected season.
    */
-  public onSeasonChange(event: Event): void {
-    this.selectSeason((event.target as HTMLSelectElement).value);
+  public scrollToSelectedOption(): void {
+    PickerMenuUtils.scrollToSelectedOption("season-menu");
   }
 
   public trackSeason(index: number, option: PlayoffSeasonOption): string {
