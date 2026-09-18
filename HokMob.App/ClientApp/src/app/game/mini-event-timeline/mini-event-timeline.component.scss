@@ -17,6 +17,8 @@
     height: 40px;
     border-bottom: 1px solid $black-03;
 
+    // TODO: Investigate moving this to app-team-logo (shared/components/team-logo). It sizes by width only, so a crest's
+    // height still varies with its shape. Needs a call on the box to use here.
     .team-logo {
       width: 30px;
     }

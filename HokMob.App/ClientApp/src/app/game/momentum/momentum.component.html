@@ -50,7 +50,7 @@
     >
       <div *ngFor="let goal of hoveredGoals; trackBy: trackGoal" class="goal">
         <div class="goal-header">
-          <img [src]="getTeamLogo(goal)" alt="" class="team-logo">
+          <app-team-logo class="team-logo" [src]="getTeamLogo(goal)" [size]="logoSize"></app-team-logo>
           <span class="goal-time">{{hoveredPeriodLabel}} · {{getGoalTime(goal)}}</span>
         </div>
         <div class="goal-scorer">

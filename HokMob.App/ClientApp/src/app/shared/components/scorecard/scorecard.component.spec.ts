@@ -6,7 +6,6 @@ import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ScoreGame } from '@shared/models/nhl-web-api/score.model';
 import { NhlGameScheduleStateEnum } from '@shared/enums/nhl-game-schedule-state.enum';
-import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { DateTimeUtils } from '@shared/utils/date-time-utils';
 import {
   derivedLiveGame,
@@ -44,6 +43,11 @@ describe('ScorecardComponent', () => {
     return (fixture.nativeElement as HTMLElement).textContent;
   }
 
+  /** A side's app-team-logo. It isn't declared here, so its inputs are read off the element. */
+  function logo(side: string): HTMLElement & {teamId: number} {
+    return fixture.nativeElement.querySelector(side + ' app-team-logo');
+  }
+
   /** The preseason or playoff label, or undefined when the scorecard has none. */
   function label(): string {
     return fixture.nativeElement.querySelector('.game-type-label')?.textContent.trim();
@@ -56,8 +60,8 @@ describe('ScorecardComponent', () => {
     expect(text).toContain('Vegas Golden Knights');
     expect(text).toContain('5 - 0');
     expect(text).toContain('Final');
-    expect(component.homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(5));
-    expect(component.awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(54));
+    expect(logo('.home-team').teamId).toBe(5);
+    expect(logo('.away-team').teamId).toBe(54);
   });
 
   it('should link to the game page by game ID', () => {

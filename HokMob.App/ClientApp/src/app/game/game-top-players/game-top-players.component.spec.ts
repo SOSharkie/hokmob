@@ -116,7 +116,8 @@ describe('GameTopPlayersComponent', () => {
     fixture.componentRef.setInput('awayCoach', 'Jim Montgomery');
     fixture.componentRef.setInput('homeTeamLogo', NhlTeamLogoUtils.getTeamPrimaryLogo(52));
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
-    expect(bench('home').querySelector('.team-logo').getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    expect(bench('home').querySelector<HTMLElement & {src: string}>('.team-logo').src)
+        .toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
     expect(bench('away').querySelector('.team-logo')).toBeNull();
   });
 

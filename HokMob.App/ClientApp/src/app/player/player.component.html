@@ -24,7 +24,8 @@
     <div class="player-info">
       <span class="player-name">{{playerName}}</span>
       <div *ngIf="player.currentTeamId" class="player-team" [routerLink]="['/team', player.currentTeamId]">
-        <img [src]="teamLogo" alt="" class="player-team-logo">
+        <app-team-logo class="player-team-logo" [teamId]="player.currentTeamId" [size]="logoSize"
+                       [width]="logoMaxWidth"></app-team-logo>
         <span class="player-team-label">{{teamName}}</span>
       </div>
     </div>

@@ -108,6 +108,9 @@ $central-info-width: 205px;
       text-align: right;
       padding: $spacing-small;
 
+      // TODO: Investigate moving this to app-team-logo (shared/components/team-logo), like the scorecard next to it
+      // already does. It sizes by width only, so a crest's height still varies with its shape (Anaheim renders 50x28,
+      // Ottawa 50x60). Needs a call on the box to use here.
       .home-team-logo {
         width: 50px;
         margin-left: $spacing-medium;

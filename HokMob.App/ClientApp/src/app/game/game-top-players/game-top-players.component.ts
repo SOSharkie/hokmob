@@ -42,6 +42,9 @@ export class GameTopPlayersComponent implements OnChanges {
    */
   public static readonly rinkLength = 200.13;
 
+  /** The small logo beside each bench's head coach. */
+  public readonly logoSize: number = 22;
+
   /**
    * The rink's width in feet: a real rink's 98.42ft when it stands up on phones, and 20% narrower when it lies across
    * the card, so it isn't as tall.

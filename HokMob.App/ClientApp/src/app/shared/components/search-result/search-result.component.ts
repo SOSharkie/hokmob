@@ -1,7 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {SearchResultModel} from "@shared/models/search-result.model";
 import {SearchResultTypeEnum} from "@shared/enums/search-result-type.enum";
-import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 
 /**
@@ -25,8 +24,13 @@ export class SearchResultComponent {
     return this.searchResult?.resultType === SearchResultTypeEnum.TEAM;
   }
 
-  public get teamLogo(): string {
-    return NhlTeamLogoUtils.getTeamPrimaryLogo(Number(this.searchResult?.teamId));
+  /** A little wider than it is tall, so the widest crests keep roughly the visual weight of the square ones. */
+  public readonly logoSize: number = 25;
+
+  public readonly logoMaxWidth: number = 33;
+
+  public get teamId(): number {
+    return Number(this.searchResult?.teamId);
   }
 
   public get playerHeadshot(): string {

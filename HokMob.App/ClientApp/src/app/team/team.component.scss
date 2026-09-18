@@ -124,9 +124,7 @@
     .team-logo-container {
       margin-left: $spacing-large;
 
-      .team-logo {
-        height: 85px;
-      }
+      // app-team-logo sizes itself from logoSize / logoMaxWidth
     }
     .team-info {
       margin-left: $spacing-large;
@@ -182,8 +180,10 @@
     .team-logo-container {
       margin-left: $spacing-medium;
 
+      // Smaller on phones. The box is an inline style on the host, so overriding it needs !important
       .team-logo {
-        height: 75px;
+        width: 98px !important;
+        height: 75px !important;
       }
     }
     .team-info {

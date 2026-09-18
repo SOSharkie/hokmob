@@ -5,18 +5,15 @@
   <div class="home-team" [ngClass]="{'smaller-text': smallerScorecard}">
     <span>{{homeTeamName}}</span>
     <div class="logo-container">
-      <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="isHomeLogoLoaded">
+      <app-team-logo *ngIf="homeTeamId" [teamId]="homeTeamId" [size]="logoSize" [width]="logoMaxWidth">
+      </app-team-logo>
     </div>
   </div>
   <div class="central-info">
     <span *ngIf="isPlayoffGame" class="playoff-series">{{playoffSeriesDetails}}</span>
     <span *ngIf="gameTypeLabel" class="game-type-label">{{gameTypeLabel}}</span>
-    <div *ngIf="futureGame && !smallerScorecard" class="game-time">
-      <span>{{gameTime}}</span>
-      <span>{{gameAmPm}}</span>
-    </div>
-    <div *ngIf="futureGame && smallerScorecard" class="game-time">
-      <span>{{gameDate}}</span>
+    <div *ngIf="futureGame" class="game-time">
+      <span *ngIf="smallerScorecard">{{gameDate}}</span>
       <span>{{gameTime}} {{gameAmPm}}</span>
     </div>
     <div *ngIf="completedGame" class="game-score">
@@ -30,7 +27,8 @@
   </div>
   <div class="away-team" [ngClass]="{'smaller-text': smallerScorecard}">
     <div class="logo-container">
-      <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="isAwayLogoLoaded">
+      <app-team-logo *ngIf="awayTeamId" [teamId]="awayTeamId" [size]="logoSize" [width]="logoMaxWidth">
+      </app-team-logo>
     </div>
     <span>{{awayTeamName}}</span>
   </div>

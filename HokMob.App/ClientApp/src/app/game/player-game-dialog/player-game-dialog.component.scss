@@ -36,6 +36,8 @@
         margin-top: 5px;
       }
     }
+    // TODO: Investigate moving this to app-team-logo (shared/components/team-logo). It sizes by width only, so a crest's
+    // height still varies with its shape, and it is absolutely positioned at a fixed top, which a taller logo overhangs.
     .team-logo {
       position: absolute;
       width: 30px;

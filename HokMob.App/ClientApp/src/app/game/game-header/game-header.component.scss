@@ -149,6 +149,8 @@ $central-info-width: 130px;
     flex: 0 1 380px;
     min-width: 0;
 
+// TODO: Investigate moving this to app-team-logo (shared/components/team-logo). It sizes by width only, so a crest's
+// height still varies with its shape (0.83:1 for Ottawa to 1.79:1 for Anaheim). Needs a call on the box to use here.
     .home-team-logo {
       width: 52px;
     }

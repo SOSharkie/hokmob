@@ -7,7 +7,7 @@
     <span *ngIf="searchResult.positionCode" class="result-detail">{{searchResult.positionCode}}</span>
   </div>
   <div class="search-result-container" *ngIf="isTeam">
-    <img [src]="teamLogo" alt="" class="team-logo">
+    <app-team-logo class="team-logo" [teamId]="teamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
     <span class="result-text">{{searchResult.teamName}}</span>
   </div>
 </div>

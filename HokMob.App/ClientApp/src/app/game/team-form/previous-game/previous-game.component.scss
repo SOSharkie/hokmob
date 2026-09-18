@@ -37,16 +37,13 @@
     text-align: right;
   }
 
+  // app-team-logo sizes the logo itself. This slot keeps its spare width first as the row narrows, down to the logo
   .logo-container {
     flex: 0 100 60px;
     min-width: min-content;
     display: flex;
     justify-content: center;
     align-items: center;
-
-    .home-team-logo, .away-team-logo {
-      height: 30px;
-    }
   }
 
   // The score, and under it the label of a preseason or playoff game

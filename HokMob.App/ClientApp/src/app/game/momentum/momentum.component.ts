@@ -31,6 +31,9 @@ export type MomentumChartView = "line" | "bar";
 })
 export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
 
+  /** The logo above a goal in the chart's hover tooltip. */
+  public readonly logoSize: number = 24;
+
   /**
    * The game's play-by-play. Goals and shots move the momentum toward the team that took them.
    */

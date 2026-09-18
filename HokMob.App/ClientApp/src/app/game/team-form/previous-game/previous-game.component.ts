@@ -1,6 +1,5 @@
 import {Component, Input} from '@angular/core';
 import {ClubScheduleGame, ClubScheduleTeam} from "@shared/models/nhl-web-api/club-schedule.model";
-import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
@@ -26,12 +25,17 @@ export class PreviousGameComponent {
   @Input()
   public isLast: boolean;
 
-  public get homeTeamLogo(): string {
-    return NhlTeamLogoUtils.getTeamPrimaryLogo(this.game?.homeTeam?.id);
+  /** A little wider than it is tall, so the widest crests keep roughly the visual weight of the square ones. */
+  public readonly logoSize: number = 30;
+
+  public readonly logoMaxWidth: number = 39;
+
+  public get homeTeamId(): number {
+    return this.game?.homeTeam?.id;
   }
 
-  public get awayTeamLogo(): string {
-    return NhlTeamLogoUtils.getTeamPrimaryLogo(this.game?.awayTeam?.id);
+  public get awayTeamId(): number {
+    return this.game?.awayTeam?.id;
   }
 
   public get homeTeamShortName(): string {
