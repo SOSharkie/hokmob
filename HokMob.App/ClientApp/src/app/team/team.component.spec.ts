@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
+import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 import { ClubScheduleSeason } from '@shared/models/nhl-web-api/club-schedule.model';
 import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import {
@@ -38,6 +39,9 @@ describe('TeamComponent', () => {
     .compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
+    // NhlGameService classifies each fetched day for its cache against the current season; the next game update
+    // always fetches today, which is never cached, so the value here doesn't otherwise affect these tests.
+    spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason').and.resolveTo({season: 20252026, isPlayoffMode: false});
     spyOn(console, 'error');
   });
 
