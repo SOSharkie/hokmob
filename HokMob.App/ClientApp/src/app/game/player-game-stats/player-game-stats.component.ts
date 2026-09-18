@@ -1,4 +1,15 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import * as dayjs from "dayjs";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
@@ -16,7 +27,12 @@ import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
   templateUrl: './player-game-stats.component.html',
   styleUrls: ['./player-game-stats.component.scss']
 })
-export class PlayerGameStatsComponent implements OnChanges {
+export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
+
+  /**
+   * The compact stats the bar drops to stay on one row, least important first.
+   */
+  private static readonly compactDropOrder: string[] = ["giveaways", "takeaways", "blocks"];
 
   @Input()
   public player: GamePlayer;
@@ -27,6 +43,16 @@ export class PlayerGameStatsComponent implements OnChanges {
    */
   @Input()
   public compact: boolean = false;
+
+  @ViewChild("statsContainer")
+  public statsContainer: ElementRef<HTMLElement>;
+
+  /**
+   * How many of `compactDropOrder` the compact bar is currently hiding, so it stays on one row.
+   */
+  public droppedCompactStats: number = 0;
+
+  private refitTimerId: number;
 
   /**
    * The player's bio from player/{id}/landing. Undefined until it loads, or when it fails.
@@ -84,7 +110,8 @@ export class PlayerGameStatsComponent implements OnChanges {
     return ((this.skaterStats?.faceoffWinningPctg ?? 0) * 100).toFixed(1) + "%";
   }
 
-  constructor(private nhlGameService: NhlGameService) {}
+  constructor(private nhlGameService: NhlGameService,
+              private changeDetector: ChangeDetectorRef) {}
 
   /**
    * Shows the player's game stats right away, and loads the bio (country, age). If the bio fails, those show "-".
@@ -94,6 +121,7 @@ export class PlayerGameStatsComponent implements OnChanges {
       return;
     }
     this.playerLanding = undefined;
+    this.droppedCompactStats = 0;
     this.teamColor = "#000000";
     this.teamLogo = undefined;
     if (!this.player) {
@@ -111,8 +139,64 @@ export class PlayerGameStatsComponent implements OnChanges {
     });
   }
 
+  public ngAfterViewInit(): void {
+    this.fitCompactStats();
+  }
+
+  public ngOnDestroy(): void {
+    clearTimeout(this.refitTimerId);
+  }
+
+  /**
+   * Refits the bar when the dialog gets narrower or wider with the window. The overlay resizes itself on the same
+   * event, so this waits for it to have done so, and refits once for a whole drag of the window edge.
+   */
+  @HostListener("window:resize")
+  public onWindowResize(): void {
+    clearTimeout(this.refitTimerId);
+    this.refitTimerId = setTimeout(() => this.fitCompactStats(), 100);
+  }
+
+  /**
+   * Whether the compact bar still shows a stat of `compactDropOrder`. Every other stat is always shown.
+   */
+  public isStatShown(stat: string): boolean {
+    if (!this.compact) {
+      return true;
+    }
+    const dropIndex = PlayerGameStatsComponent.compactDropOrder.indexOf(stat);
+    return dropIndex < 0 || dropIndex >= this.droppedCompactStats;
+  }
+
+  /**
+   * Drops compact stats, least important first, until the bar fits on one row, so a second row can't push the goal
+   * highlight dialog's video off screen. Once all of `compactDropOrder` is gone the bar wraps as before, because a
+   * phone is too narrow for the stats that are left. Runs on view init and on a window resize; the dialogs build a
+   * new component for each player, so the stats never change under it.
+   */
+  public fitCompactStats(): void {
+    if (!this.compact || !this.statsContainer) {
+      return;
+    }
+    for (let dropped = 0; dropped <= PlayerGameStatsComponent.compactDropOrder.length; dropped++) {
+      this.droppedCompactStats = dropped;
+      this.changeDetector.detectChanges();
+      if (!this.compactStatsWrap()) {
+        return;
+      }
+    }
+  }
+
   public showBlankHeadshot(event: Event): void {
     NhlPlayerHeadshotUtils.showBlankHeadshot(event);
+  }
+
+  /**
+   * Whether the bar's stats sit on more than one row.
+   */
+  private compactStatsWrap(): boolean {
+    const items = Array.from(this.statsContainer.nativeElement.querySelectorAll<HTMLElement>(".game-stat-item"));
+    return items.length > 1 && items[items.length - 1].offsetTop > items[0].offsetTop;
   }
 
   protected readonly StatsUtils = StatsUtils;

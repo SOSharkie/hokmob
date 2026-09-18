@@ -29,7 +29,7 @@
       </div>
     </div>
   </div>
-  <div class="player-game-stats-container">
+  <div #statsContainer class="player-game-stats-container">
     <div class="stats-label">
       <span>Top Stats</span>
     </div>
@@ -58,7 +58,7 @@
         <span class="game-stat-label">Hits</span>
         <span class="game-stat-value">{{skaterStats.hits}}</span>
       </div>
-      <div class="game-stat-item">
+      <div *ngIf="isStatShown('blocks')" class="game-stat-item">
         <span class="game-stat-label">Blocks</span>
         <span class="game-stat-value">{{skaterStats.blockedShots}}</span>
       </div>
@@ -67,18 +67,18 @@
         <span class="game-stat-value">{{faceoffPercentage}}</span>
       </div>
       <div class="game-stat-item">
-        <span class="game-stat-label">Plus/Minus</span>
+        <span class="game-stat-label" title="Plus/Minus">{{compact ? '+/-' : 'Plus/Minus'}}</span>
         <span class="game-stat-value">{{skaterStats.plusMinus}}</span>
       </div>
       <div class="game-stat-item">
-        <span class="game-stat-label">Penalty Minutes</span>
+        <span class="game-stat-label" title="Penalty Minutes">{{compact ? 'PMs' : 'Penalty Minutes'}}</span>
         <span class="game-stat-value" [ngStyle]="{'color': skaterStats.pim > 0 ? '#e34d53' : ''}">{{skaterStats.pim}}</span>
       </div>
-      <div class="game-stat-item">
+      <div *ngIf="isStatShown('takeaways')" class="game-stat-item">
         <span class="game-stat-label">Takeaways</span>
         <span class="game-stat-value">{{skaterStats.takeaways}}</span>
       </div>
-      <div class="game-stat-item">
+      <div *ngIf="isStatShown('giveaways')" class="game-stat-item">
         <span class="game-stat-label">Giveaways</span>
         <span class="game-stat-value">{{skaterStats.giveaways}}</span>
       </div>
@@ -105,7 +105,7 @@
         <span class="game-stat-value">{{goalieStats.shotsAgainst}}</span>
       </div>
       <div class="game-stat-item">
-        <span class="game-stat-label">Penalty Minutes</span>
+        <span class="game-stat-label" title="Penalty Minutes">{{compact ? 'PMs' : 'Penalty Minutes'}}</span>
         <span class="game-stat-value">{{goalieStats.pim}}</span>
       </div>
     </div>

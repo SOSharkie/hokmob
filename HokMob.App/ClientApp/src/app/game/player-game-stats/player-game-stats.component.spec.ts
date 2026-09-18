@@ -64,6 +64,11 @@ describe('PlayerGameStatsComponent', () => {
     ]);
   }
 
+  /** Just the stats list's labels. */
+  function labels(): string[] {
+    return stats().map(stat => stat[0]);
+  }
+
   it('should show a real skater with his game stats and bio', async () => {
     jasmine.clock().install();
     jasmine.clock().mockDate(new Date(2026, 8, 15));
@@ -173,6 +178,50 @@ describe('PlayerGameStatsComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.player-game-stats-wrapper').classList).toContain('compact');
     expect(stats()[1]).toEqual(['Time On Ice', '22:12']);
+  });
+
+  it('should shorten the plus/minus and penalty minutes labels in the compact bar, with the full name as a tooltip', () => {
+    show(gamePlayer(8476460));
+    httpMock.expectOne('/api/nhl/player/8476460/landing');
+    expect(labels()).toContain('Plus/Minus');
+    expect(labels()).toContain('Penalty Minutes');
+
+    fixture.componentRef.setInput('compact', true);
+    fixture.detectChanges();
+    expect(labels()).toContain('+/-');
+    expect(labels()).toContain('PMs');
+    const shortLabels = Array.from<Element>(fixture.nativeElement.querySelectorAll('.game-stat-label'))
+        .filter(label => ['+/-', 'PMs'].includes(label.textContent.trim()));
+    expect(shortLabels.map(label => label.getAttribute('title'))).toEqual(['Plus/Minus', 'Penalty Minutes']);
+  });
+
+  it('should drop the least important stats, in order, to keep the compact bar on one row', () => {
+    show(gamePlayer(8476460));
+    httpMock.expectOne('/api/nhl/player/8476460/landing');
+    fixture.componentRef.setInput('compact', true);
+
+    fixture.nativeElement.style.cssText = 'display: block; width: 150px';
+    component.fitCompactStats();
+    expect(component.droppedCompactStats).toBe(3);
+    expect(labels()).not.toContain('Giveaways');
+    expect(labels()).not.toContain('Takeaways');
+    expect(labels()).not.toContain('Blocks');
+    // Everything else stays, even though the bar has to wrap to hold it
+    expect(labels()).toEqual(['HokMob Rating', 'Time On Ice', 'Goals', 'Assists', 'Shots', 'Hits', 'Faceoff %', '+/-', 'PMs']);
+
+    fixture.nativeElement.style.width = '2000px';
+    component.fitCompactStats();
+    expect(component.droppedCompactStats).toBe(0);
+    expect(labels().slice(-3)).toEqual(['PMs', 'Takeaways', 'Giveaways']);
+  });
+
+  it('should drop nothing outside the compact bar, where the stats are a column anyway', () => {
+    show(gamePlayer(8476460));
+    httpMock.expectOne('/api/nhl/player/8476460/landing');
+    fixture.nativeElement.style.cssText = 'display: block; width: 150px';
+    component.fitCompactStats();
+    expect(component.droppedCompactStats).toBe(0);
+    expect(labels().slice(-3)).toEqual(['Penalty Minutes', 'Takeaways', 'Giveaways']);
   });
 
   it('should not load anything without a player', () => {

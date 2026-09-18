@@ -424,7 +424,10 @@ Source: `boxscore.playerByGameStats.{homeTeam,awayTeam}.{forwards,defense,goalie
   It passes `[compact]="true"` to `PlayerGameStatsComponent`, which lays the bio out on one row next to the headshot
   and the stats in a wide wrapping bar instead of the player dialog's tall scrolling list, so the 16:9 video still
   fits on screen below it (the whole dialog is about 770px tall at 960px wide). On a short window the video shrinks
-  (`height: min(540px, calc(95vh - 290px))`) rather than pushing the footer off screen.
+  (`height: min(540px, calc(95vh - 290px))`) rather than pushing the footer off screen. The compact bar measures
+  itself on view init and on a window resize (`fitCompactStats`), and drops Giveaways, then Takeaways, then Blocks,
+  to stay on one row; once all three are gone it wraps as before, which is what a phone gets. Its Plus/Minus and
+  Penalty Minutes labels shorten to "+/-" and "PMs", with the full name as the `title` tooltip.
 - **Headshots:** `NhlPlayerHeadshotUtils` (`shared/utils/nhl-player-headshot-utils.ts`) builds season headshot URLs and
   swaps a failed image for `assets/blank_headshot.png` (`(error)="showBlankHeadshot($event)"`).
   `NhlImageService.getNhlPlayerHeadshot` has a TODO; the player page, search results and stat leaderboards still call it.
