@@ -5,13 +5,15 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatInputModule } from "@angular/material/input";
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatMenuModule } from '@angular/material/menu';
 
-const materialModule = [ 
+const materialModule = [
   MatToolbarModule,
   MatInputModule,
   MatIconModule,
   MatNativeDateModule,
-  MatDatepickerModule
+  MatDatepickerModule,
+  MatMenuModule
 ]
 
 @NgModule({

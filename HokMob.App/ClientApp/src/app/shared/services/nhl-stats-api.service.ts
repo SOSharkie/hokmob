@@ -5,6 +5,7 @@ import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {CurrentSeason, SeasonDates, SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {DraftPlayerStats, DraftStatsResponse} from "@shared/models/nhl-stats-api/draft-stats.model";
 
 /**
  * The stats the NHL web API doesn't have, from the NHL stats API through the backend (/api/nhl-stats/*). The backend
@@ -20,6 +21,8 @@ export class NhlStatsApiService {
   private readonly nhlLeadersUrl = "/api/nhl-stats/leaders";
 
   private readonly nhlSeasonsUrl = "/api/nhl-stats/seasons";
+
+  private readonly nhlDraftStatsUrl = "/api/nhl-stats/draft";
 
   /** How long the season dates are reused before they're asked for again: 1 hour. */
   private readonly seasonDatesMaxAge = 60 * 60 * 1000;
@@ -98,6 +101,28 @@ export class NhlStatsApiService {
       return this.http.get<TeamStatsResponse>(url).subscribe({
         next: (response) => {
           resolve(response?.teams ?? []);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+   * Gets the regular season career stats of the players drafted in one round, sorted by overall pick. Players who never
+   * played an NHL game aren't listed, so a recent round can resolve an empty list.
+   *
+   * @param year - The draft year, from 2006 on.
+   * @param round - The round, 1 to 7.
+   */
+  public getDraftStats(year: number, round: number): Promise<DraftPlayerStats[]> {
+    const url = this.nhlDraftStatsUrl + "?year=" + year + "&round=" + round;
+    return new Promise((resolve, reject) => {
+      return this.http.get<DraftStatsResponse>(url).subscribe({
+        next: (response) => {
+          resolve(response?.players ?? []);
         },
         error: (error) => {
           console.error(error);

@@ -84,8 +84,15 @@ describe('PlayoffsComponent', () => {
     return titles.map(title => title.textContent.trim());
   }
 
-  function selectElement(): HTMLSelectElement {
+  function seasonPicker(): HTMLButtonElement {
     return fixture.nativeElement.querySelector('.season-picker');
+  }
+
+  /** Opens the season menu and returns its options. The menu renders in the overlay, outside the fixture. */
+  function openSeasonMenu(): HTMLButtonElement[] {
+    seasonPicker().click();
+    fixture.detectChanges();
+    return Array.from(document.querySelectorAll('.pill-picker-menu.season-menu .pill-picker-option'));
   }
 
   it('should show the latest bracket with series, falling back from the empty 2026-27 bracket', async () => {
@@ -107,11 +114,15 @@ describe('PlayoffsComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const options = Array.from(selectElement().options);
+    expect(seasonPicker().textContent.trim()).toBe('2025-26');
+    const options = openSeasonMenu();
     expect(options.length).toBe(13);
-    expect([options[0].value, options[0].textContent.trim()]).toEqual(['20252026', '2025-26']);
-    expect([options[12].value, options[12].textContent.trim()]).toEqual(['20132014', '2013-14']);
-    expect(selectElement().value).toBe('20252026');
+    expect(options[0].textContent.trim()).toBe('2025-26');
+    expect(options[12].textContent.trim()).toBe('2013-14');
+    const selected = options.filter(option => option.classList.contains('selected'));
+    expect(selected.map(option => option.textContent.trim())).toEqual(['2025-26']);
+    expect(selected[0].getAttribute('role')).toBe('menuitemradio');
+    expect(selected[0].getAttribute('aria-checked')).toBe('true');
   });
 
   it('should not fall back when the current season has series', async () => {
@@ -155,7 +166,7 @@ describe('PlayoffsComponent', () => {
     fixture.detectChanges();
 
     expect(text('.playoffs-title')).toBe('2022-23 Playoffs');
-    expect(selectElement().value).toBe('20222023');
+    expect(seasonPicker().textContent.trim()).toBe('2022-23');
     expect(desktopCardLetters()).toBe('E F G H K L N O M I J A B C D');
     const final: any = fixture.nativeElement.querySelector('.stanley-cup-final app-playoff-series');
     expect([final.seriesData.topSeed.abbrev, final.seriesData.bottomSeed.abbrev]).toEqual(['VGK', 'FLA']);
@@ -191,10 +202,26 @@ describe('PlayoffsComponent', () => {
   it('should set the season query parameter when a season is picked', async () => {
     await openDefault();
     await fixture.whenStable();
-    const select = selectElement();
-    select.value = '20222023';
-    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    openSeasonMenu().find(option => option.textContent.trim() === '2022-23').click();
     expect(navigate).toHaveBeenCalledWith([], jasmine.objectContaining({queryParams: {season: '20222023'}}));
+  });
+
+  it('should scroll the opened season menu to the selected season', async () => {
+    await open('20202021');
+    await flushBracket(2021);
+    const scrollIntoView = spyOn(HTMLElement.prototype, 'scrollIntoView');
+    const options = openSeasonMenu();
+    await new Promise(resolve => setTimeout(resolve));
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.calls.mostRecent().object).toBe(options.find(option => option.textContent.trim() === '2020-21'));
+  });
+
+  it('should not show the season picker before the seasons are known', () => {
+    queryParams.next(convertToParamMap({}));
+    fixture = TestBed.createComponent(PlayoffsComponent);
+    fixture.detectChanges();
+    expect(seasonPicker()).toBeNull();
   });
 
   it('should clear the bracket and show the loading state when the season changes', async () => {
