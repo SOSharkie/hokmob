@@ -30,6 +30,16 @@
       margin-bottom: $spacing-small;
     }
 
+    // Marks a preseason or playoff game, so it can be told apart from a regular season one at a glance
+    .game-type-label {
+      font-size: x-small;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      text-align: center;
+      color: $gray-03;
+      margin-bottom: $spacing-small;
+    }
+
     .game-time {
       display: flex;
       flex-direction: column;

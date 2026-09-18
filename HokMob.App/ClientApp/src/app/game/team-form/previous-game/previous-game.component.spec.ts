@@ -103,6 +103,20 @@ describe('PreviousGameComponent', () => {
     expect(scoreClasses()).toEqual([]);
   });
 
+  it('should mark a real preseason and playoff game, but not a regular season one', () => {
+    // WSH 5 @ BOS 2, a preseason game
+    show(bostonGame(2025010013), 6);
+    expect(text('.score-container')).toBe('2 - 5');
+    expect(text('.game-type-label')).toBe('PRE');
+
+    // BOS 3 @ BUF 4, a playoff game
+    show(bostonGame(2025030111), 6);
+    expect(text('.game-type-label')).toBe('PLAYOFFS');
+
+    show(bostonGame(2025021292), 6);
+    expect(element('.game-type-label')).toBeNull();
+  });
+
   it('should fall back to the team utils for a missing name and an unknown team logo', () => {
     const game = bostonGame(2025021292);
     delete game.homeTeam.commonName;

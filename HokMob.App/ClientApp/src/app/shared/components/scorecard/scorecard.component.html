@@ -10,6 +10,7 @@
   </div>
   <div class="central-info">
     <span *ngIf="isPlayoffGame" class="playoff-series">{{playoffSeriesDetails}}</span>
+    <span *ngIf="gameTypeLabel" class="game-type-label">{{gameTypeLabel}}</span>
     <div *ngIf="futureGame && !smallerScorecard" class="game-time">
       <span>{{gameTime}}</span>
       <span>{{gameAmPm}}</span>

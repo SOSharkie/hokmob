@@ -75,6 +75,15 @@ $central-info-width: 205px;
       }
     }
 
+    // Marks a preseason or playoff game, above the time or score
+    .game-type-label {
+      margin-bottom: $spacing-x-small;
+      font-size: x-small;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      color: $gray-03;
+    }
+
     .playoff-series-label {
       margin-top: $spacing-small;
       font-size: medium;

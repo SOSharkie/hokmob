@@ -18,6 +18,7 @@ import scoreWithOvertimeAndShootout from './score-2026-03-01.json';
 import scorePlayoffs from './score-2026-06-09.json';
 import scoreFuture from './score-2026-10-08.json';
 import scoreRegularSeason from './score-2026-03-15.json';
+import scorePreseason from './score-2026-09-19.json';
 import standingsNow from './standings-now.json';
 import playoffCarousel from './playoff-series-carousel-20252026.json';
 import playoffBracket from './playoff-bracket-2026.json';
@@ -78,8 +79,9 @@ import {SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.mod
  * Real responses for unit tests, captured on 2026-09-15: api-web.nhle.com responses, the player search
  * (search-player-mac, through /api/nhl-search/player) and the backend's stats API responses (player-stats-*,
  * leaders-hits-shots-*, team-stats-*, seasons-*, captured from a running app because the browser only ever sees the merged
- * shape). The JSON files are unchanged responses, except score-2026-03-01 (trimmed to 3 games), score-2026-10-08
- * (trimmed to 2 games) and the club-schedule-season-* responses (trimmed games, see mockClubScheduleSeason). The
+ * shape). The JSON files are unchanged responses, except score-2026-03-01 (trimmed to 3 games), score-2026-10-08 and
+ * score-2026-09-19 (trimmed to 2 games, the latter captured on 2026-09-18) and the club-schedule-season-* responses
+ * (trimmed games, see mockClubScheduleSeason). The
  * gamecenter-* responses are unchanged. To refresh one, download it again with curl and re-check the values the specs
  * assert.
  *
@@ -143,6 +145,19 @@ export function mockFutureScoreResponse(): ScoreResponse {
 /** Game 2026020056: UTA (68) @ BOS, not started. */
 export function mockFutureGame(): ScoreGame {
   return mockFutureScoreResponse().games[0];
+}
+
+/**
+ * score/2026-09-19, the first day of the 2026-27 preseason, trimmed to 2 games that haven't started: DAL @ STL and
+ * MTL @ TOR.
+ */
+export function mockPreseasonScoreResponse(): ScoreResponse {
+  return copy(scorePreseason);
+}
+
+/** Game 2026010001: DAL @ STL, a preseason game that hasn't started. */
+export function mockPreseasonGame(): ScoreGame {
+  return mockPreseasonScoreResponse().games[0];
 }
 
 /**

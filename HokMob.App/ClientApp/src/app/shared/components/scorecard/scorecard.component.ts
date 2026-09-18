@@ -83,6 +83,17 @@ export class ScorecardComponent implements OnChanges {
     return "";
   }
 
+  /**
+   * A short label for a game that isn't part of the regular season, like "PRE". A playoff game with a series status
+   * shows that instead, since it already says the game is a playoff game.
+   */
+  public get gameTypeLabel(): string {
+    if (this.game && !this.isPlayoffGame) {
+      return NhlGameInfoUtils.getGameTypeLabel(this.game.gameType);
+    }
+    return "";
+  }
+
   public get gameDate(): string {
     if (this.game) {
       switch (this.game.gameScheduleState) {

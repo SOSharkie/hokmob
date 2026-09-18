@@ -2,6 +2,7 @@ import {Component, Input} from '@angular/core';
 import {ClubScheduleGame, ClubScheduleTeam} from "@shared/models/nhl-web-api/club-schedule.model";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Component({
   selector: 'app-previous-game',
@@ -49,6 +50,13 @@ export class PreviousGameComponent {
       return "N/A";
     }
     return this.game.homeTeam.score + " - " + this.game.awayTeam.score;
+  }
+
+  /**
+   * A short label for a game that isn't part of the regular season, like "PRE" or "PLAYOFFS", shown under the score.
+   */
+  public get gameTypeLabel(): string {
+    return NhlGameInfoUtils.getGameTypeLabel(this.game?.gameType);
   }
 
   /**
