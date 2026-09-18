@@ -45,9 +45,9 @@ describe('TeamLogoComponent', () => {
     expect(image().getAttribute('src')).toBe('assets/logos/toronto.png');
   });
 
-  it('should use the NHL hosted logo for Utah, which has no local asset yet', () => {
+  it('should use the local logo for Utah', () => {
     render({teamId: 68});
-    expect(image().getAttribute('src')).toBe('https://assets.nhle.com/logos/nhl/svg/UTA_light.svg');
+    expect(image().getAttribute('src')).toBe('assets/logos/utah.png');
   });
 
   it('should fit the logo inside a square box the size of the given size', () => {
