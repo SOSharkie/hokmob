@@ -8,26 +8,40 @@
   padding: $spacing-large;
   min-height: 50px;
 
-  .player-headshot-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 75px;
-    width: 75px;
-    border-radius: 50%;
-    overflow: hidden;
+  .player-avatar {
+    position: relative;
 
-    .player-headshot {
-      height: 80px;
-      width: 80px;
-      margin-top: 5px;
+    .player-headshot-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 75px;
+      width: 75px;
+      border-radius: 50%;
+      overflow: hidden;
+
+      .player-headshot {
+        height: 80px;
+        width: 80px;
+        margin-top: 5px;
+      }
+    }
+
+    // TODO: Investigate moving this to app-team-logo (shared/components/team-logo). It sizes by width only, so a
+    // crest's height still varies with its shape.
+    .team-logo {
+      position: absolute;
+      right: -12px;
+      bottom: 0;
+      width: 30px;
     }
   }
-  // TODO: Investigate moving this to app-team-logo (shared/components/team-logo). It sizes by width only, so a crest's
-  // height still varies with its shape, and it is absolutely positioned at a fixed top, which a taller logo overhangs.
-  .team-logo {
-    position: absolute;
-    width: 30px;
+
+  .player-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
   }
 
   .player-name {
@@ -109,18 +123,135 @@
   }
 }
 
-// Desktop Styling
-@media only screen and (min-width: $game-mobile-screen-breakpoint) {
-  .header-container .team-logo {
-    left: 190px;
-    top: 57px;
+// Compact layout (the goal highlight dialog): the bio on one row, and the stats in a wide wrapping bar instead of a
+// tall scrolling list, so the goal's video still fits on screen below.
+.compact {
+  .header-container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: $spacing-x-large;
+    padding: $spacing-medium $spacing-xx-large $spacing-large;
+    border-bottom: none;
+    min-height: 0;
+
+    .player-avatar {
+      // Room for the team logo, which hangs off the headshot
+      margin-right: $spacing-large;
+    }
+
+    .player-avatar .player-headshot-container {
+      height: 56px;
+      width: 56px;
+
+      .player-headshot {
+        height: 60px;
+        width: 60px;
+        margin-top: 4px;
+      }
+    }
+
+    .player-avatar .team-logo {
+      right: -8px;
+      width: 22px;
+    }
+
+    .player-details {
+      align-items: flex-start;
+      width: auto;
+    }
+
+    .player-name {
+      text-align: left;
+      margin-top: 0;
+    }
+
+    .player-info {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: $spacing-medium $spacing-x-large;
+      width: auto;
+      margin-top: $spacing-medium;
+      margin-bottom: 0;
+
+      .info-item {
+        flex-direction: row;
+        align-items: center;
+        gap: $spacing-medium;
+        text-align: left;
+        width: auto;
+        font-size: 13px;
+
+        .info-item-label {
+          margin-bottom: 0;
+        }
+      }
+
+      .country-container .country-flag {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .player-game-stats-container {
+    margin: 0 $spacing-xx-large $spacing-large;
+    padding: 0;
+    max-height: none;
+    overflow: visible;
+
+    .stats-label {
+      display: none;
+    }
+
+    .player-game-stats {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: $spacing-medium $spacing-large;
+      background-color: $black-03;
+      border-radius: 15px;
+      padding: $spacing-large $spacing-x-large;
+
+      .game-stat-item {
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        gap: $spacing-medium;
+        margin-top: 0;
+
+        .game-stat-label {
+          font-size: 11px;
+          white-space: nowrap;
+        }
+
+        .game-stat-value {
+          padding: 0 $spacing-medium;
+          font-size: 15px;
+          line-height: 22px;
+          border-radius: 11px;
+        }
+      }
+    }
   }
 }
 
 // Mobile Styling
 @media only screen and (max-width: $game-mobile-screen-breakpoint) {
-  .header-container .team-logo {
-    left: 162px;
-    top: 60px;
+  .compact {
+    .header-container {
+      gap: $spacing-large;
+      padding: $spacing-medium $spacing-large $spacing-large;
+    }
+
+    .player-game-stats-container {
+      margin: 0 $spacing-large $spacing-large;
+
+      .player-game-stats {
+        justify-content: flex-start;
+        gap: $spacing-large;
+        padding: $spacing-large;
+      }
+    }
   }
 }

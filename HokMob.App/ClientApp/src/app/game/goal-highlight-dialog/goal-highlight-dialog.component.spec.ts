@@ -59,6 +59,11 @@ describe('GoalHighlightDialogComponent', () => {
         .toBe('https://nhl.com/video/car-vgk-ehlers-scores-empty-net-goal-6398033953112');
   });
 
+  it("should lay the scorer's stats out compactly, so the video fits below them", () => {
+    show({player: ehlers(), video: ehlersGoalVideo()});
+    expect(element('app-player-game-stats').compact).toBeTrue();
+  });
+
   it('should show no video player without a video', () => {
     show({player: ehlers(), video: undefined});
     expect(element('.video-frame')).toBeNull();

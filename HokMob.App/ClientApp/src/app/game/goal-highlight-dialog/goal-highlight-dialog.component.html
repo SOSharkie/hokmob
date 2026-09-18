@@ -5,7 +5,7 @@
       <mat-icon fontIcon="close"></mat-icon>
     </button>
   </div>
-  <app-player-game-stats [player]="player"></app-player-game-stats>
+  <app-player-game-stats [player]="player" [compact]="true"></app-player-game-stats>
   <div *ngIf="video" class="video-frame-container">
     <iframe class="video-frame" [src]="embedUrl" [title]="video.label"
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>

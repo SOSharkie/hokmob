@@ -164,6 +164,17 @@ describe('PlayerGameStatsComponent', () => {
     expect(headshot.src).toMatch(/assets\/blank_headshot\.png$/);
   });
 
+  it('should only mark the wrapper compact when asked to, keeping the same stats either way', () => {
+    show(gamePlayer(8476460));
+    httpMock.expectOne('/api/nhl/player/8476460/landing');
+    expect(fixture.nativeElement.querySelector('.player-game-stats-wrapper').classList).not.toContain('compact');
+
+    fixture.componentRef.setInput('compact', true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.player-game-stats-wrapper').classList).toContain('compact');
+    expect(stats()[1]).toEqual(['Time On Ice', '22:12']);
+  });
+
   it('should not load anything without a player', () => {
     show(undefined);
     httpMock.expectNone(() => true);

@@ -22,6 +22,13 @@ export class PlayerGameStatsComponent implements OnChanges {
   public player: GamePlayer;
 
   /**
+   * Lays the bio out on one row and the stats in a wide bar, for the goal highlight dialog, which needs the room
+   * below for the video.
+   */
+  @Input()
+  public compact: boolean = false;
+
+  /**
    * The player's bio from player/{id}/landing. Undefined until it loads, or when it fails.
    */
   public playerLanding: PlayerLanding;

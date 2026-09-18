@@ -19,7 +19,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: $spacing-large $spacing-large $spacing-large $spacing-xx-large;
+    padding: $spacing-large $spacing-large $spacing-x-small $spacing-xx-large;
 
     .goal-highlight-title {
       font-size: 16px;
@@ -48,6 +48,7 @@
 
   .video-frame-container {
     position: relative;
+    width: 100%;
     aspect-ratio: 16 / 9;
     background-color: $black-01;
 
@@ -75,5 +76,15 @@
       color: white;
       text-decoration: underline;
     }
+  }
+}
+
+// Desktop Styling: keep the whole dialog on screen on a short window by shrinking the video instead of scrolling it
+// off, and center it once it is narrower than the dialog.
+@media only screen and (min-width: $game-mobile-screen-breakpoint) {
+  .goal-highlight-dialog-container .video-frame-container {
+    width: auto;
+    height: min(540px, calc(95vh - 290px));
+    margin: 0 auto;
   }
 }
