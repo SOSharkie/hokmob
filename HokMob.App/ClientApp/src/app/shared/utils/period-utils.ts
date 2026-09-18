@@ -46,7 +46,7 @@ export class PeriodUtils {
    * Gets the status label for a live game, like "2nd - 5:32", "End 1st" or "SO".
    *
    * TODO: Verify during a live game that the intermission's periodDescriptor is the period just ended, so the label is
-   *  "End 1st" and not "End 2nd" (see docs/nhl-api-migration-plan.md, section 10).
+   *  "End 1st" and not "End 2nd" (see docs/nhl-api.md, "Live game checks").
    *
    * @param periodDescriptor - The current period from the new NHL API.
    * @param clock - The game clock from the new NHL API.

@@ -1,13 +1,13 @@
 # HokMob
 
-Website: [hokmob.azurewebsites.net/]()
+Website: [hokmob.azurewebsites.net](https://hokmob.azurewebsites.net/)
 
-This is a hockey stats website based on the the soccer stats website
-[Fotmob](https://www.fotmob.com/). It uses publicly available NHL game API data to display scores, 
-stats, and more.
+A hockey stats website for the NHL, based on the soccer stats site [Fotmob](https://www.fotmob.com/). It shows
+scores, standings, game details, team and player pages, leaderboards, the playoff bracket and the draft, all from
+publicly available NHL API data.
 
 The app has two parts:
-- **`HokMob.App/`** – ASP.NET Core (.NET 7) backend. It serves the built Angular app and proxies NHL API requests.
+- **`HokMob.App/`** – ASP.NET Core (.NET 7) backend. It serves the built Angular app and proxies the NHL APIs.
 - **`HokMob.App/ClientApp/`** – Angular 15 frontend.
 
 ## Prerequisites
@@ -22,24 +22,40 @@ The app has two parts:
 
 ## NHL API proxy
 
-The NHL web API (`https://api-web.nhle.com/v1/`) doesn't send CORS headers, so the browser can't call it
-directly. Instead, the Angular app calls the backend at `/api/nhl/...`, and the backend forwards the request:
+The NHL APIs don't all send CORS headers, so the browser can't call them directly. The Angular app calls the
+backend, which forwards the request:
 
 ```
 GET /api/nhl/score/now  ->  https://api-web.nhle.com/v1/score/now
 ```
 
-- Controller: `HokMob.App/Controllers/NhlController.cs`
-- HTTP client + in-memory caching: `HokMob.App/Services/NhlApiClient.cs`
-- Only allow-listed top-level paths are proxied (`score`, `schedule`, `standings`, `gamecenter`, `player`, ...).
-  To use a new NHL endpoint, add its first path segment to `AllowedRoots` in `NhlController.cs`.
-- Responses are cached briefly (10s for live data, up to 30 minutes for player/stat data).
+| Route | Upstream | Controller / client |
+|---|---|---|
+| `/api/nhl/<path>` | `api-web.nhle.com/v1` | `NhlController.cs`, `NhlApiClient.cs` |
+| `/api/nhl-stats/*` | `api.nhle.com/stats/rest/en` | `NhlStatsController.cs`, `NhlStatsApiClient.cs` |
+| `/api/nhl-search/player` | `search.d3.nhle.com` | `NhlSearchController.cs`, `NhlSearchApiClient.cs` |
 
-In Angular services, always use relative URLs like `/api/nhl/score/now` rather than the NHL URL.
+- Only allow-listed top-level paths are proxied (`score`, `schedule`, `standings`, `gamecenter`, `player`, ...).
+  To use a new api-web endpoint, add its first path segment to `AllowedRoots` in `NhlController.cs`.
+- Responses are cached in memory, from 10 seconds for live data to hours for data that rarely changes.
+- In Angular services, always use relative URLs like `/api/nhl/score/now` rather than an NHL host.
+
+[`docs/nhl-api.md`](docs/nhl-api.md) describes which API serves what, what each page loads, the response
+conventions, the stats API query syntax and the cache durations.
 
 ## Development server
 
-Run the backend and frontend together from the `HokMob.App` directory:
+The simplest way to run both parts, from `HokMob.App/ClientApp`:
+
+```
+npm run dev
+```
+
+It starts the backend on `https://localhost:7157` and an Angular dev server on plain HTTP; open
+`http://localhost:4200`. Output is prefixed with `[api]` and `[web]`, and Ctrl+C stops both. Use this when a browser
+doesn't trust the dev certificate. It also works without .NET 7 installed.
+
+The HTTPS route runs both from the backend project instead:
 
 ```
 cd HokMob.App
@@ -47,25 +63,12 @@ dotnet run
 ```
 
 Then open `https://localhost:7157`. The first run installs npm packages and starts the Angular dev server
-(`https://localhost:44424`) automatically. The Angular app reloads when you change source files, and
+(`https://localhost:44424`) automatically. Either way the Angular app reloads when you change source files, and
 `/api` requests are forwarded to the backend via `ClientApp/proxy.conf.js`.
 
 You can also run the Angular dev server on its own (`cd HokMob.App/ClientApp`, then `npm start`), but
-`/api/nhl/...` calls only work while the backend is also running.
-
-### One command over HTTP
-
-From `HokMob.App/ClientApp`, `npm run dev` starts the backend (`https://localhost:7157`) and an Angular dev server
-on plain HTTP together. Open `http://localhost:4200`. Use this when a browser doesn't trust the dev certificate,
-such as the Claude Code in-app browser, which uses the `hokmob` config in `.claude/launch.json`. Output is prefixed
-with `[api]` and `[web]`, and Ctrl+C stops both. The backend runs on a newer .NET runtime if .NET 7 isn't installed.
-
-```
-cd HokMob.App/ClientApp
-npm run dev
-```
-
-To test the backend on its own, open `https://localhost:7157/api/nhl/score/now` in the browser.
+`/api/nhl/...` calls only work while the backend is also running. To test the backend on its own, open
+`https://localhost:7157/api/nhl/score/now`.
 
 ### Troubleshooting: "Unable to configure HTTPS endpoint"
 
@@ -80,21 +83,30 @@ dotnet dev-certs https --trust
 If the Angular dev server then shows certificate errors, delete `%APPDATA%\ASP.NET\https\hokmob.pem` and
 `hokmob.key` (bash/macOS: `~/.aspnet/https/`). `npm start` re-exports them from the new certificate.
 
-## Code scaffolding
+## Tests
 
-From `HokMob.App/ClientApp`, run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+From `HokMob.App/ClientApp`:
+
+```
+npm run test:ci
+```
+
+That runs the [Karma](https://karma-runner.github.io) suite once in headless Chrome. `npm test` watches instead and
+opens a browser. The `PR tests` workflow runs the production Angular build, the unit tests and `dotnet build -c
+Release` on every pull request; all of it has to pass before merging into `master`.
 
 ## Build
 
-Run `dotnet publish -c Release` from `HokMob.App` to build the backend and a production Angular bundle
-(output in `bin/Release/net7.0/publish`). This is what the GitHub Actions workflow deploys to Azure.
+Run `dotnet publish -c Release` from `HokMob.App` to build the backend and a production Angular bundle (output in
+`bin/Release/net7.0/publish`). Pushing to `master` runs the same publish and deploys it to Azure. To build only the
+Angular app, run `ng build` from `HokMob.App/ClientApp`; the artifacts land in `dist/`.
 
-To build only the Angular app, run `ng build` from `HokMob.App/ClientApp`. The build artifacts will be stored in the `dist/` directory.
+New Angular code is scaffolded from `HokMob.App/ClientApp` with `ng generate component <name>` (or `directive`,
+`pipe`, `service`, ...).
 
-## Running unit tests
+## Documentation
 
-Run `ng test` from `HokMob.App/ClientApp` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+- [`CLAUDE.md`](CLAUDE.md) – repo layout, editing conventions, how to run, build and test.
+- [`docs/nhl-api.md`](docs/nhl-api.md) – the NHL APIs: which one serves what, response conventions, caching, open
+  questions.
+- [`docs/draft-page.md`](docs/draft-page.md) – the draft page's data and behaviour.

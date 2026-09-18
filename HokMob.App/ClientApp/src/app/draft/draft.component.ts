@@ -37,7 +37,7 @@ export interface DraftPickRow {
  * The draft page: the picks of one draft round from draft/picks/{year}/{round}, with each player's regular season
  * career games played, assists, goals and points from /api/nhl-stats/draft. The picks have no player IDs, so the two
  * are matched by overall pick (and last name). By default it's the latest draft's round 1. The year and round are
- * the "year" and "round" query parameters, from 2006 on (see docs/draft-page-plan.md).
+ * the "year" and "round" query parameters, from 2006 on (see docs/draft-page.md).
  */
 @Component({
   selector: 'app-draft',

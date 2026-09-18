@@ -4,7 +4,7 @@ import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
 
 /**
  * The player's bio, from player/{id}/landing. Neither NHL API has captaincy or rookie flags, so the old
- * "Captain / Rookie" tile shows the draft instead (see docs/nhl-api-legacy-migration-plan.md, decision 4).
+ * "Captain / Rookie" tile shows the draft instead.
  */
 @Component({
   selector: 'app-player-bio',

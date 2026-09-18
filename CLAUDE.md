@@ -3,40 +3,35 @@
 Hockey stats site (like Fotmob, for the NHL). `HokMob.App/` is an ASP.NET Core (.NET 7) backend that serves the Angular
 app and proxies the NHL API. `HokMob.App/ClientApp/` is the Angular 15 frontend (Angular Material, dayjs, chart.js).
 
-## NHL API migration (done)
+## NHL APIs
 
-The old NHL APIs (`statsapi.web.nhl.com`, `cms.nhl.bamgrid.com`, `suggest.svc.nhl.com`) are dead, and nothing calls
-them anymore. The home and game pages moved in phases 0–8 (`docs/nhl-api-migration-plan.md`); the team, player, stats
-and playoffs pages and the header search moved in phases 9–14, and phase 15 deleted the old code
-(`docs/nhl-api-legacy-migration-plan.md`). **Read both plans before working on a page**: they have field mappings,
-decisions, known risks, and the open live game checks and follow-ups (first plan section 10, second plan section 15).
-Update them when you change a page or finish an open item.
+The site runs on three public sources ([reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md)):
+`api-web.nhle.com/v1` for live, game, team, schedule, standings, playoff and draft data; the stats API
+`api.nhle.com/stats/rest/en` for per-season and per-game player stats, team stats, hits and shots leaders and season
+dates; and `search.d3.nhle.com` for the player search. All three go through the backend, which builds every stats API
+query (the stats API sends no CORS header).
 
-- **APIs** ([reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md)):
-  - `api-web.nhle.com/v1` for everything live, game, team, schedule, standings and playoff data.
-  - The stats API `api.nhle.com/stats/rest/en` for per-season and per-game player stats, and for hits and shots
-    leaders.
+**Read [`docs/nhl-api.md`](docs/nhl-api.md) before working on a page.** It covers which API serves what, what each
+page loads, the response conventions, the stats API query syntax and fields, the caching rules, and the open live
+game checks. Update it when a page's data changes or an open item closes. The draft page has its own doc,
+[`docs/draft-page.md`](docs/draft-page.md).
 
-  The second plan's section 3 says which one to use for what, and section 2.2 has the verified stats API query
-  syntax (`cayenneExp`, `isAggregate`, `isGame`, `sort`) and fields. The stats API sends no CORS header, so it's
-  only called from the backend, which builds the queries.
-
-- Every page and the header search use the new APIs. A request to an old host is a regression.
-- Out-of-scope code that breaks because a shared component changed gets the smallest compile fix plus a `// TODO:`
-  comment pointing at the plan (like `// TODO: ... (see docs/nhl-api-migration-plan.md, 5.2)`).
+The old hosts (`statsapi.web.nhl.com`, `cms.nhl.bamgrid.com`, `suggest.svc.nhl.com`) are dead and no longer resolve.
+A request to one of them is a regression.
 
 ## Layout
 
 - `HokMob.App/Controllers/NhlController.cs`: proxies `/api/nhl/<path>` → `https://api-web.nhle.com/v1/<path>`. Only
   first path segments in `AllowedRoots` are proxied, so add new roots there. Empty segments are dropped, so a
   trailing `/` is fine.
-- `HokMob.App/Services/NhlApiClient.cs`: HTTP client with in-memory caching per path root (10s for live data).
+- `HokMob.App/Services/NhlApiClient.cs`: HTTP client with in-memory caching per path root (10s for live data; the
+  durations are in `docs/nhl-api.md`). `NhlSeasonService` gives it the current season, for caching settled score days.
 - `HokMob.App/Controllers/NhlSearchController.cs`: `/api/nhl-search/player?q=…` → `search.d3.nhle.com` player search
   (`NhlSearchApiClient`, cached 5 minutes). Only allowlisted query parameters are forwarded.
 - `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/teams`, `/seasons` and
-  `/draft?year=&round=` (career stats of a draft round, keyed by overall pick; see `docs/draft-page-plan.md`),
-  built from the stats API (`NhlStatsApiClient`, cached 5 minutes). The controller builds every upstream query and merges the
-  reports a page needs into one response.
+  `/draft?year=&round=` (career stats of a draft round, keyed by overall pick), built from the stats API
+  (`NhlStatsApiClient`, cached 5 minutes). The controller builds every upstream query and merges the reports a page
+  needs into one response.
 - `ClientApp/src/app/shared/`:
   - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the
     `/api/nhl-stats/*` responses.
@@ -44,17 +39,17 @@ Update them when you change a page or finish an open item.
   - `utils/`: static helpers: `PeriodUtils`, `NhlGameInfoUtils`, `NhlTeamUtils`, `NhlTeamLogoUtils`,
     `NhlTeamColorUtils`, `NhlPlayerHeadshotUtils`, `NhlVideoUtils`, `DateTimeUtils`, `StatsUtils`, `PlayByPlayUtils`,
     `PickerMenuUtils` (with the `.pill-picker` styles in `styles.scss`, for the draft and playoffs pickers).
-  - `enums/`: new API enums (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...).
+  - `enums/`: API enums (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...).
   - `components/`: shared components (scorecard, standings, ...).
 - Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`,
-  `draft` (`docs/draft-page-plan.md`), `header`, `footer`, `about`.
+  `draft` (`docs/draft-page.md`), `header`, `footer`, `about`.
 - Path aliases: `@shared/*`, `@app/*`, `@home/*`, `@header/*`.
 
 ## Editing conventions
 
 - Angular services call relative URLs (`/api/nhl/score/2026-03-15`), never the NHL host directly (no CORS). They wrap
   `HttpClient` in Promises (`new Promise` + `subscribe`), log with `console.error`, and reject on error.
-- Use the new models; read localized names via `.default`. Don't adapt new data into the old models.
+- Read localized names via `.default` (most api-web names are `{ "default": "Jets", ... }` objects).
 - Team logos, colors and full names come from the utils keyed by team ID (`NhlTeamUtils.getTeam(id)`,
   `NhlTeamLogoUtils.getTeamPrimaryLogo(id)`). Standings rows only have abbreviations: `NhlTeamUtils.getTeamIdByAbbrev`.
   Utah is ID 68.
@@ -86,14 +81,14 @@ Update them when you change a page or finish an open item.
 
 - **CI:** `.github/workflows/pr-tests.yml` runs on every pull request: job "Client tests" (production `ng build`,
   which enforces the `angular.json` budgets, then `npm run test:ci`) and job "Backend build" (`dotnet build -c
-  Release`). Both are meant to be required status checks for merging into `master`.
+  Release`). Both have to pass before merging into `master`.
 - **Type-check:** from `HokMob.App/ClientApp`, run `npx ng build --configuration development` (~10–20s). This catches
   template type errors that `tsc` alone misses. Run it after every change.
 - **Unit tests:** from `HokMob.App/ClientApp`, run `npm run test:ci` (Karma + headless Chrome, single run, ~30s).
   `npm test` watches and opens Chrome. To run a subset, add `--include "src/app/home/**/*.spec.ts"` (repeatable) to
   `npx ng test --watch=false --browsers=ChromeHeadless`.
-  - **Every migration phase adds or updates tests** for the services, utils and components it touches. The plan's
-    section 7 lists what each phase needs. Cover the happy path, empty data, HTTP errors and important edge cases.
+  - **Add or update tests for every service, util and component you touch:** the happy path, empty data, HTTP
+    errors and the important edge cases.
   - **Use real API data.** `src/app/shared/testing/nhl-api-mocks/` holds real api-web.nhle.com responses (JSON, only
     item counts trimmed). `nhl-api-mocks.ts` returns fresh copies (`mockScoreResponse()`, `mockPlayoffGame()`,
     `mockStandingsTeams()`, `mockRankedCarouselSeries('A')`, ...). For a new endpoint, curl a real response into that
@@ -114,8 +109,8 @@ Update them when you change a page or finish an open item.
   - **Components must `.catch()` service promises.** An unhandled rejection is thrown in `afterAll` and makes Karma
     report "Disconnected, because no message in 30000 ms". If a run stops like that, look for "Uncaught (in promise)"
     in the output.
-  - Specs for unmigrated components are still CLI "should create" placeholders; some skip rendering (with a comment).
-    Replace them with real tests when the component migrates.
+  - The only CLI "should create" placeholder specs left are `about`, `footer`, `navigation-menu` and `app`, which
+    call no API. Give a component a real spec when you change it.
   - `tsconfig.spec.json` must not include `"node"` in `types` (it clashes with the DOM lib and changes `setInterval`'s
     return type), and needs `resolveJsonModule` for the fixtures. `src/test.ts` only sets up the test environment;
     the Angular 15 Karma builder finds the spec files.
@@ -135,22 +130,19 @@ Update them when you change a page or finish an open item.
     it (e.g. 895px and 905px for a 900px breakpoint) and look for truncated text, overflow, horizontal scroll, wrapped
     or clipped rows and anything else the layout shouldn't do at that width. Check both layouts, not just the one that
     changed.
-- **Season-gated UI:** the current season and playoff mode come from `NhlStatsApiService.getCurrentSeason()`, worked
-  out from `/api/nhl-stats/seasons` by `DateTimeUtils.getCurrentNhlSeason` / `isPlayoffMode`. A season starts 14
-  days before its first (preseason) game; playoff mode runs from 2 days before its first playoff game until the next
-  season starts. In playoff mode, home shows the playoff summary and `/stats` shows the playoffs first. To test it
-  outside the playoffs, temporarily return `isPlayoffMode: true` from `getCurrentSeason`, then revert with
-  `git checkout -- <file>`. Never commit the override. In specs, spy on `getCurrentSeason` instead of the date.
+- **Season-gated UI:** the current season and playoff mode come from `NhlStatsApiService.getCurrentSeason()` (the
+  rules are in `docs/nhl-api.md`). In playoff mode, home shows the playoff summary and `/stats` shows the playoffs
+  first. To test that outside the playoffs, temporarily return `isPlayoffMode: true` from `getCurrentSeason`, then
+  revert with `git checkout -- <file>`. Never commit the override. In specs, spy on `getCurrentSeason` instead of
+  the date.
 - **Sample data:** both APIs are public. Stats API example: `curl -sSL -o <scratch>/x.json
   "https://api.nhle.com/stats/rest/en/skater/summary?isAggregate=false&isGame=false&cayenneExp=playerId=8477496%20and%20gameTypeId=2"`
-  (URL-encode spaces as `%20`). For api-web: `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>` and inspect
-  with `node -e`. Useful test inputs are listed in the plan's phases table. No live games until the preseason starts
-  on 2026-09-19 (the regular season starts 2026-09-29); the 2025-26 playoffs are all finished. During a live game,
-  `npm run capture-live-fixtures -- --watch` (from `HokMob.App/ClientApp`) saves live responses for the first plan's
-  section 10 checks.
+  (URL-encode spaces as `%20`). For api-web: `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>` and
+  inspect with `node -e`. The 2026-27 preseason starts 2026-09-19 and the regular season 2026-09-29; the 2025-26
+  playoffs are all finished. During a live game, `npm run capture-live-fixtures -- --watch` (from
+  `HokMob.App/ClientApp`) saves live responses for the open checks in `docs/nhl-api.md`.
 
 ## Git
 
-- `master` is the main branch; migration work happens on `api-refactor`.
-- Commit messages: a summary line (e.g. "Migrate playoff summary to new NHL API (phase 3)"), then bullet lists grouped
-  by phase or area.
+- `master` is the main branch. Work on a feature branch and open a pull request; both CI jobs have to pass.
+- Commit messages: a summary line (e.g. "Size the goal dialog to its video"), then bullet lists grouped by area.

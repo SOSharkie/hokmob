@@ -132,12 +132,12 @@ export class GameHeaderComponent {
   }
 
   public get homeTeamPP(): boolean {
-    // TODO: Implement, optionally from the latest play's situationCode (see docs/nhl-api-migration-plan.md, 5.2)
+    // TODO: Implement, optionally from the latest play's situationCode (see docs/nhl-api.md, "Live game checks")
     return false;
   }
 
   public get awayTeamPP(): boolean {
-    // TODO: Implement, optionally from the latest play's situationCode (see docs/nhl-api-migration-plan.md, 5.2)
+    // TODO: Implement, optionally from the latest play's situationCode (see docs/nhl-api.md, "Live game checks")
     return false;
   }
 
