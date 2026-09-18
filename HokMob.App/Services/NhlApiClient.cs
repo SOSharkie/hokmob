@@ -166,7 +166,7 @@ namespace HokMob.App.Services
                 "score" or "scoreboard" or "gamecenter" => TimeSpan.FromSeconds(10),
                 "schedule" or "club-schedule" or "club-schedule-season" or "standings" or "playoff-series" => TimeSpan.FromMinutes(5),
                 "player" or "roster" or "club-stats" or "skater-stats-leaders" or "goalie-stats-leaders" => TimeSpan.FromMinutes(30),
-                // Picks only change during the draft, once a year (see docs/draft-page-plan.md, 5).
+                // Picks only change during the draft, once a year (see docs/draft-page.md).
                 "draft" => TimeSpan.FromHours(6),
                 _ => TimeSpan.FromMinutes(1)
             };

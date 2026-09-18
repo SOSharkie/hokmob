@@ -154,7 +154,7 @@ export class NhlGameInfoUtils {
    * Whether the game is in progress (gameState LIVE or CRIT).
    *
    * TODO: CRIT (the last minutes of a close game) hasn't been seen in a captured response yet. Confirm it during a live
-   *  game (see docs/nhl-api-migration-plan.md, section 10).
+   *  game (see docs/nhl-api.md, "Live game checks").
    */
   public static isLiveGame(gameState: NhlGameStateEnum): boolean {
     return gameState === NhlGameStateEnum.LIVE || gameState === NhlGameStateEnum.CRITICAL;

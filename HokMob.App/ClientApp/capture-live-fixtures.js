@@ -1,5 +1,5 @@
-// Captures live api-web.nhle.com responses as test fixtures, for the live checks in docs/nhl-api-migration-plan.md
-// (section 10). Saves the score, landing, play-by-play, boxscore and right-rail of a game each time its state changes
+// Captures live api-web.nhle.com responses as test fixtures, for the "Live game checks" in docs/nhl-api.md.
+// Saves the score, landing, play-by-play, boxscore and right-rail of a game each time its state changes
 // (a new period, an intermission, CRIT, final), and prints the fields the live game page relies on.
 //
 // Usage: npm run capture-live-fixtures -- [gameId] [--watch] [--out <dir>]

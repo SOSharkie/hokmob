@@ -428,7 +428,7 @@ export function mockClubScheduleSeason(teamAbbrev: MockClubScheduleTeam, season:
 // TODO: The live derived helpers below (derivedLiveLanding, derivedIntermissionLanding, derivedLivePlayByPlay,
 //  derivedLiveGame) edit finished games because no live game could be captured before the 2026-27 preseason. Replace
 //  them with responses captured by `npm run capture-live-fixtures` during a live game (see
-//  docs/nhl-api-migration-plan.md, section 10).
+//  docs/nhl-api.md, "Live game checks").
 
 /**
  * Derived: the regulation final (STL @ WPG) landing as if live in the 2nd period with 5:32 left, WPG leading 2-0 after
@@ -476,7 +476,7 @@ export function derivedLivePlayByPlay(): PlayByPlay {
 
 /**
  * Derived: the regulation final (VGK 0 @ PIT 5) as if live in the 2nd period with 5:32 left. The live shape is based
- * on the model and not yet verified against a live game (see the migration plan's risks).
+ * on the model and not yet verified against a live game (see docs/nhl-api.md, "Live game checks").
  */
 export function derivedLiveGame(): ScoreGame {
   const game = mockRegulationFinal();
