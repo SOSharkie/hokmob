@@ -106,6 +106,23 @@ describe('NhlGameInfoUtils', () => {
     });
   });
 
+  describe('getGameTypeLabel', () => {
+    function bostonGame(gameId: number): ClubScheduleGame {
+      return mockClubScheduleSeason('BOS', 20252026).games.find(game => game.id === gameId);
+    }
+
+    it('should label real preseason and playoff games, but not a regular season one', () => {
+      expect(NhlGameInfoUtils.getGameTypeLabel(bostonGame(2025010013).gameType)).toBe('PRE');
+      expect(NhlGameInfoUtils.getGameTypeLabel(bostonGame(2025030111).gameType)).toBe('PLAYOFFS');
+      expect(NhlGameInfoUtils.getGameTypeLabel(bostonGame(2025021292).gameType)).toBe('');
+    });
+
+    it('should return no label for an unknown or missing game type', () => {
+      expect(NhlGameInfoUtils.getGameTypeLabel(4 as NhlGameTypeEnum)).toBe('');
+      expect(NhlGameInfoUtils.getGameTypeLabel(undefined)).toBe('');
+    });
+  });
+
   describe('getTeamFormGames', () => {
     function bostonGames(): ClubScheduleGame[] {
       return mockClubScheduleSeason('BOS', 20252026).games;

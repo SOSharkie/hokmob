@@ -1,8 +1,13 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import * as dayjs from 'dayjs';
 import {NhlGameService} from "@shared/services/nhl-game.service";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {
   mockClubScheduleSeason,
+  mockDraftPicks,
   mockGameBoxscore,
   mockGameLanding,
   mockGamePlayByPlay,
@@ -16,14 +21,22 @@ import {
 describe('NhlGameService', () => {
   let service: NhlGameService;
   let httpMock: HttpTestingController;
+  let getCurrentSeasonSpy: jasmine.Spy;
+
+  /** Waits for pending microtasks (like the caching that follows a resolved getNhlGames promise) to settle. */
+  function flushMicrotasks(): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve));
+  }
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [NhlGameService]
+      providers: [NhlGameService, NhlStatsApiService]
     });
     service = TestBed.inject(NhlGameService);
     httpMock = TestBed.inject(HttpTestingController);
+    getCurrentSeasonSpy = spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason')
+        .and.resolveTo({season: 20262027, isPlayoffMode: false});
     spyOn(console, 'error');
   });
 
@@ -60,6 +73,86 @@ describe('NhlGameService', () => {
       httpMock.expectOne('/api/nhl/score/2026-03-01').flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getNhlGames day caching', () => {
+    /** A day far enough in the past to have settled (past 1pm Eastern the next day) no matter when this runs. */
+    function daysAgo(days: number): Date {
+      return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    }
+
+    function urlFor(date: Date): string {
+      return '/api/nhl/score/' + dayjs(date).format('YYYY-MM-DD');
+    }
+
+    /** Real games (see mockScoreResponse), overridden to look like a settled day of the given season. */
+    function regularSeasonGames(season: number): ScoreGame[] {
+      return mockScoreResponse().games.map(game => ({...game, season, gameType: NhlGameTypeEnum.REGULAR_SEASON}));
+    }
+
+    it('should serve a settled current-season day from the cache instead of requesting it again', async () => {
+      const day = daysAgo(30);
+      const url = urlFor(day);
+
+      const first = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      await first;
+      await flushMicrotasks();
+
+      const second = service.getNhlGames(day);
+      expect((await second).length).toBe(3);
+      httpMock.expectNone(url);
+    });
+
+    it('should not cache today, so it is always refetched', async () => {
+      const today = new Date();
+      const url = urlFor(today);
+
+      const first = service.getNhlGames(today);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      await first;
+      await flushMicrotasks();
+
+      const second = service.getNhlGames(today);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      expect((await second).length).toBe(3);
+    });
+
+    it('should not cache a settled day of an earlier season', async () => {
+      const day = daysAgo(30);
+      const url = urlFor(day);
+
+      const first = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20252026)});
+      await first;
+      await flushMicrotasks();
+
+      const second = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20252026)});
+      expect((await second).length).toBe(3);
+    });
+
+    it('should clear the cache when the current season changes', async () => {
+      const day = daysAgo(30);
+      const url = urlFor(day);
+
+      const first = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      await first;
+      await flushMicrotasks();
+
+      getCurrentSeasonSpy.and.resolveTo({season: 20272028, isPlayoffMode: false});
+      const otherDay = daysAgo(31);
+      const otherUrl = urlFor(otherDay);
+      const triggerRequest = service.getNhlGames(otherDay);
+      httpMock.expectOne(otherUrl).flush({...mockScoreResponse(), games: []});
+      await triggerRequest;
+      await flushMicrotasks();
+
+      const second = service.getNhlGames(day);
+      httpMock.expectOne(url).flush({...mockScoreResponse(), games: regularSeasonGames(20262027)});
+      expect((await second).length).toBe(3);
     });
   });
 
@@ -192,6 +285,47 @@ describe('NhlGameService', () => {
       const playerLanding = service.getPlayerLanding(1);
       const rejection = expectAsync(playerLanding).toBeRejectedWith(jasmine.objectContaining({status: 404}));
       httpMock.expectOne('/api/nhl/player/1/landing').flush('Not found', {status: 404, statusText: 'Not Found'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getDraftPicks', () => {
+    it('should request the latest draft without a year', async () => {
+      const draft = service.getDraftPicks();
+      httpMock.expectOne('/api/nhl/draft/picks/now').flush(mockDraftPicks());
+      const response = await draft;
+      expect(response.draftYear).toBe(2026);
+      expect(response.picks.length).toBe(32);
+      expect(response.picks[0].firstName.default).toBe('Gavin');
+      expect(response.selectableRounds).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    });
+
+    it('should request a year and round', async () => {
+      const draft = service.getDraftPicks(2015, 3);
+      // Only round 1 is captured; the URL is what's checked here.
+      httpMock.expectOne('/api/nhl/draft/picks/2015/3').flush(mockDraftPicks(2015));
+      expect((await draft).draftYear).toBe(2015);
+    });
+
+    it('should request round 1 when only the year is given', async () => {
+      const draft = service.getDraftPicks(2015);
+      httpMock.expectOne('/api/nhl/draft/picks/2015/1').flush(mockDraftPicks(2015));
+      expect((await draft).picks[0].lastName.default).toBe('McDavid');
+    });
+
+    it('should resolve a forfeited pick', async () => {
+      const draft = service.getDraftPicks(2021, 1);
+      httpMock.expectOne('/api/nhl/draft/picks/2021/1').flush(mockDraftPicks(2021));
+      const forfeited = (await draft).picks.find(pick => pick.overallPick === 11);
+      expect(forfeited.lastName.default).toBe('Forfeited');
+      expect(forfeited.teamName.default).toBe('Arizona Coyotes');
+    });
+
+    it('should log and reject a year without picks', async () => {
+      const draft = service.getDraftPicks(2027, 1);
+      const rejection = expectAsync(draft).toBeRejectedWith(jasmine.objectContaining({status: 404}));
+      httpMock.expectOne('/api/nhl/draft/picks/2027/1').flush('Not found', {status: 404, statusText: 'Not Found'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
     });

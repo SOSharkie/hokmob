@@ -4,7 +4,6 @@ import { By } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ClubScheduleGame } from '@shared/models/nhl-web-api/club-schedule.model';
-import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { mockClubScheduleSeason } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { PreviousGameComponent } from './previous-game.component';
@@ -47,8 +46,10 @@ describe('PreviousGameComponent', () => {
     return element(selector)?.textContent.replace(/\s+/g, ' ').trim();
   }
 
-  function logos(): string[] {
-    return Array.from<HTMLImageElement>(fixture.nativeElement.querySelectorAll('img')).map(img => img.getAttribute('src'));
+  /** The team each app-team-logo was given. It isn't declared here, so its inputs are read off the element. */
+  function logoTeamIds(): number[] {
+    return Array.from<HTMLElement & {teamId: number}>(fixture.nativeElement.querySelectorAll('app-team-logo'))
+        .map(logo => logo.teamId);
   }
 
   function scoreClasses(): string[] {
@@ -62,7 +63,7 @@ describe('PreviousGameComponent', () => {
     expect(text('.away.team-name')).toBe('Devils');
     expect(text('.score-container')).toBe('4 - 0');
     expect(scoreClasses()).toEqual(['green']);
-    expect(logos()).toEqual([NhlTeamLogoUtils.getTeamPrimaryLogo(6), NhlTeamLogoUtils.getTeamPrimaryLogo(1)]);
+    expect(logoTeamIds()).toEqual([6, 1]);
     const routerLink = fixture.debugElement.query(By.directive(RouterLink)).injector.get(RouterLink);
     expect(routerLink.urlTree.toString()).toBe('/game/2025021292');
     expect(element('.previous-game-container').classList).not.toContain('last-previous-game');
@@ -103,14 +104,29 @@ describe('PreviousGameComponent', () => {
     expect(scoreClasses()).toEqual([]);
   });
 
-  it('should fall back to the team utils for a missing name and an unknown team logo', () => {
+  it('should mark a real preseason and playoff game, but not a regular season one', () => {
+    // WSH 5 @ BOS 2, a preseason game
+    show(bostonGame(2025010013), 6);
+    expect(text('.score-container')).toBe('2 - 5');
+    expect(text('.game-type-label')).toBe('PRE');
+
+    // BOS 3 @ BUF 4, a playoff game
+    show(bostonGame(2025030111), 6);
+    expect(text('.game-type-label')).toBe('PLAYOFFS');
+
+    show(bostonGame(2025021292), 6);
+    expect(element('.game-type-label')).toBeNull();
+  });
+
+  it('should fall back to the team utils for a missing name and an unknown team', () => {
     const game = bostonGame(2025021292);
     delete game.homeTeam.commonName;
     game.awayTeam.id = 999;
     show(game, 6);
     expect(text('.home.team-name')).toBe('Bruins');
     expect(text('.away.team-name')).toBe('Devils');
-    expect(logos()[1]).toBe('assets/logos/team_fallback.png');
+    // The unknown ID is passed straight through; app-team-logo falls back to the placeholder, see its own spec
+    expect(logoTeamIds()[1]).toBe(999);
   });
 
   it('should render nothing without a game', () => {

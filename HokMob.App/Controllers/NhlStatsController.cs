@@ -32,6 +32,15 @@ namespace HokMob.App.Controllers
 
         private const int MaxLeaderLimit = 25;
 
+        /// <summary>The first draft the draft page shows.</summary>
+        private const int FirstDraftYear = 2006;
+
+        /// <summary>The rounds of every draft from 2006 on.</summary>
+        private const int DraftRounds = 7;
+
+        /// <summary>The scoring fields merged into a drafted goalie's bio from their summary.</summary>
+        private static readonly string[] DraftScoringFields = {"gamesPlayed", "goals", "assists", "points"};
+
         private readonly NhlStatsApiClient _nhlStatsApiClient;
 
         public NhlStatsController(NhlStatsApiClient nhlStatsApiClient)
@@ -170,6 +179,54 @@ namespace HokMob.App.Controllers
         }
 
         /// <summary>
+        /// Returns the regular season career stats of the players drafted in one round, as { players: [{ draftOverall,
+        /// playerId, name, lastName, positionCode, gamesPlayed, goals, assists, points }] }, sorted by overall pick. The
+        /// NHL web API's draft picks have no player IDs, so the client matches them to these rows by overall pick.
+        /// Players who never played an NHL game aren't listed.
+        /// </summary>
+        /// <param name="year">The draft year, from 2006 on.</param>
+        /// <param name="round">The round, 1 to 7.</param>
+        [HttpGet("draft")]
+        public async Task<IActionResult> GetDraftStats(int year, int round, CancellationToken cancellationToken)
+        {
+            if (year < FirstDraftYear || year > 2100 || round < 1 || round > DraftRounds)
+            {
+                return BadRequest();
+            }
+
+            // The bios have the overall pick, but only a goalie's summary has their goals and assists.
+            var skaterBiosTask = _nhlStatsApiClient.GetReportAsync("skater/bios", GetDraftParameters(year, round), cancellationToken);
+            var goalieBiosTask = _nhlStatsApiClient.GetReportAsync("goalie/bios", GetDraftParameters(year, round), cancellationToken);
+            var goalieSummaryTask = _nhlStatsApiClient.GetReportAsync("goalie/summary", GetDraftParameters(year, round), cancellationToken);
+            await Task.WhenAll(skaterBiosTask, goalieBiosTask, goalieSummaryTask);
+
+            var skaterBios = skaterBiosTask.Result;
+            var goalieBios = goalieBiosTask.Result;
+            var goalieSummary = goalieSummaryTask.Result;
+            // Without one of them, players would silently show no stats, so every call is required.
+            if (skaterBios == null || goalieBios == null || goalieSummary == null)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway);
+            }
+
+            // A goalie missing from the summary keeps 0s.
+            foreach (var goalie in goalieBios)
+            {
+                goalie["goals"] = 0;
+                goalie["assists"] = 0;
+                goalie["points"] = 0;
+            }
+            Merge(goalieBios, goalieSummary, "playerId", DraftScoringFields);
+
+            var players = skaterBios.Select(skater => ToDraftPlayer(skater, "skaterFullName", skater["positionCode"]))
+                .Concat(goalieBios.Select(goalie => ToDraftPlayer(goalie, "goalieFullName", "G")))
+                .OrderBy(player => GetLongValue(player["draftOverall"]) ?? long.MaxValue)
+                .ToList();
+
+            return new JsonResult(new JsonObject {["players"] = ToJsonArray(players)});
+        }
+
+        /// <summary>
         /// Returns the dates the client works out the current season and playoff mode from, as
         /// { seasons: [{ id, firstGameDate, firstPlayoffGameDate }] } for the two latest seasons, newest first. The first
         /// game is the first preseason game, or the first regular season game for a season without a preseason. A date
@@ -284,6 +341,51 @@ namespace HokMob.App.Controllers
                 new KeyValuePair<string, string>("sort", "[{\"property\":\"" + field + "\",\"direction\":\"DESC\"}]"),
                 new KeyValuePair<string, string>("cayenneExp", $"seasonId={season} and gameTypeId={gameType}")
             };
+        }
+
+        /// <summary>
+        /// The query for the regular season career rows of the players drafted in one round. Without the game type, a
+        /// player gets a regular season row and a playoff row.
+        /// </summary>
+        private static KeyValuePair<string, string>[] GetDraftParameters(int year, int round)
+        {
+            return new[]
+            {
+                new KeyValuePair<string, string>("isAggregate", "true"),
+                new KeyValuePair<string, string>("isGame", "false"),
+                new KeyValuePair<string, string>("limit", "-1"),
+                new KeyValuePair<string, string>("cayenneExp", $"draftYear={year} and draftRound={round} and gameTypeId=2")
+            };
+        }
+
+        /// <summary>
+        /// Picks the fields of a drafted player's row that the draft page uses.
+        /// </summary>
+        /// <param name="row">A skater bio, or a goalie bio with the summary's scoring merged in.</param>
+        /// <param name="nameField">"skaterFullName" or "goalieFullName".</param>
+        /// <param name="positionCode">The position: the skater bio's "C", "L", "R" or "D", or "G".</param>
+        private static JsonObject ToDraftPlayer(JsonObject row, string nameField, JsonNode? positionCode)
+        {
+            return new JsonObject
+            {
+                ["draftOverall"] = CopyValue(row["draftOverall"]),
+                ["playerId"] = CopyValue(row["playerId"]),
+                ["name"] = CopyValue(row[nameField]),
+                ["lastName"] = CopyValue(row["lastName"]),
+                ["positionCode"] = CopyValue(positionCode),
+                ["gamesPlayed"] = CopyValue(row["gamesPlayed"]),
+                ["goals"] = CopyValue(row["goals"]),
+                ["assists"] = CopyValue(row["assists"]),
+                ["points"] = CopyValue(row["points"])
+            };
+        }
+
+        /// <summary>
+        /// Copies a JSON value, because a node can only belong to one parent.
+        /// </summary>
+        private static JsonNode? CopyValue(JsonNode? node)
+        {
+            return node == null ? null : JsonNode.Parse(node.ToJsonString());
         }
 
         /// <summary>

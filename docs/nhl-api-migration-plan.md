@@ -94,8 +94,8 @@ before the series starts, from `topSeedTeamAbbrev/topSeedWins/bottomSeedTeamAbbr
 - `landing` and `boxscore`: `placeName.default` + `commonName.default` ("Winnipeg" + "Jets").
 - `standings`: `teamName.default` is the full name, but **rows have no team ID**, only `teamAbbrev.default`.
 - `schedule/playoff-series`: series teams have `name` (common name); game teams have `commonName` and `placeName`.
-- Done: `NhlTeamUtils.getTeamIdByAbbrev(abbrev)`, and Utah (68) in the team, logo and color utils. Utah's logo is the
-  NHL-hosted SVG until a local `assets/logos/utah.png` is added (TODO in `NhlTeamLogoUtils`).
+- Done: `NhlTeamUtils.getTeamIdByAbbrev(abbrev)`, and Utah (68) in the team, logo and color utils. Utah's logo is
+  `assets/logos/utah.png`, like every other team.
   The full name for scorecards comes from `NhlTeamUtils.getTeam(id).name`.
 
 ### Times

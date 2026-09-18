@@ -64,7 +64,11 @@ namespace HokMob.App.Services
                     return null;
                 }
 
-                _cache.Set(cacheKey, rows, CacheDuration);
+                _cache.Set(cacheKey, rows, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = CacheDuration,
+                    Size = content.Length
+                });
                 return CopyRows(rows);
             }
             catch (Exception ex) when ((ex is HttpRequestException or TaskCanceledException or JsonException) &&

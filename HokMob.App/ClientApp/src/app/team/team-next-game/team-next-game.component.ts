@@ -84,6 +84,17 @@ export class TeamNextGameComponent {
     return status === "(0-0)" ? "Series (0-0)" : status;
   }
 
+  /**
+   * A short label for a game that isn't part of the regular season, like "PRE" or "PLAYOFFS". A playoff game with a
+   * known series status shows that instead, since it already says the game is a playoff game.
+   */
+  public get gameTypeLabel(): string {
+    if (this.isPlayoffGame && this.playoffSeriesDetails) {
+      return "";
+    }
+    return NhlGameInfoUtils.getGameTypeLabel(this.game?.gameType);
+  }
+
   public get gameScore(): string {
     if (this.game?.homeTeam?.score == null || this.game?.awayTeam?.score == null) {
       return "N/A";

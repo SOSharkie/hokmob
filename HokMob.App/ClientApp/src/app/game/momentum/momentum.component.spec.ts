@@ -248,7 +248,8 @@ describe('MomentumComponent', () => {
     // WPG (home): Fleury from Lambert and Barron at 2:31 of the 1st
     hover(3);
     expect(tooltipGoals()).toEqual(['1st · 2:31 Haydn Fleury (1 - 0) Assists: Brad Lambert, Morgan Barron']);
-    expect(tooltip().querySelector('.team-logo').getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    expect(tooltip().querySelector<HTMLElement & {src: string}>('.team-logo').src)
+        .toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
     expect(Array.from<Element>(tooltip().querySelectorAll('.score-update .color-green')).map(score => score.textContent))
         .toEqual(['1']);
   });
@@ -258,7 +259,8 @@ describe('MomentumComponent', () => {
     // STL (away): Dvorsky from Berggren and Suter at 5:17 of the 3rd
     hover(46);
     expect(tooltipGoals()).toEqual(['3rd · 5:17 Dalibor Dvorsky (2 - 1) Assists: Jonatan Berggren, Pius Suter']);
-    expect(tooltip().querySelector('.team-logo').getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
+    expect(tooltip().querySelector<HTMLElement & {src: string}>('.team-logo').src)
+        .toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
     expect(Array.from<Element>(tooltip().querySelectorAll('.score-update .color-green')).map(score => score.textContent))
         .toEqual(['1']);
   });

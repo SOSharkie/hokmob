@@ -29,6 +29,9 @@ export class PlayoffSeriesComponent implements OnChanges {
   @Input()
   public smallerVersion: boolean = false;
 
+  /** Square, since the bracket lines the logos up in columns. Phones shorten it, see the stylesheet. */
+  public readonly logoSize: number = 40;
+
   public isLogoALoaded: boolean = false;
 
   public isLogoBLoaded: boolean = false;

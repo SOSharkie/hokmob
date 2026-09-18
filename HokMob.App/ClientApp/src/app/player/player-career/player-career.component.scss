@@ -65,6 +65,9 @@
         align-items: center;
 
         // A traded season shows a logo per team ("CGY,VAN"), so the container grows with them
+        // TODO: Investigate moving the logos to app-team-logo (shared/components/team-logo). They size by width only, so
+        // a crest's height still varies with its shape and a tall one can exceed this 40px container. Needs a call on
+        // the box to use here, and on how a traded season's two logos share the row.
         .logo-container {
           height: 40px;
           display: flex;

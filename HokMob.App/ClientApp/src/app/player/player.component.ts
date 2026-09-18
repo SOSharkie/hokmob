@@ -42,7 +42,10 @@ export class PlayerComponent implements OnInit {
 
   public teamColor: string = "#000000";
 
-  public teamLogo: string;
+  /** A little wider than it is tall, so the widest crests keep roughly the visual weight of the square ones. */
+  public readonly logoSize: number = 40;
+
+  public readonly logoMaxWidth: number = 52;
 
   public countryFlagPath: string;
 
@@ -125,7 +128,6 @@ export class PlayerComponent implements OnInit {
       this.player = player;
       if (player.currentTeamId) {
         this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(player.currentTeamId);
-        this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(player.currentTeamId);
       }
       this.countryFlagPath = player.birthCountry ? "assets/flags/" + player.birthCountry + ".png" : undefined;
       this.retrieveStats();
@@ -169,7 +171,6 @@ export class PlayerComponent implements OnInit {
     this.stats = undefined;
     this.statsFailed = false;
     this.teamColor = "#000000";
-    this.teamLogo = undefined;
     this.countryFlagPath = undefined;
   }
 }

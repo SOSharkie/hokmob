@@ -39,6 +39,24 @@ export class NhlGameInfoUtils {
   }
 
   /**
+   * Returns a short label for a game that is not part of the regular season, like "PRE" or "PLAYOFFS", so a
+   * scorecard or a form row can be told apart at a glance. A regular season game needs no label and returns an
+   * empty string.
+   *
+   * @param gameType - The game type from the new NHL API.
+   */
+  public static getGameTypeLabel(gameType: NhlGameTypeEnum): string {
+    switch (gameType) {
+      case NhlGameTypeEnum.PRESEASON:
+        return "PRE";
+      case NhlGameTypeEnum.PLAYOFFS:
+        return "PLAYOFFS";
+      default:
+        return "";
+    }
+  }
+
+  /**
    * Returns a short playoff series status, like "CAR leads 3-1", "Tied 2-2" or "CAR wins 4-2", or "(0-0)" before the
    * series starts.
    *

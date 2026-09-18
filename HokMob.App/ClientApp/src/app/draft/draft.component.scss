@@ -3,4 +3,250 @@
 .draft-container {
   width: 100%;
   margin-top: $spacing-medium;
+
+  .draft-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-large;
+    box-sizing: border-box;
+    margin: $spacing-large $spacing-large 0;
+    padding: $spacing-large $spacing-xx-large;
+    border-radius: 25px;
+    background-color: $black-02;
+    color: white;
+
+    .draft-title {
+      margin: 0;
+      font-size: x-large;
+      font-weight: normal;
+    }
+
+    // The pickers are .pill-picker buttons (styles.scss)
+    .draft-pickers {
+      display: flex;
+      gap: $spacing-medium;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+
+    .loading-gif {
+      margin-top: $spacing-xx-large;
+      width: 100px;
+      height: 100px;
+    }
+  }
+
+  .draft-message {
+    margin: $spacing-huge;
+    text-align: center;
+    color: $gray-03;
+  }
+
+  .draft-picks {
+    margin: $spacing-large;
+    border-radius: 25px;
+    overflow: hidden;
+    background-color: $black-02;
+    color: white;
+  }
+
+  .draft-picks-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    .draft-picks-header th {
+      padding: $spacing-large $spacing-medium;
+      color: $gray-03;
+      font-weight: normal;
+      text-align: left;
+    }
+
+    .pick-header {
+      width: 56px;
+      padding-left: $spacing-x-large !important;
+    }
+    .team-header {
+      width: 28%;
+    }
+    .headshot-header {
+      width: 50px;
+    }
+    .position-header {
+      width: 64px;
+    }
+    .stat-header {
+      width: 56px;
+      text-align: center !important;
+    }
+
+    .draft-pick-row {
+      border-bottom: 1px solid $black-04;
+
+      td {
+        padding: $spacing-medium;
+        font-weight: lighter;
+      }
+
+      .pick-cell {
+        padding-left: $spacing-x-large;
+        color: $gray-03;
+      }
+
+      .team-info {
+        display: flex;
+        align-items: center;
+        gap: $spacing-medium;
+        min-width: 0;
+
+        // app-team-logo sizes itself from logoSize, and fits the logo inside the box rather than stretching it to fit
+
+        .team-name {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .player-headshot-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        background-color: $gray-01;
+
+        .player-headshot {
+          width: 46px;
+          height: 46px;
+          margin-top: 6px;
+        }
+      }
+
+      .player-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .player-name {
+        color: white;
+        text-decoration: none;
+      }
+
+      a.player-name:hover {
+        text-decoration: underline;
+      }
+
+      .stat-cell {
+        text-align: center;
+      }
+
+      .points-cell {
+        color: #84dc7b;
+      }
+    }
+
+    .forfeited-row {
+      .player-name, .position-cell, .stat-cell {
+        color: $gray-03;
+      }
+    }
+
+    .last-row {
+      border-bottom: none;
+    }
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+// Mobile Display: the team column shows only the logo, and the headshot and text shrink
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .draft-container {
+    .draft-header {
+      padding: $spacing-large;
+
+      .draft-title {
+        font-size: large;
+      }
+    }
+
+    .draft-picks-table {
+      font-size: smaller;
+
+      .pick-header {
+        width: 30px;
+        padding-left: $spacing-large !important;
+      }
+      .team-header {
+        width: 30px;
+      }
+      .headshot-header {
+        width: 32px;
+      }
+      .position-header {
+        width: 38px;
+      }
+      .stat-header {
+        width: 28px;
+      }
+      .draft-picks-header th {
+        padding: $spacing-medium $spacing-x-small;
+      }
+
+      .draft-pick-row {
+        td {
+          padding: $spacing-small $spacing-x-small;
+        }
+
+        .pick-cell {
+          padding-left: $spacing-large;
+        }
+
+        .team-info {
+          // The box is an inline style on the host, so overriding it needs !important
+          .team-logo {
+            width: 28px !important;
+            height: 28px !important;
+          }
+
+          .team-name {
+            display: none;
+          }
+        }
+
+        .player-headshot-container {
+          width: 30px;
+          height: 30px;
+
+          .player-headshot {
+            width: 36px;
+            height: 36px;
+            margin-top: 5px;
+          }
+        }
+
+        // Too narrow for one line, so a long name wraps instead of being cut off
+        .player-cell {
+          white-space: normal;
+          overflow-wrap: anywhere;
+        }
+      }
+    }
+  }
 }

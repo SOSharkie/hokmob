@@ -1,13 +1,20 @@
 <div *ngIf="game" class="previous-game-container" [ngClass]="{'last-previous-game': isLast}" [routerLink]="['/game', game.id]">
   <div class="home-team">
     <span class="home team-name">{{homeTeamShortName}}</span>
-    <div class="logo-container"><img [src]="homeTeamLogo" class="home-team-logo"></div>
+    <div class="logo-container">
+      <app-team-logo [teamId]="homeTeamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
+    </div>
   </div>
-  <div class="score-container" [ngClass]="scoreColor">
-    <span>{{score}}</span>
+  <div class="score-column">
+    <span *ngIf="gameTypeLabel" class="game-type-label">{{gameTypeLabel}}</span>
+    <div class="score-container" [ngClass]="scoreColor">
+      <span>{{score}}</span>
+    </div>
   </div>
   <div class="away-team">
-    <div class="logo-container"><img [src]="awayTeamLogo" class="away-team-logo"></div>
+    <div class="logo-container">
+      <app-team-logo [teamId]="awayTeamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
+    </div>
     <span class="away team-name">{{awayTeamShortName}}</span>
   </div>
 </div>

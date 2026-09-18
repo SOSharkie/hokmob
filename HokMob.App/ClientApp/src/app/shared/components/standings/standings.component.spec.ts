@@ -55,6 +55,11 @@ describe('StandingsComponent', () => {
     return rows()[rowIndex].querySelector(selector)?.textContent.trim();
   }
 
+  /** The row's app-team-logo. It isn't declared here, so its inputs are read off the element. */
+  function logoCell(rowIndex: number): HTMLElement & {teamId: number} {
+    return rows()[rowIndex].querySelector('app-team-logo');
+  }
+
   it('should show the group title with the season and a row per team', () => {
     render([divisionGroup('Central')], {defaultStandingsType: NhlStandingsTypeEnum.BY_DIVISION});
     expect(fixture.nativeElement.querySelector('.standings-type-container').textContent)
@@ -78,9 +83,10 @@ describe('StandingsComponent', () => {
     render([group]);
     const utahIndex = group.teams.findIndex(standingsTeam => standingsTeam.teamAbbrev.default === 'UTA');
     expect(component.teamIds[0][0]).toBe(21);
-    expect(component.teamLogos[0][0]).toBe('assets/logos/colorado.png');
     expect(component.teamIds[0][utahIndex]).toBe(68);
-    expect(component.teamLogos[0][utahIndex]).toBe('https://assets.nhle.com/logos/nhl/svg/UTA_light.svg');
+    // The logo itself comes from app-team-logo, which is given the ID
+    expect(logoCell(0).teamId).toBe(21);
+    expect(logoCell(utahIndex).teamId).toBe(68);
     const routerLink = fixture.debugElement.queryAll(By.css('.team-name-cell'))[0].injector.get(RouterLink);
     expect(routerLink.urlTree.toString()).toBe('/team/21');
   });
@@ -171,7 +177,7 @@ describe('StandingsComponent', () => {
     group.teams[0].teamAbbrev.default = 'XYZ';
     render([group]);
     expect(component.teamIds[0][0]).toBeUndefined();
-    expect(component.teamLogos[0][0]).toBe('assets/logos/team_fallback.png');
+    expect(logoCell(0).teamId).toBeUndefined();
     expect(cell(0, '.team-name-text')).toBe('Colorado Avalanche');
   });
 });

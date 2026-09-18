@@ -32,7 +32,10 @@ export class TeamComponent implements OnInit, OnDestroy {
   /** The team from NhlTeamUtils, or undefined for a route with an unknown team ID. */
   public team: NhlTeamCustomModel;
 
-  public teamLogo: string;
+  /** A little wider than it is tall, so every team's header is the same size. Phones shrink it, see the stylesheet. */
+  public readonly logoSize: number = 85;
+
+  public readonly logoMaxWidth: number = 111;
 
   public teamColor: string = "#000000";
 
@@ -87,7 +90,6 @@ export class TeamComponent implements OnInit, OnDestroy {
       if (!this.team) {
         return;
       }
-      this.teamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.teamId);
       this.teamColor = NhlTeamColorUtils.getTeamPrimaryColor(this.teamId);
       this.retrieveStandings();
       this.retrieveSchedule();

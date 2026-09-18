@@ -2,6 +2,7 @@ import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {NhlStatsApiService} from '@shared/services/nhl-stats-api.service';
 import {
+  mockDraftStats,
   mockHitsAndShotsLeaders,
   mockPlayerStats,
   mockSeasonDates,
@@ -121,6 +122,54 @@ describe('NhlStatsApiService', () => {
       const leaders = service.getHitsAndShotsLeaders(20252026, 2);
       const rejection = expectAsync(leaders).toBeRejectedWith(jasmine.objectContaining({status: 502}));
       httpMock.expectOne('/api/nhl-stats/leaders?season=20252026&gameType=2&limit=5')
+          .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getDraftStats', () => {
+    it('should resolve the real career stats of a round, sorted by overall pick', async () => {
+      const draftStats = service.getDraftStats(2015, 1);
+      httpMock.expectOne('/api/nhl-stats/draft?year=2015&round=1').flush(mockDraftStats(2015));
+
+      const players = await draftStats;
+      expect(players.length).toBe(30);
+      expect(players[0]).toEqual(jasmine.objectContaining({
+        draftOverall: 1, playerId: 8478402, name: 'Connor McDavid', positionCode: 'C', goals: 409, assists: 811,
+        points: 1220
+      }));
+      expect(players[21]).toEqual(jasmine.objectContaining({
+        draftOverall: 22, name: 'Ilya Samsonov', positionCode: 'G', goals: 0, assists: 5, points: 5
+      }));
+    });
+
+    it('should resolve a round with players who never played, without their rows', async () => {
+      const draftStats = service.getDraftStats(2006, 1);
+      httpMock.expectOne('/api/nhl-stats/draft?year=2006&round=1').flush(mockDraftStats(2006));
+
+      const players = await draftStats;
+      expect(players.length).toBe(27);
+      expect(players.find(player => player.draftOverall === 19)).toBeUndefined();
+      expect(players.find(player => player.draftOverall === 3)).toEqual(jasmine.objectContaining({
+        name: 'Jonathan Toews', positionCode: 'C', assists: 529, goals: 383, points: 912
+      }));
+    });
+
+    it('should resolve an empty list for a round without NHL players or a missing list', async () => {
+      const draftStats = service.getDraftStats(2026, 1);
+      httpMock.expectOne('/api/nhl-stats/draft?year=2026&round=1').flush({players: []});
+      expect(await draftStats).toEqual([]);
+
+      const noList = service.getDraftStats(2026, 2);
+      httpMock.expectOne('/api/nhl-stats/draft?year=2026&round=2').flush({});
+      expect(await noList).toEqual([]);
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const draftStats = service.getDraftStats(2015, 1);
+      const rejection = expectAsync(draftStats).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne('/api/nhl-stats/draft?year=2015&round=1')
           .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();

@@ -1,2 +1,78 @@
 <div class="draft-container">
+  <div class="draft-header">
+    <h1 class="draft-title">{{title}}</h1>
+    <div class="draft-pickers">
+      <button *ngIf="yearOptions.length" type="button" class="pill-picker year-picker"
+              [attr.aria-label]="'Draft year, ' + selectedYear"
+              [matMenuTriggerFor]="yearMenu"
+              (menuOpened)="scrollToSelectedOption('year-menu')">{{selectedYear}}</button>
+      <mat-menu #yearMenu="matMenu" class="pill-picker-menu year-menu" xPosition="before">
+        <button *ngFor="let year of yearOptions" mat-menu-item role="menuitemradio" class="pill-picker-option"
+                [class.selected]="year === selectedYear" [attr.aria-checked]="year === selectedYear"
+                (click)="selectYear(year)">{{year}}</button>
+      </mat-menu>
+      <button *ngIf="roundOptions.length" type="button" class="pill-picker round-picker"
+              [attr.aria-label]="'Round, ' + requestedRound"
+              [matMenuTriggerFor]="roundMenu"
+              (menuOpened)="scrollToSelectedOption('round-menu')">Round {{requestedRound}}</button>
+      <mat-menu #roundMenu="matMenu" class="pill-picker-menu round-menu" xPosition="before">
+        <button *ngFor="let round of roundOptions" mat-menu-item role="menuitemradio" class="pill-picker-option"
+                [class.selected]="round === requestedRound" [attr.aria-checked]="round === requestedRound"
+                (click)="selectRound(round)">Round {{round}}</button>
+      </mat-menu>
+    </div>
+  </div>
+  <div *ngIf="isLoading" class="loading-container">
+    <img src="assets/loading.gif" alt="" class="loading-gif">
+  </div>
+  <div *ngIf="hasError" class="draft-message">
+    <span>The draft couldn't be loaded</span>
+  </div>
+  <div *ngIf="draft && !hasPicks" class="draft-message">
+    <span>No picks yet</span>
+  </div>
+  <div *ngIf="hasPicks" class="draft-picks">
+    <table class="draft-picks-table">
+      <thead>
+        <tr class="draft-picks-header">
+          <th class="pick-header"><span>Pick</span></th>
+          <th class="team-header"><span>Team</span></th>
+          <th class="headshot-header"><span class="visually-hidden">Headshot</span></th>
+          <th class="player-header"><span>Player</span></th>
+          <th class="position-header"><span>Pos</span></th>
+          <th class="stat-header" title="Assists"><span>A</span></th>
+          <th class="stat-header" title="Goals"><span>G</span></th>
+          <th class="stat-header" title="Points"><span>P</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows; trackBy: trackPick; let isLast = last" class="draft-pick-row"
+            [ngClass]="{'last-row': isLast, 'forfeited-row': row.isForfeited}">
+          <td class="pick-cell"><span>{{row.overallPick}}</span></td>
+          <td class="team-cell">
+            <div class="team-info">
+              <app-team-logo class="team-logo" [src]="row.teamLogo" [size]="logoSize"></app-team-logo>
+              <span class="team-name">{{row.teamName}}</span>
+            </div>
+          </td>
+          <td class="headshot-cell">
+            <div *ngIf="row.headshot" class="player-headshot-container">
+              <img [src]="row.headshot" (error)="showBlankHeadshot($event)" alt="" loading="lazy"
+                   class="player-headshot">
+            </div>
+          </td>
+          <td class="player-cell">
+            <a *ngIf="row.playerId; else plainName" class="player-name" [routerLink]="['/player', row.playerId]">
+              {{row.playerName}}
+            </a>
+            <ng-template #plainName><span class="player-name">{{row.playerName}}</span></ng-template>
+          </td>
+          <td class="position-cell"><span>{{row.position}}</span></td>
+          <td class="stat-cell"><span>{{row.assists}}</span></td>
+          <td class="stat-cell"><span>{{row.goals}}</span></td>
+          <td class="stat-cell points-cell"><span>{{row.points}}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

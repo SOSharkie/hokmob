@@ -33,7 +33,7 @@
   .about-eyebrow {
     display: block;
     margin-bottom: $spacing-x-large;
-    color: $green-02;
+    color: white;
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.08em;
@@ -63,6 +63,11 @@
   font-size: 28px;
   font-weight: 500;
   line-height: 1.2;
+}
+
+.about-story .about-section-title,
+.about-features .about-section-title {
+  color: $green-01;
 }
 
 .about-story p {

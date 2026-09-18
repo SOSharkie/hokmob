@@ -51,6 +51,7 @@ import {NhlSearchService} from "@shared/services/nhl-search.service";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import { SearchResultComponent } from './shared/components/search-result/search-result.component';
 import { StandingsComponent } from './shared/components/standings/standings.component';
+import { TeamLogoComponent } from './shared/components/team-logo/team-logo.component';
 import { LeagueStandingsComponent } from './league-standings/league-standings.component';
 import {SingleTeamFormComponent} from "@app/team/single-team-form/single-team-form.component";
 import { TeamScheduleComponent } from './team/team-schedule/team-schedule.component';
@@ -102,6 +103,7 @@ import { DraftComponent } from './draft/draft.component';
     GoalsAgainstAveragePipe,
     SearchResultComponent,
     StandingsComponent,
+    TeamLogoComponent,
     LeagueStandingsComponent,
     SingleTeamFormComponent,
     TeamScheduleComponent,

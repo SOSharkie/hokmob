@@ -38,14 +38,14 @@
   </div>
   <div *ngIf="showBenches" class="benches">
     <div class="bench home-bench">
-      <img *ngIf="homeTeamLogo" [src]="homeTeamLogo" alt="" class="team-logo">
+      <app-team-logo *ngIf="homeTeamLogo" class="team-logo" [src]="homeTeamLogo" [size]="logoSize"></app-team-logo>
       <div class="coach-info">
         <span class="coach-name">{{homeCoach || '-'}}</span>
         <span class="coach-label">Head Coach</span>
       </div>
     </div>
     <div class="bench away-bench">
-      <img *ngIf="awayTeamLogo" [src]="awayTeamLogo" alt="" class="team-logo">
+      <app-team-logo *ngIf="awayTeamLogo" class="team-logo" [src]="awayTeamLogo" [size]="logoSize"></app-team-logo>
       <div class="coach-info">
         <span class="coach-name">{{awayCoach || '-'}}</span>
         <span class="coach-label">Head Coach</span>

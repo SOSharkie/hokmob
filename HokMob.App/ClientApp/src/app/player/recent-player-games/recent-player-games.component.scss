@@ -47,6 +47,9 @@
         align-items: center;
         white-space: nowrap;
 
+        // TODO: Investigate moving this to app-team-logo (shared/components/team-logo). The logo sizes by width only, so
+        // a crest's height still varies with its shape, and the tall ones (Ottawa, Los Angeles) render ~42px in this
+        // 40px container. Needs a call on the box to use here.
         .logo-container {
           flex-shrink: 0;
           width: 40px;

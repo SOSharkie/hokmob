@@ -5,7 +5,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddMemoryCache();
+// Every cache entry sets a Size (see NhlApiClient, NhlStatsApiClient, NhlSearchApiClient); this bounds the total to
+// about 150 MB, safe for both the 1 GB (F1) and 1.75 GB (B1) Azure App Service quotas the app runs on.
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 150 * 1024 * 1024;
+});
+builder.Services.AddScoped<NhlSeasonService>();
 builder.Services.AddHttpClient<NhlApiClient>(client =>
 {
     client.BaseAddress = new Uri(NhlApiClient.BaseUrl);

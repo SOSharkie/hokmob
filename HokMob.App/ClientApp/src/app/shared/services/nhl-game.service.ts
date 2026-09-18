@@ -14,6 +14,16 @@ import {
   TeamFormReference
 } from "@shared/models/nhl-web-api/club-schedule.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
+import {DraftPicksResponse} from "@shared/models/nhl-web-api/draft-picks.model";
+import {GameDayCacheUtils} from "@shared/utils/game-day-cache-utils";
+import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {CurrentSeason} from "@shared/models/nhl-stats-api/season-dates.model";
+
+interface CachedGameDay {
+  games: ScoreGame[];
+  /** When the entry expires, or undefined when it's kept until the season changes. */
+  expiresAt?: number;
+}
 
 @Injectable()
 export class NhlGameService {
@@ -27,20 +37,38 @@ export class NhlGameService {
 
   private readonly nhlClubScheduleSeasonUrl = "/api/nhl/club-schedule-season/";
 
+  private readonly nhlDraftPicksUrl = "/api/nhl/draft/picks/";
+
   private readonly teamFormGameCount = 5;
 
-  constructor(private http: HttpClient) { }
+  /** Cached score/{date} days, by date key (see getNhlGames), following GameDayCacheUtils' rules. */
+  private readonly gameDayCache = new Map<string, CachedGameDay>();
+
+  /** The season the cache was last built for. Games are cleared when this changes. */
+  private cachedSeason: number;
+
+  constructor(private http: HttpClient, private nhlStatsApiService: NhlStatsApiService) { }
 
   /**
    *  Gets all NHL games for a given date. Uses an explicit date because score/now jumps ahead to the next game day.
+   *  Settled days of the current regular season, and future days, are served from a client-side cache once seen
+   *  (see GameDayCacheUtils); every other day is always fetched.
    *
    * @param date - The date to get NHL games for.
    */
   public getNhlGames(date: Date): Promise<ScoreGame[]> {
+    const dateKey = this.formatDateStringForNhl(date);
+    const cached = this.getCachedGameDay(dateKey);
+    if (cached) {
+      return Promise.resolve([...cached]);
+    }
+
     return new Promise((resolve, reject) => {
-      return this.http.get<ScoreResponse>(this.nhlScoreUrl + this.formatDateStringForNhl(date)).subscribe({
+      return this.http.get<ScoreResponse>(this.nhlScoreUrl + dateKey).subscribe({
         next: (response) => {
-          resolve(response.games ?? []);
+          const games = response.games ?? [];
+          resolve(games);
+          this.cacheGameDay(date, dateKey, games);
         },
         error: (error) => {
           console.error(error);
@@ -128,6 +156,19 @@ export class NhlGameService {
   }
 
   /**
+   * Gets the picks of one draft round, with the list of draft years and that year's rounds. Without a year, gets the
+   * latest draft's round 1 (draft/picks/now). The picks have no player IDs; match them to
+   * NhlStatsApiService.getDraftStats by overall pick. A year without picks yet rejects (404).
+   *
+   * @param year - The draft year, like 2015. The latest draft when missing.
+   * @param round - The round, 1 to 7. Round 1 when missing.
+   */
+  public getDraftPicks(year?: number, round?: number): Promise<DraftPicksResponse> {
+    const path = year ? year + "/" + (round ?? 1) : "now";
+    return this.get<DraftPicksResponse>(this.nhlDraftPicksUrl + path);
+  }
+
+  /**
    * Gets a response through the backend proxy, logging and rejecting on error.
    */
   private get<T>(url: string): Promise<T> {
@@ -146,5 +187,46 @@ export class NhlGameService {
 
   private formatDateStringForNhl(date: Date): string {
     return dayjs(date).format("YYYY-MM-DD");
+  }
+
+  /**
+   * Returns a day's cached games, or undefined when it isn't cached or its TTL has passed (in which case it's
+   * dropped from the cache).
+   */
+  private getCachedGameDay(dateKey: string): ScoreGame[] | undefined {
+    const entry = this.gameDayCache.get(dateKey);
+    if (!entry) {
+      return undefined;
+    }
+    if (entry.expiresAt !== undefined && Date.now() >= entry.expiresAt) {
+      this.gameDayCache.delete(dateKey);
+      return undefined;
+    }
+    return entry.games;
+  }
+
+  /**
+   * Classifies a fetched day with GameDayCacheUtils and stores it when it's cacheable. Needs the current season, so
+   * this runs after the games are already resolved to the caller and never delays that response. Clears the whole
+   * cache first when the season has changed since the last entry was cached.
+   */
+  private cacheGameDay(date: Date, dateKey: string, games: ScoreGame[]): void {
+    this.nhlStatsApiService.getCurrentSeason().then((currentSeason: CurrentSeason) => {
+      if (this.cachedSeason !== undefined && this.cachedSeason !== currentSeason.season) {
+        this.gameDayCache.clear();
+      }
+      this.cachedSeason = currentSeason.season;
+
+      const duration = GameDayCacheUtils.getCacheDuration(date, games, currentSeason);
+      if (duration === undefined) {
+        return;
+      }
+      this.gameDayCache.set(dateKey, {
+        games,
+        expiresAt: duration === 'forever' ? undefined : Date.now() + duration
+      });
+    }).catch(() => {
+      // Can't tell which season this day belongs to; leave it uncached rather than risk caching it wrongly.
+    });
   }
 }

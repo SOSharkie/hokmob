@@ -47,6 +47,11 @@ describe('StatLeaderboardComponent', () => {
     fixture.detectChanges();
   }
 
+  /** The leader's app-team-logo. It isn't declared here, so its inputs are read off the element. */
+  function leaderLogo(): HTMLElement & {teamId: number} {
+    return (fixture.nativeElement as HTMLElement).querySelector('.leader-team-logo');
+  }
+
   function text(selector: string): string {
     return fixture.nativeElement.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim();
   }
@@ -75,8 +80,7 @@ describe('StatLeaderboardComponent', () => {
     expect(routerLink.urlTree.toString()).toBe('/player/' + entries[0].playerId);
     expect(fixture.nativeElement.querySelector('.leader-headshot').getAttribute('src'))
         .toBe('https://assets.nhle.com/mugs/nhl/20252026/EDM/8478402.png');
-    expect(fixture.nativeElement.querySelector('.leader-team-logo').getAttribute('src'))
-        .toBe('assets/logos/edmonton.png');
+    expect(leaderLogo().teamId).toBe(entries[0].teamId);
   });
 
   it('should color the leader stat with their team color', () => {
@@ -129,14 +133,14 @@ describe('StatLeaderboardComponent', () => {
     expect(text('.no-stats')).toBe('No stats yet');
   });
 
-  it('should fall back to the blank headshot and the fallback logo for an unknown team', () => {
+  it('should fall back to the blank headshot for an unknown team', () => {
     show([{playerId: 1, name: 'Wayne Gretzky', teamId: undefined, headshot: null, value: 215}]);
 
     expect(text('.leader-name')).toBe('Wayne Gretzky');
     expect(fixture.nativeElement.querySelector('.leader-headshot').getAttribute('src'))
         .toBe('assets/blank_headshot.png');
-    expect(fixture.nativeElement.querySelector('.leader-team-logo').getAttribute('src'))
-        .toBe('assets/logos/team_fallback.png');
+    // app-team-logo falls back to the placeholder logo itself, see its own spec
+    expect(leaderLogo().teamId).toBeUndefined();
   });
 
   it('should replace a headshot that fails to load with the blank one', () => {

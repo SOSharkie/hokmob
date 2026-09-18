@@ -17,8 +17,8 @@ describe('NhlTeamLogoUtils', () => {
     expect(NhlTeamLogoUtils.getTeamPrimaryLogo(21)).toBe('assets/logos/colorado.png');
   });
 
-  it('should use the NHL hosted logo for Utah', () => {
-    expect(NhlTeamLogoUtils.getTeamPrimaryLogo(68)).toBe('https://assets.nhle.com/logos/nhl/svg/UTA_light.svg');
+  it('should use the local logo for Utah', () => {
+    expect(NhlTeamLogoUtils.getTeamPrimaryLogo(68)).toBe('assets/logos/utah.png');
   });
 
   it('should use the fallback logo for an unknown or missing team', () => {
