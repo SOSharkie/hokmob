@@ -71,7 +71,7 @@ describe('DraftComponent', () => {
     return Array.from(fixture.nativeElement.querySelectorAll('.draft-pick-row'));
   }
 
-  /** A row's cell texts: pick, team, (headshot), player, position, assists, goals, points. */
+  /** A row's cell texts: pick, team, (headshot), player, position, games played, assists, goals, points. */
   function rowCells(overallPick: number): string[] {
     const row = rowElements().find(element => element.querySelector('.pick-cell').textContent.trim() === String(overallPick));
     return Array.from(row.querySelectorAll('td')).map(cell => cell.textContent.trim());
@@ -108,12 +108,12 @@ describe('DraftComponent', () => {
     expect(text('.draft-title')).toBe('2026 NHL Draft');
     expect(fixture.nativeElement.querySelector('.loading-container')).toBeNull();
     // The stats haven't come back yet, so their cells are empty rather than "-"
-    expect(rowCells(1)).toEqual(['1', 'Toronto Maple Leafs', '', 'Gavin McKenna', 'LW', '', '', '']);
+    expect(rowCells(1)).toEqual(['1', 'Toronto Maple Leafs', '', 'Gavin McKenna', 'LW', '', '', '', '']);
 
     httpMock.expectOne(statsUrl + '?year=2026&round=1').flush({players: []});
     await settle();
     expect(rowElements().length).toBe(32);
-    expect(rowCells(2)).toEqual(['2', 'San Jose Sharks', '', 'Ivar Stenberg', 'LW', '-', '-', '-']);
+    expect(rowCells(2)).toEqual(['2', 'San Jose Sharks', '', 'Ivar Stenberg', 'LW', '-', '-', '-', '-']);
     expect(rowElement(1).querySelector<HTMLImageElement>('.player-headshot').getAttribute('src'))
         .toBe('assets/blank_headshot.png');
     expect(rowElement(1).querySelector('a')).toBeNull();
@@ -149,7 +149,7 @@ describe('DraftComponent', () => {
 
     expect(text('.draft-title')).toBe('2015 NHL Draft');
     expect(rowElements().length).toBe(30);
-    expect(rowCells(1)).toEqual(['1', 'Edmonton Oilers', '', 'Connor McDavid', 'C', '811', '409', '1220']);
+    expect(rowCells(1)).toEqual(['1', 'Edmonton Oilers', '', 'Connor McDavid', 'C', '794', '811', '409', '1220']);
     const mcDavid = rowElement(1);
     // app-team-logo isn't declared here, so the URL it was given is read off the element
     expect(mcDavid.querySelector<HTMLElement & {src: string}>('.team-logo').src)
@@ -159,21 +159,21 @@ describe('DraftComponent', () => {
     expect(mcDavid.querySelector('a.player-name').getAttribute('href')).toBe('/player/8478402');
   });
 
-  it('should show a goalie\'s career assists, goals and points', async () => {
+  it('should show a goalie\'s career games played, assists, goals and points', async () => {
     await openYear(2015);
-    expect(rowCells(22)).toEqual(['22', 'Washington Capitals', '', 'Ilya Samsonov', 'G', '5', '0', '5']);
+    expect(rowCells(22)).toEqual(['22', 'Washington Capitals', '', 'Ilya Samsonov', 'G', '200', '5', '0', '5']);
   });
 
   it('should fill in an "F" position from the career stats', async () => {
     await openYear(2006);
-    expect(rowCells(3)).toEqual(['3', 'Chicago Blackhawks', '', 'Jonathan Toews', 'C', '529', '383', '912']);
+    expect(rowCells(3)).toEqual(['3', 'Chicago Blackhawks', '', 'Jonathan Toews', 'C', '1149', '529', '383', '912']);
     expect(rowCells(10)[4]).toBe('RW');
     expect(rowCells(13)[4]).toBe('LW');
   });
 
   it('should show "-" and the blank headshot for a player who never played', async () => {
     await openYear(2006);
-    expect(rowCells(19)).toEqual(['19', 'Anaheim Ducks', '', 'Mark Mitera', 'D', '-', '-', '-']);
+    expect(rowCells(19)).toEqual(['19', 'Anaheim Ducks', '', 'Mark Mitera', 'D', '-', '-', '-', '-']);
     expect(rowElement(19).querySelector('.player-headshot').getAttribute('src')).toBe('assets/blank_headshot.png');
     expect(rowElement(19).querySelector('a')).toBeNull();
   });
@@ -196,7 +196,7 @@ describe('DraftComponent', () => {
     httpMock.expectOne(statsUrl + '?year=2021&round=1').flush({players: []});
     await settle();
 
-    expect(rowCells(11)).toEqual(['11', 'Arizona Coyotes', '', 'Forfeited', '-', '-', '-', '-']);
+    expect(rowCells(11)).toEqual(['11', 'Arizona Coyotes', '', 'Forfeited', '-', '-', '-', '-', '-']);
     const forfeited = rowElement(11);
     expect(forfeited.classList).toContain('forfeited-row');
     expect(forfeited.querySelector('.player-headshot')).toBeNull();
@@ -210,7 +210,7 @@ describe('DraftComponent', () => {
     httpMock.expectOne(statsUrl + '?year=2015&round=1').flush(stats);
     await settle();
 
-    expect(rowCells(1).slice(4)).toEqual(['C', '-', '-', '-']);
+    expect(rowCells(1).slice(4)).toEqual(['C', '-', '-', '-', '-']);
     expect(rowElement(1).querySelector('a')).toBeNull();
   });
 
@@ -221,7 +221,7 @@ describe('DraftComponent', () => {
     httpMock.expectOne(picksUrl + '2015/1').flush(mockDraftPicks(2015));
     httpMock.expectOne(statsUrl + '?year=2015&round=1').flush(stats);
     await settle();
-    expect(rowCells(1)[7]).toBe('1220');
+    expect(rowCells(1)[8]).toBe('1220');
   });
 
   it('should load the latest draft for a year before 2006, after this year or not a number', async () => {
@@ -299,7 +299,7 @@ describe('DraftComponent', () => {
     await settle();
 
     expect(text('.draft-title')).toBe('2006 NHL Draft');
-    expect(rowCells(1)).toEqual(['1', 'St. Louis Blues', '', 'Erik Johnson', 'D', '253', '95', '348']);
+    expect(rowCells(1)).toEqual(['1', 'St. Louis Blues', '', 'Erik Johnson', 'D', '1023', '253', '95', '348']);
   });
 
   it('should still show the picks when the career stats fail', async () => {
@@ -309,7 +309,7 @@ describe('DraftComponent', () => {
     await settle();
 
     expect(rowElements().length).toBe(30);
-    expect(rowCells(1)).toEqual(['1', 'Edmonton Oilers', '', 'Connor McDavid', 'C', '-', '-', '-']);
+    expect(rowCells(1)).toEqual(['1', 'Edmonton Oilers', '', 'Connor McDavid', 'C', '-', '-', '-', '-']);
     expect(fixture.nativeElement.querySelector('.draft-message')).toBeNull();
   });
 

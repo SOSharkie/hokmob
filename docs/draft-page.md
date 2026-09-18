@@ -1,11 +1,12 @@
 # Draft page
 
-`/draft` shows one round of one NHL draft (2006 to the latest), with each pick's NHL regular season career assists,
-goals and points. It opens on the latest draft, round 1. The general API conventions are in [`nhl-api.md`](nhl-api.md).
+`/draft` shows one round of one NHL draft (2006 to the latest), with each pick's NHL regular season career games
+played, assists, goals and points. It opens on the latest draft, round 1. The general API conventions are in
+[`nhl-api.md`](nhl-api.md).
 
-| Pick | Team | (face) | Player | Pos | A | G | P |
-|---|---|---|---|---|---|---|---|
-| overall pick number | picking team | headshot | player name | position | career assists | career goals | career points |
+| Pick | Team | (face) | Player | Pos | GP | A | G | P |
+|---|---|---|---|---|---|---|---|---|
+| overall pick number | picking team | headshot | player name | position | career games played | career assists | career goals | career points |
 
 ## Data
 
@@ -55,14 +56,20 @@ stats row gets the blank headshot without a request.
 - A player's name links to `/player/{playerId}` only when there's a stats row, since that's the only source of the ID.
 - Position is the pick's `positionCode` as-is (`LW`, `RW`, `C/LW`, ...). `F` is replaced by the stats position,
   mapped `L` → `LW` and `R` → `RW`.
-- A, G and P come from the stats row with the same `draftOverall`. A pick with no row shows "-" rather than 0; the
-  cells are empty while the stats are still loading.
+- GP, A, G and P come from the stats row with the same `draftOverall`. A pick with no row shows "-" rather than 0;
+  the cells are empty while the stats are still loading. GP's column is a little wider than the others, since it can
+  be four digits.
 - The row is only joined when the pick's `lastName.default` equals the stats row's `lastName`, ignoring accents and
   case, so a player who re-entered the draft can't be matched to the wrong pick.
 - A forfeited pick shows "Forfeited" in muted text, with "-" in the other cells and no headshot.
 - States: a loading gif, "The draft couldn't be loaded" when the picks fail, and "No picks yet" for an empty round.
-- The table is styled like `player-career`'s season table. At 700px and under, the team column shows the logo only
-  and long names wrap, so there's no horizontal scroll.
+- The table is styled like `player-career`'s season table, with the numbers right-aligned. The Team column is a fixed
+  210px, wide enough for the longest name beside the logo rather than growing with the table, and Pos is 48px. Nine
+  columns leave too little room for the names before the usual 700px, so there are two narrow bands:
+  - `$draft-mobile-screen-breakpoint` (900px) and under: the headshot, the logo, the paddings and the other columns
+    shrink, and the Team column is 190px.
+  - `$mobile-screen-breakpoint` (700px) and under: the Team column shows the logo only and a long player name wraps
+    to two lines, so there's no horizontal scroll.
 
 ## Pickers
 

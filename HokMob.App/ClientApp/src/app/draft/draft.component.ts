@@ -27,6 +27,7 @@ export interface DraftPickRow {
   /** The headshot URL, or undefined for a forfeited pick. */
   headshot?: string;
   /** A number, "-" without stats, or "" while the stats load. */
+  gamesPlayed: number | string;
   assists: number | string;
   goals: number | string;
   points: number | string;
@@ -34,9 +35,9 @@ export interface DraftPickRow {
 
 /**
  * The draft page: the picks of one draft round from draft/picks/{year}/{round}, with each player's regular season
- * career assists, goals and points from /api/nhl-stats/draft. The picks have no player IDs, so the two are matched by
- * overall pick (and last name). By default it's the latest draft's round 1. The year and round are the "year" and
- * "round" query parameters, from 2006 on (see docs/draft-page.md).
+ * career games played, assists, goals and points from /api/nhl-stats/draft. The picks have no player IDs, so the two
+ * are matched by overall pick (and last name). By default it's the latest draft's round 1. The year and round are
+ * the "year" and "round" query parameters, from 2006 on (see docs/draft-page.md).
  */
 @Component({
   selector: 'app-draft',
@@ -219,6 +220,7 @@ export class DraftComponent implements OnInit, OnDestroy {
       position: isForfeited ? "-" : DraftComponent.getPosition(pick.positionCode, player?.positionCode),
       playerId: player?.playerId,
       headshot: isForfeited ? undefined : NhlPlayerHeadshotUtils.getLatestHeadshotUrl(player?.playerId),
+      gamesPlayed: isForfeited ? "-" : player?.gamesPlayed ?? noStat,
       assists: isForfeited ? "-" : player?.assists ?? noStat,
       goals: isForfeited ? "-" : player?.goals ?? noStat,
       points: isForfeited ? "-" : player?.points ?? noStat

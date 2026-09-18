@@ -126,6 +126,10 @@ A request to one of them is a regression.
     1400×1000, then reset to `desktop` when done.
   - The console log persists across navigations, so old errors look new. To check for new errors, wrap `console.error`
     in the page right after navigating, then perform the action and read the captured list.
+  - **Breakpoints:** when adding, changing or testing a responsive breakpoint, check it visually 5px on either side of
+    it (e.g. 895px and 905px for a 900px breakpoint) and look for truncated text, overflow, horizontal scroll, wrapped
+    or clipped rows and anything else the layout shouldn't do at that width. Check both layouts, not just the one that
+    changed.
 - **Season-gated UI:** the current season and playoff mode come from `NhlStatsApiService.getCurrentSeason()` (the
   rules are in `docs/nhl-api.md`). In playoff mode, home shows the playoff summary and `/stats` shows the playoffs
   first. To test that outside the playoffs, temporarily return `isPlayoffMode: true` from `getCurrentSeason`, then

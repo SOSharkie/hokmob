@@ -40,6 +40,7 @@
           <th class="headshot-header"><span class="visually-hidden">Headshot</span></th>
           <th class="player-header"><span>Player</span></th>
           <th class="position-header"><span>Pos</span></th>
+          <th class="stat-header gp-header" title="Games played"><span>GP</span></th>
           <th class="stat-header" title="Assists"><span>A</span></th>
           <th class="stat-header" title="Goals"><span>G</span></th>
           <th class="stat-header" title="Points"><span>P</span></th>
@@ -68,6 +69,7 @@
             <ng-template #plainName><span class="player-name">{{row.playerName}}</span></ng-template>
           </td>
           <td class="position-cell"><span>{{row.position}}</span></td>
+          <td class="stat-cell"><span>{{row.gamesPlayed}}</span></td>
           <td class="stat-cell"><span>{{row.assists}}</span></td>
           <td class="stat-cell"><span>{{row.goals}}</span></td>
           <td class="stat-cell points-cell"><span>{{row.points}}</span></td>
