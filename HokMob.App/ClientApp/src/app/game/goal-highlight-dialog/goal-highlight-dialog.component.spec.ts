@@ -72,7 +72,7 @@ describe('GoalHighlightDialogComponent', () => {
 
   it('should close when the close button is clicked', () => {
     show({player: ehlers(), video: ehlersGoalVideo()});
-    element('.close-button').click();
+    element('.dialog-close-button').click();
     expect(close).toHaveBeenCalled();
   });
 });

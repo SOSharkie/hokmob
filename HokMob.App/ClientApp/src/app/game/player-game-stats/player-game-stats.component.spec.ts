@@ -197,6 +197,18 @@ describe('PlayerGameStatsComponent', () => {
     expect(shortLabels.map(label => label.getAttribute('title'))).toEqual(['Time On Ice', 'Plus/Minus', 'Penalty Minutes']);
   });
 
+  it('should mark up the stats a phone drops from the compact bar', () => {
+    show(gamePlayer(8476460));
+    httpMock.expectOne('/api/nhl/player/8476460/landing');
+    fixture.componentRef.setInput('compact', true);
+    fixture.detectChanges();
+
+    const labelOf = (selector: string) =>
+        fixture.nativeElement.querySelector(selector)?.querySelector('.game-stat-label').textContent.trim();
+    expect(labelOf('.game-stat-item.faceoff-stat')).toBe('Faceoff %');
+    expect(labelOf('.game-stat-item.penalty-stat')).toBe('PMs');
+  });
+
   it('should drop the least important stats, in order, to keep the compact bar on one row', () => {
     show(gamePlayer(8476460));
     httpMock.expectOne('/api/nhl/player/8476460/landing');

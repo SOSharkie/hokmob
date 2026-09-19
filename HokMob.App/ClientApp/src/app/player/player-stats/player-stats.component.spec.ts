@@ -80,6 +80,26 @@ describe('PlayerStatsComponent', () => {
     ]);
   });
 
+  it('should mark up the skater grid so a phone can drop the faceoffs and refill the rows', () => {
+    const season = mockPlayerStats(8477964).regularSeasons[0] as SkaterSeasonStats;
+    show(season, false);
+
+    expect(fixture.nativeElement.querySelector('.stats-grid').classList).toContain('skater-stats');
+    const faceoffItems = fixture.nativeElement.querySelectorAll('.stats-item.faceoff-item');
+    expect(faceoffItems.length).toBe(1);
+    expect(faceoffItems[0].querySelector('.item-title').textContent.trim()).toBe('Faceoff %');
+    // The seven items left fill two rows of four and three
+    expect(items().length - faceoffItems.length).toBe(7);
+  });
+
+  it('should mark up the goalie grid, which keeps all of its stats', () => {
+    const season = mockPlayerStats(8476945).regularSeasons[0] as GoalieSeasonStats;
+    show(season, true);
+
+    expect(fixture.nativeElement.querySelector('.stats-grid').classList).toContain('goalie-stats');
+    expect(fixture.nativeElement.querySelectorAll('.faceoff-item').length).toBe(0);
+  });
+
   it('should show a dash for a skater who took no faceoffs', () => {
     const season = mockPlayerStats(8477964).regularSeasons[0] as SkaterSeasonStats;
     season.faceoffWinPct = null;

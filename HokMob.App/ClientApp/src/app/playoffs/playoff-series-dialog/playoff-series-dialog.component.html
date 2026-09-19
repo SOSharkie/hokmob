@@ -1,5 +1,8 @@
 <div mat-dialog-title class="series-title">
   <span class="series-title-text">{{seriesTitle}}</span>
+  <button type="button" class="dialog-close-button" aria-label="Close" (click)="closeDialog()">
+    <mat-icon fontIcon="close"></mat-icon>
+  </button>
 </div>
 <mat-dialog-content>
   <div class="playoff-series-dialog-container">

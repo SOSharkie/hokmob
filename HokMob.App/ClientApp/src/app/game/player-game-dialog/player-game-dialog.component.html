@@ -1,4 +1,7 @@
 <div class="player-game-dialog-container">
+  <button type="button" class="dialog-close-button" aria-label="Close" (click)="closeDialog()">
+    <mat-icon fontIcon="close"></mat-icon>
+  </button>
   <app-player-game-stats [player]="player"></app-player-game-stats>
   <footer class="player-footer-container">
     <div class="profile-container" (click)="clickPlayerProfile()">

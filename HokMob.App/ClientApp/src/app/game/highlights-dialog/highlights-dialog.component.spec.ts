@@ -87,7 +87,7 @@ describe('HighlightsDialogComponent', () => {
 
   it('should close when the close button is clicked', () => {
     show(realGameData());
-    element('.close-button').click();
+    element('.dialog-close-button').click();
     expect(close).toHaveBeenCalled();
   });
 });

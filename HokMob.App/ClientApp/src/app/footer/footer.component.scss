@@ -26,13 +26,18 @@ footer {
   }
 }
 
-// Mobile Styling
+// Mobile Styling: a compact footer, since the page already leaves room below it for the fixed menu
+// (app.component.scss)
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   footer {
-    min-height: 165px;
+    min-height: 0;
+    font-size: 13px;
 
     .footer-container {
       flex-direction: column;
+      gap: $spacing-small;
+      padding: $spacing-large;
+      margin-top: 0;
     }
   }
 }

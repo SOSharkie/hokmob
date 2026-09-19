@@ -5,28 +5,29 @@
   <div class="rink">
     <!-- Drawn in feet on a 200.13ft long rink, home end on the left -->
     <div class="rink-surface" aria-hidden="true">
+      <!-- The viewBox is as long as the rink is drawn, so the markings scale evenly and the circles stay circles.
+           preserveAspectRatio="none" only takes up the rounding the rink's 2px border leaves. -->
       <svg *ngFor="let drawing of rinkDrawings" class="rink-markings" [class.standing]="drawing.standing"
-           [attr.viewBox]="drawing.viewBox">
+           [attr.viewBox]="drawing.viewBox" preserveAspectRatio="none">
         <g class="thin">
-          <line x1="13.1" y1="0" x2="13.1" [attr.y2]="drawing.width"/>
-          <line x1="187.03" y1="0" x2="187.03" [attr.y2]="drawing.width"/>
+          <line *ngFor="let x of drawing.goalLineXs" [attr.x1]="x" y1="0" [attr.x2]="x" [attr.y2]="drawing.width"/>
           <path *ngFor="let crease of drawing.creasePaths" class="crease" [attr.d]="crease"/>
-          <rect x="9.8" [attr.y]="drawing.goalY" width="3.3" height="6" rx="1.2"/>
-          <rect x="187.03" [attr.y]="drawing.goalY" width="3.3" height="6" rx="1.2"/>
-          <path d="M90.065 0 A10 10 0 0 0 110.065 0"/>
+          <rect *ngFor="let x of drawing.goalXs" [attr.x]="x" [attr.y]="drawing.goalY" width="3.3" height="6" rx="1.2"/>
+          <path [attr.d]="drawing.refereeCreasePath"/>
           <ng-container *ngFor="let circle of drawing.faceoffCircles">
-            <circle [attr.cx]="circle.x" [attr.cy]="circle.y" r="14.75"/>
+            <circle [attr.cx]="circle.x" [attr.cy]="circle.y" [attr.r]="drawing.circleRadius"/>
             <path [attr.d]="circle.hashMarks"/>
           </ng-container>
-          <circle cx="100.065" [attr.cy]="drawing.middle" r="14.75"/>
+          <circle [attr.cx]="drawing.centerX" [attr.cy]="drawing.middle" [attr.r]="drawing.circleRadius"/>
         </g>
         <g class="dots">
           <circle *ngFor="let circle of drawing.faceoffCircles" [attr.cx]="circle.x" [attr.cy]="circle.y" r="1"/>
-          <circle cx="100.065" [attr.cy]="drawing.middle" r="0.6"/>
+          <circle [attr.cx]="drawing.centerX" [attr.cy]="drawing.middle" r="0.6"/>
         </g>
-        <line class="blue-line" x1="71.1" y1="0" x2="71.1" [attr.y2]="drawing.width"/>
-        <line class="blue-line" x1="129.03" y1="0" x2="129.03" [attr.y2]="drawing.width"/>
-        <line class="center-line" x1="100.065" y1="0" x2="100.065" [attr.y2]="drawing.width"/>
+        <line class="blue-line" *ngFor="let x of drawing.blueLineXs" [attr.x1]="x" y1="0" [attr.x2]="x"
+              [attr.y2]="drawing.width"/>
+        <line class="center-line" [attr.x1]="drawing.centerX" y1="0" [attr.x2]="drawing.centerX"
+              [attr.y2]="drawing.width"/>
       </svg>
     </div>
     <div class="team-players home-players">

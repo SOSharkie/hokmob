@@ -18,6 +18,43 @@ button:focus {
   outline: none;
 }
 
+// A dialog's round close button, in the top corner of its header. Dialogs render in the overlay, outside any
+// component's styles, so it's styled here.
+.dialog-close-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: $black-03;
+  color: white;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $gray-01;
+  }
+}
+
+// Dialogs on phones: nearly the whole screen, instead of a box sized to its content inside an unusable strip of
+// backdrop. The panes carry their size as an inline style, so these have to be !important.
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .cdk-overlay-pane.mobile-dialog-panel {
+    width: calc(100vw - 2 * #{$spacing-medium}) !important;
+    max-width: calc(100vw - 2 * #{$spacing-medium}) !important;
+    max-height: calc(100svh - #{$spacing-huge}) !important;
+  }
+
+  // A tap target at least 44px each way
+  .dialog-close-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+
 // A picker button: a pill with a chevron, like Fotmob's season dropdown (draft year and round, playoffs season). It
 // opens a mat-menu with the .pill-picker-menu class, and its options have .pill-picker-option (see PickerMenuUtils).
 .pill-picker {
@@ -51,7 +88,7 @@ button:focus {
 // capped well above the bottom of the page, and the list scrolls.
 .mat-mdc-menu-panel.pill-picker-menu {
   min-width: 96px;
-  max-height: min(320px, 55vh);
+  max-height: min(320px, 55svh);
   margin-top: $spacing-medium;
   border: 1px solid $gray-01;
   border-radius: 12px;

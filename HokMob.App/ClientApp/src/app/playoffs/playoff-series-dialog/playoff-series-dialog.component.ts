@@ -83,6 +83,10 @@ export class PlayoffSeriesDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  public closeDialog(): void {
+    this.dialogRef.close();
+  }
+
   /**
    * Gets the round name, like "East Round 1", "West Semifinals", "East Finals" or "Stanley Cup Finals". The conference
    * is only known once the series schedule loads.

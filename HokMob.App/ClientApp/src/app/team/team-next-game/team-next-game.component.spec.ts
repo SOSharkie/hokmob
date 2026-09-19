@@ -29,10 +29,15 @@ describe('TeamNextGameComponent', () => {
 
     fixture = TestBed.createComponent(TeamNextGameComponent);
     component = fixture.componentInstance;
+    // The next game below is on 2026-09-20, and the page labels a game "Today", "Tomorrow" or "Yesterday" instead of
+    // its date, so the day the tests run on has to be pinned well clear of it
+    jasmine.clock().install();
+    jasmine.clock().mockDate(new Date(2026, 8, 15));
   });
 
   afterEach(() => {
     fixture.destroy();
+    jasmine.clock().uninstall();
   });
 
   /** Boston's first game of 2026-27: WSH at BOS on 2026-09-20, as the team page converts it. */

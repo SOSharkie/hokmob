@@ -2,18 +2,25 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatIconRegistry } from '@angular/material/icon';
 import { LUCIDE_ICONS } from '@shared/icons/lucide-icons';
-import { firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
+import { ScrollDirectionService } from '@shared/services/scroll-direction.service';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
+  let scrollingUp: BehaviorSubject<boolean>;
+
   beforeEach(async () => {
+    scrollingUp = new BehaviorSubject<boolean>(true);
     await TestBed.configureTestingModule({
       imports: [
         AppTestingModule
       ],
       declarations: [
         AppComponent
+      ],
+      providers: [
+        {provide: ScrollDirectionService, useValue: {scrollingUp$: scrollingUp.asObservable()}}
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     }).compileComponents();
@@ -36,6 +43,33 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('#games-item')?.textContent).toContain('Games');
+  });
+
+  it('should hide the mobile menu while the page scrolls down, and bring it back on the way up', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const menu = fixture.nativeElement.querySelector('.mobile-menu') as HTMLElement;
+    expect(fixture.componentInstance.isMobileMenuShown).toBeTrue();
+    expect(menu.classList).not.toContain('hidden');
+
+    scrollingUp.next(false);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.isMobileMenuShown).toBeFalse();
+    expect(menu.classList).toContain('hidden');
+
+    scrollingUp.next(true);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.isMobileMenuShown).toBeTrue();
+    expect(menu.classList).not.toContain('hidden');
+  });
+
+  it('should stop listening to the scroll direction when it is destroyed', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    fixture.destroy();
+
+    scrollingUp.next(false);
+    expect(fixture.componentInstance.isMobileMenuShown).toBeTrue();
   });
 
   it('should register the Lucide icons used by the menus', async () => {

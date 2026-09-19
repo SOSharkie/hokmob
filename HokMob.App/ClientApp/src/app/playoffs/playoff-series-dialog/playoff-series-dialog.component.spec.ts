@@ -172,6 +172,13 @@ describe('PlayoffSeriesDialogComponent', () => {
     expect(scorecards().length).toBe(0);
   });
 
+  it('should close when the close button is clicked', async () => {
+    open({series: mockRankedCarouselSeries('A'), season: 20252026});
+    await loadSchedule(scheduleUrlA, mockPlayoffSeriesSchedule('A'));
+    fixture.nativeElement.querySelector('.dialog-close-button').click();
+    expect(dialogRef.close).toHaveBeenCalled();
+  });
+
   it('should close when a game is clicked', async () => {
     open({series: mockRankedCarouselSeries('A'), season: 20252026});
     await loadSchedule(scheduleUrlA, mockPlayoffSeriesSchedule('A'));

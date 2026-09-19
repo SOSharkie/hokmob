@@ -62,7 +62,7 @@
         <span class="game-stat-label">Blocks</span>
         <span class="game-stat-value">{{skaterStats.blockedShots}}</span>
       </div>
-      <div *ngIf="showFaceoffs" class="game-stat-item">
+      <div *ngIf="showFaceoffs" class="game-stat-item faceoff-stat">
         <span class="game-stat-label">Faceoff %</span>
         <span class="game-stat-value">{{faceoffPercentage}}</span>
       </div>
@@ -70,7 +70,7 @@
         <span class="game-stat-label" title="Plus/Minus">{{compact ? '+/-' : 'Plus/Minus'}}</span>
         <span class="game-stat-value">{{skaterStats.plusMinus}}</span>
       </div>
-      <div class="game-stat-item">
+      <div class="game-stat-item penalty-stat">
         <span class="game-stat-label" title="Penalty Minutes">{{compact ? 'PMs' : 'Penalty Minutes'}}</span>
         <span class="game-stat-value" [ngStyle]="{'color': skaterStats.pim > 0 ? '#e34d53' : ''}">{{skaterStats.pim}}</span>
       </div>
@@ -104,7 +104,7 @@
         <span class="game-stat-label">Shots Against</span>
         <span class="game-stat-value">{{goalieStats.shotsAgainst}}</span>
       </div>
-      <div class="game-stat-item">
+      <div class="game-stat-item penalty-stat">
         <span class="game-stat-label" title="Penalty Minutes">{{compact ? 'PMs' : 'Penalty Minutes'}}</span>
         <span class="game-stat-value">{{goalieStats.pim}}</span>
       </div>
