@@ -5,11 +5,15 @@ $rink-line: $gray-01;
 
 // A 200.13ft rink with 27.88ft corners: 78.74ft wide lying across the card, and 98.42ft wide standing up on phones
 $lying-aspect-ratio: calc(200.13 / 78.74);
-// Standing up, the rink is squashed along its length instead of the real 200.13 / 98.42 (about 2.03), so the whole
-// card fits on a phone screen: at the 366px a 393px iPhone leaves it, 1.6 makes it 586px tall instead of 744px. The
-// markings stretch with it (preserveAspectRatio="none"), and the players follow, since they are placed in percent.
+// Standing up, the rink is drawn shorter than the real 200.13 / 98.42 (about 2.03), so the whole card fits on a
+// phone screen: at the 366px a 393px iPhone leaves it, 1.6 makes it 586px tall instead of 744px. The markings are
+// drawn on that shorter rink too (GameTopPlayersComponent.standingRinkLength), so its circles stay circles, and the
+// players follow, since they are placed in percent. Keep it the same as the component's standingAspectRatio.
 $standing-aspect-ratio: 1.6;
+// The 27.88ft corners, in percent of the side they run along. The standing rink's are of its 157.47ft length, so they
+// stay quarter circles like the markings.
 $corner-along-length: 13.93%;
+$standing-corner-along-length: 17.7%;
 $lying-corner-along-width: 35.41%;
 $standing-corner-along-width: 28.33%;
 // The benches, 39.5ft long, sit 53.9ft from each end
@@ -303,7 +307,7 @@ $bench-length: 19.74%;
     // Stays phone sized, so it isn't too tall on a wide phone or a small tablet
     max-width: 400px;
     margin: 0 auto;
-    border-radius: #{$standing-corner-along-width} / #{$corner-along-length};
+    border-radius: #{$standing-corner-along-width} / #{$standing-corner-along-length};
   }
 
   .rink-markings:not(.standing) {

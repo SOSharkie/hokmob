@@ -17,16 +17,26 @@ export interface TopPlayerSpot {
 }
 
 /**
- * A rink's markings in feet, for one rink width.
+ * A rink's markings in feet, for one rink width and length. Positions along the rink come from the drawing, since the
+ * standing rink is drawn shorter than a real one (GameTopPlayersComponent.standingRinkLength).
  */
 export interface RinkDrawing {
   standing: boolean;
   width: number;
+  length: number;
   middle: number;
   viewBox: string;
-  /** The top of the 6ft wide goals. */
+  /** Across the rink: the middle of the 29.5ft faceoff circles' hash marks and the top of the 6ft wide goals. */
   goalY: number;
+  /** Along the rink: the goal lines, the two blue lines and the center line. */
+  goalLineXs: number[];
+  blueLineXs: number[];
+  centerX: number;
+  /** Where each 3.3ft deep goal starts, behind its goal line. */
+  goalXs: number[];
   creasePaths: string[];
+  /** The referee's crease, a 10ft semicircle on one side at the middle of the rink. */
+  refereeCreasePath: string;
   faceoffCircles: { x: number, y: number, hashMarks: string }[];
 }
 
@@ -53,6 +63,21 @@ export class GameTopPlayersComponent implements OnChanges {
   public static readonly lyingRinkWidth = 78.74;
 
   /**
+   * How much longer than wide the standing rink is drawn on phones: 1.6 instead of a real rink's 2.03, so the whole
+   * card fits a phone screen. Keep it the same as $standing-aspect-ratio in the stylesheet.
+   */
+  public static readonly standingAspectRatio = 1.6;
+
+  /**
+   * The length the standing rink is drawn at, in feet. Everything along it moves in, while everything measured across
+   * it, and every round marking, keeps its real size, so the faceoff circles stay circles. The lying rink is narrowed
+   * the same way, across instead of along.
+   */
+  public static get standingRinkLength(): number {
+    return Math.round(GameTopPlayersComponent.standingRinkWidth * GameTopPlayersComponent.standingAspectRatio * 100) / 100;
+  }
+
+  /**
    * How far each line stands from its own end boards, in feet: the goalie in the crease, the defense between the
    * faceoff circles and the blue line, and the forwards in the middle of the neutral zone.
    */
@@ -73,8 +98,8 @@ export class GameTopPlayersComponent implements OnChanges {
    * phones.
    */
   public readonly rinkDrawings: RinkDrawing[] = [
-    GameTopPlayersComponent.getRinkDrawing(GameTopPlayersComponent.lyingRinkWidth, false),
-    GameTopPlayersComponent.getRinkDrawing(GameTopPlayersComponent.standingRinkWidth, true)
+    GameTopPlayersComponent.getRinkDrawing(GameTopPlayersComponent.lyingRinkWidth, GameTopPlayersComponent.rinkLength, false),
+    GameTopPlayersComponent.getRinkDrawing(GameTopPlayersComponent.standingRinkWidth, GameTopPlayersComponent.standingRinkLength, true)
   ];
 
   /**
@@ -211,27 +236,40 @@ export class GameTopPlayersComponent implements OnChanges {
   }
 
   /**
-   * Returns the markings of a rink that is the given width in feet. Things across the rink (the faceoff circles, the
-   * creases and the goals) stay centered, and the faceoff dots stay 22ft either side of the middle on a full-width rink,
-   * closer on a narrower one.
+   * Returns the markings of a rink that is the given width and length in feet. Things across the rink (the faceoff
+   * circles, the creases and the goals) stay centered, and the faceoff dots stay 22ft either side of the middle on a
+   * full-width rink, closer on a narrower one. Things along it move in on a rink drawn shorter than a real one, while
+   * the round markings keep their size, so the faceoff circles and the creases stay round however the rink is drawn.
    */
-  private static getRinkDrawing(width: number, standing: boolean): RinkDrawing {
+  private static getRinkDrawing(width: number, length: number, standing: boolean): RinkDrawing {
     const round = (value: number) => Math.round(value * 100) / 100;
     const middle = round(width / 2);
     const dotOffset = 22 * width / GameTopPlayersComponent.standingRinkWidth;
     const dotYs = [round(middle - dotOffset), round(middle + dotOffset)];
+    // 11ft from the end boards, with the blue lines 64ft further in and the end zone dots 22ft out from the goal lines
+    const along = (feet: number) => round(feet * length / GameTopPlayersComponent.rinkLength);
+    const goalLineXs = [along(13.1), along(187.03)];
+    const circleXs = [along(35.1), along(165.03)];
+    const centerX = along(100.065);
     return {
       standing,
       width,
       middle,
-      viewBox: `0 0 ${GameTopPlayersComponent.rinkLength} ${width}`,
+      length,
+      viewBox: `0 0 ${length} ${width}`,
       goalY: round(middle - 3),
+      goalLineXs,
+      blueLineXs: [along(71.1), along(129.03)],
+      centerX,
+      // The 3.3ft deep goals sit behind their goal lines, towards the end boards
+      goalXs: [round(goalLineXs[0] - 3.3), goalLineXs[1]],
       creasePaths: [
-        `M13.1 ${round(middle - 6)} A6 6 0 0 1 13.1 ${round(middle + 6)} Z`,
-        `M187.03 ${round(middle - 6)} A6 6 0 0 0 187.03 ${round(middle + 6)} Z`
+        `M${goalLineXs[0]} ${round(middle - 6)} A6 6 0 0 1 ${goalLineXs[0]} ${round(middle + 6)} Z`,
+        `M${goalLineXs[1]} ${round(middle - 6)} A6 6 0 0 0 ${goalLineXs[1]} ${round(middle + 6)} Z`
       ],
-      // The end zone faceoff circles are 29.5ft across, their dots 22ft out from the goal lines
-      faceoffCircles: [35.1, 165.03].flatMap(x => dotYs.map(y => ({
+      refereeCreasePath: `M${round(centerX - 10)} 0 A10 10 0 0 0 ${round(centerX + 10)} 0`,
+      // The end zone faceoff circles are 29.5ft across
+      faceoffCircles: circleXs.flatMap(x => dotYs.map(y => ({
         x, y, hashMarks: GameTopPlayersComponent.getHashMarksPath(x, y)
       })))
     };
