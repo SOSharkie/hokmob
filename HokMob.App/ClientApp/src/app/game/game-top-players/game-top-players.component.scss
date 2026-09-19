@@ -10,12 +10,12 @@ $lying-aspect-ratio: calc(200.13 / 78.74);
 // drawn on that shorter rink too (GameTopPlayersComponent.standingRinkLength), so its circles stay circles, and the
 // players follow, since they are placed in percent. Keep it the same as the component's standingAspectRatio.
 $standing-aspect-ratio: 1.6;
-// The 27.88ft corners, in percent of the side they run along. The standing rink's are of its 157.47ft length, so they
-// stay quarter circles like the markings.
+// The 27.88ft corners, in percent of the side they run along. The standing rink's are quarter circles like its
+// markings, and shrink with them (the component's getRoundScale), so 24.73ft of its 98.42ft width and 157.47ft length.
 $corner-along-length: 13.93%;
-$standing-corner-along-length: 17.7%;
+$standing-corner-along-length: 15.7%;
 $lying-corner-along-width: 35.41%;
-$standing-corner-along-width: 28.33%;
+$standing-corner-along-width: 25.13%;
 // The benches, 39.5ft long, sit 53.9ft from each end
 $bench-start: 26.93%;
 $bench-length: 19.74%;

@@ -15,10 +15,10 @@
           <rect *ngFor="let x of drawing.goalXs" [attr.x]="x" [attr.y]="drawing.goalY" width="3.3" height="6" rx="1.2"/>
           <path [attr.d]="drawing.refereeCreasePath"/>
           <ng-container *ngFor="let circle of drawing.faceoffCircles">
-            <circle [attr.cx]="circle.x" [attr.cy]="circle.y" r="14.75"/>
+            <circle [attr.cx]="circle.x" [attr.cy]="circle.y" [attr.r]="drawing.circleRadius"/>
             <path [attr.d]="circle.hashMarks"/>
           </ng-container>
-          <circle [attr.cx]="drawing.centerX" [attr.cy]="drawing.middle" r="14.75"/>
+          <circle [attr.cx]="drawing.centerX" [attr.cy]="drawing.middle" [attr.r]="drawing.circleRadius"/>
         </g>
         <g class="dots">
           <circle *ngFor="let circle of drawing.faceoffCircles" [attr.cx]="circle.x" [attr.cy]="circle.y" r="1"/>

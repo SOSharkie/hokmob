@@ -165,19 +165,24 @@ describe('GameTopPlayersComponent', () => {
     expect(standing.goalLineXs[0] / standing.length).toBeCloseTo(lying.goalLineXs[0] / lying.length, 4);
     expect(standing.blueLineXs[0] / standing.length).toBeCloseTo(lying.blueLineXs[0] / lying.length, 4);
 
-    // The creases and the referee's crease keep their radius, so they stay round on both rinks
-    expect(standing.creasePaths[0]).toBe('M10.31 43.21 A6 6 0 0 1 10.31 55.21 Z');
-    expect(standing.creasePaths[1]).toBe('M147.16 43.21 A6 6 0 0 0 147.16 55.21 Z');
-    expect(standing.refereeCreasePath).toBe('M68.74 0 A10 10 0 0 0 88.74 0');
+    // Every round marking shrinks with the square root of the length the rink lost, so it covers the same ice as the
+    // oval it stands in for instead of looking too big for the shorter rink
+    expect(lying.circleRadius).toBe(14.75);
+    expect(standing.circleRadius).toBe(13.08);
+    expect(standing.circleRadius / lying.circleRadius).toBeCloseTo(Math.sqrt(standing.length / lying.length), 3);
+    expect(lying.creasePaths[0]).toBe('M13.1 33.37 A6 6 0 0 1 13.1 45.37 Z');
     expect(lying.refereeCreasePath).toBe('M90.06 0 A10 10 0 0 0 110.06 0');
+    expect(standing.creasePaths[0]).toBe('M10.31 43.89 A5.32 5.32 0 0 1 10.31 54.53 Z');
+    expect(standing.creasePaths[1]).toBe('M147.16 43.89 A5.32 5.32 0 0 0 147.16 54.53 Z');
+    expect(standing.refereeCreasePath).toBe('M69.87 0 A8.87 8.87 0 0 0 87.61 0');
   });
 
   it('should keep the faceoff dots 22ft from the middle of a full width rink, and closer on the narrower one', () => {
     const [lying, standing] = component.rinkDrawings;
     expect(standing.faceoffCircles.map(circle => [circle.x, circle.y]))
         .toEqual([[27.62, 27.21], [27.62, 71.21], [129.85, 27.21], [129.85, 71.21]]);
-    expect(standing.creasePaths[0]).toBe('M10.31 43.21 A6 6 0 0 1 10.31 55.21 Z');
-    expect(standing.faceoffCircles[0].hashMarks).toBe('M26.12 12.46 v-2 M26.12 41.96 v2 M29.12 12.46 v-2 M29.12 41.96 v2');
+    // The hash marks sit on the circle, so they move in with its radius
+    expect(standing.faceoffCircles[0].hashMarks).toBe('M26.12 14.13 v-2 M26.12 40.29 v2 M29.12 14.13 v-2 M29.12 40.29 v2');
 
     // 78.74ft is 80% of 98.42ft, so the dots are 17.6ft from the middle
     expect(lying.middle).toBe(39.37);

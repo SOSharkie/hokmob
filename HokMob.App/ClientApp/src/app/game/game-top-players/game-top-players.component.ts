@@ -34,6 +34,8 @@ export interface RinkDrawing {
   centerX: number;
   /** Where each 3.3ft deep goal starts, behind its goal line. */
   goalXs: number[];
+  /** The faceoff circles' radius, which the hash marks sit on. */
+  circleRadius: number;
   creasePaths: string[];
   /** The referee's crease, a 10ft semicircle on one side at the middle of the rink. */
   refereeCreasePath: string;
@@ -238,8 +240,8 @@ export class GameTopPlayersComponent implements OnChanges {
   /**
    * Returns the markings of a rink that is the given width and length in feet. Things across the rink (the faceoff
    * circles, the creases and the goals) stay centered, and the faceoff dots stay 22ft either side of the middle on a
-   * full-width rink, closer on a narrower one. Things along it move in on a rink drawn shorter than a real one, while
-   * the round markings keep their size, so the faceoff circles and the creases stay round however the rink is drawn.
+   * full-width rink, closer on a narrower one. Things along it move in on a rink drawn shorter than a real one, and
+   * the round markings stay round, drawn at `getRoundScale`.
    */
   private static getRinkDrawing(width: number, length: number, standing: boolean): RinkDrawing {
     const round = (value: number) => Math.round(value * 100) / 100;
@@ -248,9 +250,14 @@ export class GameTopPlayersComponent implements OnChanges {
     const dotYs = [round(middle - dotOffset), round(middle + dotOffset)];
     // 11ft from the end boards, with the blue lines 64ft further in and the end zone dots 22ft out from the goal lines
     const along = (feet: number) => round(feet * length / GameTopPlayersComponent.rinkLength);
+    const roundScale = GameTopPlayersComponent.getRoundScale(length);
     const goalLineXs = [along(13.1), along(187.03)];
     const circleXs = [along(35.1), along(165.03)];
     const centerX = along(100.065);
+    // The end zone faceoff circles are 29.5ft across, the creases 12ft and the referee's crease 20ft
+    const circleRadius = round(14.75 * roundScale);
+    const creaseRadius = round(6 * roundScale);
+    const refereeRadius = round(10 * roundScale);
     return {
       standing,
       width,
@@ -263,23 +270,33 @@ export class GameTopPlayersComponent implements OnChanges {
       centerX,
       // The 3.3ft deep goals sit behind their goal lines, towards the end boards
       goalXs: [round(goalLineXs[0] - 3.3), goalLineXs[1]],
+      circleRadius,
       creasePaths: [
-        `M${goalLineXs[0]} ${round(middle - 6)} A6 6 0 0 1 ${goalLineXs[0]} ${round(middle + 6)} Z`,
-        `M${goalLineXs[1]} ${round(middle - 6)} A6 6 0 0 0 ${goalLineXs[1]} ${round(middle + 6)} Z`
+        `M${goalLineXs[0]} ${round(middle - creaseRadius)} A${creaseRadius} ${creaseRadius} 0 0 1 ${goalLineXs[0]} ${round(middle + creaseRadius)} Z`,
+        `M${goalLineXs[1]} ${round(middle - creaseRadius)} A${creaseRadius} ${creaseRadius} 0 0 0 ${goalLineXs[1]} ${round(middle + creaseRadius)} Z`
       ],
-      refereeCreasePath: `M${round(centerX - 10)} 0 A10 10 0 0 0 ${round(centerX + 10)} 0`,
-      // The end zone faceoff circles are 29.5ft across
+      refereeCreasePath: `M${round(centerX - refereeRadius)} 0 A${refereeRadius} ${refereeRadius} 0 0 0 ${round(centerX + refereeRadius)} 0`,
       faceoffCircles: circleXs.flatMap(x => dotYs.map(y => ({
-        x, y, hashMarks: GameTopPlayersComponent.getHashMarksPath(x, y)
+        x, y, hashMarks: GameTopPlayersComponent.getHashMarksPath(x, y, circleRadius)
       })))
     };
   }
 
   /**
-   * Returns the SVG path of a faceoff circle's hash marks: two 2ft marks, 3ft apart, above and below the circle.
+   * How much smaller a round marking is drawn on a rink that is drawn shorter than a real one: the square root of how
+   * much the rink lost, so a circle covers the same ice as the oval it stands in for. Drawn at their full size across
+   * a shortened rink the faceoff circles look too big for its length, and squashed to fit they aren't circles at all.
+   * A rink drawn at its real length (the lying one) keeps every marking at its real size.
    */
-  private static getHashMarksPath(x: number, y: number): string {
-    const radius = 14.75;
+  private static getRoundScale(length: number): number {
+    return Math.sqrt(length / GameTopPlayersComponent.rinkLength);
+  }
+
+  /**
+   * Returns the SVG path of a faceoff circle's hash marks: two 2ft marks, 3ft apart, above and below the circle of
+   * the given radius.
+   */
+  private static getHashMarksPath(x: number, y: number, radius: number): string {
     const round = (value: number) => Math.round(value * 100) / 100;
     return [-1.5, 1.5].map(offset =>
         `M${round(x + offset)} ${round(y - radius)} v-2 M${round(x + offset)} ${round(y + radius)} v2`).join(' ');
