@@ -319,6 +319,27 @@ describe('StatsUtils', () => {
           .map(player => player.hokmobRating)).toEqual([8.2, 6.1, 0]);
     });
 
+    it('should sort by rating with the star boost, leaving the ratings themselves alone', () => {
+      // Kyle Connor is one of the Winnipeg stars, Morgan Barron is not
+      const connor = {playerId: 8478398, hokmobRating: 6.4} as GamePlayer;
+      const barron = {playerId: 8480289, hokmobRating: 6.5} as GamePlayer;
+      expect(StatsUtils.starRatingBoost).toBe(0.5);
+      expect(StatsUtils.getSortRating(connor)).toBe(6.9);
+      expect(StatsUtils.getSortRating(barron)).toBe(6.5);
+      expect(connor.hokmobRating).toBe(6.4);
+      expect(StatsUtils.sortByBoostedRating(connor, barron)).toBeLessThan(0);
+    });
+
+    it('should keep a player rated more than the boost above a star, and rate a missing player 0', () => {
+      // Connor cannot catch a teammate rated 7.0, only one within half a point of him
+      const connor = {playerId: 8478398, hokmobRating: 6.4} as GamePlayer;
+      expect(StatsUtils.sortByBoostedRating(connor, {playerId: 8480289, hokmobRating: 7.0} as GamePlayer))
+          .toBeGreaterThan(0);
+      expect(StatsUtils.sortByBoostedRating(connor, {playerId: 8480289, hokmobRating: 6.9} as GamePlayer)).toBe(0);
+      expect(StatsUtils.getSortRating({playerId: 8480289} as GamePlayer)).toBe(0);
+      expect(StatsUtils.getSortRating(undefined)).toBe(0);
+    });
+
     it('should sort star players ahead of the rest, the bigger star first', () => {
       // Cale Makar is the second star of Colorado, Nathan MacKinnon its biggest, and Jalen Chatfield is not a star anywhere
       const players = [{playerId: 8480069}, {playerId: 8478970}, {playerId: 8477492}] as GamePlayer[];

@@ -75,12 +75,20 @@ describe('GameTopPlayersComponent', () => {
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
     expect(names('home', 'goalies')).toEqual(['Eric Comrie']);
     expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
-    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Morgan Barron']);
-    expect(cards('home').map(rating)).toEqual(['7.9', '7.8', '6', '7', '6.7', '6.5']);
+    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Kyle Connor', 'Cole Koepke']);
+    expect(cards('home').map(rating)).toEqual(['7.9', '7.8', '6', '7', '6.4', '6.7']);
 
     expect(names('away', 'goalies')).toEqual(['Jordan Binnington']);
     expect(names('away', 'defense')).toEqual(['Logan Mailloux', 'Colton Parayko']);
     expect(names('away', 'forwards')).toEqual(['Dylan Holloway', 'Jimmy Snuggerud', 'Dalibor Dvorsky']);
+  });
+
+  it('should give a spot to a star player over a slightly better rated teammate, showing his own rating', () => {
+    // Winnipeg: Kyle Connor is one of its stars and Morgan Barron is not, so the 6.4 takes the spot from the 6.5
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Kyle Connor', 'Cole Koepke']);
+    expect(rating(card('home', 'Kyle Connor'))).toBe('6.4');
+    expect(card('home', 'Morgan Barron')).toBeUndefined();
   });
 
   it('should give a spot to a star player over an equally rated teammate', () => {
@@ -90,10 +98,11 @@ describe('GameTopPlayersComponent', () => {
     expect(cards('away', 'defense').map(rating)).toEqual(['7.1', '6.2']);
   });
 
-  it('should keep the better rated player over a star', () => {
-    // None of the three Carolina forwards is a star, so Sebastian Aho, rated 6.2, stays off the rink
+  it('should keep a player rated more than the boost better than a star', () => {
+    // Carolina: Sebastian Aho, a star rated 6.2, sorts at 6.7, still behind all three forwards on the rink
     show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
     expect(names('away', 'forwards')).toEqual(['Jordan Staal', 'Nikolaj Ehlers', 'Logan Stankoven']);
+    expect(cards('away', 'forwards').map(rating)).toEqual(['9.1', '7.6', '7.3']);
     expect(card('away', 'Sebastian Aho')).toBeUndefined();
   });
 
