@@ -193,10 +193,12 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
   }
 
   /**
-   * Whether the bar's stats sit on more than one row.
+   * Whether the bar's stats sit on more than one row. Stats the phone styles hide (Faceoff % and the penalty minutes)
+   * have no box, so they are left out: the last one in the template would otherwise report the first row's position.
    */
   private compactStatsWrap(): boolean {
-    const items = Array.from(this.statsContainer.nativeElement.querySelectorAll<HTMLElement>(".game-stat-item"));
+    const items = Array.from(this.statsContainer.nativeElement.querySelectorAll<HTMLElement>(".game-stat-item"))
+        .filter(item => item.offsetHeight > 0);
     return items.length > 1 && items[items.length - 1].offsetTop > items[0].offsetTop;
   }
 

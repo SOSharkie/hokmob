@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, HostListener, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Params} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from "dayjs";
@@ -34,6 +34,8 @@ import {
   GoalHighlightDialogData
 } from "@app/game/goal-highlight-dialog/goal-highlight-dialog.component";
 import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.model";
+import {ScrollDirectionService} from "@shared/services/scroll-direction.service";
+import {Subject, takeUntil} from "rxjs";
 
 @Component({
   selector: 'app-game',
@@ -42,6 +44,11 @@ import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.mode
   encapsulation: ViewEncapsulation.None
 })
 export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  /**
+   * How far the page has to scroll before the game header drops down from the top of it.
+   */
+  public static readonly dropdownHeaderScrollY = 265;
 
   public landing: GameLanding;
 
@@ -86,6 +93,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public gameId: string;
 
   public stickyHeader: HTMLElement;
+
+  public ngUnsubscribe = new Subject<void>();
 
   public isIntermission: boolean = false
 
@@ -242,7 +251,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(public seriesDialog: MatDialog,
               private route: ActivatedRoute,
               private routerExtensionService: RouterExtensionService,
-              private nhlGameService: NhlGameService) {
+              private nhlGameService: NhlGameService,
+              private scrollDirectionService: ScrollDirectionService) {
   }
 
   public ngOnInit(): void {
@@ -254,11 +264,18 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngAfterViewInit(): void {
     this.stickyHeader = document.getElementById("dropdownHeader");
+    // The shared scroll listener, so the drop-down header and the app's mobile menu don't listen to scrolling twice.
+    // It replays where the page is now, so a header opened on an already scrolled page drops down right away.
+    this.scrollDirectionService.scrollY$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(scrollY => {
+      this.showDropdownHeader(scrollY > GameComponent.dropdownHeaderScrollY);
+    });
   }
 
   public ngOnDestroy(): void {
     this.stopContinuousNhlGameUpdates();
     this.stopNhlIntermissionTimer();
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   /**
@@ -285,7 +302,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       width: "960px",
       maxWidth: "94vw",
       backdropClass: "dialog-backdrop",
-      panelClass: "highlights-dialog-panel",
+      // mobile-dialog-panel fills a phone screen (styles.scss)
+      panelClass: ["highlights-dialog-panel", "mobile-dialog-panel"],
       autoFocus: false,
       data
     });
@@ -314,6 +332,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.seriesDialog.open(PlayerGameDialogComponent, {
       maxWidth: "85vw",
       backdropClass: "dialog-backdrop",
+      panelClass: "mobile-dialog-panel",
       data
     });
   }
@@ -340,7 +359,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.seriesDialog.open(GoalHighlightDialogComponent, {
       maxWidth: "94vw",
       backdropClass: "dialog-backdrop",
-      panelClass: "goal-highlight-dialog-panel",
+      panelClass: ["goal-highlight-dialog-panel", "mobile-dialog-panel"],
       autoFocus: false,
       data
     });
@@ -515,13 +534,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:scroll')
-  private onScroll(): void {
-    if (window.scrollY > 265) {
-      this.stickyHeader?.classList.add("header-show");
-    } else {
-      this.stickyHeader?.classList.remove("header-show");
-    }
+  /**
+   * Drops the game header down from the top of the page, or pulls it back up.
+   */
+  private showDropdownHeader(show: boolean): void {
+    this.stickyHeader?.classList.toggle("header-show", show);
   }
 
 }

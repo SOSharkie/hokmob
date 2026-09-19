@@ -5,8 +5,10 @@
   <div class="rink">
     <!-- Drawn in feet on a 200.13ft long rink, home end on the left -->
     <div class="rink-surface" aria-hidden="true">
+      <!-- preserveAspectRatio="none" lets the standing rink squash along its length on a phone, with the strokes
+           kept at their own width by vector-effect -->
       <svg *ngFor="let drawing of rinkDrawings" class="rink-markings" [class.standing]="drawing.standing"
-           [attr.viewBox]="drawing.viewBox">
+           [attr.viewBox]="drawing.viewBox" preserveAspectRatio="none">
         <g class="thin">
           <line x1="13.1" y1="0" x2="13.1" [attr.y2]="drawing.width"/>
           <line x1="187.03" y1="0" x2="187.03" [attr.y2]="drawing.width"/>

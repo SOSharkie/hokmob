@@ -58,6 +58,14 @@ describe('PlayerGameDialogComponent', () => {
     expect(close).toHaveBeenCalledTimes(2);
   }));
 
+  it('should close when the close button is clicked', () => {
+    open(gamePlayer(8476460));
+    const close = spyOn(TestBed.inject(MatDialogRef), 'close');
+
+    fixture.nativeElement.querySelector('.dialog-close-button').click();
+    expect(close).toHaveBeenCalled();
+  });
+
   it('should pass no player to the shared component without one', () => {
     open(undefined);
     expect(fixture.nativeElement.querySelector('app-player-game-stats').player).toBeUndefined();

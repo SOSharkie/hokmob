@@ -34,6 +34,11 @@ $spacing-card-gap: 16px;
 // team)
 $spacing-page-gap: clamp(#{$spacing-medium}, 2.3vw, #{$spacing-card-gap});
 
+// The fixed menu at the bottom of a phone screen (app.component.scss), and the room a page leaves for it above the
+// phone's own home indicator
+$mobile-menu-height: 60px;
+$mobile-menu-space: calc(#{$mobile-menu-height} + env(safe-area-inset-bottom));
+
 // Screen breakpoint
 $mobile-screen-breakpoint: 700px;
 // The game page switches to its one-column phone layout earlier, since its side column squeezes the cards

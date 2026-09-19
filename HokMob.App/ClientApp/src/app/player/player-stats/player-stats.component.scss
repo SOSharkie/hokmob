@@ -56,4 +56,32 @@
   .item-title, .item-value {
     font-size: smaller;
   }
+
+  .player-stats-container {
+    // A quarter of a phone screen isn't wide enough for the longest labels at the value's size, and they would wrap
+    // onto a second line and leave the rows ragged. The smallest still fits the goalies' "Shots Against" at 360px.
+    .item-title {
+      padding: $spacing-medium $spacing-x-small;
+      font-size: clamp(11px, 3.2vw, 15px);
+      white-space: nowrap;
+    }
+
+    // Faceoff % has the widest label, and means nothing for most skaters, so it goes. The seven left over fill the
+    // two rows evenly, four then three, on a grid of twelve columns.
+    .skater-stats .stats-item.faceoff-item {
+      display: none;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(12, 1fr);
+
+      .stats-item {
+        grid-column: span 3;
+      }
+    }
+
+    .skater-stats .stats-item:nth-child(n + 5) {
+      grid-column: span 4;
+    }
+  }
 }

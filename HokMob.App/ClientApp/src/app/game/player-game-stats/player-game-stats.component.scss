@@ -91,7 +91,7 @@
   padding: $spacing-x-large;
   padding-top: $spacing-x-small;
   min-height: 20px;
-  max-height: 40vh;
+  max-height: 40svh;
   overflow: auto;
 
   .stats-label {
@@ -252,6 +252,19 @@
         gap: $spacing-large;
         padding: $spacing-large;
       }
+    }
+  }
+}
+
+// Phone Styling: Faceoff % and PMs are the two stats that push the compact bar onto a second row, so they go and the
+// rest spread out across the one row that is left
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .compact .player-game-stats-container .player-game-stats {
+    justify-content: space-between;
+    gap: $spacing-medium;
+
+    .faceoff-stat, .penalty-stat {
+      display: none;
     }
   }
 }

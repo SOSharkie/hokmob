@@ -3,7 +3,7 @@
   <div class="routerOutlet">
     <router-outlet></router-outlet>
   </div>
-  <div class="mobile-menu">
+  <div class="mobile-menu" [class.hidden]="!isMobileMenuShown">
     <div id="games-item" class="menu-item" [ngClass]="{selected : isGamesSelected}" [routerLink]="['/']">
       <mat-icon svgIcon="lucide:calendar-days"></mat-icon>
       <span>Games</span>

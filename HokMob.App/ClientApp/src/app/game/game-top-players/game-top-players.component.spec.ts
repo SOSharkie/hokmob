@@ -143,6 +143,8 @@ describe('GameTopPlayersComponent', () => {
       expect(svg.querySelectorAll('.dots circle').length).toBe(5);
       expect(svg.querySelectorAll('.blue-line').length).toBe(2);
       expect(svg.querySelectorAll('.crease').length).toBe(2);
+      // The standing rink is squashed along its length on a phone, and the markings stretch with it
+      expect(svg.getAttribute('preserveAspectRatio')).toBe('none');
     }
   });
 

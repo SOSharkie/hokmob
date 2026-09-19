@@ -3,8 +3,9 @@
 // The dialog is exactly as wide as its 16:9 video, so the video fills the width and the whole dialog comes close to
 // the top and bottom edges of the window. The subtracted height is the header and the stats above the video.
 .cdk-overlay-pane.goal-highlight-dialog-panel {
-  max-height: 95vh;
-  width: min(94vw, 1400px, calc((95vh - 210px) * 16 / 9));
+  // svh, not vh, so iOS Safari's toolbars don't push the dialog off the bottom of the screen
+  max-height: 95svh;
+  width: min(94vw, 1400px, calc((95svh - 210px) * 16 / 9));
 }
 
 .goal-highlight-dialog-panel .mat-mdc-dialog-surface {
@@ -40,25 +41,6 @@
     .nhl-link:hover {
       color: white;
       text-decoration: underline;
-    }
-
-    .close-button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex: none;
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      border: none;
-      border-radius: 50%;
-      background-color: $black-03;
-      color: white;
-      cursor: pointer;
-    }
-
-    .close-button:hover {
-      background-color: $gray-01;
     }
   }
 

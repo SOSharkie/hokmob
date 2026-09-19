@@ -30,25 +30,6 @@
       font-size: 13px;
       color: $gray-04;
     }
-
-    .close-button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex: none;
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      border: none;
-      border-radius: 50%;
-      background-color: $black-03;
-      color: white;
-      cursor: pointer;
-    }
-
-    .close-button:hover {
-      background-color: $gray-01;
-    }
   }
 
   .video-tabs {
@@ -58,6 +39,8 @@
     border-bottom: 1px solid $black-03;
 
     .video-tab {
+      // A tap target at least 44px tall
+      min-height: 44px;
       padding: $spacing-medium 0 $spacing-large;
       border: none;
       border-bottom: 3px solid transparent;

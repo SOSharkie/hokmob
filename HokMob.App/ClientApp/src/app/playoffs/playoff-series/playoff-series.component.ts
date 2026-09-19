@@ -120,6 +120,8 @@ export class PlayoffSeriesComponent implements OnChanges {
     this.seriesDialog.open(PlayoffSeriesDialogComponent, {
       maxWidth: "85vw",
       backdropClass: "dialog-backdrop",
+      // Fills a phone screen (styles.scss)
+      panelClass: "mobile-dialog-panel",
       data: {series: this.seriesData, season: this.season} as PlayoffSeriesDialogData
     });
   }

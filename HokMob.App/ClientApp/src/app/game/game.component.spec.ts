@@ -13,6 +13,7 @@ import { ScoreResponse } from '@shared/models/nhl-web-api/score.model';
 import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
+import { ScrollDirectionService } from '@shared/services/scroll-direction.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PlayerGameDialogComponent } from '@app/game/player-game-dialog/player-game-dialog.component';
 import { HighlightsDialogComponent } from '@app/game/highlights-dialog/highlights-dialog.component';
@@ -35,16 +36,21 @@ describe('GameComponent', () => {
   let fixture: ComponentFixture<GameComponent>;
   let httpMock: HttpTestingController;
   let routeParams: BehaviorSubject<Params>;
+  let scrollY: BehaviorSubject<number>;
 
   const endpoints: [string, keyof GameBundle][] =
       [['landing', 'landing'], ['play-by-play', 'playByPlay'], ['boxscore', 'boxscore'], ['right-rail', 'rightRail']];
 
   beforeEach(async () => {
     routeParams = new BehaviorSubject<Params>({});
+    scrollY = new BehaviorSubject<number>(0);
     await TestBed.configureTestingModule({
       imports: [ AppTestingModule ],
       declarations: [ GameComponent ],
-      providers: [ {provide: ActivatedRoute, useValue: {params: routeParams}} ],
+      providers: [
+        {provide: ActivatedRoute, useValue: {params: routeParams}},
+        {provide: ScrollDirectionService, useValue: {scrollY$: scrollY.asObservable()}}
+      ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
@@ -146,6 +152,46 @@ describe('GameComponent', () => {
     expect(headers[1].homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(landing.homeTeam.id));
     expect(headers[1].awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(landing.awayTeam.id));
     expect(headers[1].isIntermission).toBeFalse();
+  });
+
+  it('should drop the header down once the page scrolls past it, and pull it up again at the top', async () => {
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    const dropdownHeader = element('.dropdown-header');
+    expect(dropdownHeader.classList).not.toContain('header-show');
+
+    scrollY.next(GameComponent.dropdownHeaderScrollY + 1);
+    expect(dropdownHeader.classList).toContain('header-show');
+
+    scrollY.next(GameComponent.dropdownHeaderScrollY);
+    expect(dropdownHeader.classList).not.toContain('header-show');
+  });
+
+  it('should drop the header down right away on a page that is already scrolled', async () => {
+    scrollY.next(GameComponent.dropdownHeaderScrollY + 1);
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+
+    expect(element('.dropdown-header').classList).toContain('header-show');
+  });
+
+  it('should stop following the scroll position when it is destroyed', async () => {
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    const dropdownHeader = element('.dropdown-header');
+
+    fixture.destroy();
+    scrollY.next(GameComponent.dropdownHeaderScrollY + 1);
+    expect(dropdownHeader.classList).not.toContain('header-show');
   });
 
   it('should pass the scoring summary to the goal scorers', async () => {
@@ -296,6 +342,7 @@ describe('GameComponent', () => {
     await settle();
     fixture.debugElement.query(By.css('app-game-top-players')).triggerEventHandler('playerClicked', 8476412);
     expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
+      panelClass: 'mobile-dialog-panel',
       data: {player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.1})}
     }));
   });

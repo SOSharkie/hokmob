@@ -1,7 +1,8 @@
 @import "variables";
 
 .cdk-overlay-pane {
-  max-height: 95vh;
+  // svh, not vh, so iOS Safari's toolbars don't push the dialog off the bottom of the screen
+  max-height: 95svh;
 }
 
 .mat-mdc-dialog-surface {
@@ -10,8 +11,17 @@
 }
 
 .player-game-dialog-container {
+  position: relative;
   border-radius: 25px;
   background-color: $black-02;
+
+  // Sits over the centered header, which has room for it beside the headshot
+  > .dialog-close-button {
+    position: absolute;
+    top: $spacing-large;
+    right: $spacing-large;
+    z-index: 1;
+  }
 
   .player-footer-container {
     display: flex;

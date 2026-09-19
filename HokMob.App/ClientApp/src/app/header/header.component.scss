@@ -51,7 +51,10 @@
 
   .cancel-search-button {
     flex-shrink: 0;
-    margin-left: $spacing-x-large;
+    // A tap target at least 44px each way
+    min-width: 44px;
+    min-height: 44px;
+    margin-left: $spacing-large;
     padding: 0;
     border: none;
     background: none;
@@ -70,6 +73,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      // A tap target at least 44px each way
+      width: 44px;
+      height: 44px;
       padding: 0;
       border: none;
       background: none;
@@ -109,6 +115,9 @@
 
     .mobile-actions {
       display: flex;
+      // The buttons carry their own tap-sized padding now
+      gap: $spacing-small;
+      margin-right: -#{$spacing-large};
     }
   }
 

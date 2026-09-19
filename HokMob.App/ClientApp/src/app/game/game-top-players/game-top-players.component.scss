@@ -5,7 +5,10 @@ $rink-line: $gray-01;
 
 // A 200.13ft rink with 27.88ft corners: 78.74ft wide lying across the card, and 98.42ft wide standing up on phones
 $lying-aspect-ratio: calc(200.13 / 78.74);
-$standing-aspect-ratio: calc(200.13 / 98.42);
+// Standing up, the rink is squashed along its length instead of the real 200.13 / 98.42 (about 2.03), so the whole
+// card fits on a phone screen: at the 366px a 393px iPhone leaves it, 1.6 makes it 586px tall instead of 744px. The
+// markings stretch with it (preserveAspectRatio="none"), and the players follow, since they are placed in percent.
+$standing-aspect-ratio: 1.6;
 $corner-along-length: 13.93%;
 $lying-corner-along-width: 35.41%;
 $standing-corner-along-width: 28.33%;
@@ -316,9 +319,41 @@ $bench-length: 19.74%;
     transform: translate(-50%, -50%) rotate(90deg);
   }
 
+  // A smaller card than on the lying rink, so the two teams' forwards don't meet in the middle of a shorter rink
   .top-player {
     left: var(--across);
     width: 30%;
+    transform: translate(-50%, -22px);
+
+    .player-avatar,
+    .player-headshot-container {
+      width: 44px;
+      height: 44px;
+    }
+
+    .player-headshot-container .player-headshot {
+      width: 51px;
+      height: 51px;
+      margin-top: 7px;
+    }
+
+    .hokmob-score-container {
+      left: 28px;
+    }
+
+    .player-goals {
+      top: 29px;
+      left: 30px;
+    }
+
+    .goalie-icon-container {
+      left: -7px;
+    }
+
+    .player-name {
+      margin-top: $spacing-x-small;
+      line-height: 13px;
+    }
   }
 
   .home-players .top-player {

@@ -296,9 +296,15 @@ $central-info-width: 130px;
     display: none;
   }
 
-  .game-header {
-    width: 99%;
+  // Full width less their own padding, instead of a share of it that the side margins then push off screen
+  .game-header, .game-container {
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+  }
 
+  .game-header {
     .league-info-label {
       display: none;
     }
@@ -308,10 +314,6 @@ $central-info-width: 130px;
       font-size: 13px;
       font-weight: 400;
     }
-  }
-
-  .game-container {
-    width: 99%;
   }
 
   .main-game .game-header .league-info .watch-button {

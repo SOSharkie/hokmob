@@ -2,7 +2,7 @@
   <div class="stats-header">
     <span>{{statTitle}}</span>
   </div>
-  <div *ngIf="!isGoalie" class="stats-grid">
+  <div *ngIf="!isGoalie" class="stats-grid skater-stats">
     <div class="stats-item">
       <span class="item-title">Goals</span>
       <span class="item-value">{{skaterStats.goals}}</span>
@@ -23,7 +23,7 @@
       <span class="item-title">+/-</span>
       <span class="item-value">{{skaterStats.plusMinus}}</span>
     </div>
-    <div class="stats-item">
+    <div class="stats-item faceoff-item">
       <span class="item-title">Faceoff %</span>
       <span class="item-value">{{formatFaceoffPercent(skaterStats.faceoffWinPct)}}</span>
     </div>
@@ -36,7 +36,7 @@
       <span class="item-value">{{skaterStats.hits}}</span>
     </div>
   </div>
-  <div *ngIf="isGoalie" class="stats-grid">
+  <div *ngIf="isGoalie" class="stats-grid goalie-stats">
     <div class="stats-item">
       <span class="item-title">Save %</span>
       <span class="item-value" [ngStyle]="{'background-color':  teamColor}">{{goalieStats.savePct | savePercentage}}</span>
