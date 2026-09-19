@@ -214,13 +214,16 @@ export class GameTopPlayersComponent implements OnChanges {
   /**
    * Returns a team's best rated goalie, two best rated defensemen and three best rated forwards, placed on the rink.
    * Goalies who didn't play are rated 0, so a tie goes to the goalie who played the most.
+   * Two players with the same rating are split by how big a star they are (StatsUtils.sortByStarPlayer), so the
+   * player fans came to see takes the spot. Goalies are split by time on ice first, so a star who sat stays off.
    */
   private getSpots(players: GamePlayer[]): TopPlayerSpot[] {
-    const sortedPlayers = [...(players ?? [])].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB));
+    const sortedPlayers = [...(players ?? [])].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
+        StatsUtils.sortByStarPlayer(playerA, playerB));
     const skaters = sortedPlayers.filter(player => player.skaterStats);
     const goalies = sortedPlayers.filter(player => player.goalieStats)
         .sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
-            StatsUtils.sortByGoalieTimeOnIce(playerA, playerB));
+            StatsUtils.sortByGoalieTimeOnIce(playerA, playerB) || StatsUtils.sortByStarPlayer(playerA, playerB));
     return [
       ...GameTopPlayersComponent.placeLine('goalies', goalies.slice(0, 1)),
       ...GameTopPlayersComponent.placeLine('defense', skaters.filter(player => player.position === 'D').slice(0, this.numDefenseToShow)),

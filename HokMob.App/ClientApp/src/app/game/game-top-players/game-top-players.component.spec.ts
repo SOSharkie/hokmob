@@ -83,6 +83,20 @@ describe('GameTopPlayersComponent', () => {
     expect(names('away', 'forwards')).toEqual(['Dylan Holloway', 'Jimmy Snuggerud', 'Dalibor Dvorsky']);
   });
 
+  it('should give a spot to a star player over an equally rated teammate', () => {
+    // Carolina: Jaccob Slavin is one of its stars and Shayne Gostisbehere is not, and both are rated 6.2
+    show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+    expect(names('away', 'defense')).toEqual(['Jalen Chatfield', 'Jaccob Slavin']);
+    expect(cards('away', 'defense').map(rating)).toEqual(['7.1', '6.2']);
+  });
+
+  it('should keep the better rated player over a star', () => {
+    // None of the three Carolina forwards is a star, so Sebastian Aho, rated 6.2, stays off the rink
+    show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+    expect(names('away', 'forwards')).toEqual(['Jordan Staal', 'Nikolaj Ehlers', 'Logan Stankoven']);
+    expect(card('away', 'Sebastian Aho')).toBeUndefined();
+  });
+
   it('should place each line at its distance from the end boards and spread its players across the rink', () => {
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
     const lengths = cards('home').map(playerCard => parseFloat(spot(playerCard).length));
