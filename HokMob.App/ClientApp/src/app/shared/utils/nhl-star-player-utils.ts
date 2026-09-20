@@ -26,12 +26,12 @@ export class NhlStarPlayerUtils {
     1: {forwards: [8481559, 8479407, 8480002], defense: [8482684, 8476462]}, // NJD: Jack Hughes, Jesper Bratt, Nico Hischier | Luke Hughes, Dougie Hamilton
     2: {forwards: [8478445, 8477500, 8481601], defense: [8485366, 8477506]}, // NYI: Mathew Barzal, Bo Horvat, Simon Holmstrom | Matthew Schaefer, Ryan Pulock
     3: {forwards: [8476459, 8476468, 8482109], defense: [8479323, 8478882]}, // NYR: Mika Zibanejad, J.T. Miller, Alexis Lafrenière | Adam Fox, Vladislav Gavrikov
-    4: {forwards: [8478439, 8481533, 8484387], defense: [8477948, 8482142]}, // PHI: Travis Konecny, Trevor Zegras, Matvei Michkov | Travis Sanheim, Jamie Drysdale
+    4: {forwards: [8478439, 8481533, 8485406], defense: [8477948, 8482142]}, // PHI: Travis Konecny, Trevor Zegras, Porter Martone | Travis Sanheim, Jamie Drysdale
     5: {forwards: [8471675, 8471215, 8475810], defense: [8474578, 8471724]}, // PIT: Sidney Crosby, Evgeni Malkin, Bryan Rust | Erik Karlsson, Kris Letang
     6: {forwards: [8477956, 8479987, 8478401], defense: [8479325, 8476854]}, // BOS: David Pastrnak, Morgan Geekie, Pavel Zacha | Charlie McAvoy, Hampus Lindholm
     7: {forwards: [8479420, 8480802, 8482659], defense: [8480839, 8482671]}, // BUF: Tage Thompson, Ryan McLeod, Josh Doan | Rasmus Dahlin, Owen Power
     8: {forwards: [8480018, 8481540, 8483515], defense: [8483457, 8480865]}, // MTL: Nick Suzuki, Cole Caufield, Juraj Slafkovský | Lane Hutson, Noah Dobson
-    9: {forwards: [8482116, 8480208, 8481528], defense: [8482105, 8478469]}, // OTT: Tim Stützle, Drake Batherson, Dylan Cozens | Jake Sanderson, Thomas Chabot
+    9: {forwards: [8482116, 8480208, 8482667], defense: [8482105, 8478469]}, // OTT: Tim Stützle, Drake Batherson, William Eklund | Jake Sanderson, Thomas Chabot
     10: {forwards: [8479318, 8477939, 8486067], defense: [8478178, 8476853]}, // TOR: Auston Matthews, William Nylander, Gavin McKenna | Darren Raddysh, Morgan Rielly
     12: {forwards: [8478427, 8477940, 8480830], defense: [8476958, 8476906]}, // CAR: Sebastian Aho, Nikolaj Ehlers, Andrei Svechnikov | Jaccob Slavin, Shayne Gostisbehere
     13: {forwards: [8477493, 8479314, 8477933], defense: [8477932, 8478055]}, // FLA: Aleksander Barkov, Matthew Tkachuk, Sam Reinhart | Aaron Ekblad, Gustav Forsling
