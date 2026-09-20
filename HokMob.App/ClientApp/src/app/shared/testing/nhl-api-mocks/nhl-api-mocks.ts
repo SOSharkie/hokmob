@@ -67,6 +67,7 @@ import playoffBracket2021 from './playoff-bracket-2021.json';
 import playoffBracket2020 from './playoff-bracket-2020.json';
 import playoffBracket2027 from './playoff-bracket-2027.json';
 import searchPlayerMac from './search-player-mac.json';
+import playerStats8477934 from './player-stats-8477934-skater.json';
 import playerStats8477964 from './player-stats-8477964-skater.json';
 import playerStats8477496 from './player-stats-8477496-skater.json';
 import playerStats8476945 from './player-stats-8476945-goalie.json';
@@ -368,14 +369,17 @@ export function mockPlayerSearchResults(): PlayerSearchResult[] {
 }
 
 /** Players with a captured /api/nhl-stats/player/{id} response. */
-export type MockPlayerStatsId = 8477964 | 8477496 | 8476945 | 8483548;
+export type MockPlayerStatsId = 8477934 | 8477964 | 8477496 | 8476945 | 8483548;
 
 const playerStats = {
-  8477964: playerStats8477964, 8477496: playerStats8477496, 8476945: playerStats8476945, 8483548: playerStats8483548
+  8477934: playerStats8477934, 8477964: playerStats8477964, 8477496: playerStats8477496,
+  8476945: playerStats8476945, 8483548: playerStats8483548
 };
 
 /**
  * /api/nhl-stats/player/{id}?position={skater|goalie}, as the backend merges it from the stats API reports:
+ * - 8477934 (skater): Leon Draisaitl, EDM center. His 10 recent games have faceoffs in every game, both halves of the
+ *   assist split, and power play assists and goals, so they exercise every term of the HokMob rating.
  * - 8477964 (skater): Ivan Barbashev, VGK. His 10 recent games are the 2026 playoff run, newest (2025030416) first,
  *   with hits and scores. Game 2025030414 is the one with a captured boxscore.
  * - 8477496 (skater): Elias Lindholm, whose 2023-24 season is the one combined "CGY,VAN" row (75 games, 44 points).

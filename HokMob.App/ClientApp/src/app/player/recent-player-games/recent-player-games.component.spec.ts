@@ -63,8 +63,8 @@ describe('RecentPlayerGamesComponent', () => {
     // Stanley Cup Final game 6: VGK 0, CAR 3 at home, 11:48 played, 2 shots, 3 hits, -2
     expect(row(0)).toEqual(['Jun 14', 'CAR(0 - 3)', '11:48', '0', '0', '2', '3', '-2', '0', '5.2']);
     expect(opponentLogo(0)).toBe('assets/logos/carolina.png');
-    // His best game of the run: 2 goals and an assist in a 3-1 win at COL
-    expect(row(8)).toEqual(['May 22', 'COL(3 - 1)', '16:15', '2', '1', '3', '7', '3', '0', '9.4']);
+    // His best game of the run: 2 goals and a secondary assist in a 3-1 win at COL
+    expect(row(8)).toEqual(['May 22', 'COL(3 - 1)', '16:15', '2', '1', '3', '7', '3', '0', '9.5']);
     expect(opponentLogo(8)).toBe('assets/logos/colorado.png');
     // A game with a penalty
     expect(row(9)).toEqual(['May 20', 'COL(4 - 2)', '16:25', '0', '0', '2', '2', '-1', '2', '4.6']);
@@ -81,6 +81,43 @@ describe('RecentPlayerGamesComponent', () => {
     const ratings = component.rows.map(gameRow => gameRow.hokmobRating);
     expect(ratings[0]).toBe(ratings[2]);
     expect(ratings[1]).toBeGreaterThan(ratings[0]);
+  });
+
+  it('should weight an assist by the split of the game', () => {
+    const games = mockPlayerStats(8477964).recentGames as SkaterGameStats[];
+    // Barbashev's assist at COL was a secondary one, and his in game 2 of the final a primary one.
+    const secondary = games[8];
+    const primary = games[4];
+    expect([secondary.assists, secondary.totalPrimaryAssists, secondary.totalSecondaryAssists]).toEqual([1, 0, 1]);
+    expect([primary.assists, primary.totalPrimaryAssists, primary.totalSecondaryAssists]).toEqual([1, 1, 0]);
+    show([secondary, {...secondary, totalPrimaryAssists: undefined, totalSecondaryAssists: undefined},
+      {...secondary, totalPrimaryAssists: 1, totalSecondaryAssists: 0}], false);
+    const ratings = component.rows.map(gameRow => gameRow.hokmobRating);
+    // The secondary assist is worth 0.1 less than the flat weight, and a primary one 0.1 more.
+    expect(ratings[1] - ratings[0]).toBeCloseTo(0.1, 5);
+    expect(ratings[2] - ratings[1]).toBeCloseTo(0.1, 5);
+  });
+
+  it('should add a power play assist back to realPlusMinus', () => {
+    const games = mockPlayerStats(8477934).recentGames as SkaterGameStats[];
+    // Draisaitl assisted on a power play goal in game 3 of the first round, where he was -1, so it changes nothing.
+    const game = games[2];
+    expect([game.assists, game.ppAssists, game.plusMinus]).toEqual([1, 1, -1]);
+    show([game, {...game, plusMinus: 2}, {...game, plusMinus: 2, ppAssists: 0}], false);
+    const ratings = component.rows.map(gameRow => gameRow.hokmobRating);
+    // On the ice for goals as well, the power play assist is added back, at 0.3 per goal.
+    expect(ratings[1] - ratings[2]).toBeCloseTo(0.3, 5);
+  });
+
+  it('should rate the real games of a skater with faceoffs, an assist split and power play assists', () => {
+    const games = mockPlayerStats(8477934).recentGames as SkaterGameStats[];
+    expect(games.every(game => game.totalFaceoffs > 0)).toBeTrue();
+    expect(games.filter(game => game.ppAssists > 0).length).toBe(3);
+    show(games, false);
+    expect(gameRows().length).toBe(10);
+    // Game 2 of the first round at home: 2 goals (1 on the power play) on 4 shots, 2 PIM, +1.
+    expect(row(1)).toEqual(['Apr 28', 'ANA(4 - 1)', '23:22', '2', '0', '4', '0', '1', '2', '7.7']);
+    expect(opponentLogo(1)).toBe('assets/logos/anaheim.png');
   });
 
   it('should link every row to its game', () => {

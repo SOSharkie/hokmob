@@ -122,6 +122,11 @@ export interface SkaterGameStats extends PlayerGameStatsRow {
   missedShots?: number;
   /** Faceoffs won and lost, from the faceoffwins report; missing when that call failed. */
   totalFaceoffs?: number;
+  /** The assist split, from the scoringpergame report; missing when that call failed. */
+  totalPrimaryAssists?: number;
+  totalSecondaryAssists?: number;
+  /** Power play assists, from the powerplay report; missing when that call failed. */
+  ppAssists?: number;
 }
 
 export interface GoalieGameStats extends PlayerGameStatsRow {

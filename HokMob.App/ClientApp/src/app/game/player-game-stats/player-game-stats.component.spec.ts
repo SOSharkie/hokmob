@@ -91,7 +91,7 @@ describe('PlayerGameStatsComponent', () => {
     }
 
     expect(stats()).toEqual([
-      ['HokMob Rating', '7'],
+      ['HokMob Rating', '7.1'],
       ['Time On Ice', '22:12'],
       ['Goals', '1'],
       ['Assists', '0'],

@@ -68,8 +68,12 @@ export class RecentPlayerGamesComponent implements OnChanges {
   }
 
   private static toSkaterRow(game: SkaterGameStats): RecentGameRow {
-    const hokmobRating = StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game),
-        game.totalFaceoffs);
+    const hokmobRating = StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game), {
+      faceoffsTaken: game.totalFaceoffs,
+      primaryAssists: game.totalPrimaryAssists,
+      secondaryAssists: game.totalSecondaryAssists,
+      powerPlayAssists: game.ppAssists
+    });
     return {
       ...RecentPlayerGamesComponent.toGameRow(game, hokmobRating),
       timeOnIce: StatsUtils.formatSeconds(game.timeOnIcePerGame),

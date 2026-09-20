@@ -6,9 +6,42 @@ import {
 } from "@shared/models/nhl-web-api/boxscore.model";
 import {RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {GoalieGameStats, SkaterGameStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {GameLanding} from "@shared/models/nhl-web-api/gamecenter-landing.model";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {NhlStarPlayerUtils} from "@shared/utils/nhl-star-player-utils";
+
+/**
+ * The assists a player was credited with in a game, split by where they came: the primary (first) and secondary
+ * (second) assist of each goal, and how many of them were on a power play (StatsUtils.getAssistCounts).
+ */
+export interface AssistCounts {
+  primary: number;
+  secondary: number;
+  powerPlay: number;
+}
+
+/**
+ * The stats the HokMob skater rating needs that the boxscore alone doesn't give: the faceoffs a skater took, his
+ * primary/secondary assist split and his power play assists. Every field is optional, and the rating falls back to a
+ * flat weighting without one, so a rating never changes just because a second request hasn't come back yet.
+ */
+export interface SkaterRatingContext {
+  /** The faceoffs the skater took, won or lost (PlayByPlayUtils.getFaceoffCounts, or the stats API's totalFaceoffs). */
+  faceoffsTaken?: number;
+
+  /** The skater's primary (first) assists. Only counted together with secondaryAssists. */
+  primaryAssists?: number;
+
+  /** The skater's secondary (second) assists. Only counted together with primaryAssists. */
+  secondaryAssists?: number;
+
+  /**
+   * The skater's power play assists (StatsUtils.getAssistCounts, or the stats API's ppAssists). Plus/minus doesn't
+   * count a power play goal, so these are added back to realPlusMinus. Without them the correction is skipped.
+   */
+  powerPlayAssists?: number;
+}
 
 export class StatsUtils {
 
@@ -25,24 +58,40 @@ export class StatsUtils {
   public static readonly fullWeightFaceoffCount = 10;
 
   /**
+   * The rating weight of an assist: more for a primary (first) assist than for a secondary one, and a flat weight in
+   * between when the split isn't known.
+   */
+  public static readonly primaryAssistWeight = 0.6;
+
+  public static readonly secondaryAssistWeight = 0.4;
+
+  public static readonly unknownAssistWeight = 0.5;
+
+  /** The landing's goal strength for a power play goal; the others are "ev" and "sh". */
+  public static readonly powerPlayStrength = "pp";
+
+  /**
    * Calculates the HokMob rating of a skater for a single live or past game, from 0 to 10.
    *
    * The faceoff term, (win percentage - 0.5), is scaled by the faceoffs taken up to fullWeightFaceoffCount, so losing
    * 2 draws costs less than losing 20. Without a count, it falls back to the full term for centers only.
    *
-   * TODO: The new NHL API boxscore (gamecenter/{id}/boxscore) has no powerPlayAssists, so the powerPlayAssists
-   *  correction from realPlusMinus is dropped. It can be derived from play-by-play "goal" plays' situationCode.
+   * An assist is weighted by whether it was primary or secondary (getAssistRating), when the context says which.
+   *
+   * realPlusMinus takes out the skater's own points, so what is left is the goals he was on the ice for. Plus/minus
+   * doesn't count power play goals at all, so his power play goals and assists are added back in; the boxscore has
+   * powerPlayGoals but no powerPlayAssists, so those come from the context.
    *
    * @param skater - The skater's boxscore stats.
-   * @param faceoffsTaken - The faceoffs the skater took, from play-by-play or the stats API, if known.
+   * @param context - The faceoffs the skater took, his assist split and his power play assists, whichever are known.
    */
-  public static calculateSkaterHokmobRating(skater: BoxscoreSkater, faceoffsTaken?: number): number {
+  public static calculateSkaterHokmobRating(skater: BoxscoreSkater, context?: SkaterRatingContext): number {
     const goals = skater.goals ?? 0;
     const assists = skater.assists ?? 0;
     const plusMinus = skater.plusMinus ?? 0;
     let hokmobRating = 5;
-    hokmobRating += (goals * 1.1);
-    hokmobRating += (assists * 0.5);
+    hokmobRating += (goals * 1.2);
+    hokmobRating += StatsUtils.getAssistRating(assists, context);
     hokmobRating += (((skater.sog ?? 0) - goals) * 0.3);
     hokmobRating += ((skater.hits ?? 0) * 0.2);
     hokmobRating += ((skater.blockedShots ?? 0) * 0.2);
@@ -56,7 +105,8 @@ export class StatsUtils {
       hokmobRating -= Math.min(3, penaltyDeduction * 0.25);
     }
 
-    let realPlusMinus = (plusMinus - goals + (skater.powerPlayGoals ?? 0) - assists);
+    const powerPlayAssists = Math.min(assists, Math.max(0, context?.powerPlayAssists ?? 0));
+    let realPlusMinus = (plusMinus - goals + (skater.powerPlayGoals ?? 0) - assists + powerPlayAssists);
     if (plusMinus > 0) {
       hokmobRating += (realPlusMinus * 0.3);
     } else {
@@ -66,6 +116,7 @@ export class StatsUtils {
     hokmobRating -= ((skater.giveaways ?? 0) * 0.2);
 
     const faceoffTerm = -0.5 + (skater.faceoffWinningPctg ?? 0);
+    const faceoffsTaken = context?.faceoffsTaken;
     if (faceoffsTaken != null) {
       hokmobRating += faceoffTerm * Math.min(1, faceoffsTaken / StatsUtils.fullWeightFaceoffCount);
     } else if (skater.position === "C") {
@@ -73,6 +124,60 @@ export class StatsUtils {
     }
 
     return parseFloat(Math.min(10.0, hokmobRating).toFixed(1));
+  }
+
+  /**
+   * The rating a skater's assists are worth. A primary assist counts for primaryAssistWeight and a secondary one for
+   * secondaryAssistWeight, but only when both are known and they add up to the assists the boxscore credits him with.
+   * Anything else — a source without the split, or a live game whose landing and boxscore disagree for a moment —
+   * counts every assist at the flat unknownAssistWeight, rather than rating the same game two different ways.
+   *
+   * @param assists - The skater's assists.
+   * @param context - The rating context, which may carry the split.
+   */
+  private static getAssistRating(assists: number, context?: SkaterRatingContext): number {
+    const primaryAssists = context?.primaryAssists;
+    const secondaryAssists = context?.secondaryAssists;
+    if (primaryAssists != null && secondaryAssists != null && primaryAssists + secondaryAssists === assists) {
+      return (primaryAssists * StatsUtils.primaryAssistWeight) +
+          (secondaryAssists * StatsUtils.secondaryAssistWeight);
+    }
+    return assists * StatsUtils.unknownAssistWeight;
+  }
+
+  /**
+   * Counts the assists each player was credited with in a game, by player ID: how many were primary (first) and
+   * secondary (second), and how many came on a power play.
+   *
+   * These come from the landing's scoring summary rather than play-by-play, because only it labels a goal's
+   * strength. A goal's skater counts alone can't: a team that pulls its goalie on a delayed penalty scores 6 on 5 at
+   * even strength, and a team already on a power play can pull its goalie too, so the situationCode is the same
+   * either way. Shootout goals have no assists, so they count for nothing.
+   *
+   * @param landing - The game's landing response.
+   */
+  public static getAssistCounts(landing: GameLanding): Map<number, AssistCounts> {
+    const assistCounts = new Map<number, AssistCounts>();
+    const goals = (landing?.summary?.scoring ?? []).flatMap(period => period?.goals ?? []);
+    goals.forEach(goal => {
+      const isPowerPlay = goal?.strength === StatsUtils.powerPlayStrength;
+      (goal?.assists ?? []).forEach((assist, index) => {
+        if (assist?.playerId == null) {
+          return;
+        }
+        const counts = assistCounts.get(assist.playerId) ?? {primary: 0, secondary: 0, powerPlay: 0};
+        if (index === 0) {
+          counts.primary++;
+        } else {
+          counts.secondary++;
+        }
+        if (isPowerPlay) {
+          counts.powerPlay++;
+        }
+        assistCounts.set(assist.playerId, counts);
+      });
+    });
+    return assistCounts;
   }
 
   /**
@@ -221,9 +326,11 @@ export class StatsUtils {
    * @param isHome - Whether to return the home team's players.
    * @param rosterSpots - The play-by-play roster spots by player ID, if loaded.
    * @param faceoffCounts - The faceoffs taken by player ID (PlayByPlayUtils.getFaceoffCounts), if loaded.
+   * @param assistCounts - The assists by player ID (StatsUtils.getAssistCounts), if the landing is loaded.
    */
   public static getGamePlayers(boxscore: Boxscore, isHome: boolean, rosterSpots?: Map<number, RosterSpot>,
-                               faceoffCounts?: Map<number, number>): GamePlayer[] {
+                               faceoffCounts?: Map<number, number>,
+                               assistCounts?: Map<number, AssistCounts>): GamePlayer[] {
     const team = isHome ? boxscore?.homeTeam : boxscore?.awayTeam;
     const players = isHome ? boxscore?.playerByGameStats?.homeTeam : boxscore?.playerByGameStats?.awayTeam;
     if (!team || !players) {
@@ -241,12 +348,19 @@ export class StatsUtils {
         hokmobRating: 0
       };
     };
-    const skaters = [...(players.forwards ?? []), ...(players.defense ?? [])].map(skater => ({
-      ...toGamePlayer(skater),
-      skaterStats: skater,
-      hokmobRating: StatsUtils.calculateSkaterHokmobRating(skater,
-          faceoffCounts ? (faceoffCounts.get(skater.playerId) ?? 0) : undefined)
-    }));
+    const skaters = [...(players.forwards ?? []), ...(players.defense ?? [])].map(skater => {
+      const assists = assistCounts?.get(skater.playerId);
+      return {
+        ...toGamePlayer(skater),
+        skaterStats: skater,
+        hokmobRating: StatsUtils.calculateSkaterHokmobRating(skater, {
+          faceoffsTaken: faceoffCounts ? (faceoffCounts.get(skater.playerId) ?? 0) : undefined,
+          primaryAssists: assistCounts ? (assists?.primary ?? 0) : undefined,
+          secondaryAssists: assistCounts ? (assists?.secondary ?? 0) : undefined,
+          powerPlayAssists: assistCounts ? (assists?.powerPlay ?? 0) : undefined
+        })
+      };
+    });
     const goalies = (players.goalies ?? []).map(goalie => ({
       ...toGamePlayer(goalie),
       goalieStats: goalie,

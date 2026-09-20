@@ -100,7 +100,8 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
 | `skater/summary` | `skaterFullName`, `positionCode`, `teamAbbrevs` / `teamAbbrev`, `gamesPlayed`, `goals`, `assists`, `points`, `plusMinus`, `ppGoals`, `ppPoints`, `shots`, `shootingPct`, `penaltyMinutes`, `faceoffWinPct` (`null` without faceoffs), `timeOnIcePerGame` |
 | `skater/realtime` | `hits`, `blockedShots`, `takeaways`, `giveaways`, `missedShots` |
 | `skater/faceoffwins` | `totalFaceoffWins`, `totalFaceoffLosses` (and by zone and strength) |
-| `skater/powerplay` | `ppAssists`, `ppTimeOnIce` |
+| `skater/scoringpergame` | `totalPrimaryAssists`, `totalSecondaryAssists` (the boxscore and `skater/summary` only have the total) |
+| `skater/powerplay` | `ppAssists` (also `ppPrimaryAssists` / `ppSecondaryAssists`), `ppTimeOnIce` |
 | `skater/bios`, `goalie/bios` | `playerId`, `draftYear`, `draftRound`, `draftOverall`; skater bios also have games, goals, assists and points |
 | `goalie/summary` | `goalieFullName`, `teamAbbrevs` / `teamAbbrev`, `gamesPlayed`, `gamesStarted`, `wins`, `losses`, `otLosses`, `shutouts`, `shotsAgainst`, `saves`, `goalsAgainst`, `goalsAgainstAverage`, `savePct`, `timeOnIce` |
 | `goalie/savesByStrength` | `evSaves`, `ppSaves`, `shSaves`, `evShotsAgainst`, `ppShotsAgainst`, `savePct` |
@@ -176,6 +177,14 @@ whether the game is on.
 scorers list has to allow a period with no goals. `summary.iceSurface` is only on a live response — the players
 currently on the ice, empty during an intermission — and is gone once the game is `FINAL`. Nothing reads it yet.
 
+**Each `summary.scoring` goal has a `strength`** of `"ev"`, `"pp"` or `"sh"`, and its `assists` array is the
+primary assist then the secondary one. This is the only place a goal's strength is stated: a play-by-play `goal`
+play has just a `situationCode`, and skater counts alone don't settle it, because a team that pulls its goalie on a
+delayed penalty scores 6 on 5 at even strength while a team already on a power play can pull its goalie too. Over 10
+games (70 goals, 12 on the power play) the landing's `strength` and the play-by-play's scorer and assist order agreed
+exactly, on a live game as well. `StatsUtils.getAssistCounts` reads the assist split and the power play assists from
+it. A shootout goal is listed too, with an empty `assists` array.
+
 **A `situation` object** is on both the landing and the play-by-play while a team is short-handed, and is the source
 for the game header's power play badge:
 
@@ -214,10 +223,6 @@ has moved on, so don't assert that the two agree.
 
 ## Other open items
 
-- **HokMob rating approach B:** the power-play assists correction is still missing (the boxscore has no
-  `powerPlayAssists`). Faceoffs are done — from `skater/faceoffwins` for recent games, and from play-by-play on the
-  game page. For finished games the `skater/powerplay` report has the assists; a live game would need play-by-play.
-  See the TODO in `StatsUtils`.
 - **A local Utah logo** (`NhlTeamLogoUtils` TODO).
 - **An in-progress playoff series** has never been seen live: the next game date on series cards, unplayed games in
   the series dialog (they have no `seriesStatus`), whether the carousel lists a series before both teams are known,

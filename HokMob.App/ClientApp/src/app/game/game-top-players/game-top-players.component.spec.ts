@@ -75,8 +75,9 @@ describe('GameTopPlayersComponent', () => {
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
     expect(names('home', 'goalies')).toEqual(['Eric Comrie']);
     expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
-    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Morgan Barron']);
-    expect(cards('home').map(rating)).toEqual(['7.9', '7.8', '6', '7', '6.7', '6.5']);
+    // Connor and Barron are both rated 6.5, and Connor is one of the Winnipeg stars
+    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Kyle Connor']);
+    expect(cards('home').map(rating)).toEqual(['7.9', '7.9', '6', '7.1', '6.7', '6.5']);
 
     expect(names('away', 'goalies')).toEqual(['Jordan Binnington']);
     // Parayko and Mailloux are both rated 6.3, and Parayko is one of the St. Louis stars
@@ -227,7 +228,7 @@ describe('GameTopPlayersComponent', () => {
 
     const homePlayers = gamePlayers(2025030414, true);
     const homeForward = homePlayers.find(player => player.skaterStats && player.position !== 'D');
-    homeForward.hokmobRating = 9.1;
+    homeForward.hokmobRating = 9.3; // Staal's rating, so the home player takes the tie
     show(homePlayers, gamePlayers(2025030414, false));
     expect(component.gameMvpPlayerId).toBe(homeForward.playerId);
   });
@@ -347,7 +348,7 @@ describe('GameTopPlayersComponent', () => {
       toggle().click();
       fixture.detectChanges();
       expect(title()).toBe('Top Players');
-      expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Morgan Barron']);
+      expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Kyle Connor']);
       expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
     });
   });
