@@ -54,7 +54,7 @@ export class NhlStarPlayerUtils {
     52: {forwards: [8476460, 8478398, 8480014], defense: [8477504, 8476331]}, // WPG: Mark Scheifele, Kyle Connor, Gabriel Vilardi | Josh Morrissey, Dylan DeMelo
     54: {forwards: [8478403, 8478483, 8475913], defense: [8478397, 8477447]}, // VGK: Jack Eichel, Mitch Marner, Mark Stone | Rasmus Andersson, Shea Theodore
     55: {forwards: [8474586, 8482665, 8476905], defense: [8478407, 8477986]}, // SEA: Jordan Eberle, Matty Beniers, Chandler Stephenson | Vince Dunn, Brandon Montour
-    68: {forwards: [8479343, 8477951, 8482699], defense: [8479410, 8477346]}, // UTA: Clayton Keller, Nick Schmaltz, Dylan Guenther | Mikhail Sergachev, MacKenzie Weegar
+    68: {forwards: [8479343, 8483431, 8482699], defense: [8479410, 8477346]}, // UTA: Clayton Keller, Logan Cooley, Dylan Guenther | Mikhail Sergachev, MacKenzie Weegar
   };
 
   private static starRanksByPlayerId: Map<number, number>;
