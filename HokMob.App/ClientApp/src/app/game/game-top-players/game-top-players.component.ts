@@ -3,6 +3,7 @@ import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {PlayerHighlight} from "@shared/models/player-highlight.model";
+import {NhlStarPlayerUtils} from "@shared/utils/nhl-star-player-utils";
 
 export type TopPlayerLine = 'goalies' | 'defense' | 'forwards';
 
@@ -152,6 +153,12 @@ export class GameTopPlayersComponent implements OnChanges {
    */
   public gameMvpPlayerId: number;
 
+  /**
+   * Whether the card shows each team's star players (NhlStarPlayerUtils) instead of its best rated ones. The header
+   * toggle switches between the two lineups.
+   */
+  public showStarLineup = false;
+
   public readonly numForwardsToShow = 3;
 
   public readonly numDefenseToShow = 2;
@@ -159,9 +166,22 @@ export class GameTopPlayersComponent implements OnChanges {
   public readonly maxGoalPucks = 3;
 
   public ngOnChanges(changes: SimpleChanges): void {
-    this.homeSpots = this.getSpots(this.homePlayers);
-    this.awaySpots = this.getSpots(this.awayPlayers);
-    this.gameMvpPlayerId = this.getGameMvpPlayerId();
+    this.buildSpots();
+  }
+
+  /**
+   * Switches between the best rated players and each team's stars, and fills the rink again.
+   */
+  public toggleStarLineup(): void {
+    this.showStarLineup = !this.showStarLineup;
+    this.buildSpots();
+  }
+
+  /**
+   * The card's title, naming the lineup it is showing.
+   */
+  public get cardTitle(): string {
+    return this.showStarLineup ? 'Star Players' : 'Top Players';
   }
 
   public get showBenches(): boolean {
@@ -212,10 +232,21 @@ export class GameTopPlayersComponent implements OnChanges {
   }
 
   /**
-   * Returns a team's best rated goalie, two best rated defensemen and three best rated forwards, placed on the rink.
-   * Goalies who didn't play are rated 0, so a tie goes to the goalie who played the most.
-   * Two players with the same rating are split by how big a star they are (StatsUtils.sortByStarPlayer), so the
-   * player fans came to see takes the spot. Goalies are split by time on ice first, so a star who sat stays off.
+   * Fills both rinks and stars the best rated player on them, for the lineup the card is showing.
+   */
+  private buildSpots(): void {
+    this.homeSpots = this.getSpots(this.homePlayers);
+    this.awaySpots = this.getSpots(this.awayPlayers);
+    this.gameMvpPlayerId = this.getGameMvpPlayerId();
+  }
+
+  /**
+   * Returns a team's goalie, two defensemen and three forwards, placed on the rink: the best rated ones, or its star
+   * players in the star lineup (NhlStarPlayerUtils). Two skaters with the same rating are split by how big a star
+   * they are (StatsUtils.sortByStarPlayer), so the player fans came to see takes the spot.
+   *
+   * The goalie who played keeps the crease in both lineups, since no goalie is a star. Goalies who didn't play are
+   * rated 0, so a tie there goes to the goalie who played the most.
    */
   private getSpots(players: GamePlayer[]): TopPlayerSpot[] {
     const sortedPlayers = [...(players ?? [])].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
@@ -223,12 +254,32 @@ export class GameTopPlayersComponent implements OnChanges {
     const skaters = sortedPlayers.filter(player => player.skaterStats);
     const goalies = sortedPlayers.filter(player => player.goalieStats)
         .sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
-            StatsUtils.sortByGoalieTimeOnIce(playerA, playerB) || StatsUtils.sortByStarPlayer(playerA, playerB));
+            StatsUtils.sortByGoalieTimeOnIce(playerA, playerB));
+    const teamId = sortedPlayers[0]?.teamId;
     return [
       ...GameTopPlayersComponent.placeLine('goalies', goalies.slice(0, 1)),
-      ...GameTopPlayersComponent.placeLine('defense', skaters.filter(player => player.position === 'D').slice(0, this.numDefenseToShow)),
-      ...GameTopPlayersComponent.placeLine('forwards', skaters.filter(player => player.position !== 'D').slice(0, this.numForwardsToShow))
+      ...GameTopPlayersComponent.placeLine('defense', this.pickLine(skaters.filter(player => player.position === 'D'),
+          NhlStarPlayerUtils.getStarDefenseIds(teamId), this.numDefenseToShow)),
+      ...GameTopPlayersComponent.placeLine('forwards', this.pickLine(skaters.filter(player => player.position !== 'D'),
+          NhlStarPlayerUtils.getStarForwardIds(teamId), this.numForwardsToShow))
     ];
+  }
+
+  /**
+   * Returns the players of one line: the best rated ones, or in the star lineup the team's stars who dressed, topped
+   * up with the best rated of the rest when a star sat out.
+   *
+   * @param skaters - The team's skaters at that position, best rated first.
+   * @param starPlayerIds - The IDs of its star players at that position, the bigger star first.
+   * @param count - How many players the line holds.
+   */
+  private pickLine(skaters: GamePlayer[], starPlayerIds: number[], count: number): GamePlayer[] {
+    if (!this.showStarLineup) {
+      return skaters.slice(0, count);
+    }
+    const stars = starPlayerIds.map(playerId => skaters.find(skater => skater.playerId === playerId))
+        .filter(star => !!star);
+    return [...stars, ...skaters.filter(skater => !stars.includes(skater))].slice(0, count);
   }
 
   private getGameMvpPlayerId(): number {

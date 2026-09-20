@@ -1,6 +1,8 @@
 @import "variables";
 
 $rink-surface: $black-03;
+// The rating blue the starred player is highlighted in (StatsUtils.hokmobRatingBlue), for the lineup toggle
+$star-blue: #0e87e0;
 $rink-line: $gray-01;
 
 // A 200.13ft rink with 27.88ft corners: 78.74ft wide lying across the card, and 98.42ft wide standing up on phones
@@ -27,10 +29,60 @@ $bench-length: 19.74%;
   padding: 0 $spacing-x-large $spacing-x-large;
 
   .game-top-players-header {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 40px;
+  }
+
+  // The lineup toggle sits in the top right corner, so the title stays centered on the card
+  .lineup-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: $spacing-small;
+    height: 26px;
+    padding: 0 $spacing-large 0 $spacing-medium;
+    border: 1px solid $gray-01;
+    border-radius: 20px;
+    background-color: $black-03;
+    color: $gray-04;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+
+    &:hover {
+      border-color: $gray-02;
+      color: white;
+    }
+
+    &:focus-visible {
+      border-color: $gray-04;
+    }
+
+    &.showing-stars {
+      border-color: $star-blue;
+      color: white;
+
+      .toggle-icon {
+        color: $star-blue;
+      }
+    }
+
+    .toggle-icon {
+      width: 15px;
+      height: 15px;
+      font-size: 15px;
+      color: $gray-03;
+    }
   }
 }
 

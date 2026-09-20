@@ -37,8 +37,9 @@ A request to one of them is a regression.
     `/api/nhl-stats/*` responses.
   - `services/`: Angular services.
   - `utils/`: static helpers: `PeriodUtils`, `NhlGameInfoUtils`, `NhlTeamUtils`, `NhlTeamLogoUtils`,
-    `NhlTeamColorUtils`, `NhlStarPlayerUtils` (each team's two star players, which break rating ties in the game
-    page's top players), `NhlPlayerHeadshotUtils`, `NhlVideoUtils`, `DateTimeUtils`, `StatsUtils`, `PlayByPlayUtils`,
+    `NhlTeamColorUtils`, `NhlStarPlayerUtils` (each team's three star forwards and two star defensemen, who fill the
+    game page's top players card in its star lineup and break rating ties in its rating lineup),
+    `NhlPlayerHeadshotUtils`, `NhlVideoUtils`, `DateTimeUtils`, `StatsUtils`, `PlayByPlayUtils`,
     `PickerMenuUtils` (with the `.pill-picker` styles in `styles.scss`, for the draft and playoffs pickers).
   - `enums/`: API enums (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...).
   - `components/`: shared components (scorecard, standings, ...).
