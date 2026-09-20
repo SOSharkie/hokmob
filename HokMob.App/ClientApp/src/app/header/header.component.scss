@@ -47,6 +47,11 @@
     .menu-item:hover {
       text-decoration: underline;
     }
+
+    // The Dev link only shows on a developer's machine, so it is marked off from the real links
+    .dev-item {
+      color: $green-01;
+    }
   }
 
   .cancel-search-button {
