@@ -1,0 +1,526 @@
+{
+  "id": 2026010001,
+  "season": 20262027,
+  "gameType": 1,
+  "limitedScoring": false,
+  "gameDate": "2026-09-19",
+  "venue": {
+    "default": "Enterprise Center"
+  },
+  "venueLocation": {
+    "default": "St. Louis"
+  },
+  "startTimeUTC": "2026-09-19T23:00:00Z",
+  "easternUTCOffset": "-04:00",
+  "venueUTCOffset": "-05:00",
+  "venueTimezone": "US/Central",
+  "periodDescriptor": {
+    "number": 3,
+    "periodType": "REG",
+    "maxRegulationPeriods": 3
+  },
+  "tvBroadcasts": [
+    {
+      "id": 579,
+      "market": "H",
+      "countryCode": "US",
+      "network": "Blues App",
+      "sequenceNumber": 206
+    }
+  ],
+  "gameState": "LIVE",
+  "gameScheduleState": "OK",
+  "awayTeam": {
+    "id": 25,
+    "commonName": {
+      "default": "Stars"
+    },
+    "abbrev": "DAL",
+    "placeName": {
+      "default": "Dallas"
+    },
+    "placeNameWithPreposition": {
+      "default": "Dallas",
+      "fr": "de Dallas"
+    },
+    "score": 2,
+    "sog": 18,
+    "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg",
+    "darkLogo": "https://assets.nhle.com/logos/nhl/svg/DAL_dark.svg",
+    "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/dal/20262027/dal-radio.m3u8"
+  },
+  "homeTeam": {
+    "id": 19,
+    "commonName": {
+      "default": "Blues"
+    },
+    "abbrev": "STL",
+    "placeName": {
+      "default": "St. Louis"
+    },
+    "placeNameWithPreposition": {
+      "default": "St. Louis",
+      "fr": "de St. Louis"
+    },
+    "score": 1,
+    "sog": 12,
+    "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg",
+    "darkLogo": "https://assets.nhle.com/logos/nhl/svg/STL_dark.svg",
+    "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/stl/20262027/stl-radio.m3u8"
+  },
+  "shootoutInUse": true,
+  "maxPeriods": 5,
+  "regPeriods": 3,
+  "otInUse": true,
+  "tiesInUse": false,
+  "summary": {
+    "iceSurface": {
+      "awayTeam": {
+        "forwards": [],
+        "defensemen": [],
+        "goalies": [],
+        "penaltyBox": [
+          {
+            "playerId": 8478476,
+            "name": {
+              "default": "K. Capobianco"
+            },
+            "sweaterNumber": 20,
+            "positionCode": "D",
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/DAL/8478476.png",
+            "secondsRemaining": 61
+          }
+        ]
+      },
+      "homeTeam": {
+        "forwards": [],
+        "defensemen": [],
+        "goalies": [],
+        "penaltyBox": []
+      }
+    },
+    "scoring": [
+      {
+        "periodDescriptor": {
+          "number": 1,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "goals": [
+          {
+            "situationCode": "1551",
+            "eventId": 58,
+            "strength": "ev",
+            "playerId": 8484938,
+            "firstName": {
+              "default": "Arttu"
+            },
+            "lastName": {
+              "default": "Hyry"
+            },
+            "name": {
+              "default": "A. Hyry"
+            },
+            "teamAbbrev": {
+              "default": "DAL"
+            },
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/DAL/8484938.png",
+            "highlightClipSharingUrl": "https://nhl.com/video/dal-stl-hyry-scores-goal-against-jordan-binnington-6405312707112",
+            "highlightClipSharingUrlFr": "https://nhl.com/fr/video/dal-stl-hyry-marque-un-but-contre-jordan-binnington-6405313688112",
+            "highlightClip": 6405312707112,
+            "highlightClipFr": 6405313688112,
+            "discreteClip": 6405312424112,
+            "discreteClipFr": 6405314667112,
+            "goalsToDate": 1,
+            "awayScore": 1,
+            "homeScore": 0,
+            "leadingTeamAbbrev": {
+              "default": "DAL"
+            },
+            "timeInPeriod": "00:16",
+            "shotType": "wrist",
+            "goalModifier": "none",
+            "assists": [
+              {
+                "playerId": 8478888,
+                "firstName": {
+                  "default": "Cameron"
+                },
+                "lastName": {
+                  "default": "Hughes"
+                },
+                "name": {
+                  "default": "C. Hughes"
+                },
+                "assistsToDate": 1,
+                "sweaterNumber": 34
+              },
+              {
+                "playerId": 8486126,
+                "firstName": {
+                  "default": "Jack"
+                },
+                "lastName": {
+                  "default": "Anderson"
+                },
+                "name": {
+                  "default": "J. Anderson"
+                },
+                "assistsToDate": 1,
+                "sweaterNumber": 40
+              }
+            ],
+            "pptReplayUrl": "https://wsr.nhle.com/sprites/20262027/2026010001/ev58.json",
+            "homeTeamDefendingSide": "left",
+            "isHome": false
+          }
+        ]
+      },
+      {
+        "periodDescriptor": {
+          "number": 2,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "goals": [
+          {
+            "situationCode": "1551",
+            "eventId": 708,
+            "strength": "ev",
+            "playerId": 8483463,
+            "firstName": {
+              "default": "Aleksanteri"
+            },
+            "lastName": {
+              "default": "Kaskimaki"
+            },
+            "name": {
+              "default": "A. Kaskimaki"
+            },
+            "teamAbbrev": {
+              "default": "STL"
+            },
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/STL/8483463.png",
+            "highlightClipSharingUrl": "https://nhl.com/video/dal-stl-kaskimaki-scores-goal-against-remi-poirier-6405316188112",
+            "highlightClipSharingUrlFr": "https://nhl.com/fr/video/dal-stl-kaskimaki-marque-un-but-contre-remi-poirier-6405315696112",
+            "highlightClip": 6405316188112,
+            "highlightClipFr": 6405315696112,
+            "discreteClip": 6405315611112,
+            "discreteClipFr": 6405315317112,
+            "goalsToDate": 1,
+            "awayScore": 1,
+            "homeScore": 1,
+            "timeInPeriod": "13:30",
+            "shotType": "snap",
+            "goalModifier": "none",
+            "assists": [
+              {
+                "playerId": 8482784,
+                "firstName": {
+                  "default": "Zach"
+                },
+                "lastName": {
+                  "default": "Dean"
+                },
+                "name": {
+                  "default": "Z. Dean"
+                },
+                "assistsToDate": 1,
+                "sweaterNumber": 52
+              }
+            ],
+            "pptReplayUrl": "https://wsr.nhle.com/sprites/20262027/2026010001/ev708.json",
+            "homeTeamDefendingSide": "right",
+            "isHome": true
+          },
+          {
+            "situationCode": "1551",
+            "eventId": 764,
+            "strength": "ev",
+            "playerId": 8478912,
+            "firstName": {
+              "default": "Jack"
+            },
+            "lastName": {
+              "default": "Becker"
+            },
+            "name": {
+              "default": "J. Becker"
+            },
+            "teamAbbrev": {
+              "default": "DAL"
+            },
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/DAL/8478912.png",
+            "highlightClipSharingUrl": "https://nhl.com/video/dal-stl-becker-scores-goal-against-jordan-binnington-6405314143112",
+            "highlightClipSharingUrlFr": "https://nhl.com/fr/video/dal-stl-becker-marque-un-but-contre-jordan-binnington-6405315615112",
+            "highlightClip": 6405314143112,
+            "highlightClipFr": 6405315615112,
+            "discreteClip": 6405315524112,
+            "discreteClipFr": 6405314646112,
+            "goalsToDate": 1,
+            "awayScore": 2,
+            "homeScore": 1,
+            "leadingTeamAbbrev": {
+              "default": "DAL"
+            },
+            "timeInPeriod": "18:29",
+            "shotType": "wrist",
+            "goalModifier": "none",
+            "assists": [],
+            "pptReplayUrl": "https://wsr.nhle.com/sprites/20262027/2026010001/ev764.json",
+            "homeTeamDefendingSide": "right",
+            "isHome": false
+          }
+        ]
+      },
+      {
+        "periodDescriptor": {
+          "number": 3,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "goals": []
+      }
+    ],
+    "threeStars": [],
+    "penalties": [
+      {
+        "periodDescriptor": {
+          "number": 1,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "penalties": [
+          {
+            "timeInPeriod": "08:08",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Aleksanteri"
+              },
+              "lastName": {
+                "default": "Kaskimaki"
+              },
+              "sweaterNumber": 41
+            },
+            "teamAbbrev": {
+              "default": "STL"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Jakub"
+              },
+              "lastName": {
+                "default": "Vaněček"
+              },
+              "sweaterNumber": 38
+            },
+            "descKey": "hooking"
+          },
+          {
+            "timeInPeriod": "15:17",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Justin"
+              },
+              "lastName": {
+                "default": "Carbonneau"
+              },
+              "sweaterNumber": 68
+            },
+            "teamAbbrev": {
+              "default": "STL"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Kyle"
+              },
+              "lastName": {
+                "default": "Burroughs"
+              },
+              "sweaterNumber": 28
+            },
+            "descKey": "kneeing"
+          },
+          {
+            "timeInPeriod": "15:17",
+            "type": "MAJ",
+            "duration": 5,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Jack"
+              },
+              "lastName": {
+                "default": "Becker"
+              },
+              "sweaterNumber": 51
+            },
+            "teamAbbrev": {
+              "default": "DAL"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Quinton"
+              },
+              "lastName": {
+                "default": "Burns"
+              },
+              "sweaterNumber": 42
+            },
+            "descKey": "fighting"
+          },
+          {
+            "timeInPeriod": "15:17",
+            "type": "MAJ",
+            "duration": 5,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Quinton"
+              },
+              "lastName": {
+                "default": "Burns"
+              },
+              "sweaterNumber": 42
+            },
+            "teamAbbrev": {
+              "default": "STL"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Jack"
+              },
+              "lastName": {
+                "default": "Becker"
+              },
+              "sweaterNumber": 51
+            },
+            "descKey": "fighting"
+          }
+        ]
+      },
+      {
+        "periodDescriptor": {
+          "number": 2,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "penalties": [
+          {
+            "timeInPeriod": "01:01",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Kyle"
+              },
+              "lastName": {
+                "default": "Capobianco"
+              },
+              "sweaterNumber": 20
+            },
+            "teamAbbrev": {
+              "default": "DAL"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Zach"
+              },
+              "lastName": {
+                "default": "Dean"
+              },
+              "sweaterNumber": 52
+            },
+            "descKey": "tripping"
+          },
+          {
+            "timeInPeriod": "03:43",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Ross"
+              },
+              "lastName": {
+                "default": "Johnston"
+              },
+              "sweaterNumber": 49
+            },
+            "teamAbbrev": {
+              "default": "STL"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Jakub"
+              },
+              "lastName": {
+                "default": "Vaněček"
+              },
+              "sweaterNumber": 38
+            },
+            "descKey": "roughing"
+          },
+          {
+            "timeInPeriod": "19:01",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Kyle"
+              },
+              "lastName": {
+                "default": "Capobianco"
+              },
+              "sweaterNumber": 20
+            },
+            "teamAbbrev": {
+              "default": "DAL"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Justin"
+              },
+              "lastName": {
+                "default": "Carbonneau"
+              },
+              "sweaterNumber": 68
+            },
+            "descKey": "holding"
+          }
+        ]
+      },
+      {
+        "periodDescriptor": {
+          "number": 3,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "penalties": []
+      }
+    ]
+  },
+  "clock": {
+    "timeRemaining": "20:00",
+    "secondsRemaining": 1200,
+    "running": false,
+    "inIntermission": false
+  },
+  "situation": {
+    "homeTeam": {
+      "abbrev": "STL",
+      "situationDescriptions": [
+        "PP"
+      ],
+      "strength": 5
+    },
+    "awayTeam": {
+      "abbrev": "DAL",
+      "strength": 4
+    },
+    "situationCode": "1451",
+    "timeRemaining": "01:01",
+    "secondsRemaining": 61
+  }
+}

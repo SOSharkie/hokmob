@@ -1,0 +1,1157 @@
+{
+  "seasonSeries": [
+    {
+      "id": 2026020020,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-10-02",
+      "startTimeUTC": "2026-10-03T01:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-05:00",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 19,
+        "abbrev": "STL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg"
+      },
+      "homeTeam": {
+        "id": 25,
+        "abbrev": "DAL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg"
+      },
+      "gameCenterLink": "/gamecenter/dal-vs-stl/2026/10/02/2026020020",
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      }
+    },
+    {
+      "id": 2026020403,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-11-27",
+      "startTimeUTC": "2026-11-27T19:00:00Z",
+      "easternUTCOffset": "-05:00",
+      "venueUTCOffset": "-06:00",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 25,
+        "abbrev": "DAL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg"
+      },
+      "homeTeam": {
+        "id": 19,
+        "abbrev": "STL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg"
+      },
+      "gameCenterLink": "/gamecenter/stl-vs-dal/2026/11/27/2026020403",
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      }
+    },
+    {
+      "id": 2026020523,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2026-12-12",
+      "startTimeUTC": "2026-12-13T01:00:00Z",
+      "easternUTCOffset": "-05:00",
+      "venueUTCOffset": "-06:00",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 19,
+        "abbrev": "STL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg"
+      },
+      "homeTeam": {
+        "id": 25,
+        "abbrev": "DAL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg"
+      },
+      "gameCenterLink": "/gamecenter/dal-vs-stl/2026/12/12/2026020523",
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      }
+    },
+    {
+      "id": 2026021035,
+      "season": 20262027,
+      "gameType": 2,
+      "gameDate": "2027-02-28",
+      "startTimeUTC": "2027-03-01T02:00:00Z",
+      "easternUTCOffset": "-05:00",
+      "venueUTCOffset": "-06:00",
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 25,
+        "abbrev": "DAL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg"
+      },
+      "homeTeam": {
+        "id": 19,
+        "abbrev": "STL",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg"
+      },
+      "gameCenterLink": "/gamecenter/stl-vs-dal/2027/02/28/2026021035",
+      "gameOutcome": {
+        "lastPeriodType": "REG"
+      }
+    }
+  ],
+  "seasonSeriesWins": {
+    "awayTeamWins": 0,
+    "homeTeamWins": 0
+  },
+  "gameInfo": {
+    "referees": [
+      {
+        "fullName": {
+          "default": "Furman South"
+        },
+        "sweaterNumber": 13
+      },
+      {
+        "fullName": {
+          "default": "Morgan MacPhee"
+        },
+        "sweaterNumber": 43
+      }
+    ],
+    "linesmen": [
+      {
+        "fullName": {
+          "default": "Kyle Flemington"
+        },
+        "sweaterNumber": 55
+      },
+      {
+        "fullName": {
+          "default": "Tyson Baker"
+        },
+        "sweaterNumber": 88
+      }
+    ],
+    "awayTeam": {
+      "headCoach": {
+        "default": "Glen Gulutzan"
+      },
+      "scratches": [
+        {
+          "id": 8473994,
+          "firstName": {
+            "default": "Jamie"
+          },
+          "lastName": {
+            "default": "Benn"
+          }
+        },
+        {
+          "id": 8474574,
+          "firstName": {
+            "default": "Tyler"
+          },
+          "lastName": {
+            "default": "Myers"
+          }
+        },
+        {
+          "id": 8475168,
+          "firstName": {
+            "default": "Matt"
+          },
+          "lastName": {
+            "default": "Duchene"
+          }
+        },
+        {
+          "id": 8475794,
+          "firstName": {
+            "default": "Tyler"
+          },
+          "lastName": {
+            "default": "Seguin"
+          }
+        },
+        {
+          "id": 8476278,
+          "firstName": {
+            "default": "Colin"
+          },
+          "lastName": {
+            "default": "Blackwell"
+          }
+        },
+        {
+          "id": 8476889,
+          "firstName": {
+            "default": "Radek"
+          },
+          "lastName": {
+            "default": "Faksa"
+          }
+        },
+        {
+          "id": 8476902,
+          "firstName": {
+            "default": "Esa"
+          },
+          "lastName": {
+            "default": "Lindell"
+          }
+        },
+        {
+          "id": 8478420,
+          "firstName": {
+            "default": "Mikko"
+          },
+          "lastName": {
+            "default": "Rantanen"
+          }
+        },
+        {
+          "id": 8478449,
+          "firstName": {
+            "default": "Roope"
+          },
+          "lastName": {
+            "default": "Hintz"
+          }
+        },
+        {
+          "id": 8479193,
+          "firstName": {
+            "default": "Casey"
+          },
+          "lastName": {
+            "default": "DeSmith"
+          }
+        },
+        {
+          "id": 8479351,
+          "firstName": {
+            "default": "Sam"
+          },
+          "lastName": {
+            "default": "Steel"
+          }
+        },
+        {
+          "id": 8479979,
+          "firstName": {
+            "default": "Jake"
+          },
+          "lastName": {
+            "default": "Oettinger"
+          }
+        },
+        {
+          "id": 8480027,
+          "firstName": {
+            "default": "Jason"
+          },
+          "lastName": {
+            "default": "Robertson"
+          }
+        },
+        {
+          "id": 8480036,
+          "firstName": {
+            "default": "Miro"
+          },
+          "lastName": {
+            "default": "Heiskanen"
+          }
+        },
+        {
+          "id": 8480840,
+          "firstName": {
+            "default": "Oskar"
+          },
+          "lastName": {
+            "default": "Bäck"
+          }
+        },
+        {
+          "id": 8480878,
+          "firstName": {
+            "default": "Nils"
+          },
+          "lastName": {
+            "default": "Lundkvist"
+          }
+        },
+        {
+          "id": 8481581,
+          "firstName": {
+            "default": "Thomas"
+          },
+          "lastName": {
+            "default": "Harley"
+          }
+        },
+        {
+          "id": 8481641,
+          "firstName": {
+            "default": "Joel"
+          },
+          "lastName": {
+            "default": "Kiviranta"
+          }
+        },
+        {
+          "id": 8482690,
+          "firstName": {
+            "default": "Ayrton"
+          },
+          "lastName": {
+            "default": "Martino"
+          }
+        },
+        {
+          "id": 8482740,
+          "firstName": {
+            "default": "Wyatt"
+          },
+          "lastName": {
+            "default": "Johnston"
+          }
+        },
+        {
+          "id": 8483425,
+          "firstName": {
+            "default": "Lian"
+          },
+          "lastName": {
+            "default": "Bichsel"
+          }
+        },
+        {
+          "id": 8483680,
+          "firstName": {
+            "default": "George"
+          },
+          "lastName": {
+            "default": "Fegaras"
+          }
+        },
+        {
+          "id": 8483758,
+          "firstName": {
+            "default": "Maxim"
+          },
+          "lastName": {
+            "default": "Mayorov"
+          }
+        },
+        {
+          "id": 8484146,
+          "firstName": {
+            "default": "Tristan"
+          },
+          "lastName": {
+            "default": "Bertucci"
+          }
+        },
+        {
+          "id": 8484194,
+          "firstName": {
+            "default": "Aram"
+          },
+          "lastName": {
+            "default": "Minnetian"
+          }
+        },
+        {
+          "id": 8484442,
+          "firstName": {
+            "default": "Arno"
+          },
+          "lastName": {
+            "default": "Tiefensee"
+          }
+        },
+        {
+          "id": 8484468,
+          "firstName": {
+            "default": "Angus"
+          },
+          "lastName": {
+            "default": "MacDonell"
+          }
+        },
+        {
+          "id": 8484495,
+          "firstName": {
+            "default": "Sebastian"
+          },
+          "lastName": {
+            "default": "Bradshaw"
+          }
+        },
+        {
+          "id": 8484523,
+          "firstName": {
+            "default": "Connor"
+          },
+          "lastName": {
+            "default": "Punnett"
+          }
+        },
+        {
+          "id": 8484822,
+          "firstName": {
+            "default": "Luke"
+          },
+          "lastName": {
+            "default": "Krys"
+          }
+        },
+        {
+          "id": 8484829,
+          "firstName": {
+            "default": "Justin"
+          },
+          "lastName": {
+            "default": "Hryckowian"
+          }
+        },
+        {
+          "id": 8484940,
+          "firstName": {
+            "default": "Kyle"
+          },
+          "lastName": {
+            "default": "Looft"
+          }
+        },
+        {
+          "id": 8485041,
+          "firstName": {
+            "default": "Niilopekka"
+          },
+          "lastName": {
+            "default": "Muhonen"
+          }
+        },
+        {
+          "id": 8485095,
+          "firstName": {
+            "default": "William"
+          },
+          "lastName": {
+            "default": "Samuelsson"
+          }
+        },
+        {
+          "id": 8485363,
+          "firstName": {
+            "default": "Cameron"
+          },
+          "lastName": {
+            "default": "Schmidt"
+          }
+        },
+        {
+          "id": 8485433,
+          "firstName": {
+            "default": "Mans"
+          },
+          "lastName": {
+            "default": "Goos"
+          }
+        },
+        {
+          "id": 8485485,
+          "firstName": {
+            "default": "Harrison"
+          },
+          "lastName": {
+            "default": "Scott"
+          }
+        },
+        {
+          "id": 8485601,
+          "firstName": {
+            "default": "Brandon"
+          },
+          "lastName": {
+            "default": "Gorzynski"
+          }
+        },
+        {
+          "id": 8485617,
+          "firstName": {
+            "default": "Atte"
+          },
+          "lastName": {
+            "default": "Joki"
+          }
+        },
+        {
+          "id": 8485660,
+          "firstName": {
+            "default": "Dawson"
+          },
+          "lastName": {
+            "default": "Sharkey"
+          }
+        },
+        {
+          "id": 8485691,
+          "firstName": {
+            "default": "Jaxon"
+          },
+          "lastName": {
+            "default": "Fuder"
+          }
+        },
+        {
+          "id": 8486183,
+          "firstName": {
+            "default": "Ellis"
+          },
+          "lastName": {
+            "default": "Rickwood"
+          }
+        },
+        {
+          "id": 8486289,
+          "firstName": {
+            "default": "Ryan"
+          },
+          "lastName": {
+            "default": "Brown"
+          }
+        },
+        {
+          "id": 8486312,
+          "firstName": {
+            "default": "Anton Emil Wilde"
+          },
+          "lastName": {
+            "default": "Larsen"
+          }
+        },
+        {
+          "id": 8486322,
+          "firstName": {
+            "default": "Jasper"
+          },
+          "lastName": {
+            "default": "Kuhta"
+          }
+        },
+        {
+          "id": 8486345,
+          "firstName": {
+            "default": "Mikhail"
+          },
+          "lastName": {
+            "default": "Cherepanov"
+          }
+        },
+        {
+          "id": 8486478,
+          "firstName": {
+            "default": "Matthew"
+          },
+          "lastName": {
+            "default": "Humphries"
+          }
+        }
+      ]
+    },
+    "homeTeam": {
+      "headCoach": {
+        "default": "Jim Montgomery"
+      },
+      "scratches": [
+        {
+          "id": 8475764,
+          "firstName": {
+            "default": "Cam"
+          },
+          "lastName": {
+            "default": "Fowler"
+          }
+        },
+        {
+          "id": 8476792,
+          "firstName": {
+            "default": "Torey"
+          },
+          "lastName": {
+            "default": "Krug"
+          }
+        },
+        {
+          "id": 8476892,
+          "firstName": {
+            "default": "Colton"
+          },
+          "lastName": {
+            "default": "Parayko"
+          }
+        },
+        {
+          "id": 8476897,
+          "firstName": {
+            "default": "Oskar"
+          },
+          "lastName": {
+            "default": "Sundqvist"
+          }
+        },
+        {
+          "id": 8477402,
+          "firstName": {
+            "default": "Pavel"
+          },
+          "lastName": {
+            "default": "Buchnevich",
+            "cs": "Bučněvič",
+            "fi": "Butshnevitsh",
+            "sk": "Bučněvič"
+          }
+        },
+        {
+          "id": 8477573,
+          "firstName": {
+            "default": "Nathan"
+          },
+          "lastName": {
+            "default": "Walker"
+          }
+        },
+        {
+          "id": 8478443,
+          "firstName": {
+            "default": "Brandon"
+          },
+          "lastName": {
+            "default": "Carlo"
+          }
+        },
+        {
+          "id": 8479346,
+          "firstName": {
+            "default": "Dillon"
+          },
+          "lastName": {
+            "default": "Dube"
+          }
+        },
+        {
+          "id": 8480023,
+          "firstName": {
+            "default": "Robert"
+          },
+          "lastName": {
+            "default": "Thomas"
+          }
+        },
+        {
+          "id": 8480157,
+          "firstName": {
+            "default": "Calle"
+          },
+          "lastName": {
+            "default": "Rosen",
+            "cs": "Rosén",
+            "sk": "Rosén"
+          }
+        },
+        {
+          "id": 8480481,
+          "firstName": {
+            "default": "Parker"
+          },
+          "lastName": {
+            "default": "Gahagen"
+          }
+        },
+        {
+          "id": 8480981,
+          "firstName": {
+            "default": "Joel"
+          },
+          "lastName": {
+            "default": "Hofer"
+          }
+        },
+        {
+          "id": 8481013,
+          "firstName": {
+            "default": "Jonatan"
+          },
+          "lastName": {
+            "default": "Berggren"
+          }
+        },
+        {
+          "id": 8481580,
+          "firstName": {
+            "default": "Connor"
+          },
+          "lastName": {
+            "default": "McMichael"
+          }
+        },
+        {
+          "id": 8481598,
+          "firstName": {
+            "default": "Philip"
+          },
+          "lastName": {
+            "default": "Broberg"
+          }
+        },
+        {
+          "id": 8482077,
+          "firstName": {
+            "default": "Dylan"
+          },
+          "lastName": {
+            "default": "Holloway"
+          }
+        },
+        {
+          "id": 8482089,
+          "firstName": {
+            "default": "Jake"
+          },
+          "lastName": {
+            "default": "Neighbours"
+          }
+        },
+        {
+          "id": 8482205,
+          "firstName": {
+            "default": "Will"
+          },
+          "lastName": {
+            "default": "Cranley"
+          }
+        },
+        {
+          "id": 8482474,
+          "firstName": {
+            "default": "Declan"
+          },
+          "lastName": {
+            "default": "McDonnell"
+          }
+        },
+        {
+          "id": 8482716,
+          "firstName": {
+            "default": "Simon"
+          },
+          "lastName": {
+            "default": "Robertsson"
+          }
+        },
+        {
+          "id": 8482733,
+          "firstName": {
+            "default": "Logan"
+          },
+          "lastName": {
+            "default": "Mailloux"
+          }
+        },
+        {
+          "id": 8482745,
+          "firstName": {
+            "default": "Mason"
+          },
+          "lastName": {
+            "default": "McTavish"
+          }
+        },
+        {
+          "id": 8482945,
+          "firstName": {
+            "default": "Ivan"
+          },
+          "lastName": {
+            "default": "Vorobyov"
+          }
+        },
+        {
+          "id": 8483427,
+          "firstName": {
+            "default": "Michael"
+          },
+          "lastName": {
+            "default": "Buchinger"
+          }
+        },
+        {
+          "id": 8483516,
+          "firstName": {
+            "default": "Jimmy"
+          },
+          "lastName": {
+            "default": "Snuggerud"
+          }
+        },
+        {
+          "id": 8483667,
+          "firstName": {
+            "default": "Dmitri"
+          },
+          "lastName": {
+            "default": "Buchelnikov"
+          }
+        },
+        {
+          "id": 8483764,
+          "firstName": {
+            "default": "Marc-Andre"
+          },
+          "lastName": {
+            "default": "Gaudet"
+          }
+        },
+        {
+          "id": 8483782,
+          "firstName": {
+            "default": "Riley"
+          },
+          "lastName": {
+            "default": "Piercey"
+          }
+        },
+        {
+          "id": 8484164,
+          "firstName": {
+            "default": "Dalibor"
+          },
+          "lastName": {
+            "default": "Dvorsky"
+          }
+        },
+        {
+          "id": 8484452,
+          "firstName": {
+            "default": "Matthew"
+          },
+          "lastName": {
+            "default": "Mayich"
+          }
+        },
+        {
+          "id": 8484476,
+          "firstName": {
+            "default": "Nikita"
+          },
+          "lastName": {
+            "default": "Susuev"
+          }
+        },
+        {
+          "id": 8484784,
+          "firstName": {
+            "default": "Ondrej"
+          },
+          "lastName": {
+            "default": "Kos"
+          }
+        },
+        {
+          "id": 8484790,
+          "firstName": {
+            "default": "Adam"
+          },
+          "lastName": {
+            "default": "Jiricek"
+          }
+        },
+        {
+          "id": 8484792,
+          "firstName": {
+            "default": "Adam"
+          },
+          "lastName": {
+            "default": "Jecho"
+          }
+        },
+        {
+          "id": 8485021,
+          "firstName": {
+            "default": "Tomas"
+          },
+          "lastName": {
+            "default": "Mrsic"
+          }
+        },
+        {
+          "id": 8485042,
+          "firstName": {
+            "default": "William"
+          },
+          "lastName": {
+            "default": "Mcisaac"
+          }
+        },
+        {
+          "id": 8485044,
+          "firstName": {
+            "default": "Marcus"
+          },
+          "lastName": {
+            "default": "Gidlof"
+          }
+        },
+        {
+          "id": 8485086,
+          "firstName": {
+            "default": "Antoine"
+          },
+          "lastName": {
+            "default": "Dorion"
+          }
+        },
+        {
+          "id": 8485104,
+          "firstName": {
+            "default": "Matvei"
+          },
+          "lastName": {
+            "default": "Korotky"
+          }
+        },
+        {
+          "id": 8485618,
+          "firstName": {
+            "default": "Mikhail"
+          },
+          "lastName": {
+            "default": "Fyodorov"
+          }
+        },
+        {
+          "id": 8485649,
+          "firstName": {
+            "default": "Love"
+          },
+          "lastName": {
+            "default": "Harenstam"
+          }
+        },
+        {
+          "id": 8486027,
+          "firstName": {
+            "default": "Nicholas"
+          },
+          "lastName": {
+            "default": "Bogas"
+          }
+        },
+        {
+          "id": 8486037,
+          "firstName": {
+            "default": "Colin"
+          },
+          "lastName": {
+            "default": "Fitzgerald"
+          }
+        },
+        {
+          "id": 8486059,
+          "firstName": {
+            "default": "Tynan"
+          },
+          "lastName": {
+            "default": "Lawrence"
+          }
+        },
+        {
+          "id": 8486075,
+          "firstName": {
+            "default": "Landon"
+          },
+          "lastName": {
+            "default": "Nycz"
+          }
+        },
+        {
+          "id": 8486097,
+          "firstName": {
+            "default": "Luke"
+          },
+          "lastName": {
+            "default": "Schairer"
+          }
+        },
+        {
+          "id": 8486134,
+          "firstName": {
+            "default": "Felix"
+          },
+          "lastName": {
+            "default": "Trudeau"
+          }
+        },
+        {
+          "id": 8486263,
+          "firstName": {
+            "default": "Vladimir"
+          },
+          "lastName": {
+            "default": "Proskurin"
+          }
+        },
+        {
+          "id": 8486284,
+          "firstName": {
+            "default": "Carter"
+          },
+          "lastName": {
+            "default": "Stevens"
+          }
+        },
+        {
+          "id": 8486302,
+          "firstName": {
+            "default": "Lars"
+          },
+          "lastName": {
+            "default": "Steiner"
+          }
+        }
+      ]
+    }
+  },
+  "linescore": {
+    "byPeriod": [
+      {
+        "periodDescriptor": {
+          "number": 1,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "away": 1,
+        "home": 0
+      },
+      {
+        "periodDescriptor": {
+          "number": 2,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "away": 1,
+        "home": 1
+      },
+      {
+        "periodDescriptor": {
+          "number": 3,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "away": 0,
+        "home": 0
+      }
+    ],
+    "totals": {
+      "away": 2,
+      "home": 1
+    }
+  },
+  "shotsByPeriod": [
+    {
+      "periodDescriptor": {
+        "number": 1,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "away": 12,
+      "home": 6
+    },
+    {
+      "periodDescriptor": {
+        "number": 2,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "away": 6,
+      "home": 6
+    },
+    {
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "away": 0,
+      "home": 0
+    }
+  ],
+  "teamGameStats": [
+    {
+      "category": "sog",
+      "awayValue": 18,
+      "homeValue": 12
+    },
+    {
+      "category": "faceoffWinningPctg",
+      "awayValue": 0.548387,
+      "homeValue": 0.451613
+    },
+    {
+      "category": "faceoffWins",
+      "awayValue": "17/31",
+      "homeValue": "14/31"
+    },
+    {
+      "category": "powerPlay",
+      "awayValue": "0/3",
+      "homeValue": "0/1"
+    },
+    {
+      "category": "powerPlayPctg",
+      "awayValue": 0,
+      "homeValue": 0
+    },
+    {
+      "category": "pim",
+      "awayValue": 9,
+      "homeValue": 11
+    },
+    {
+      "category": "hits",
+      "awayValue": 16,
+      "homeValue": 24
+    },
+    {
+      "category": "blockedShots",
+      "awayValue": 8,
+      "homeValue": 8
+    },
+    {
+      "category": "giveaways",
+      "awayValue": 9,
+      "homeValue": 13
+    },
+    {
+      "category": "takeaways",
+      "awayValue": 3,
+      "homeValue": 2
+    }
+  ],
+  "gameReports": {
+    "gameSummary": "https://www.nhl.com/scores/htmlreports/20262027/GS010001.HTM",
+    "eventSummary": "https://www.nhl.com/scores/htmlreports/20262027/ES010001.HTM",
+    "playByPlay": "https://www.nhl.com/scores/htmlreports/20262027/PL010001.HTM",
+    "faceoffSummary": "https://www.nhl.com/scores/htmlreports/20262027/FS010001.HTM",
+    "faceoffComparison": "https://www.nhl.com/scores/htmlreports/20262027/FC010001.HTM",
+    "rosters": "https://www.nhl.com/scores/htmlreports/20262027/RO010001.HTM",
+    "shotSummary": "https://www.nhl.com/scores/htmlreports/20262027/SS010001.HTM",
+    "toiAway": "https://www.nhl.com/scores/htmlreports/20262027/TV010001.HTM",
+    "toiHome": "https://www.nhl.com/scores/htmlreports/20262027/TH010001.HTM"
+  }
+}

@@ -39,3 +39,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Raw capture-live-fixtures output. Trim what is worth keeping into nhl-api-mocks/ instead.
+/src/app/shared/testing/nhl-api-mocks/live/

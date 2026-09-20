@@ -40,6 +40,13 @@ import gamecenter2026020056Landing from './gamecenter-2026020056-landing.json';
 import gamecenter2026020056PlayByPlay from './gamecenter-2026020056-play-by-play.json';
 import gamecenter2026020056Boxscore from './gamecenter-2026020056-boxscore.json';
 import gamecenter2026020056RightRail from './gamecenter-2026020056-right-rail.json';
+import gamecenter2026010001Landing from './gamecenter-2026010001-landing-live.json';
+import gamecenter2026010001PlayByPlay from './gamecenter-2026010001-play-by-play-live.json';
+import gamecenter2026010001Boxscore from './gamecenter-2026010001-boxscore-live.json';
+import gamecenter2026010001RightRail from './gamecenter-2026010001-right-rail-live.json';
+import gamecenter2026010001LandingIntermission from './gamecenter-2026010001-landing-intermission.json';
+import gamecenter2026010001LandingCritical from './gamecenter-2026010001-landing-critical.json';
+import scoreLive from './score-2026-09-19-live.json';
 import playerLanding8476460 from './player-8476460-landing.json';
 import playerLanding8477480 from './player-8477480-landing.json';
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
@@ -234,13 +241,14 @@ export function mockPlayoffSeriesSchedule(seriesLetter: 'A' | 'O'): PlayoffSerie
 }
 
 /** Games with captured gamecenter/{id}/landing, play-by-play, boxscore and right-rail responses. */
-export type MockGamecenterGameId = 2025021057 | 2025020952 | 2025030414 | 2026020056;
+export type MockGamecenterGameId = 2025021057 | 2025020952 | 2025030414 | 2026020056 | 2026010001;
 
 const gamecenterResponses = {
   2025021057: {landing: gamecenter2025021057Landing, playByPlay: gamecenter2025021057PlayByPlay, boxscore: gamecenter2025021057Boxscore, rightRail: gamecenter2025021057RightRail},
   2025020952: {landing: gamecenter2025020952Landing, playByPlay: gamecenter2025020952PlayByPlay, boxscore: gamecenter2025020952Boxscore, rightRail: gamecenter2025020952RightRail},
   2025030414: {landing: gamecenter2025030414Landing, playByPlay: gamecenter2025030414PlayByPlay, boxscore: gamecenter2025030414Boxscore, rightRail: gamecenter2025030414RightRail},
-  2026020056: {landing: gamecenter2026020056Landing, playByPlay: gamecenter2026020056PlayByPlay, boxscore: gamecenter2026020056Boxscore, rightRail: gamecenter2026020056RightRail}
+  2026020056: {landing: gamecenter2026020056Landing, playByPlay: gamecenter2026020056PlayByPlay, boxscore: gamecenter2026020056Boxscore, rightRail: gamecenter2026020056RightRail},
+  2026010001: {landing: gamecenter2026010001Landing, playByPlay: gamecenter2026010001PlayByPlay, boxscore: gamecenter2026010001Boxscore, rightRail: gamecenter2026010001RightRail}
 };
 
 /**
@@ -249,6 +257,9 @@ const gamecenterResponses = {
  * - 2025020952: CGY 2 @ ANA 3, final in a shootout. The scoring summary has a goalless OT and the SO goal.
  * - 2025030414: CAR 5 @ VGK 3, Stanley Cup Final game 4. No series status (only in score/2026-06-09).
  * - 2026020056: UTA @ BOS on 2026-10-08, not started. No score, period, clock or summary.
+ * - 2026010001: DAL 2 @ STL 1, captured live at the start of the 3rd period (preseason, 2026-09-19). STL is on a
+ *   power play carried over from the 2nd, so the landing and play-by-play both have a `situation`. summary.scoring
+ *   lists the 3rd period before it has a goal. No one scored in the 3rd, so this is also the final score.
  */
 export function mockGameLanding(gameId: MockGamecenterGameId): GameLanding {
   return copy(gamecenterResponses[gameId].landing);
@@ -277,6 +288,36 @@ export function mockGameBundle(gameId: MockGamecenterGameId): GameBundle {
     boxscore: mockGameBoxscore(gameId),
     rightRail: mockGameRightRail(gameId)
   };
+}
+
+/**
+ * gamecenter/2026010001/landing captured during the 1st intermission, with clock.inIntermission true,
+ * secondsRemaining counting the intermission down (969s, 60s more than a capture a minute later) and
+ * periodDescriptor still the 1st period that just ended.
+ */
+export function mockIntermissionLanding(): GameLanding {
+  return copy(gamecenter2026010001LandingIntermission);
+}
+
+/**
+ * gamecenter/2026010001/landing captured in the CRIT state, the last minutes of a close game: the 3rd period with
+ * 2:59 left and a running clock. Otherwise the same shape as LIVE.
+ */
+export function mockCriticalLanding(): GameLanding {
+  return copy(gamecenter2026010001LandingCritical);
+}
+
+/**
+ * score/2026-09-19 captured while games were on, trimmed to four: 2026010001 (LIVE, 3rd period), 2026010006 (LIVE,
+ * in an intermission), 2026010002 (FUT) and 2026010005 (PRE). The live games have both clock and periodDescriptor.
+ */
+export function mockLiveScoreResponse(): ScoreResponse {
+  return copy(scoreLive);
+}
+
+/** The DAL @ STL game from mockLiveScoreResponse, live in the 3rd period. */
+export function mockLiveScoreGame(): ScoreGame {
+  return mockLiveScoreResponse().games[0];
 }
 
 /** Players with a captured player/{id}/landing response. */
@@ -425,14 +466,15 @@ export function mockClubScheduleSeason(teamAbbrev: MockClubScheduleTeam, season:
   return copy(clubScheduleResponses[teamAbbrev][season]);
 }
 
-// TODO: The live derived helpers below (derivedLiveLanding, derivedIntermissionLanding, derivedLivePlayByPlay,
-//  derivedLiveGame) edit finished games because no live game could be captured before the 2026-27 preseason. Replace
-//  them with responses captured by `npm run capture-live-fixtures` during a live game (see
-//  docs/nhl-api.md, "Live game checks").
+// The live derived helpers below edit finished games so a spec can reuse a fixture it already asserts against. Their
+// shape was checked against the live game captured on 2026-09-19 (mockGameBundle(2026010001), mockIntermissionLanding,
+// mockCriticalLanding, mockLiveScoreResponse). Use those captures for anything only a live response has, like
+// `situation` or a goal without a highlightClip.
 
 /**
  * Derived: the regulation final (STL @ WPG) landing as if live in the 2nd period with 5:32 left, WPG leading 2-0 after
- * its two 1st period goals.
+ * its two 1st period goals. A live landing lists the period in progress in summary.scoring with no goals yet, as
+ * mockGameLanding(2026010001) does for its 3rd period, so the 2nd is kept with its goals dropped.
  */
 export function derivedLiveLanding(): GameLanding {
   const landing = mockGameLanding(2025021057);
@@ -442,12 +484,13 @@ export function derivedLiveLanding(): GameLanding {
   landing.periodDescriptor = {...landing.periodDescriptor, number: 2};
   landing.clock = {timeRemaining: '05:32', secondsRemaining: 332, running: true, inIntermission: false};
   landing.summary.scoring = landing.summary.scoring.slice(0, 2);
+  landing.summary.scoring[1] = {...landing.summary.scoring[1], goals: []};
   return landing;
 }
 
 /**
- * Derived: the live landing in the 1st intermission with 16:40 left. Assumes clock.secondsRemaining counts down the
- * intermission, which isn't verified yet.
+ * Derived: the live landing in the 1st intermission with 16:40 left. clock.secondsRemaining counting the intermission
+ * down, with periodDescriptor still the period that just ended, matches mockIntermissionLanding.
  */
 export function derivedIntermissionLanding(): GameLanding {
   const landing = derivedLiveLanding();
@@ -475,8 +518,8 @@ export function derivedLivePlayByPlay(): PlayByPlay {
 }
 
 /**
- * Derived: the regulation final (VGK 0 @ PIT 5) as if live in the 2nd period with 5:32 left. The live shape is based
- * on the model and not yet verified against a live game (see docs/nhl-api.md, "Live game checks").
+ * Derived: the regulation final (VGK 0 @ PIT 5) as if live in the 2nd period with 5:32 left. A live score game
+ * carrying both clock and periodDescriptor matches mockLiveScoreGame.
  */
 export function derivedLiveGame(): ScoreGame {
   const game = mockRegulationFinal();

@@ -156,36 +156,61 @@ started.
 back when it fails: home shows the standings summary, `/stats` the regular season without filters, and `/playoffs`
 the latest bracket that has series.
 
-## Live game checks (open)
+## Live game data
 
-Every sample captured so far is a finished (`OFF`) or future (`FUT`) game, so the fields below are assumptions, each
-with a `TODO` in the code pointing here. Preseason games start **2026-09-19** and the regular season **2026-09-29**.
-During a live game, run this from `HokMob.App/ClientApp`:
+Checked against **DAL 2 @ STL 1** (game `2026010001`, preseason, 2026-09-19), captured from the 1st period to the
+final with `npm run capture-live-fixtures -- --watch` from `HokMob.App/ClientApp`. The captures kept as fixtures are
+`mockGameBundle(2026010001)` (the start of the 3rd period), `mockIntermissionLanding()`, `mockCriticalLanding()` and
+`mockLiveScoreResponse()`.
 
-```bash
-npm run capture-live-fixtures -- --watch
+**The clock and period.** During an intermission `clock.inIntermission` is true and `clock.secondsRemaining` counts
+the intermission down — 969s, and 909s a minute later — while `periodDescriptor` stays the period that just *ended*,
+so "End 1st" and "16:09 till 2nd" are both right. At a period change the clock resets to `20:00` with
+`running: false` until the opening faceoff. `running` is false at every whistle, so it tracks live play and not
+whether the game is on.
+
+**`CRIT`** does occur, in the last minutes of a close game (3rd period, 2:59 left), and carries the same
+`periodDescriptor` and running clock as `LIVE`. Nothing else about it differs.
+
+**`summary.scoring` lists the period in progress before it has a goal**, with an empty `goals` array, so the goal
+scorers list has to allow a period with no goals. `summary.iceSurface` is only on a live response — the players
+currently on the ice, empty during an intermission — and is gone once the game is `FINAL`. Nothing reads it yet.
+
+**A `situation` object** is on both the landing and the play-by-play while a team is short-handed, and is the source
+for the game header's power play badge:
+
+```json
+{"homeTeam": {"abbrev": "STL", "situationDescriptions": ["PP"], "strength": 5},
+ "awayTeam": {"abbrev": "DAL", "strength": 4},
+ "situationCode": "1451", "timeRemaining": "01:01", "secondsRemaining": 61}
 ```
 
-It waits for a `LIVE` or `CRIT` game (or takes a game ID) and saves `score`, `landing`, `play-by-play`, `boxscore`
-and `right-rail` to `shared/testing/nhl-api-mocks/live/` each time the state changes (`p1`, `intermission-1`,
-`intermission-1-later`, `crit-p3`, `off`), printing the fields below for each capture.
+The short-handed team has no `situationDescriptions`. The key is **absent** at even strength and once the game ends,
+so read it with `?.`. It stays through an intermission when a penalty carries into the next period, and the
+right-rail `powerPlay` stat counts the power play as soon as it starts (`"0/1"`).
 
-| Check | Assumed in | How to check |
-|---|---|---|
-| `clock.inIntermission` is true and `clock.secondsRemaining` counts the intermission down | `GameComponent.updateIntermission`, `derivedIntermissionLanding` | Compare `intermission-N` with `intermission-N-later`; the game page shows "16:40 till 2nd" |
-| During an intermission, `periodDescriptor` is the period that just ended | `PeriodUtils.getLiveLabel` / `getNextPeriodLabel` | "End 1st" on the scorecard and header, "till 2nd" in the countdown |
-| `CRIT` occurs and otherwise behaves like `LIVE` | `NhlGameInfoUtils.isLiveGame` | A `crit-*` capture |
-| `landing.summary.scoring` lists the current period before it has a goal | `derivedLiveLanding`, goal scorers | A `landing-pN` capture |
-| A live play-by-play has the plays so far in the finished-game shape, and the momentum chart and timelines update on refresh | `derivedLivePlayByPlay`, momentum, mini event timeline | The game page during a period |
-| A live boxscore has `playerByGameStats` and the right-rail has `teamGameStats` | `GameComponent.showTopPlayers` / `showGameStats` | Script output; both sections on the game page |
-| The score response has `clock` and `periodDescriptor` | `derivedLiveGame`, the scorecard's live label | A `score-*` capture; the home scoreboard |
-| Live plays have `situationCode`, for the power play badge | `GameHeaderComponent` TODO | Script output |
-| A goal's `highlightClip` appears in `landing.summary.scoring` once NHL.com posts the clip, without a full page reload | `NhlVideoUtils.getGoalHighlightVideo`, `GameComponent.openGoalOrPlayerDialog` | Click a recent goal before and after its clip is posted |
-| The stats API has per-game rows for a game in progress, and how soon they appear after it ends | The player page's recent games | Query `skater/summary` with `isGame=true` for that game |
+**The play-by-play, boxscore and right-rail all have their finished-game shape while the game is on**: every play so
+far with a `situationCode` (297 of 297 at the final), the 40 `rosterSpots`, `playerByGameStats` for 20 players a
+side from the 1st period on, and all 10 `teamGameStats`. Top players and game stats need no live special case.
+`gameOutcome` only appears on the final response.
 
-When they're done: trim the captures (item counts only), move the ones worth keeping next to the other fixtures with
-accessors in `nhl-api-mocks.ts`, replace the `derived*` live helpers, make the specs assert captured values, fix any
-wrong assumption, remove the TODOs and update this section. Don't commit the untrimmed `live/` folder.
+**A goal's `highlightClip` is added within minutes, without a reload.** The 1st period goal had no clip when it was
+scored and had one by the intermission; a 2nd period goal got its clip during the 3rd. The page picks them up on its
+normal refresh.
+
+**The score response lags the landing at a period change.** Both carry `clock` and `periodDescriptor` for a live
+game, but one capture had the landing already in the 2nd (`20:00`, not in intermission) while `score` still showed
+the 1st in an intermission with `00:20` left. The scorecard can show "End 1st" for a few seconds after the game page
+has moved on, so don't assert that the two agree.
+
+### Still open
+
+- **The stats API has no preseason rows at all**: `skater/summary` with `isGame=true` returns 0 rows for
+  `gameId=2026010001`, and 0 for `seasonId=20262027 and gameTypeId=1`, while a regular season game (`2025021057`)
+  returns 36. So the player page's recent games stay empty for preseason games. Whether rows exist for a *regular
+  season* game while it is in progress, and how soon after it ends, still needs checking from **2026-09-29**.
+- **An in-progress playoff series** and **playoff leaders before any playoff game**: see below, both need the 2027
+  playoffs.
 
 ## Other open items
 

@@ -3,7 +3,7 @@ import * as dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {GameLanding} from "@shared/models/nhl-web-api/gamecenter-landing.model";
-import {GamecenterTeam, SeriesStatus} from "@shared/models/nhl-web-api/common.model";
+import {GamecenterTeam, GameSituationTeam, SeriesStatus} from "@shared/models/nhl-web-api/common.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
 
@@ -132,13 +132,21 @@ export class GameHeaderComponent {
   }
 
   public get homeTeamPP(): boolean {
-    // TODO: Implement, optionally from the latest play's situationCode (see docs/nhl-api.md, "Live game checks")
-    return false;
+    return this.isOnPowerPlay(this.landing?.situation?.homeTeam);
   }
 
   public get awayTeamPP(): boolean {
-    // TODO: Implement, optionally from the latest play's situationCode (see docs/nhl-api.md, "Live game checks")
-    return false;
+    return this.isOnPowerPlay(this.landing?.situation?.awayTeam);
+  }
+
+  /**
+   * Whether the team is on a power play. The landing only has `situation` while a team is short-handed, and the
+   * short-handed team's entry has no `situationDescriptions`. It stays through an intermission when a penalty
+   * carries into the next period, and is gone once the game is over.
+   */
+  private isOnPowerPlay(team: GameSituationTeam): boolean {
+    return NhlGameInfoUtils.isLiveGame(this.landing?.gameState) &&
+        !!team?.situationDescriptions?.includes("PP");
   }
 
   /**

@@ -4,6 +4,7 @@ import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {
   GameClock,
   GameOutcome,
+  GameSituation,
   GamecenterTeam,
   LocalizedString,
   PeriodDescriptor
@@ -30,6 +31,7 @@ export interface PlayByPlay {
   periodDescriptor?: PeriodDescriptor;
   clock?: GameClock;
   gameOutcome?: GameOutcome;
+  situation?: GameSituation;
   plays: Play[];
   rosterSpots: RosterSpot[];
 }

@@ -1,4 +1,4 @@
-// Captures live api-web.nhle.com responses as test fixtures, for the "Live game checks" in docs/nhl-api.md.
+// Captures live api-web.nhle.com responses as test fixtures, for "Live game data" in docs/nhl-api.md.
 // Saves the score, landing, play-by-play, boxscore and right-rail of a game each time its state changes
 // (a new period, an intermission, CRIT, final), and prints the fields the live game page relies on.
 //
@@ -12,6 +12,8 @@ const path = require('path');
 const apiUrl = 'https://api-web.nhle.com/v1/';
 const pollMs = 30000;
 const intermissionRecaptureMs = 60000;
+const maxAttempts = 4;
+const retryDelayMs = 5000;
 
 const args = process.argv.slice(2);
 const watch = args.includes('--watch');
@@ -23,12 +25,28 @@ const isLive = gameState => gameState === 'LIVE' || gameState === 'CRIT';
 const isOver = gameState => gameState === 'OFF' || gameState === 'FINAL';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+/**
+ * Fetches a path, retrying a few times so one connect timeout doesn't end a whole game's watch.
+ */
 async function get(apiPath) {
-  const response = await fetch(apiUrl + apiPath);
-  if (!response.ok) {
-    throw new Error(`${apiPath}: HTTP ${response.status}`);
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const response = await fetch(apiUrl + apiPath);
+      if (!response.ok) {
+        throw new Error(`${apiPath}: HTTP ${response.status}`);
+      }
+      return response.json();
+    } catch (error) {
+      if (attempt >= maxAttempts) {
+        throw error;
+      }
+      const delay = retryDelayMs * attempt;
+      // An HTTP error already names the path; a connect error only has a cause code
+      const reason = error.cause?.code ? `${apiPath}: ${error.cause.code}` : error.message;
+      console.log(`  ${reason}, retrying in ${delay / 1000}s (${attempt}/${maxAttempts - 1})`);
+      await sleep(delay);
+    }
   }
-  return response.json();
 }
 
 function localDate() {
@@ -113,19 +131,28 @@ async function main() {
   const captured = new Set();
   let intermissionStart;
   for (;;) {
-    const landing = await get(`gamecenter/${gameId}/landing`);
-    const label = stateLabel(landing);
-    if (!captured.has(label)) {
-      captured.add(label);
-      intermissionStart = landing.clock?.inIntermission ? Date.now() : undefined;
-      await capture(gameId, label);
-    } else if (intermissionStart && Date.now() - intermissionStart >= intermissionRecaptureMs) {
-      // A second intermission capture shows whether clock.secondsRemaining counts down the intermission
-      intermissionStart = undefined;
-      await capture(gameId, label + '-later');
-    }
-    if (!watch || isOver(landing.gameState)) {
-      return;
+    try {
+      const landing = await get(`gamecenter/${gameId}/landing`);
+      const label = stateLabel(landing);
+      if (!captured.has(label)) {
+        intermissionStart = landing.clock?.inIntermission ? Date.now() : undefined;
+        await capture(gameId, label);
+        // Only after a successful capture, so a failed one is retried on the next poll
+        captured.add(label);
+      } else if (intermissionStart && Date.now() - intermissionStart >= intermissionRecaptureMs) {
+        // A second intermission capture shows whether clock.secondsRemaining counts down the intermission
+        await capture(gameId, label + '-later');
+        intermissionStart = undefined;
+      }
+      if (!watch || isOver(landing.gameState)) {
+        return;
+      }
+    } catch (error) {
+      if (!watch) {
+        throw error;
+      }
+      // Keep watching: a game is only live once, so a blip should not end the run
+      console.error(`[${new Date().toLocaleTimeString()}] ${error.cause?.code ?? error.message}, still watching`);
     }
     await sleep(pollMs);
   }

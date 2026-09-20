@@ -5,6 +5,7 @@ import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
 import {
   derivedLiveGame,
+  mockCriticalLanding,
   mockClubScheduleSeason,
   mockFutureGame,
   mockGameLanding,
@@ -27,6 +28,15 @@ describe('NhlGameInfoUtils', () => {
       expect(NhlGameInfoUtils.isLiveGame(NhlGameStateEnum.CRITICAL)).toBeTrue();
       expect(NhlGameInfoUtils.isFutureGame(NhlGameStateEnum.LIVE)).toBeFalse();
       expect(NhlGameInfoUtils.isCompletedGame(NhlGameStateEnum.CRITICAL)).toBeFalse();
+    });
+
+    it('should treat a captured CRIT game as live, with a clock and period like LIVE', () => {
+      const landing = mockCriticalLanding();
+      expect(landing.gameState).toBe(NhlGameStateEnum.CRITICAL);
+      expect(NhlGameInfoUtils.isLiveGame(landing.gameState)).toBeTrue();
+      expect(NhlGameInfoUtils.isCompletedGame(landing.gameState)).toBeFalse();
+      expect(landing.periodDescriptor.number).toBe(3);
+      expect(landing.clock).toEqual({timeRemaining: '02:59', secondsRemaining: 179, running: true, inIntermission: false});
     });
 
     it('should treat OFF and FINAL as completed games', () => {

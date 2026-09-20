@@ -10,6 +10,7 @@ import { DateTimeUtils } from '@shared/utils/date-time-utils';
 import {
   derivedLiveGame,
   derivedScheduleStateGame,
+  mockLiveScoreResponse,
   mockFutureGame,
   mockOvertimeFinal,
   mockPlayoffGame,
@@ -151,6 +152,20 @@ describe('ScorecardComponent', () => {
     expect(component.liveGame).toBeTrue();
     expect(text).toContain('5 - 0');
     expect(text).toContain('2nd - 5:32');
+  });
+
+  it('should show the period and clock of a captured live game', () => {
+    const [live, intermission] = mockLiveScoreResponse().games;
+
+    let text = render(live);
+    expect(component.liveGame).toBeTrue();
+    expect(text).toContain('1 - 2');
+    expect(text).toContain('3rd - 20:00');
+
+    // The same response has a game in an intermission, labelled with the period that just ended
+    text = render(intermission);
+    expect(intermission.clock.inIntermission).toBeTrue();
+    expect(text).toContain('End 2nd');
   });
 
   it('should fall back to the API common name for an unknown team', () => {
