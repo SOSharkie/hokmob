@@ -1,6 +1,13 @@
 <div class="game-top-players-container">
   <div class="game-top-players-header">
-    <span>Top Players</span>
+    <span>{{cardTitle}}</span>
+    <!-- Switches the rink between the best rated players and each team's stars -->
+    <button type="button" class="lineup-toggle" [class.showing-stars]="showStarLineup"
+            [attr.aria-pressed]="showStarLineup" [title]="showStarLineup ? 'Show the best rated players' : 'Show the star players'"
+            (click)="toggleStarLineup()">
+      <mat-icon class="toggle-icon">star</mat-icon>
+      <span>Stars</span>
+    </button>
   </div>
   <div class="rink">
     <!-- Drawn in feet on a 200.13ft long rink, home end on the left -->

@@ -318,5 +318,26 @@ describe('StatsUtils', () => {
       expect(players.sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB))
           .map(player => player.hokmobRating)).toEqual([8.2, 6.1, 0]);
     });
+
+    it('should sort star players ahead of the rest, the bigger star first', () => {
+      // Martin Necas is the second star forward of Colorado, Nathan MacKinnon its biggest, and Jalen Chatfield is
+      // not a star anywhere
+      const players = [{playerId: 8480039}, {playerId: 8478970}, {playerId: 8477492}] as GamePlayer[];
+      expect(players.sort((playerA, playerB) => StatsUtils.sortByStarPlayer(playerA, playerB))
+          .map(player => player.playerId)).toEqual([8477492, 8480039, 8478970]);
+      expect(StatsUtils.sortByStarPlayer({playerId: 8478970} as GamePlayer, {} as GamePlayer)).toBe(0);
+    });
+
+    it('should list a star ahead of an equally rated teammate, but never ahead of a better rated one', () => {
+      // Carolina, where Sebastian Aho leads the star forwards and Jaccob Slavin the defensemen, both rated 6.2 here
+      const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(mockGamePlayByPlay(2025030414));
+      const players = StatsUtils.getGamePlayers(mockGameBoxscore(2025030414), false, undefined, faceoffCounts);
+      const rated = (rating: number) => players.filter(player => player.hokmobRating === rating)
+          .map(player => player.playerId);
+      // Shayne Gostisbehere is the second star defenseman and Taylor Hall is no star, so they follow
+      expect(rated(6.2)).toEqual([8478427, 8476958, 8476906, 8475791]);
+      // Jordan Staal, Nikolaj Ehlers and Logan Stankoven are rated better and still lead the list
+      expect(players.slice(0, 3).map(player => player.playerId)).toEqual([8473533, 8477940, 8482702]);
+    });
   });
 });

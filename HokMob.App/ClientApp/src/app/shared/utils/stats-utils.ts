@@ -8,6 +8,7 @@ import {RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {GoalieGameStats, SkaterGameStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
+import {NhlStarPlayerUtils} from "@shared/utils/nhl-star-player-utils";
 
 export class StatsUtils {
 
@@ -211,9 +212,10 @@ export class StatsUtils {
   }
 
   /**
-   * Returns a team's dressed skaters and goalies with their HokMob ratings, best rated first. Full names and headshots
-   * come from the play-by-play roster spots; without one, the boxscore's short name and the season's team headshot
-   * are used. Returns an empty list when the boxscore has no player stats (a future game).
+   * Returns a team's dressed skaters and goalies with their HokMob ratings, best rated first, and star players ahead
+   * of equally rated teammates. Full names and headshots come from the play-by-play roster spots; without one, the
+   * boxscore's short name and the season's team headshot are used. Returns an empty list when the boxscore has no
+   * player stats (a future game).
    *
    * @param boxscore - The game's boxscore.
    * @param isHome - Whether to return the home team's players.
@@ -250,7 +252,8 @@ export class StatsUtils {
       goalieStats: goalie,
       hokmobRating: StatsUtils.calculateGoalieHokMobRating(goalie)
     }));
-    return [...skaters, ...goalies].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB));
+    return [...skaters, ...goalies].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
+        StatsUtils.sortByStarPlayer(playerA, playerB));
   }
 
   public static getHokmobRatingColor(score: number): string {
@@ -277,5 +280,14 @@ export class StatsUtils {
    */
   public static sortByHokMobRating(playerA: GamePlayer, playerB: GamePlayer): number {
     return (playerB.hokmobRating ?? 0) - (playerA.hokmobRating ?? 0);
+  }
+
+  /**
+   * Sorts a team's star players ahead of the rest, the bigger star first (NhlStarPlayerUtils). Only used to break a
+   * tie in HokMob ratings, so a star is never shown ahead of a better rated teammate.
+   */
+  public static sortByStarPlayer(playerA: GamePlayer, playerB: GamePlayer): number {
+    const rank = (player: GamePlayer) => NhlStarPlayerUtils.getStarRank(player?.playerId) ?? Number.MAX_SAFE_INTEGER;
+    return rank(playerA) - rank(playerB);
   }
 }

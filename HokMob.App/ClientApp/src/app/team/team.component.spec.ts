@@ -63,11 +63,27 @@ describe('TeamComponent', () => {
     fixture.detectChanges();
   }
 
+  /**
+   * The real 2026-27 schedule with every game moved by the same number of days, so the next game is five days from
+   * today whenever the tests run. The fixture's first game is on 2026-09-20, and the page loads live details for a
+   * game today, so on that day the tests left an unanswered score request; CI runs on UTC and reaches a day before a
+   * dev machine does.
+   */
+  function upcomingSchedule(teamAbbrev: string): ClubScheduleSeason {
+    const schedule = mockClubScheduleSeason(teamAbbrev as any, 20262027);
+    const days = dayjs().add(5, 'day').startOf('day').diff(dayjs(schedule.games[0].startTimeUTC).startOf('day'), 'day');
+    schedule.games.forEach(game => {
+      game.startTimeUTC = dayjs(game.startTimeUTC).add(days, 'day').toISOString();
+      game.gameDate = dayjs(game.gameDate).add(days, 'day').format('YYYY-MM-DD');
+    });
+    return schedule;
+  }
+
   /** Answers the standings, schedule and team stats requests of a team page with the real responses. */
   async function flushTeamPage(teamAbbrev: string, schedule?: ClubScheduleSeason): Promise<void> {
     httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
     httpMock.expectOne(scheduleUrl + teamAbbrev + '/now')
-        .flush(schedule ?? mockClubScheduleSeason(teamAbbrev as any, 20262027));
+        .flush(schedule ?? upcomingSchedule(teamAbbrev));
     await settle();
     httpMock.expectOne(teamStatsUrl).flush(mockTeamStats());
     // The 2026-27 schedule has no finished games, so the form falls back to the previous season
@@ -180,7 +196,7 @@ describe('TeamComponent', () => {
   it('should keep the page working when the standings fail', async () => {
     open('6');
     httpMock.expectOne(standingsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
-    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(mockClubScheduleSeason('BOS', 20262027));
+    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
     await settle();
     httpMock.match(scheduleUrl + 'BOS/20252026')
         .forEach(request => request.flush(mockClubScheduleSeason('BOS', 20252026)));
@@ -210,7 +226,7 @@ describe('TeamComponent', () => {
   it('should show no stats card when the team stats fail', async () => {
     open('6');
     httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
-    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(mockClubScheduleSeason('BOS', 20262027));
+    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
     await settle();
     httpMock.expectOne(teamStatsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
     httpMock.match(scheduleUrl + 'BOS/20252026')

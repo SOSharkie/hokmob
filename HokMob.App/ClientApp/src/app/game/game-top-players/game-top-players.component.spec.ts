@@ -79,8 +79,23 @@ describe('GameTopPlayersComponent', () => {
     expect(cards('home').map(rating)).toEqual(['7.9', '7.8', '6', '7', '6.7', '6.5']);
 
     expect(names('away', 'goalies')).toEqual(['Jordan Binnington']);
-    expect(names('away', 'defense')).toEqual(['Logan Mailloux', 'Colton Parayko']);
+    // Parayko and Mailloux are both rated 6.3, and Parayko is one of the St. Louis stars
+    expect(names('away', 'defense')).toEqual(['Colton Parayko', 'Logan Mailloux']);
     expect(names('away', 'forwards')).toEqual(['Dylan Holloway', 'Jimmy Snuggerud', 'Dalibor Dvorsky']);
+  });
+
+  it('should give a spot to a star player over an equally rated teammate', () => {
+    // Carolina: Jaccob Slavin is one of its stars and Shayne Gostisbehere is not, and both are rated 6.2
+    show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+    expect(names('away', 'defense')).toEqual(['Jalen Chatfield', 'Jaccob Slavin']);
+    expect(cards('away', 'defense').map(rating)).toEqual(['7.1', '6.2']);
+  });
+
+  it('should keep the better rated player over a star', () => {
+    // None of the three Carolina forwards is a star, so Sebastian Aho, rated 6.2, stays off the rink
+    show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+    expect(names('away', 'forwards')).toEqual(['Jordan Staal', 'Nikolaj Ehlers', 'Logan Stankoven']);
+    expect(card('away', 'Sebastian Aho')).toBeUndefined();
   });
 
   it('should place each line at its distance from the end boards and spread its players across the rink', () => {
@@ -266,6 +281,76 @@ describe('GameTopPlayersComponent', () => {
     expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke']);
   });
 
+  describe('star lineup toggle', () => {
+    function toggle(): HTMLButtonElement {
+      return fixture.nativeElement.querySelector('.lineup-toggle');
+    }
+
+    function title(): string {
+      return fixture.nativeElement.querySelector('.game-top-players-header span').textContent.trim();
+    }
+
+    it('should show the rating lineup under Top Players until the toggle is pressed', () => {
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      expect(title()).toBe('Top Players');
+      expect(component.showStarLineup).toBeFalse();
+      expect(toggle().getAttribute('aria-pressed')).toBe('false');
+      expect(toggle().classList).not.toContain('showing-stars');
+      expect(names('away', 'forwards')).toEqual(['Jordan Staal', 'Nikolaj Ehlers', 'Logan Stankoven']);
+    });
+
+    it("should show each team's five stars, and the goalie who played, when it is pressed", () => {
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      toggle().click();
+      fixture.detectChanges();
+      expect(title()).toBe('Star Players');
+      expect(toggle().getAttribute('aria-pressed')).toBe('true');
+      expect(toggle().classList).toContain('showing-stars');
+
+      // Carolina's stars, none of them rated into the lineup: Svechnikov is rated 4.7 and Aho 6.2
+      expect(names('away', 'forwards')).toEqual(['Sebastian Aho', 'Nikolaj Ehlers', 'Andrei Svechnikov']);
+      expect(names('away', 'defense')).toEqual(['Jaccob Slavin', 'Shayne Gostisbehere']);
+      expect(names('away', 'goalies')).toEqual(['Brandon Bussi']);
+      // Vegas' stars, with Mitch Marner rated 5.1 and Shea Theodore 4.8
+      expect(names('home', 'forwards')).toEqual(['Jack Eichel', 'Mitch Marner', 'Mark Stone']);
+      expect(names('home', 'defense')).toEqual(['Rasmus Andersson', 'Shea Theodore']);
+      expect(names('home', 'goalies')).toEqual(['Carter Hart']);
+    });
+
+    it('should star the best rated player of the lineup it is showing', () => {
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      // Jordan Staal, rated 9.1, is no star player, so the rink's star moves to Nikolaj Ehlers
+      expect(component.gameMvpPlayerId).toBe(8473533);
+      toggle().click();
+      fixture.detectChanges();
+      expect(component.gameMvpPlayerId).toBe(8477940);
+      expect(card('away', 'Nikolaj Ehlers').querySelector('.star-icon')).not.toBeNull();
+      expect(fixture.nativeElement.querySelectorAll('.star-icon').length).toBe(1);
+    });
+
+    it('should fill a missing star with the best rated player of that line', () => {
+      // Calgary dressed neither of its star defensemen, so its two best rated ones keep the spots
+      show(gamePlayers(2025020952, true), gamePlayers(2025020952, false));
+      toggle().click();
+      fixture.detectChanges();
+      expect(names('away', 'forwards')).toEqual(['Matt Coronato', 'Mikael Backlund', 'Morgan Frost']);
+      expect(names('away', 'defense')).toEqual(['Zach Whitecloud', 'Yan Kuznetsov']);
+      expect(cards('away', 'defense').map(rating)).toEqual(['6.5', '6.4']);
+    });
+
+    it('should go back to the rating lineup when it is pressed again', () => {
+      show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+      toggle().click();
+      fixture.detectChanges();
+      expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Kyle Connor', 'Gabriel Vilardi']);
+
+      toggle().click();
+      fixture.detectChanges();
+      expect(title()).toBe('Top Players');
+      expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Morgan Barron']);
+      expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
+    });
+  });
   describe('highlighted player', () => {
     function highlight(highlightedPlayer: PlayerHighlight): void {
       fixture.componentRef.setInput('highlightedPlayer', highlightedPlayer);
