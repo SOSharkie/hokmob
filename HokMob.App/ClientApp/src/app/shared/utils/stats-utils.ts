@@ -20,12 +20,6 @@ export class StatsUtils {
   public static readonly hokmobRatingGreen = "#1ec854";
 
   /**
-   * How much of a rating a star player is sorted with on top of his own (StatsUtils.getSortRating), so a game's top
-   * players lean towards the players fans came to watch. It never changes the rating shown.
-   */
-  public static readonly starRatingBoost = 0.5;
-
-  /**
    * The number of faceoffs a skater takes before his faceoff percentage counts fully in his rating.
    */
   public static readonly fullWeightFaceoffCount = 10;
@@ -289,25 +283,8 @@ export class StatsUtils {
   }
 
   /**
-   * The rating a player is sorted by: his own HokMob rating, plus the star boost for one of his team's star players
-   * (NhlStarPlayerUtils). Never shown anywhere; the rating on a player's card is always his own.
-   */
-  public static getSortRating(player: GamePlayer): number {
-    const boost = NhlStarPlayerUtils.isStarPlayer(player?.playerId) ? StatsUtils.starRatingBoost : 0;
-    return Math.round(((player?.hokmobRating ?? 0) + boost) * 10) / 10;
-  }
-
-  /**
-   * Sorts players by rating with the star boost, best first, so a star is shown over a teammate rated up to the
-   * boost better than him.
-   */
-  public static sortByBoostedRating(playerA: GamePlayer, playerB: GamePlayer): number {
-    return StatsUtils.getSortRating(playerB) - StatsUtils.getSortRating(playerA);
-  }
-
-  /**
-   * Sorts a team's star players ahead of the rest, the bigger star first (NhlStarPlayerUtils). Used to break a tie
-   * in boosted ratings, where two stars, or a star and the teammate his boost caught up with, sort the same.
+   * Sorts a team's star players ahead of the rest, the bigger star first (NhlStarPlayerUtils). Only used to break a
+   * tie in HokMob ratings, so a star is never shown ahead of a better rated teammate.
    */
   public static sortByStarPlayer(playerA: GamePlayer, playerB: GamePlayer): number {
     const rank = (player: GamePlayer) => NhlStarPlayerUtils.getStarRank(player?.playerId) ?? Number.MAX_SAFE_INTEGER;
