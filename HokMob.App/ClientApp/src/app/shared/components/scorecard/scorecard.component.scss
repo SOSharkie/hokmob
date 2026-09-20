@@ -68,8 +68,9 @@ $logo-box-width: 60px;
         color: $gray-04;
       }
 
+      // The central column is what reserves the width (see its min-width), so a live label like "2nd - 10:13" fits
       .live-status-label {
-        min-width: 75px;
+        white-space: nowrap;
         margin-top: $spacing-small;
         color: $green-01;
       }
@@ -127,8 +128,9 @@ $logo-box-width: 60px;
 
 // Desktop Styling
 @media only screen and (min-width: $mobile-screen-breakpoint) {
+  // Fits the widest live label ("2nd - 10:13"), so a live card's logos and names line up with a finished one's
   .central-info {
-    min-width: 60px;
+    min-width: 80px;
   }
   .home-team {
     flex: 0 1 280px;
@@ -142,12 +144,12 @@ $logo-box-width: 60px;
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   .scorecard-container {
 
+    // Fits the widest live label at the smaller mobile font, so every card's logos and names line up
     .central-info {
-      min-width: 45px;
+      min-width: 70px;
 
       .live-status-label {
         font-size: smaller;
-        white-space: nowrap;
       }
     }
     .home-team {
