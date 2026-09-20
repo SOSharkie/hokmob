@@ -1,9 +1,12 @@
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
+import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
+import {NhlPlayTypeEnum} from "@shared/enums/nhl-play-type.enum";
 import {BoxscoreGoalie, BoxscoreSkater, GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {
   MockGamecenterGameId,
   mockGameBoxscore,
+  mockGameLanding,
   mockGamePlayByPlay,
   mockPlayerStats
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
@@ -23,45 +26,108 @@ describe('StatsUtils', () => {
   describe('calculateSkaterHokmobRating', () => {
     it('should rate a real center with the faceoff term', () => {
       // Scheifele: 1 goal, 4 shots, 1 takeaway, 2 giveaways, +/- 0, 70.6% faceoffs
-      // 5 + 1.1 + 0.9 + 0.2 - 0.4 + (0.706 - 0.5) = 7.006
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8476460))).toBe(7.0);
+      // 5 + 1.2 + 0.9 + 0.2 - 0.4 + (0.706 - 0.5) = 7.106
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8476460))).toBe(7.1);
     });
 
     it('should scale the faceoff term by the faceoffs taken, up to 10', () => {
       // Scheifele took 17, so his 70.6% counts fully.
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8476460), 17)).toBe(7.0);
-      // Holloway, a winger, won 2 of 10: 7.8 + (0.2 - 0.5) = 7.5.
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077), 10)).toBe(7.5);
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8476460), {faceoffsTaken: 17})).toBe(7.1);
+      // Holloway, a winger, won 2 of 10: 7.9 + (0.2 - 0.5) = 7.6.
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077), {faceoffsTaken: 10})).toBe(7.6);
       // Suter won 1 of 4: 5.95 + (0.25 - 0.5) * 0.4 = 5.85.
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480459), 4)).toBe(5.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480459), {faceoffsTaken: 4})).toBe(5.8);
     });
 
     it('should not take the faceoff term from a center who took no faceoffs', () => {
       // Vilardi: a center with 0% and no faceoff plays, who got the full -0.5 without a count.
       expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480014))).toBe(4.3);
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480014), 0)).toBe(4.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480014), {faceoffsTaken: 0})).toBe(4.8);
     });
 
     it('should ignore the faceoff percentage of a player who is not a center without a faceoff count', () => {
       const scheifele = boxscorePlayer<BoxscoreSkater>(8476460);
       scheifele.position = 'L';
-      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(6.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(6.9);
     });
 
     it('should rate real skaters with positive and negative plus/minus', () => {
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8477938))).toBe(7.8); // Fleury, +2
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077))).toBe(7.8); // Holloway, +1, winger with faceoffs
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8477938))).toBe(7.9); // Fleury, +2
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077))).toBe(7.9); // Holloway, +1, winger with faceoffs
       expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8479385))).toBe(3.6); // Kyrou, -3
     });
 
     it('should not count the 5 minutes of a major penalty, and cap the penalty deduction at 3', () => {
       const scheifele = boxscorePlayer<BoxscoreSkater>(8476460);
       scheifele.pim = 5;
-      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(7.0);
+      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(7.1);
       scheifele.pim = 7;
-      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(6.5);
+      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(6.6);
       scheifele.pim = 20;
-      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(4.0);
+      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(4.1);
+    });
+
+    it('should weight a primary assist above a secondary one', () => {
+      // Barron: 2 assists, 2 blocks, +2, no shots. 5 + 0.4 + 0.6 + (0.556 - 0.5) = 6.5 at the flat weight.
+      const barron = boxscorePlayer<BoxscoreSkater>(8480289);
+      expect(barron.assists).toBe(2);
+      expect(StatsUtils.calculateSkaterHokmobRating(barron)).toBe(6.5);
+      expect(StatsUtils.calculateSkaterHokmobRating(barron, {primaryAssists: 2, secondaryAssists: 0})).toBe(6.7);
+      expect(StatsUtils.calculateSkaterHokmobRating(barron, {primaryAssists: 0, secondaryAssists: 2})).toBe(6.3);
+      // One of each is worth the same as the flat weight.
+      expect(StatsUtils.calculateSkaterHokmobRating(barron, {primaryAssists: 1, secondaryAssists: 1})).toBe(6.5);
+    });
+
+    it('should fall back to the flat assist weight without both halves of the split', () => {
+      const fleury = boxscorePlayer<BoxscoreSkater>(8477938); // 1 goal, 1 assist, +2
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury)).toBe(7.9);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {})).toBe(7.9);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 1})).toBe(7.9);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {secondaryAssists: 1})).toBe(7.9);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 1, secondaryAssists: 0})).toBe(8.0);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 0, secondaryAssists: 1})).toBe(7.8);
+    });
+
+    it('should add power play assists back to realPlusMinus', () => {
+      // Plus/minus doesn't count a power play goal, so a power play assist is added back before the 0.3 per goal the
+      // skater was on the ice for. Gostisbehere assisted on Carolina's power play goal in 2025030414.
+      const onIce = {...boxscorePlayer<BoxscoreSkater>(8476906, 2025030414), plusMinus: 2};
+      expect(StatsUtils.calculateSkaterHokmobRating(onIce, {primaryAssists: 1, secondaryAssists: 0})).toBe(6.6);
+      expect(StatsUtils.calculateSkaterHokmobRating(onIce,
+          {primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: 1})).toBe(6.9);
+    });
+
+    it('should not change a rating with a plus/minus of 0 or less, which never uses realPlusMinus', () => {
+      // Gostisbehere was 0 and Aho -1 in the real game, so their power play assists make no difference there.
+      const gostisbehere = boxscorePlayer<BoxscoreSkater>(8476906, 2025030414);
+      expect(gostisbehere.plusMinus).toBe(0);
+      expect(StatsUtils.calculateSkaterHokmobRating(gostisbehere, {primaryAssists: 1, secondaryAssists: 0}))
+          .toBe(StatsUtils.calculateSkaterHokmobRating(gostisbehere,
+              {primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: 1}));
+
+      const aho = boxscorePlayer<BoxscoreSkater>(8478427, 2025030414);
+      expect(aho.plusMinus).toBe(-1);
+      expect(StatsUtils.calculateSkaterHokmobRating(aho, {primaryAssists: 0, secondaryAssists: 1}))
+          .toBe(StatsUtils.calculateSkaterHokmobRating(aho,
+              {primaryAssists: 0, secondaryAssists: 1, powerPlayAssists: 1}));
+    });
+
+    it('should ignore more power play assists than the skater has assists', () => {
+      const onIce = {...boxscorePlayer<BoxscoreSkater>(8476906, 2025030414), plusMinus: 2};
+      const correct = StatsUtils.calculateSkaterHokmobRating(onIce,
+          {primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: 1});
+      expect(StatsUtils.calculateSkaterHokmobRating(onIce,
+          {primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: 4})).toBe(correct);
+      expect(StatsUtils.calculateSkaterHokmobRating(onIce,
+          {primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: -2}))
+          .toBe(StatsUtils.calculateSkaterHokmobRating(onIce, {primaryAssists: 1, secondaryAssists: 0}));
+    });
+
+    it('should fall back to the flat assist weight when the split does not add up to the assists', () => {
+      // A live game whose boxscore and play-by-play disagree for a moment must not rate the game two ways.
+      const barron = boxscorePlayer<BoxscoreSkater>(8480289);
+      expect(StatsUtils.calculateSkaterHokmobRating(barron, {primaryAssists: 1, secondaryAssists: 0})).toBe(6.5);
+      expect(StatsUtils.calculateSkaterHokmobRating(barron, {primaryAssists: 2, secondaryAssists: 2})).toBe(6.5);
     });
 
     it('should cap the rating at 10', () => {
@@ -122,6 +188,64 @@ describe('StatsUtils', () => {
     });
   });
 
+  describe('getAssistCounts', () => {
+    it('should split the assists of a real game into primary and secondary', () => {
+      const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(2025021057));
+      expect(assistCounts.get(8480289)).toEqual({primary: 1, secondary: 1, powerPlay: 0}); // Barron, 2 assists
+      expect(assistCounts.get(8477504)).toEqual({primary: 1, secondary: 0, powerPlay: 0}); // Morrissey
+      expect(assistCounts.get(8477938)).toEqual({primary: 0, secondary: 1, powerPlay: 0}); // Fleury
+      expect(assistCounts.has(8476460)).toBeFalse(); // Scheifele, who scored but assisted on nothing
+    });
+
+    it('should count the assists on a real power play goal', () => {
+      // Carolina scored one power play goal in 2025030414, assisted by Gostisbehere then Aho.
+      const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(2025030414));
+      expect(assistCounts.get(8476906)).toEqual({primary: 1, secondary: 0, powerPlay: 1});
+      expect(assistCounts.get(8478427)).toEqual({primary: 0, secondary: 1, powerPlay: 1});
+      // Ehlers assisted on two even strength goals.
+      expect(assistCounts.get(8477940)).toEqual({primary: 1, secondary: 1, powerPlay: 0});
+      expect([...assistCounts.values()].reduce((total, counts) => total + counts.powerPlay, 0)).toBe(2);
+    });
+
+    it('should agree with the play-by-play on who assisted and in which order', () => {
+      const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(2025021057));
+      const fromPlayByPlay = new Map<number, number[]>();
+      mockGamePlayByPlay(2025021057).plays.filter(play => play.typeDescKey === NhlPlayTypeEnum.GOAL).forEach(play => {
+        [play.details?.assist1PlayerId, play.details?.assist2PlayerId].forEach((playerId, index) => {
+          if (playerId == null) {
+            return;
+          }
+          const counts = fromPlayByPlay.get(playerId) ?? [0, 0];
+          counts[index]++;
+          fromPlayByPlay.set(playerId, counts);
+        });
+      });
+      expect(fromPlayByPlay.size).toBe(8);
+      expect(assistCounts.size).toBe(fromPlayByPlay.size);
+      fromPlayByPlay.forEach((counts, playerId) => {
+        expect([assistCounts.get(playerId).primary, assistCounts.get(playerId).secondary]).toEqual(counts);
+      });
+    });
+
+    it('should not count a shootout goal, which has no assists', () => {
+      // 2025020952 went to a shootout, whose goal is in the scoring summary with an empty assists array.
+      const shootoutGoals = mockGameLanding(2025020952).summary.scoring
+          .filter(period => period.periodDescriptor.periodType === NhlPeriodTypeEnum.SHOOTOUT)
+          .flatMap(period => period.goals);
+      expect(shootoutGoals.length).toBe(1);
+      expect(shootoutGoals[0].assists).toEqual([]);
+      const credited = [...StatsUtils.getAssistCounts(mockGameLanding(2025020952)).values()]
+          .reduce((total, counts) => total + counts.primary + counts.secondary, 0);
+      expect(credited).toBe(7); // the 4 regulation goals' assists
+    });
+
+    it('should return an empty map without a scoring summary', () => {
+      expect(StatsUtils.getAssistCounts(mockGameLanding(2026020056)).size).toBe(0);
+      expect(StatsUtils.getAssistCounts(undefined).size).toBe(0);
+      expect(StatsUtils.getAssistCounts({...mockGameLanding(2025021057), summary: undefined}).size).toBe(0);
+    });
+  });
+
   describe('getGamePlayers', () => {
     const rosterSpots = () => PlayByPlayUtils.getRosterSpotMap(mockGamePlayByPlay(2025021057));
 
@@ -129,7 +253,7 @@ describe('StatsUtils', () => {
       const players = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots());
       expect(players.length).toBe(20);
       expect(players.slice(0, 3).map(player => [player.name, player.position, player.hokmobRating]))
-          .toEqual([['Eric Comrie', 'G', 7.9], ['Haydn Fleury', 'D', 7.8], ['Mark Scheifele', 'C', 7.0]]);
+          .toEqual([['Haydn Fleury', 'D', 7.9], ['Eric Comrie', 'G', 7.9], ['Mark Scheifele', 'C', 7.1]]);
       expect(players[players.length - 1].name).toBe('Connor Hellebuyck');
       expect(players.every(player => player.teamId === 52 && player.isHome)).toBeTrue();
       const ratings = players.map(player => player.hokmobRating);
@@ -156,13 +280,35 @@ describe('StatsUtils', () => {
           players.find(player => player.playerId === playerId).hokmobRating;
       const home = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots(), faceoffCounts);
       const away = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), false, rosterSpots(), faceoffCounts);
-      expect(rating(home, 8476460)).toBe(7.0); // Scheifele, 17 faceoffs
+      expect(rating(home, 8476460)).toBe(7.1); // Scheifele, 17 faceoffs
       expect(rating(home, 8480014)).toBe(4.8); // Vilardi, a center without faceoffs
-      expect(rating(away, 8482077)).toBe(7.5); // Holloway, a winger who won 2 of 10
+      expect(rating(away, 8482077)).toBe(7.6); // Holloway, a winger who won 2 of 10
 
       const withoutCounts = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots());
       expect(rating(withoutCounts, 8480014)).toBe(4.3);
       const ratings = home.map(player => player.hokmobRating);
+      expect(ratings).toEqual([...ratings].sort((ratingA, ratingB) => ratingB - ratingA));
+    });
+
+    it('should weight assists by the landing assist counts', () => {
+      const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(2025021057));
+      const rating = (players: GamePlayer[], playerId: number) =>
+          players.find(player => player.playerId === playerId).hokmobRating;
+      const withCounts = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots(), undefined,
+          assistCounts);
+      const withoutCounts = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots());
+
+      // Fleury's one assist was a secondary one, so he loses 0.1 off the flat weight.
+      expect(rating(withoutCounts, 8477938)).toBe(7.9);
+      expect(rating(withCounts, 8477938)).toBe(7.8);
+      // Morrissey's was primary.
+      expect(rating(withCounts, 8477504)).toBe(rating(withoutCounts, 8477504) + 0.1);
+      // Barron had one of each, so the split and the flat weight agree.
+      expect(rating(withCounts, 8480289)).toBe(rating(withoutCounts, 8480289));
+      // A player with no assists is unaffected, although the map has no entry for him.
+      expect(rating(withCounts, 8476460)).toBe(rating(withoutCounts, 8476460));
+
+      const ratings = withCounts.map(player => player.hokmobRating);
       expect(ratings).toEqual([...ratings].sort((ratingA, ratingB) => ratingB - ratingA));
     });
 
@@ -237,9 +383,26 @@ describe('StatsUtils', () => {
       const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(mockGamePlayByPlay(2025030414));
       const game = statsApiSkater();
       expect(game.totalFaceoffs).toBe(0);
-      expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game), game.totalFaceoffs))
+      expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game),
+          {faceoffsTaken: game.totalFaceoffs}))
           .toBe(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer<BoxscoreSkater>(8477964, 2025030414),
-              faceoffCounts.get(8477964) ?? 0));
+              {faceoffsTaken: faceoffCounts.get(8477964) ?? 0}));
+    });
+
+    it('should give a real game the same rating as its boxscore with the assist split', () => {
+      const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(2025030414));
+      const game = statsApiSkater();
+      const fromStatsApi = StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game), {
+        primaryAssists: game.totalPrimaryAssists,
+        secondaryAssists: game.totalSecondaryAssists,
+        powerPlayAssists: game.ppAssists
+      });
+      expect(fromStatsApi).toBe(StatsUtils.calculateSkaterHokmobRating(
+          boxscorePlayer<BoxscoreSkater>(8477964, 2025030414), {
+            primaryAssists: assistCounts.get(8477964)?.primary ?? 0,
+            secondaryAssists: assistCounts.get(8477964)?.secondary ?? 0,
+            powerPlayAssists: assistCounts.get(8477964)?.powerPlay ?? 0
+          }));
     });
 
     it('should map a faceoff percentage, and treat a player without faceoffs as 0', () => {
