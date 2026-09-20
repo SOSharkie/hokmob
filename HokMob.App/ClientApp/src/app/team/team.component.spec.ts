@@ -28,6 +28,29 @@ describe('TeamComponent', () => {
   const scheduleUrl = '/api/nhl/club-schedule-season/';
   const teamStatsUrl = '/api/nhl-stats/teams?season=20252026&gameType=2';
 
+  // Boston's next game in the fixture is on 2026-09-20 and the page loads live details for a game today, so the day
+  // these tests run on has to be pinned well clear of it: CI runs on UTC and reaches that day before a dev machine
+  // does. jasmine.clock(), which team-next-game.component.spec.ts uses, would also stop the timers settle() waits on,
+  // so only the date is pinned here.
+  const pinnedNow = new Date(2026, 8, 15).getTime();
+  const RealDate = Date;
+
+  beforeAll(() => {
+    (window as any).Date = class extends RealDate {
+      constructor(...args: any[]) {
+        super(...(args.length ? args : [pinnedNow]) as [number]);
+      }
+
+      public static override now(): number {
+        return pinnedNow;
+      }
+    };
+  });
+
+  afterAll(() => {
+    (window as any).Date = RealDate;
+  });
+
   beforeEach(async () => {
     routeParams = new BehaviorSubject<Params>({});
     await TestBed.configureTestingModule({
