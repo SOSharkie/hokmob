@@ -57,9 +57,9 @@ describe('NhlStarPlayerUtils', () => {
 
   describe('getStarRank', () => {
     it("should rank a team's stars within their own line", () => {
-      // Colorado's forwards Nathan MacKinnon, Martin Necas and Brock Nelson, and its defensemen Cale Makar and Brent Burns
+      // Colorado's forwards Nathan MacKinnon, Martin Necas and Brock Nelson, and its defensemen Cale Makar and Devon Toews
       expect([8477492, 8480039, 8475754].map(playerId => NhlStarPlayerUtils.getStarRank(playerId))).toEqual([1, 2, 3]);
-      expect([8480069, 8470613].map(playerId => NhlStarPlayerUtils.getStarRank(playerId))).toEqual([1, 2]);
+      expect([8480069, 8478038].map(playerId => NhlStarPlayerUtils.getStarRank(playerId))).toEqual([1, 2]);
     });
 
     it('should rank every line of every team, and no one else', () => {
