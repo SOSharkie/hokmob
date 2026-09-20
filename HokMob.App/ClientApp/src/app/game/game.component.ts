@@ -225,8 +225,6 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return "";
   }
 
-  // TODO: Verify during a live game that the boxscore has playerByGameStats and the right-rail has teamGameStats, or top
-  //  players and game stats stay hidden until the game ends (see docs/nhl-api.md, "Live game checks").
   public get showTopPlayers(): boolean {
     return this.homePlayers.length > 0 && this.awayPlayers.length > 0 &&
         (this.completedGame || (this.liveGame && this.playByPlay?.plays?.length > 10));
@@ -503,12 +501,9 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Updates the intermission countdown from the landing clock, whose secondsRemaining is expected to count down the
-   * intermission while clock.inIntermission is true. A 1s timer keeps the countdown moving between refreshes.
-   *
-   * TODO: Verify during a live game that secondsRemaining counts down the intermission (and isn't 0 or the next
-   *  period's 20:00), and that periodDescriptor is still the period just ended (see docs/nhl-api.md,
-   *  "Live game checks").
+   * Updates the intermission countdown from the landing clock, whose secondsRemaining counts the intermission down
+   * while clock.inIntermission is true, with periodDescriptor still the period that just ended. A 1s timer keeps the
+   * countdown moving between refreshes.
    */
   private updateIntermission(): void {
     let clock = this.landing?.clock;

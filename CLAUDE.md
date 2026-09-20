@@ -12,8 +12,8 @@ dates; and `search.d3.nhle.com` for the player search. All three go through the 
 query (the stats API sends no CORS header).
 
 **Read [`docs/nhl-api.md`](docs/nhl-api.md) before working on a page.** It covers which API serves what, what each
-page loads, the response conventions, the stats API query syntax and fields, the caching rules, and the open live
-game checks. Update it when a page's data changes or an open item closes. The draft page has its own doc,
+page loads, the response conventions, the stats API query syntax and fields, the caching rules, and what a live
+game's responses look like. Update it when a page's data changes or an open item closes. The draft page has its own doc,
 [`docs/draft-page.md`](docs/draft-page.md).
 
 The old hosts (`statsapi.web.nhl.com`, `cms.nhl.bamgrid.com`, `suggest.svc.nhl.com`) are dead and no longer resolve.
@@ -140,7 +140,7 @@ A request to one of them is a regression.
   (URL-encode spaces as `%20`). For api-web: `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>` and
   inspect with `node -e`. The 2026-27 preseason starts 2026-09-19 and the regular season 2026-09-29; the 2025-26
   playoffs are all finished. During a live game, `npm run capture-live-fixtures -- --watch` (from
-  `HokMob.App/ClientApp`) saves live responses for the open checks in `docs/nhl-api.md`.
+  `HokMob.App/ClientApp`) saves live responses, as "Live game data" in `docs/nhl-api.md` describes.
 
 ## Git
 

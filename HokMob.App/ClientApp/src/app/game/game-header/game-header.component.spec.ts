@@ -5,11 +5,14 @@ import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameLanding } from '@shared/models/nhl-web-api/gamecenter-landing.model';
 import { SeriesStatus } from '@shared/models/nhl-web-api/common.model';
 import { NhlPeriodTypeEnum } from '@shared/enums/nhl-period-type.enum';
+import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import { DateTimeUtils } from '@shared/utils/date-time-utils';
 import {
   derivedIntermissionLanding,
   derivedLiveLanding,
+  mockCriticalLanding,
   mockGameLanding,
+  mockIntermissionLanding,
   mockPlayoffGame
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
@@ -131,6 +134,66 @@ describe('GameHeaderComponent', () => {
     delete landing.awayTeam.score;
     show(landing);
     expect(text('.game-score-label')).toBe('0 - 0');
+  });
+
+  it('should show the period and clock of a captured live game', () => {
+    const landing = mockGameLanding(2026010001);
+    show(landing);
+    expect(teamNames()).toEqual(['St. Louis Blues', 'Dallas Stars']);
+    expect(text('.game-score-label')).toBe('1 - 2');
+    expect(text('.live-status-label')).toBe('3rd - 20:00');
+  });
+
+  it('should badge the team on the power play in the captured live game', () => {
+    const landing = mockGameLanding(2026010001);
+    expect(landing.situation.homeTeam.abbrev).toBe('STL');
+    expect(landing.situation.homeTeam.situationDescriptions).toEqual(['PP']);
+    expect(landing.situation.awayTeam.situationDescriptions).toBeUndefined();
+
+    show(landing);
+    expect(component.homeTeamPP).toBeTrue();
+    expect(component.awayTeamPP).toBeFalse();
+    expect(text('.home-team-pp')).toBe('PP');
+    expect(text('.away-team-pp')).toBeUndefined();
+  });
+
+  it('should badge the away team when it is the one on the power play', () => {
+    const landing = mockGameLanding(2026010001);
+    landing.situation.awayTeam.situationDescriptions = landing.situation.homeTeam.situationDescriptions;
+    delete landing.situation.homeTeam.situationDescriptions;
+    show(landing);
+    expect(text('.away-team-pp')).toBe('PP');
+    expect(text('.home-team-pp')).toBeUndefined();
+  });
+
+  it('should show no power play badge at even strength or once the game is over', () => {
+    const landing = mockGameLanding(2026010001);
+    delete landing.situation;
+    show(landing);
+    expect(text('.home-team-pp')).toBeUndefined();
+    expect(text('.away-team-pp')).toBeUndefined();
+
+    // A finished game has no situation at all
+    show(mockGameLanding(2025021057));
+    expect(component.homeTeamPP).toBeFalse();
+    expect(component.awayTeamPP).toBeFalse();
+  });
+
+  it('should treat a CRIT game like a live one', () => {
+    const landing = mockCriticalLanding();
+    expect(landing.gameState).toBe(NhlGameStateEnum.CRITICAL);
+    show(landing);
+    expect(text('.live-status-label')).toBe('3rd - 2:59');
+    expect(text('.completed-status-label')).toBeUndefined();
+  });
+
+  it('should show the period that just ended during a captured intermission', () => {
+    const landing = mockIntermissionLanding();
+    expect(landing.clock.inIntermission).toBeTrue();
+    expect(landing.periodDescriptor.number).toBe(1);
+    show(landing, {isIntermission: true, intermissionTimeRemaining: '16:09 till 2nd'});
+    expect(text('.live-status-label')).toBe('End 1st');
+    expect(text('.intermission-countdown')).toBe('16:09 till 2nd');
   });
 
   it('should show placeholders without a game', () => {

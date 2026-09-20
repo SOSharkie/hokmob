@@ -627,6 +627,34 @@ describe('GameComponent', () => {
     httpMock.expectNone('/api/nhl/gamecenter/2025021057/landing');
   }));
 
+  it('should show top players and game stats for a game captured live', fakeAsync(() => {
+    open('2026010001');
+    flushBundle('2026010001', mockGameBundle(2026010001));
+    settleFakeAsync();
+    flushClubSchedule('STL', 20262027);
+    flushClubSchedule('DAL', 20262027);
+    settleFakeAsync();
+
+    expect(component.liveGame).toBeTrue();
+    // A live boxscore already has playerByGameStats, and the right-rail has teamGameStats
+    expect(component.showTopPlayers).toBeTrue();
+    expect(element('app-game-top-players')).not.toBeNull();
+    const gameStats = element('app-game-stats');
+    expect(gameStats.teamGameStats.find(stat => stat.category === 'sog')).toEqual(
+        {category: 'sog', awayValue: 18, homeValue: 12});
+    // The power play STL is on is counted as soon as it starts
+    expect(gameStats.teamGameStats.find(stat => stat.category === 'powerPlay')).toEqual(
+        {category: 'powerPlay', awayValue: '0/3', homeValue: '0/1'});
+
+    // The 3rd period is listed before it has a goal
+    const scoring = element('app-goal-scorers').scoring;
+    expect(scoring.length).toBe(3);
+    expect(scoring[2].periodDescriptor.number).toBe(3);
+    expect(scoring[2].goals).toEqual([]);
+
+    fixture.destroy();
+  }));
+
   it('should keep the shown game when a refresh fails', fakeAsync(() => {
     open('2025021057');
     flushBundle('2025021057', {...mockGameBundle(2025021057), landing: derivedLiveLanding()});

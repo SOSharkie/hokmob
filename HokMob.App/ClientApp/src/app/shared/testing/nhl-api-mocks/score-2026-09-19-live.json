@@ -1,0 +1,809 @@
+{
+  "prevDate": "2026-06-14",
+  "currentDate": "2026-09-19",
+  "nextDate": "2026-09-20",
+  "gameWeek": [
+    {
+      "date": "2026-09-16",
+      "dayAbbrev": "WED",
+      "numberOfGames": 0
+    },
+    {
+      "date": "2026-09-17",
+      "dayAbbrev": "THU",
+      "numberOfGames": 0
+    },
+    {
+      "date": "2026-09-18",
+      "dayAbbrev": "FRI",
+      "numberOfGames": 0
+    },
+    {
+      "date": "2026-09-19",
+      "dayAbbrev": "SAT",
+      "numberOfGames": 7
+    },
+    {
+      "date": "2026-09-20",
+      "dayAbbrev": "SUN",
+      "numberOfGames": 7
+    },
+    {
+      "date": "2026-09-21",
+      "dayAbbrev": "MON",
+      "numberOfGames": 8
+    },
+    {
+      "date": "2026-09-22",
+      "dayAbbrev": "TUE",
+      "numberOfGames": 10
+    }
+  ],
+  "oddsPartners": [
+    {
+      "partnerId": 2,
+      "country": "SE",
+      "name": "Unibet",
+      "imageUrl": "https://assets.nhle.com/betting_partner/unibet.svg",
+      "siteUrl": "https://www.unibet.se/betting/sports/filter/ice_hockey/nhl/all/matches",
+      "bgColor": "#14805E",
+      "textColor": "#FFFFFF",
+      "accentColor": "#3AAA35"
+    },
+    {
+      "partnerId": 3,
+      "country": "CZ",
+      "name": "Tipsport",
+      "imageUrl": "https://assets.nhle.com/betting_partner/tipsport.svg",
+      "siteUrl": "https://www.tipsport.cz/PartnerRedirectAction.do?pid=16961&sid=20360&bid=34954&tid=11268",
+      "bgColor": "#2497F2",
+      "textColor": "#FFFFFF",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "partnerId": 6,
+      "country": "FI",
+      "name": "Veikkaus",
+      "imageUrl": "https://assets.nhle.com/betting_partner/veikkaus.svg",
+      "siteUrl": "https://www.veikkaus.fi/fi/vedonlyonti/pitkaveto?t=3-2-1_NHL",
+      "bgColor": "#0025F5",
+      "textColor": "#FFFFFF",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "partnerId": 7,
+      "country": "CA",
+      "name": "FanDuel",
+      "imageUrl": "https://assets.nhle.com/betting_partner/fanduel.svg",
+      "siteUrl": "https://fanduel.com",
+      "bgColor": "#0078ff",
+      "textColor": "#FFFFFF",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "partnerId": 8,
+      "country": "DE",
+      "name": "Sportradar",
+      "imageUrl": "https://assets.nhle.com/betting_partner/sportsradar.svg",
+      "siteUrl": "https://sportradar.com",
+      "bgColor": "#000000",
+      "textColor": "#FFFFFF",
+      "accentColor": "#E6E6E6"
+    },
+    {
+      "partnerId": 9,
+      "country": "US",
+      "name": "DraftKings",
+      "imageUrl": "https://assets.nhle.com/betting_partner/draftkings.svg",
+      "siteUrl": "https://dksb.sng.link/As9kz/3i4d?_dl=https%3A%2F%2Fsportsbook.draftkings.com%2Fgateway%3Fs%3D333653091&pcid=427326&psn=1320&pcn=NHL&pscn=OddsWidget&pcrn=NoOffer&pscid=SP&wpcid=427326&wpsrc=1320&wpcn=NHL&wpscn=OddsWidget&wpcrn=NoOffer&wpscid=SP&_forward_params=1",
+      "bgColor": "#000000",
+      "textColor": "#FFFFFF",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "partnerId": 10,
+      "country": "SK",
+      "name": "Doxxbet",
+      "imageUrl": "https://assets.nhle.com/betting_partner/doxxbet.svg",
+      "siteUrl": "https://www.doxxbet.sk/sk/sportove-tipovanie-online/kurzy/ladovy-hokej/usa/nhl/?msID=21&mbID=27",
+      "bgColor": "#f30d31",
+      "textColor": "#202020",
+      "accentColor": "#ffffff"
+    }
+  ],
+  "games": [
+    {
+      "id": 2026010001,
+      "season": 20262027,
+      "gameType": 1,
+      "gameDate": "2026-09-19",
+      "venue": {
+        "default": "Enterprise Center"
+      },
+      "startTimeUTC": "2026-09-19T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-05:00",
+      "tvBroadcasts": [
+        {
+          "id": 579,
+          "market": "H",
+          "countryCode": "US",
+          "network": "Blues App",
+          "sequenceNumber": 206
+        }
+      ],
+      "gameState": "LIVE",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 25,
+        "name": {
+          "default": "Stars"
+        },
+        "abbrev": "DAL",
+        "score": 2,
+        "sog": 18,
+        "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg"
+      },
+      "homeTeam": {
+        "id": 19,
+        "name": {
+          "default": "Blues"
+        },
+        "abbrev": "STL",
+        "score": 1,
+        "sog": 12,
+        "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg"
+      },
+      "gameCenterLink": "/gamecenter/dal-vs-stl/2026/09/19/2026010001",
+      "clock": {
+        "timeRemaining": "20:00",
+        "secondsRemaining": 1200,
+        "running": false,
+        "inIntermission": false
+      },
+      "neutralSite": false,
+      "venueTimezone": "US/Central",
+      "period": 3,
+      "periodDescriptor": {
+        "number": 3,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "situation": {
+        "homeTeam": {
+          "abbrev": "STL",
+          "situationDescriptions": [
+            "PP"
+          ],
+          "strength": 5
+        },
+        "awayTeam": {
+          "abbrev": "DAL",
+          "strength": 4
+        },
+        "situationCode": "1451",
+        "timeRemaining": "01:01",
+        "secondsRemaining": 61
+      },
+      "goals": [
+        {
+          "period": 1,
+          "periodDescriptor": {
+            "number": 1,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "00:16",
+          "playerId": 8484938,
+          "name": {
+            "default": "A. Hyry"
+          },
+          "firstName": {
+            "default": "Arttu"
+          },
+          "lastName": {
+            "default": "Hyry"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8478888,
+              "name": {
+                "default": "C. Hughes"
+              },
+              "assistsToDate": 1
+            },
+            {
+              "playerId": 8486126,
+              "name": {
+                "default": "J. Anderson"
+              },
+              "assistsToDate": 1
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20262027/DAL/8484938.png",
+          "teamAbbrev": "DAL",
+          "goalsToDate": 1,
+          "awayScore": 1,
+          "homeScore": 0,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/dal-stl-hyry-scores-goal-against-jordan-binnington-6405312707112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/dal-stl-hyry-marque-un-but-contre-jordan-binnington-6405313688112",
+          "highlightClip": 6405312707112,
+          "highlightClipFr": 6405313688112,
+          "discreteClip": 6405312424112,
+          "discreteClipFr": 6405314667112
+        },
+        {
+          "period": 2,
+          "periodDescriptor": {
+            "number": 2,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "13:30",
+          "playerId": 8483463,
+          "name": {
+            "default": "A. Kaskimaki"
+          },
+          "firstName": {
+            "default": "Aleksanteri"
+          },
+          "lastName": {
+            "default": "Kaskimaki"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8482784,
+              "name": {
+                "default": "Z. Dean"
+              },
+              "assistsToDate": 1
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20262027/STL/8483463.png",
+          "teamAbbrev": "STL",
+          "goalsToDate": 1,
+          "awayScore": 1,
+          "homeScore": 1,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/dal-stl-kaskimaki-scores-goal-against-remi-poirier-6405316188112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/dal-stl-kaskimaki-marque-un-but-contre-remi-poirier-6405315696112",
+          "highlightClip": 6405316188112,
+          "highlightClipFr": 6405315696112,
+          "discreteClip": 6405315611112,
+          "discreteClipFr": 6405315317112
+        },
+        {
+          "period": 2,
+          "periodDescriptor": {
+            "number": 2,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "18:29",
+          "playerId": 8478912,
+          "name": {
+            "default": "J. Becker"
+          },
+          "firstName": {
+            "default": "Jack"
+          },
+          "lastName": {
+            "default": "Becker"
+          },
+          "goalModifier": "none",
+          "assists": [],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20262027/DAL/8478912.png",
+          "teamAbbrev": "DAL",
+          "goalsToDate": 1,
+          "awayScore": 2,
+          "homeScore": 1,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/dal-stl-becker-scores-goal-against-jordan-binnington-6405314143112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/dal-stl-becker-marque-un-but-contre-jordan-binnington-6405315615112",
+          "highlightClip": 6405314143112,
+          "highlightClipFr": 6405315615112,
+          "discreteClip": 6405315524112,
+          "discreteClipFr": 6405314646112
+        }
+      ]
+    },
+    {
+      "id": 2026010006,
+      "season": 20262027,
+      "gameType": 1,
+      "gameDate": "2026-09-19",
+      "venue": {
+        "default": "Scotiabank Arena"
+      },
+      "startTimeUTC": "2026-09-19T23:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-04:00",
+      "tvBroadcasts": [
+        {
+          "id": 131,
+          "market": "A",
+          "countryCode": "CA",
+          "network": "TSN2",
+          "sequenceNumber": 112
+        },
+        {
+          "id": 293,
+          "market": "H",
+          "countryCode": "CA",
+          "network": "TSN4",
+          "sequenceNumber": 137
+        },
+        {
+          "id": 242,
+          "market": "A",
+          "countryCode": "CA",
+          "network": "RDSI",
+          "sequenceNumber": 147
+        }
+      ],
+      "gameState": "LIVE",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 8,
+        "name": {
+          "default": "Canadiens"
+        },
+        "abbrev": "MTL",
+        "score": 1,
+        "sog": 16,
+        "logo": "https://assets.nhle.com/logos/nhl/svg/MTL_light.svg"
+      },
+      "homeTeam": {
+        "id": 10,
+        "name": {
+          "default": "Maple Leafs"
+        },
+        "abbrev": "TOR",
+        "score": 1,
+        "sog": 19,
+        "logo": "https://assets.nhle.com/logos/nhl/svg/TOR_light.svg"
+      },
+      "gameCenterLink": "/gamecenter/mtl-vs-tor/2026/09/19/2026010006",
+      "clock": {
+        "timeRemaining": "02:04",
+        "secondsRemaining": 124,
+        "running": false,
+        "inIntermission": true
+      },
+      "neutralSite": false,
+      "venueTimezone": "America/Toronto",
+      "period": 2,
+      "periodDescriptor": {
+        "number": 2,
+        "periodType": "REG",
+        "maxRegulationPeriods": 3
+      },
+      "situation": {
+        "homeTeam": {
+          "abbrev": "TOR",
+          "situationDescriptions": [
+            "PP"
+          ],
+          "strength": 5
+        },
+        "awayTeam": {
+          "abbrev": "MTL",
+          "strength": 4
+        },
+        "situationCode": "1451",
+        "timeRemaining": "00:10",
+        "secondsRemaining": 10
+      },
+      "goals": [
+        {
+          "period": 2,
+          "periodDescriptor": {
+            "number": 2,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "00:51",
+          "playerId": 8476479,
+          "name": {
+            "default": "P. Danault"
+          },
+          "firstName": {
+            "default": "Phillip"
+          },
+          "lastName": {
+            "default": "Danault"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8482737,
+              "name": {
+                "default": "Z. Bolduc"
+              },
+              "assistsToDate": 1
+            },
+            {
+              "playerId": 8480074,
+              "name": {
+                "default": "A. Texier"
+              },
+              "assistsToDate": 1
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20262027/MTL/8476479.png",
+          "teamAbbrev": "MTL",
+          "goalsToDate": 1,
+          "awayScore": 1,
+          "homeScore": 0,
+          "strength": "ev",
+          "highlightClipSharingUrl": "https://nhl.com/video/mtl-tor-danault-scores-goal-against-sergei-bobrovsky-6405314524112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/mtl-tor-danault-marque-un-but-contre-sergei-bobrovsky-6405314229112",
+          "highlightClip": 6405314524112,
+          "highlightClipFr": 6405314229112,
+          "discreteClip": 6405314337112,
+          "discreteClipFr": 6405314227112
+        },
+        {
+          "period": 2,
+          "periodDescriptor": {
+            "number": 2,
+            "periodType": "REG",
+            "maxRegulationPeriods": 3
+          },
+          "timeInPeriod": "16:39",
+          "playerId": 8478178,
+          "name": {
+            "default": "D. Raddysh"
+          },
+          "firstName": {
+            "default": "Darren"
+          },
+          "lastName": {
+            "default": "Raddysh"
+          },
+          "goalModifier": "none",
+          "assists": [
+            {
+              "playerId": 8479318,
+              "name": {
+                "default": "A. Matthews"
+              },
+              "assistsToDate": 1
+            },
+            {
+              "playerId": 8475166,
+              "name": {
+                "default": "J. Tavares"
+              },
+              "assistsToDate": 1
+            }
+          ],
+          "mugshot": "https://assets.nhle.com/mugs/nhl/20262027/TOR/8478178.png",
+          "teamAbbrev": "TOR",
+          "goalsToDate": 1,
+          "awayScore": 1,
+          "homeScore": 1,
+          "strength": "pp",
+          "highlightClipSharingUrl": "https://nhl.com/video/mtl-tor-raddysh-scores-ppg-against-kaapo-kahkonen-6405315321112",
+          "highlightClipSharingUrlFr": "https://nhl.com/fr/video/mtl-tor-raddysh-marque-un-but-en-a-n-contre-kaapo-kahkonen-6405316580112",
+          "highlightClip": 6405315321112,
+          "highlightClipFr": 6405316580112,
+          "discreteClip": 6405316101112,
+          "discreteClipFr": 6405314249112
+        }
+      ]
+    },
+    {
+      "id": 2026010002,
+      "season": 20262027,
+      "gameType": 1,
+      "gameDate": "2026-09-19",
+      "venue": {
+        "default": "Toyota Arena"
+      },
+      "startTimeUTC": "2026-09-20T01:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-07:00",
+      "tvBroadcasts": [
+        {
+          "id": 521,
+          "market": "A",
+          "countryCode": "US",
+          "network": "SCRIPPS",
+          "sequenceNumber": 657
+        }
+      ],
+      "gameState": "FUT",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 54,
+        "name": {
+          "default": "Golden Knights"
+        },
+        "abbrev": "VGK",
+        "record": "39-26-17",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
+        "odds": [
+          {
+            "providerId": 9,
+            "value": "+110"
+          }
+        ]
+      },
+      "homeTeam": {
+        "id": 26,
+        "name": {
+          "default": "Kings"
+        },
+        "abbrev": "LAK",
+        "record": "35-27-20",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+        "odds": [
+          {
+            "providerId": 9,
+            "value": "-130"
+          }
+        ]
+      },
+      "gameCenterLink": "/gamecenter/vgk-vs-lak/2026/09/19/2026010002",
+      "neutralSite": true,
+      "venueTimezone": "America/Los_Angeles",
+      "ticketsLink": "https://www.nhl.com/kings/tickets/preseason",
+      "ticketsLinkFr": "https://www.nhl.com/kings/tickets/preseason",
+      "teamLeaders": [
+        {
+          "id": 8475913,
+          "firstName": {
+            "default": "Mark"
+          },
+          "lastName": {
+            "default": "Stone"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/VGK/8475913.png",
+          "teamAbbrev": "VGK",
+          "sweaterNumber": 61,
+          "position": "R",
+          "category": "goals",
+          "value": 28
+        },
+        {
+          "id": 8477960,
+          "firstName": {
+            "default": "Adrian"
+          },
+          "lastName": {
+            "default": "Kempe"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/LAK/8477960.png",
+          "teamAbbrev": "LAK",
+          "sweaterNumber": 9,
+          "position": "R",
+          "category": "goals",
+          "value": 36
+        },
+        {
+          "id": 8478403,
+          "firstName": {
+            "default": "Jack"
+          },
+          "lastName": {
+            "default": "Eichel"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/VGK/8478403.png",
+          "teamAbbrev": "VGK",
+          "sweaterNumber": 9,
+          "position": "C",
+          "category": "assists",
+          "value": 63
+        },
+        {
+          "id": 8478550,
+          "firstName": {
+            "default": "Artemi",
+            "cs": "Artěmij",
+            "sk": "Artemij"
+          },
+          "lastName": {
+            "default": "Panarin"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/LAK/8478550.png",
+          "teamAbbrev": "LAK",
+          "sweaterNumber": 10,
+          "position": "L",
+          "category": "assists",
+          "value": 56
+        },
+        {
+          "id": 8479394,
+          "firstName": {
+            "default": "Carter"
+          },
+          "lastName": {
+            "default": "Hart"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/VGK/8479394.png",
+          "teamAbbrev": "VGK",
+          "sweaterNumber": 79,
+          "position": "G",
+          "category": "wins",
+          "value": 11
+        },
+        {
+          "id": 8475311,
+          "firstName": {
+            "default": "Darcy"
+          },
+          "lastName": {
+            "default": "Kuemper"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/LAK/8475311.png",
+          "teamAbbrev": "LAK",
+          "sweaterNumber": 35,
+          "position": "G",
+          "category": "wins",
+          "value": 19
+        }
+      ]
+    },
+    {
+      "id": 2026010005,
+      "season": 20262027,
+      "gameType": 1,
+      "gameDate": "2026-09-19",
+      "venue": {
+        "default": "Climate Pledge Arena"
+      },
+      "startTimeUTC": "2026-09-20T01:00:00Z",
+      "easternUTCOffset": "-04:00",
+      "venueUTCOffset": "-07:00",
+      "tvBroadcasts": [
+        {
+          "id": 554,
+          "market": "H",
+          "countryCode": "US",
+          "network": "KHN/Prime",
+          "sequenceNumber": 348
+        },
+        {
+          "id": 388,
+          "market": "H",
+          "countryCode": "US",
+          "network": "KONG",
+          "sequenceNumber": 654
+        }
+      ],
+      "gameState": "PRE",
+      "gameScheduleState": "OK",
+      "awayTeam": {
+        "id": 23,
+        "name": {
+          "default": "Canucks"
+        },
+        "abbrev": "VAN",
+        "record": "25-49-8",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/VAN_light.svg",
+        "odds": [
+          {
+            "providerId": 9,
+            "value": "+100"
+          }
+        ]
+      },
+      "homeTeam": {
+        "id": 55,
+        "name": {
+          "default": "Kraken"
+        },
+        "abbrev": "SEA",
+        "record": "34-37-11",
+        "logo": "https://assets.nhle.com/logos/nhl/svg/SEA_light.svg",
+        "odds": [
+          {
+            "providerId": 9,
+            "value": "-120"
+          }
+        ]
+      },
+      "gameCenterLink": "/gamecenter/van-vs-sea/2026/09/19/2026010005",
+      "neutralSite": false,
+      "venueTimezone": "US/Pacific",
+      "ticketsLink": "https://www.nhl.com/kraken/tickets/",
+      "ticketsLinkFr": "https://www.nhl.com/kraken/tickets/",
+      "teamLeaders": [
+        {
+          "id": 8478498,
+          "firstName": {
+            "default": "Jake"
+          },
+          "lastName": {
+            "default": "DeBrusk"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/VAN/8478498.png",
+          "teamAbbrev": "VAN",
+          "sweaterNumber": 74,
+          "position": "L",
+          "category": "goals",
+          "value": 23
+        },
+        {
+          "id": 8482259,
+          "firstName": {
+            "default": "Bobby"
+          },
+          "lastName": {
+            "default": "McMann"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/SEA/8482259.png",
+          "teamAbbrev": "SEA",
+          "sweaterNumber": 74,
+          "position": "C",
+          "category": "goals",
+          "value": 29
+        },
+        {
+          "id": 8479425,
+          "firstName": {
+            "default": "Filip"
+          },
+          "lastName": {
+            "default": "Hronek"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/VAN/8479425.png",
+          "teamAbbrev": "VAN",
+          "sweaterNumber": 17,
+          "position": "D",
+          "category": "assists",
+          "value": 41
+        },
+        {
+          "id": 8478407,
+          "firstName": {
+            "default": "Vince"
+          },
+          "lastName": {
+            "default": "Dunn"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/SEA/8478407.png",
+          "teamAbbrev": "SEA",
+          "sweaterNumber": 29,
+          "position": "D",
+          "category": "assists",
+          "value": 33
+        },
+        {
+          "id": 8480947,
+          "firstName": {
+            "default": "Kevin"
+          },
+          "lastName": {
+            "default": "Lankinen"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/VAN/8480947.png",
+          "teamAbbrev": "VAN",
+          "sweaterNumber": 32,
+          "position": "G",
+          "category": "wins",
+          "value": 11
+        },
+        {
+          "id": 8478916,
+          "firstName": {
+            "default": "Joey"
+          },
+          "lastName": {
+            "default": "Daccord"
+          },
+          "headshot": "https://assets.nhle.com/mugs/nhl/20262027/SEA/8478916.png",
+          "teamAbbrev": "SEA",
+          "sweaterNumber": 35,
+          "position": "G",
+          "category": "wins",
+          "value": 20
+        }
+      ]
+    }
+  ]
+}
