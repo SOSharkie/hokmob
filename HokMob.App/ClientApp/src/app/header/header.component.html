@@ -5,6 +5,7 @@
     <button type="button" class="cancel-search-button" (click)="closeSearch()">Cancel</button>
     <nav class="header-menu">
       <a class="menu-item" [routerLink]="['/about']">About</a>
+      <a *ngIf="isRunningLocally" class="menu-item dev-item" [routerLink]="['/dev']">Dev</a>
     </nav>
     <div class="mobile-actions">
       <button type="button" class="icon-button open-search-button" aria-label="Search" (click)="openSearch()">
@@ -12,6 +13,9 @@
       </button>
       <a class="icon-button" aria-label="About" [routerLink]="['/about']">
         <mat-icon svgIcon="lucide:info"></mat-icon>
+      </a>
+      <a *ngIf="isRunningLocally" class="icon-button" aria-label="Dev" [routerLink]="['/dev']">
+        <mat-icon svgIcon="lucide:code"></mat-icon>
       </a>
     </div>
   </div>

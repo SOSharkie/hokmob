@@ -1,5 +1,6 @@
 import {Component, ViewChild} from '@angular/core';
 import {SearchInputComponent} from "@shared/components/search-input/search-input.component";
+import {LocalEnvironmentUtils} from "@shared/utils/local-environment-utils";
 
 /**
  * The site header. On desktop it shows the search box; on phones the search is behind an icon that swaps the bar's
@@ -13,6 +14,9 @@ import {SearchInputComponent} from "@shared/components/search-input/search-input
 export class HeaderComponent {
 
   @ViewChild('searchInput') public searchInput: SearchInputComponent;
+
+  /** Whether the Dev page link is shown. It only exists while the app is served locally. */
+  public readonly isRunningLocally = LocalEnvironmentUtils.isRunningLocally();
 
   /** Whether the phone search is open. Desktop always shows the search box. */
   public isSearchOpen = false;
