@@ -15,7 +15,11 @@ builder.Services.AddScoped<NhlSeasonService>();
 builder.Services.AddHttpClient<NhlApiClient>(client =>
 {
     client.BaseAddress = new Uri(NhlApiClient.BaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(10);
+    // Longer than the other two: api-web serves the current day's score/{date} from its origin with no-store, and
+    // a struggling origin takes anywhere from 3 to 20 seconds. At 10s a good chunk of those became 502s with
+    // nothing cached to fall back on yet (see "Surviving an api-web outage" in docs/nhl-api.md). Callers sharing an
+    // in-flight request wait this long before the last known good copy is served, so it is a ceiling, not a target.
+    client.Timeout = TimeSpan.FromSeconds(20);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("HokMob/1.0");
 });
 builder.Services.AddHttpClient<NhlStatsApiClient>(client =>

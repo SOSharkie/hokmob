@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
@@ -13,6 +15,26 @@ namespace HokMob.App.Services
     public class NhlApiClient
     {
         public const string BaseUrl = "https://api-web.nhle.com/v1/";
+
+        private const string CacheKeyPrefix = "nhl:";
+
+        /// <summary>Where the fallback copy of a response is kept, separate from the response cache so it outlives
+        /// the short durations live data is cached for.</summary>
+        private const string LastKnownGoodKeyPrefix = "nhl-last-known-good:";
+
+        /// <summary>
+        /// How long a successful response is kept as the fallback for a later failed call. A minute covers a burst
+        /// of NHL API errors without letting a live scoreboard drift far behind the play.
+        /// </summary>
+        private static readonly TimeSpan LastKnownGoodDuration = TimeSpan.FromMinutes(1);
+
+        /// <summary>
+        /// The upstream call in flight for each URL, so concurrent callers share one. Static because the typed
+        /// client is registered transient, giving every request its own NhlApiClient. The Lazy matters:
+        /// GetOrAdd can run its factory more than once under contention, and calling an async method starts it,
+        /// so handing it the method directly would fire off the extra calls this is meant to prevent.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, Lazy<Task<NhlApiResponse>>> InFlightRequests = new();
 
         /// <summary>How long a future score/{date} day is cached: schedules and start times change rarely.</summary>
         private static readonly TimeSpan FutureScoreDayCacheDuration = TimeSpan.FromMinutes(30);
@@ -44,32 +66,94 @@ namespace HokMob.App.Services
 
         /// <summary>
         /// Gets the raw JSON for an NHL API path (e.g. "score/now"), using the cache when possible.
+        ///
+        /// When the call fails, the last response that succeeded in the last minute is served instead. The NHL API
+        /// sends the current day's score/{date} with no-store, so every request reaches their origin, and when that
+        /// origin is struggling it takes tens of seconds or answers 500 - which would otherwise empty the scoreboard.
         /// </summary>
         public async Task<NhlApiResponse> GetAsync(string path, string queryString, CancellationToken cancellationToken)
         {
             var relativeUrl = path + queryString;
-            var cacheKey = "nhl:" + relativeUrl;
+            var cacheKey = CacheKeyPrefix + relativeUrl;
 
             if (_cache.TryGetValue(cacheKey, out NhlApiResponse? cached) && cached != null)
             {
                 return cached;
             }
 
-            using var response = await _httpClient.GetAsync(relativeUrl, cancellationToken);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken);
-            var result = new NhlApiResponse(response.StatusCode, content);
-
-            if (response.IsSuccessStatusCode)
+            // One upstream call per URL at a time: the current day's score can take 20 seconds, and without this
+            // every visitor polling it would start a request of their own while that one was still running.
+            var fetch = InFlightRequests.GetOrAdd(relativeUrl, _ => new Lazy<Task<NhlApiResponse>>(
+                () => FetchAsync(path, relativeUrl, cacheKey), LazyThreadSafetyMode.ExecutionAndPublication));
+            try
             {
-                var options = await BuildCacheEntryOptionsAsync(path, content, cancellationToken);
-                _cache.Set(cacheKey, result, options);
+                return await fetch.Value;
             }
-            else
+            finally
             {
+                InFlightRequests.TryRemove(
+                    new KeyValuePair<string, Lazy<Task<NhlApiResponse>>>(relativeUrl, fetch));
+            }
+        }
+
+        /// <summary>
+        /// Fetches a path upstream and caches it, falling back to the last known good response when the NHL API
+        /// times out, cannot be reached, or answers 5xx. Every caller waiting on this URL shares this one call, so
+        /// it deliberately takes no single caller's cancellation token; HttpClient.Timeout bounds it instead.
+        /// </summary>
+        private async Task<NhlApiResponse> FetchAsync(string path, string relativeUrl, string cacheKey)
+        {
+            var lastKnownGoodKey = LastKnownGoodKeyPrefix + relativeUrl;
+            try
+            {
+                using var response = await _httpClient.GetAsync(relativeUrl, CancellationToken.None);
+                var content = await response.Content.ReadAsStringAsync(CancellationToken.None);
+                var result = new NhlApiResponse(response.StatusCode, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var options = await BuildCacheEntryOptionsAsync(path, content, CancellationToken.None);
+                    _cache.Set(cacheKey, result, options);
+                    _cache.Set(lastKnownGoodKey, result, new MemoryCacheEntryOptions()
+                        .SetSize(content.Length)
+                        .SetAbsoluteExpiration(LastKnownGoodDuration));
+                    return result;
+                }
+
                 _logger.LogWarning("NHL API returned {StatusCode} for {Url}", (int)response.StatusCode, relativeUrl);
+                // A 4xx is a real answer about this path. Only an outage on their side is worth papering over.
+                if ((int)response.StatusCode >= 500 &&
+                    TryGetLastKnownGood(lastKnownGoodKey, relativeUrl, out var afterError))
+                {
+                    return afterError;
+                }
+                return result;
             }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                if (!TryGetLastKnownGood(lastKnownGoodKey, relativeUrl, out var afterFailure))
+                {
+                    throw;
+                }
+                _logger.LogWarning(ex, "NHL API request for {Url} failed", relativeUrl);
+                return afterFailure;
+            }
+        }
 
-            return result;
+        /// <summary>
+        /// Gets the last response that succeeded for a URL, while one is still held.
+        /// </summary>
+        private bool TryGetLastKnownGood(string lastKnownGoodKey, string relativeUrl,
+            [NotNullWhen(true)] out NhlApiResponse? lastKnownGood)
+        {
+            if (_cache.TryGetValue(lastKnownGoodKey, out NhlApiResponse? cached) && cached != null)
+            {
+                _logger.LogInformation("Serving the last known good response for {Url}", relativeUrl);
+                lastKnownGood = cached;
+                return true;
+            }
+            lastKnownGood = null;
+            return false;
         }
 
         /// <summary>

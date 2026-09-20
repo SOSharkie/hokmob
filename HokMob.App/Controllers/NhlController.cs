@@ -40,9 +40,16 @@ namespace HokMob.App.Controllers
             try
             {
                 var response = await _nhlApiClient.GetAsync(string.Join('/', segments), Request.QueryString.Value ?? "", cancellationToken);
+                var statusCode = (int)response.StatusCode;
+                if (statusCode >= 400)
+                {
+                    // The NHL API answers an error with an HTML page, which would reach the Angular app labelled
+                    // as JSON and die in its parser rather than in the service's error handler.
+                    return StatusCode(statusCode, new {status = statusCode, error = "The NHL API request failed."});
+                }
                 return new ContentResult
                 {
-                    StatusCode = (int)response.StatusCode,
+                    StatusCode = statusCode,
                     Content = response.Content,
                     ContentType = "application/json"
                 };

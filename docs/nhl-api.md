@@ -136,6 +136,36 @@ one convention (relative URLs), popular queries are cached, and a CORS change ca
 with a 24-hour sliding expiration once it settles (1pm Eastern the day after it's played, which leaves time for stats
 corrections, highlight clips and three stars), so only the days people open stay in memory.
 
+### Surviving an api-web outage
+
+The current day's `score/{date}` is the one path with no safety net upstream: api-web sends it with
+`cache-control: must-revalidate, no-cache, no-store`, so every request reaches the NHL origin. When that origin is
+struggling the day takes 3-20 seconds or answers a 500 (an HTML error page, not JSON), while every other date still
+serves from their edge in under 300ms. Two things in `NhlApiClient` keep the scoreboard up through it:
+
+- **Last known good.** Every successful response is also kept for 1 minute under a separate key. When a call times
+  out, can't be reached, or answers 5xx, that copy is served instead of failing. A 4xx is passed through, because it
+  is a real answer about the path rather than an outage. Scores can lag by up to a minute while api-web is down.
+- **One call per URL.** Concurrent callers for the same URL share a single upstream request. It matters most for the
+  current day, where the 10 second cache expires more often than the upstream answers, so every poller would
+  otherwise start a request of its own. The in-flight map holds a `Lazy`, because `ConcurrentDictionary.GetOrAdd`
+  can run its factory more than once and calling an async method starts it.
+
+The shared call deliberately ignores any one caller's cancellation token, so one visitor navigating away doesn't
+cancel the fetch everyone else is waiting on; `HttpClient.Timeout` bounds it instead. That timeout is 20 seconds for
+`NhlApiClient`, twice what the stats and search clients get, because responses regularly land between 10 and 20
+seconds while api-web is struggling - at 10s those became 502s, and on a cold cache there was no last known good to
+fall back on yet. It is a ceiling rather than a target: callers waiting on a shared request wait up to 20 seconds
+before the fallback copy is served.
+
+What's left uncovered is a long outage. Two 20 second timeouts in a row outlast the 1 minute the fallback copy is
+held, so a sustained one still reaches the browser as a 502 eventually. That is the intended bound - a live
+scoreboard shouldn't show minutes-old scores - and the client recovers on its next refresh.
+
+`NhlController` never passes an upstream error body through: api-web answers errors with HTML, which would reach the
+Angular app labelled `application/json` and fail in its parser instead of its error handler. Any status of 400 or
+more comes back as `{"status": <code>, "error": "The NHL API request failed."}`.
+
 `NhlStatsApiClient` and `NhlSearchApiClient` cache each upstream URL for 5 minutes. A stats endpoint that can't reach
 upstream returns 502 rather than a partial answer.
 
