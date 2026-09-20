@@ -70,6 +70,17 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
   private readonly nhlGameRefreshTime = 10000;
 
   /**
+   * The ID of the timer for the one retry a failed load gets, or null when none is pending.
+   */
+  private nhlGameRetryTimerId: number;
+
+  /**
+   * How long to wait before retrying a failed load, set to 3 seconds. The failed request has already cost the
+   * backend its 10 second NHL API timeout, so this only waits out the tail of a brief upstream hiccup.
+   */
+  private readonly nhlGameRetryTime = 3000;
+
+  /**
    * Whether a day has been shown, so the first selectedDayString always loads.
    */
   private hasLoaded: boolean = false;
@@ -98,6 +109,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
 
   public ngOnDestroy() {
     this.stopContinuousNhlGameUpdates();
+    this.stopPendingRetry();
   }
 
   /**
@@ -155,6 +167,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
   private showSelectedDay(): void {
     this.hasLoaded = true;
     this.updateDisplayDayLabel();
+    this.stopPendingRetry();
     this.retrieveNhlGames();
     this.stopContinuousNhlGameUpdates();
     if (this.displayDayLabel === "Today") {
@@ -162,7 +175,14 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  private retrieveNhlGames(): void {
+  /**
+   * Loads the selected day's games. A failed load is retried once, unless this is the retry or the 10 second
+   * refresh is already running: only today gets that refresh, so without a retry any other day would sit on
+   * "No Games" until the user navigated away and back.
+   *
+   * @param allowRetry - Whether to retry once if the load fails.
+   */
+  private retrieveNhlGames(allowRetry: boolean = true): void {
     const day = this.selectedDay;
     this.nhlGameService.getNhlGames(day).then(games => {
       if (day === this.selectedDay) {
@@ -170,8 +190,15 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
       }
     }).catch(() => {
       // The service logs the error. Show no games rather than another day's games
-      if (day === this.selectedDay) {
-        this.currentDayGames = [];
+      if (day !== this.selectedDay) {
+        return;
+      }
+      this.currentDayGames = [];
+      if (allowRetry && !this.nhlGameUpdateTimerId) {
+        this.nhlGameRetryTimerId = setTimeout(() => {
+          this.nhlGameRetryTimerId = null;
+          this.retrieveNhlGames(false);
+        }, this.nhlGameRetryTime);
       }
     });
   }
@@ -184,30 +211,62 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
     this.nhlGameUpdateTimerId = setInterval(() => {
       const day = this.selectedDay;
       this.nhlGameService.getNhlGames(day).then(games => {
-        if (day !== this.selectedDay) {
-          return;
+        if (day === this.selectedDay) {
+          this.applyRefreshedGames(games);
         }
-        this.currentDayGames.forEach(existingGame  => {
-          let updatedGame = games.find(item => item.id === existingGame.id);
-          if (updatedGame) {
-            existingGame.homeTeam = updatedGame.homeTeam;
-            existingGame.awayTeam = updatedGame.awayTeam;
-            existingGame.clock = updatedGame.clock;
-            existingGame.periodDescriptor = updatedGame.periodDescriptor;
-            existingGame.gameState = updatedGame.gameState;
-            existingGame.gameOutcome = updatedGame.gameOutcome;
-          }
-        });
       }).catch(() => {
         // The service logs the error. Keep the shown games until the next refresh
       });
     }, this.nhlGameRefreshTime);
   }
 
+  /**
+   * Applies a refresh to the shown games. The same games are updated in place, so their scorecards aren't rebuilt,
+   * but a different set of games replaces the list. Without that, a day whose first load failed would poll forever
+   * over an empty list and keep showing "No Games", and a day whose schedule changed would never pick it up.
+   *
+   * @param games - The games the refresh returned.
+   */
+  private applyRefreshedGames(games: ScoreGame[]): void {
+    if (!this.isSameGameList(games)) {
+      this.currentDayGames = games;
+      return;
+    }
+    this.currentDayGames.forEach((existingGame, index) => {
+      const updatedGame = games[index];
+      existingGame.homeTeam = updatedGame.homeTeam;
+      existingGame.awayTeam = updatedGame.awayTeam;
+      existingGame.clock = updatedGame.clock;
+      existingGame.periodDescriptor = updatedGame.periodDescriptor;
+      existingGame.gameState = updatedGame.gameState;
+      existingGame.gameOutcome = updatedGame.gameOutcome;
+    });
+  }
+
+  /**
+   * Whether the given games are the same games, in the same order, as the ones currently shown.
+   *
+   * @param games - The games the refresh returned.
+   */
+  private isSameGameList(games: ScoreGame[]): boolean {
+    return games.length === this.currentDayGames.length &&
+        games.every((game, index) => game.id === this.currentDayGames[index].id);
+  }
+
   private stopContinuousNhlGameUpdates(): void {
     if (this.nhlGameUpdateTimerId) {
       clearInterval(this.nhlGameUpdateTimerId);
       this.nhlGameUpdateTimerId = null;
+    }
+  }
+
+  /**
+   * Cancels the retry of a failed load, when one is still pending.
+   */
+  private stopPendingRetry(): void {
+    if (this.nhlGameRetryTimerId) {
+      clearTimeout(this.nhlGameRetryTimerId);
+      this.nhlGameRetryTimerId = null;
     }
   }
 

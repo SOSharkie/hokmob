@@ -132,6 +132,82 @@ describe('ScoreboardComponent', () => {
     expect(text()).toContain('No Games');
   });
 
+  it('should retry once when a day other than today fails to load', fakeAsync(() => {
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01')
+        .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    flushMicrotasks();
+    fixture.detectChanges();
+    expect(text()).toContain('No Games');
+
+    tick(3000);
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    flushMicrotasks();
+    fixture.detectChanges();
+
+    expect(component.currentDayGames.map(game => game.id)).toEqual([2025020947, 2025020950, 2025020952]);
+    expect(scorecardCount()).toBe(3);
+    expect(text()).not.toContain('No Games');
+
+    fixture.destroy();
+  }));
+
+  it('should settle on No Games when the one retry fails too', fakeAsync(() => {
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01')
+        .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    flushMicrotasks();
+
+    tick(3000);
+    httpMock.expectOne('/api/nhl/score/2026-03-01')
+        .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    flushMicrotasks();
+    fixture.detectChanges();
+
+    // The retry is one shot, so nothing keeps asking
+    tick(30000);
+    httpMock.expectNone('/api/nhl/score/2026-03-01');
+    expect(component.currentDayGames).toEqual([]);
+    expect(text()).toContain('No Games');
+
+    fixture.destroy();
+  }));
+
+  it("should leave today's failed load to the refresh instead of retrying", fakeAsync(() => {
+    const todayUrl = '/api/nhl/score/' + dayjs().format('YYYY-MM-DD');
+    openDay(dayjs().format('YYYYMMDD'));
+    httpMock.expectOne(todayUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    flushMicrotasks();
+
+    tick(3000);
+    httpMock.expectNone(todayUrl);
+
+    tick(7000);
+    httpMock.expectOne(todayUrl).flush(scoreResponse([derivedLiveGame()]));
+    flushMicrotasks();
+    fixture.detectChanges();
+    expect(scorecardCount()).toBe(1);
+
+    fixture.destroy();
+  }));
+
+  it('should drop a pending retry when the day changes', fakeAsync(() => {
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01')
+        .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    flushMicrotasks();
+
+    component.shiftDateRight();
+    httpMock.expectOne('/api/nhl/score/2026-03-02').flush(scoreResponse([]));
+    flushMicrotasks();
+
+    tick(30000);
+    httpMock.expectNone('/api/nhl/score/2026-03-01');
+    expect(component.displayDayLabel).toBe('Monday, March 2');
+
+    fixture.destroy();
+  }));
+
   it('should load the previous and next day when the date is shifted', async () => {
     const emittedDays: string[] = [];
     component.selectedDayChange.subscribe(day => emittedDays.push(dayjs(day).format('YYYY-MM-DD')));
@@ -226,10 +302,10 @@ describe('ScoreboardComponent', () => {
     update.periodDescriptor.number = 3;
     update.clock.timeRemaining = '12:10';
     tick(10000);
-    // Games that weren't shown before aren't added by the refresh
-    httpMock.expectOne(todayUrl).flush(scoreResponse([update, mockOvertimeFinal()]));
+    httpMock.expectOne(todayUrl).flush(scoreResponse([update]));
     flushMicrotasks();
 
+    // The same game keeps its object, so its scorecard isn't rebuilt
     expect(component.currentDayGames.length).toBe(1);
     expect(component.currentDayGames[0]).toBe(shownGame);
     expect(shownGame.homeTeam.score).toBe(6);
@@ -239,5 +315,63 @@ describe('ScoreboardComponent', () => {
     fixture.destroy();
     tick(10000);
     httpMock.expectNone(todayUrl);
+  }));
+
+  it('should show games a refresh adds to the day', fakeAsync(() => {
+    const todayUrl = '/api/nhl/score/' + dayjs().format('YYYY-MM-DD');
+    openDay(dayjs().format('YYYYMMDD'));
+    httpMock.expectOne(todayUrl).flush(scoreResponse([derivedLiveGame()]));
+    flushMicrotasks();
+    expect(component.currentDayGames.length).toBe(1);
+
+    tick(10000);
+    httpMock.expectOne(todayUrl).flush(scoreResponse([derivedLiveGame(), mockOvertimeFinal()]));
+    flushMicrotasks();
+    fixture.detectChanges();
+
+    expect(component.currentDayGames.map(game => game.id))
+        .toEqual([derivedLiveGame().id, mockOvertimeFinal().id]);
+    expect(scorecardCount()).toBe(2);
+
+    fixture.destroy();
+  }));
+
+  it('should show the games a refresh brings back after the first load failed', fakeAsync(() => {
+    const todayUrl = '/api/nhl/score/' + dayjs().format('YYYY-MM-DD');
+    openDay(dayjs().format('YYYYMMDD'));
+    // The backend 502s when the NHL API times out; the day must not stay empty until the page is reloaded
+    httpMock.expectOne(todayUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    flushMicrotasks();
+    fixture.detectChanges();
+    expect(component.currentDayGames).toEqual([]);
+    expect(text()).toContain('No Games');
+
+    tick(10000);
+    httpMock.expectOne(todayUrl).flush(scoreResponse([derivedLiveGame(), mockOvertimeFinal()]));
+    flushMicrotasks();
+    fixture.detectChanges();
+
+    expect(component.currentDayGames.length).toBe(2);
+    expect(scorecardCount()).toBe(2);
+    expect(text()).not.toContain('No Games');
+
+    fixture.destroy();
+  }));
+
+  it('should clear the shown games when a refresh returns a day without games', fakeAsync(() => {
+    const todayUrl = '/api/nhl/score/' + dayjs().format('YYYY-MM-DD');
+    openDay(dayjs().format('YYYYMMDD'));
+    httpMock.expectOne(todayUrl).flush(scoreResponse([derivedLiveGame()]));
+    flushMicrotasks();
+
+    tick(10000);
+    httpMock.expectOne(todayUrl).flush(scoreResponse([]));
+    flushMicrotasks();
+    fixture.detectChanges();
+
+    expect(component.currentDayGames).toEqual([]);
+    expect(text()).toContain('No Games');
+
+    fixture.destroy();
   }));
 });
