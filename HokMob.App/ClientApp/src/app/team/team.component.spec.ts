@@ -196,7 +196,7 @@ describe('TeamComponent', () => {
   it('should keep the page working when the standings fail', async () => {
     open('6');
     httpMock.expectOne(standingsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
-    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(mockClubScheduleSeason('BOS', 20262027));
+    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
     await settle();
     httpMock.match(scheduleUrl + 'BOS/20252026')
         .forEach(request => request.flush(mockClubScheduleSeason('BOS', 20252026)));
@@ -226,7 +226,7 @@ describe('TeamComponent', () => {
   it('should show no stats card when the team stats fail', async () => {
     open('6');
     httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
-    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(mockClubScheduleSeason('BOS', 20262027));
+    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
     await settle();
     httpMock.expectOne(teamStatsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
     httpMock.match(scheduleUrl + 'BOS/20252026')
