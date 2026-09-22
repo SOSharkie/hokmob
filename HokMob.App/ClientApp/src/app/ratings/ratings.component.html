@@ -1,12 +1,10 @@
-<div class="dev-page">
-  <header class="dev-hero">
-    <h1 class="dev-headline">Dev</h1>
-    <span class="dev-badge">Local only</span>
-  </header>
-
+<div class="ratings-page">
   <section class="rating-lab">
     <div class="section-heading">
-      <h2 class="dev-section-title">The HokMob rating</h2>
+      <div class="section-title-group">
+        <h1 class="ratings-section-title">The HokMob rating</h1>
+        <span class="title-badge">How it works</span>
+      </div>
       <div class="subject-toggle" role="group" aria-label="Rating formula">
         <button type="button" class="toggle-option" [class.selected]="subject === 'skater'"
                 [attr.aria-pressed]="subject === 'skater'" (click)="selectSubject('skater')">Skater</button>
@@ -15,15 +13,18 @@
       </div>
     </div>
     <p class="section-lead">
-      Every dressed player in a live or past game is rated from 0 to 10 by
-      <code>StatsUtils.calculateSkaterHokmobRating</code> and <code>calculateGoalieHokMobRating</code>. Both start at
-      5, an average game, and add a weighted term for each stat in the boxscore. Build a stat line on the left and
-      watch the rating come together on the right.
+      Every dressed player in a live or past game is rated from 0 to 10 on the spot by HokMob's algorithm. Everyone
+      starts at 5, an average game, and then gets weighted terms added for each stat in the box score. You can build a
+      stat line on the left and watch the rating come together on the right.
     </p>
 
     <div class="lab-grid">
       <div class="lab-card stat-line-card">
         <h3 class="card-title">Stat line</h3>
+        <p class="game-stat-line" *ngIf="showGameStatLine">
+          From a game: <span class="game-player-name">{{gameStatLine.name}}</span><ng-container
+            *ngIf="gameStatLine.rating != null">, rated {{gameStatLine.rating}} on the game page</ng-container>
+        </p>
 
         <div class="preset-row">
           <button *ngFor="let preset of presets" type="button" class="preset-button"
@@ -57,24 +58,27 @@
             <span class="rating-note" *ngIf="breakdown.clampNote">{{breakdown.clampNote}}, from
               {{breakdown.rawTotal}}</span>
             <span class="rating-note" *ngIf="!breakdown.clampNote">The terms below add up to it</span>
-            <div class="rating-scale">
-              <div class="scale-track">
-                <span *ngFor="let band of ratingBands" class="scale-band"
-                      [style.background-color]="band.color" [style.flex-grow]="band.to - band.from"></span>
-                <span class="scale-marker" [style.left.%]="getScalePercent(breakdown.rating)"
-                      [style.border-color]="ratingColor"></span>
-              </div>
-              <div class="scale-labels">
-                <span class="scale-label" [style.left.%]="0">0</span>
-                <span *ngFor="let band of ratingBands" class="scale-label"
-                      [style.left.%]="getScalePercent(band.to)">{{band.to}}</span>
-              </div>
-            </div>
+          </div>
+        </div>
+
+        <!-- On the waterfall's axis, so the marker sits right above the rating line -->
+        <div class="rating-scale">
+          <div class="scale-track">
+            <span *ngFor="let band of ratingBands" class="scale-band" [style.background-color]="band.color"
+                  [style.left.%]="getAxisPercent(band.from)"
+                  [style.width.%]="getAxisPercent(band.to) - getAxisPercent(band.from)"></span>
+            <span class="scale-marker" [style.left.%]="getAxisPercent(breakdown.rating)"
+                  [style.border-color]="ratingColor"></span>
+          </div>
+          <div class="scale-labels">
+            <span class="scale-label" [style.left.%]="getAxisPercent(0)">0</span>
+            <span *ngFor="let band of ratingBands" class="scale-label"
+                  [style.left.%]="getAxisPercent(band.to)">{{band.to}}</span>
           </div>
         </div>
 
         <div class="waterfall">
-          <div class="waterfall-plot" aria-hidden="true">
+          <div #waterfallPlot class="waterfall-plot" aria-hidden="true">
             <span *ngFor="let tick of axisTicks" class="gridline" [class.zero-line]="tick === 0"
                   [style.left.%]="getAxisPercent(tick)"></span>
             <span class="rating-line" [style.left.%]="getAxisPercent(breakdown.rating)"
@@ -86,14 +90,15 @@
             <div class="term-header">
               <span class="term-name">{{term.label}}</span>
               <span class="term-detail">{{term.detail}}</span>
-              <span class="term-value" [class.positive]="term.value > 0" [class.negative]="term.value < 0">
-                {{getSignedValue(term.value)}}
-              </span>
-              <span class="term-total">{{term.total.toFixed(1)}}</span>
             </div>
             <div class="term-track">
               <span class="term-bar" [class.base]="index === 0" [class.negative]="term.value < 0"
                     [style.left.%]="getBarStart(term, index)" [style.width.%]="getBarWidth(term, index)"></span>
+              <span class="term-value" [class.positive]="term.value > 0" [class.negative]="term.value < 0"
+                    [class.before-bar]="isValueBeforeBar(term, index)"
+                    [style.left.%]="isValueBeforeBar(term, index) ? getBarStart(term, index) : getBarEnd(term, index)">
+                {{getSignedValue(term.value)}}
+              </span>
             </div>
           </div>
 
@@ -105,14 +110,14 @@
     </div>
   </section>
 
-  <section class="dev-notes">
-    <h2 class="dev-section-title">Worth knowing</h2>
+  <section class="ratings-notes">
+    <h2 class="ratings-section-title">Worth knowing</h2>
     <ul class="quirk-list">
       <li *ngFor="let quirk of quirks">{{quirk}}</li>
     </ul>
     <p class="notes-footer">
-      The formulas live in <code>shared/utils/stats-utils.ts</code>, and the ratings show up on the game page's top
-      players card, in a player's game stats dialog and on a player's recent games.
+      The ratings show up on a game page's top players card, in a player's game stats dialog and on a player's recent
+      games.
     </p>
   </section>
 </div>

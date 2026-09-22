@@ -99,10 +99,15 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
   }
 
   /**
-   * Whether to show the faceoff percentage: for centers, and for other skaters who won a faceoff. The boxscore has no
-   * faceoff counts, so a player who took none can't be told apart from one who lost them all.
+   * Whether to show the faceoff percentage: for skaters who took a faceoff, counted from the play-by-play. Without the
+   * play-by-play's counts, the boxscore can't tell a player who took none from one who lost them all, so it falls
+   * back to centers and to other skaters who won a faceoff.
    */
   public get showFaceoffs(): boolean {
+    const faceoffsTaken = this.player?.ratingContext?.faceoffsTaken;
+    if (faceoffsTaken != null) {
+      return faceoffsTaken > 0;
+    }
     return this.player?.position === "C" || this.skaterStats?.faceoffWinningPctg > 0;
   }
 

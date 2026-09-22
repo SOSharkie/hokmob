@@ -30,7 +30,7 @@ export interface RatingBreakdown {
 }
 
 /**
- * Takes the HokMob rating formulas in {@link StatsUtils} apart, term by term, for the Dev page's visualization. The
+ * Takes the HokMob rating formulas in {@link StatsUtils} apart, term by term, for the Ratings page's visualization. The
  * breakdowns follow `calculateSkaterHokmobRating` and `calculateGoalieHokMobRating` step for step, and the spec
  * checks every breakdown against the rating those two return.
  */

@@ -66,6 +66,35 @@ describe('PlayerGameDialogComponent', () => {
     expect(close).toHaveBeenCalled();
   });
 
+  it("should open the player's exact stat line on the Ratings page in a new tab", () => {
+    const player = gamePlayer(8476460);
+    open(player);
+    const windowOpen = spyOn(window, 'open');
+
+    fixture.nativeElement.querySelector('.dialog-ratings-button').click();
+    expect(windowOpen).toHaveBeenCalledTimes(1);
+    const [url, target] = windowOpen.calls.mostRecent().args;
+    expect(target).toBe('_blank');
+    const params = new URL(url as string, window.location.origin).searchParams;
+    expect(url as string).toMatch(/^\/ratings\?/);
+    expect(params.get('subject')).toBe('skater');
+    expect(params.get('name')).toBe('Mark Scheifele');
+    expect(params.get('rating')).toBe(String(player.hokmobRating));
+    expect(params.get('goals')).toBe(String(player.skaterStats.goals));
+    expect(params.get('hits')).toBe(String(player.skaterStats.hits));
+  });
+
+  it('should open a goalie on the goalie formula', () => {
+    open([true, false].flatMap(isHome => StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), isHome))
+        .find(player => player.goalieStats));
+    const windowOpen = spyOn(window, 'open');
+
+    fixture.nativeElement.querySelector('.dialog-ratings-button').click();
+    const params = new URL(windowOpen.calls.mostRecent().args[0] as string, window.location.origin).searchParams;
+    expect(params.get('subject')).toBe('goalie');
+    expect(params.has('evenStrengthShots')).toBeTrue();
+  });
+
   it('should pass no player to the shared component without one', () => {
     open(undefined);
     expect(fixture.nativeElement.querySelector('app-player-game-stats').player).toBeUndefined();

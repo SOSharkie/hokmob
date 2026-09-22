@@ -1,7 +1,9 @@
-import {Component, OnInit} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
+import {Location} from "@angular/common";
+import {ActivatedRoute} from "@angular/router";
 import {BoxscoreGoalie, BoxscoreSkater} from "@shared/models/nhl-web-api/boxscore.model";
 import {SkaterRatingContext, StatsUtils} from "@shared/utils/stats-utils";
-import {RatingBreakdown, RatingBreakdownUtils, RatingTerm} from "@app/dev/rating-breakdown";
+import {RatingBreakdown, RatingBreakdownUtils, RatingTerm} from "@app/ratings/rating-breakdown";
 
 /** Which rating formula the page is showing. */
 export type RatingSubject = "skater" | "goalie";
@@ -20,7 +22,10 @@ export interface StatControl {
   weight: string;
   min: number;
   max: number;
-  /** A stat this one can never pass, like the assists a power play assist has to be one of. */
+  /**
+   * A stat this one can never pass, like the assists a power play assist has to be one of. "assists" is the primary
+   * and secondary assists together.
+   */
   maxStat?: string;
 }
 
@@ -28,6 +33,15 @@ export interface StatControl {
 export interface StatLinePreset {
   name: string;
   line: StatLine;
+}
+
+/** The player whose stat line the page was opened on from a game page (RatingStatLineUtils.getQueryParams). */
+export interface GameStatLineSource {
+  /** The formula whose stat line came from the game. */
+  subject: RatingSubject;
+  name: string;
+  /** The rating the game page gave him. */
+  rating: number;
 }
 
 /** A band of the rating color scale (StatsUtils.getHokmobRatingColor), drawn under the rating. */
@@ -38,23 +52,25 @@ export interface RatingBand {
 }
 
 /**
- * The Dev page: tools for working on HokMob, only reachable when the app is served locally (`canMatchDevPage`).
- *
- * It currently holds the HokMob rating explorer, which builds a stat line and shows how
+ * The Ratings page (`/ratings`): the HokMob rating explorer, which builds a stat line and shows how
  * `StatsUtils.calculateSkaterHokmobRating` and `calculateGoalieHokMobRating` turn it into a rating, term by term
- * ({@link RatingBreakdownUtils}).
+ * ({@link RatingBreakdownUtils}). A game page's player dialog can open it on a player's stat line from that game,
+ * through the query parameters of {@link RatingStatLineUtils.getQueryParams}.
  */
 @Component({
-  selector: 'app-dev',
-  templateUrl: './dev.component.html',
-  styleUrls: ['./dev.component.scss']
+  selector: 'app-ratings',
+  templateUrl: './ratings.component.html',
+  styleUrls: ['./ratings.component.scss']
 })
-export class DevComponent implements OnInit {
+export class RatingsComponent implements OnInit, AfterViewInit {
 
   /** The lowest and highest rating the chart's axis always covers, whatever the stat line does. */
   public static readonly axisFloor = 0;
 
   public static readonly axisCeiling = 10;
+
+  /** The room, in pixels, a term's value needs after its bar, margin included, before it goes before the bar. */
+  public static readonly valueAfterBarRoom = 44;
 
   public subject: RatingSubject = "skater";
 
@@ -72,9 +88,9 @@ export class DevComponent implements OnInit {
 
   public readonly skaterControls: StatControl[] = [
     {key: "goals", label: "Goals", weight: "+1.2 each", min: 0, max: 6},
-    {key: "assists", label: "Assists", weight: "+0.6 primary, +0.4 secondary", min: 0, max: 6},
-    {key: "primaryAssists", label: "Primary assists", weight: "The rest are secondary", min: 0, max: 6,
-      maxStat: "assists"},
+    {key: "powerPlayGoals", label: "Power play goals", weight: "Added back to plus/minus", min: 0, max: 4},
+    {key: "primaryAssists", label: "Primary assists", weight: "+0.6 each", min: 0, max: 6},
+    {key: "secondaryAssists", label: "Secondary assists", weight: "+0.4 each", min: 0, max: 6},
     {key: "powerPlayAssists", label: "Power play assists", weight: "Added back to plus/minus", min: 0, max: 6,
       maxStat: "assists"},
     {key: "sog", label: "Shots on goal", weight: "+0.3 each, goals aside", min: 0, max: 15},
@@ -84,9 +100,8 @@ export class DevComponent implements OnInit {
     {key: "giveaways", label: "Giveaways", weight: "-0.2 each", min: 0, max: 10},
     {key: "pim", label: "Penalty minutes", weight: "-0.25 each, at most 3", min: 0, max: 20},
     {key: "plusMinus", label: "Plus/minus", weight: "+0.3 a plus, -0.5 a minus", min: -5, max: 5},
-    {key: "powerPlayGoals", label: "Power play goals", weight: "Added back to plus/minus", min: 0, max: 4},
-    {key: "faceoffsTaken", label: "Faceoffs taken", weight: "Full weight at 10", min: 0, max: 30},
-    {key: "faceoffWins", label: "Faceoffs won", weight: "+/- 0.5 at 100% / 0%", min: 0, max: 30,
+    {key: "faceoffsTaken", label: "Faceoffs taken", weight: "Full weight at 10", min: 0, max: 40},
+    {key: "faceoffWins", label: "Faceoffs won", weight: "+/- 0.5 at 100% / 0%", min: 0, max: 40,
       maxStat: "faceoffsTaken"}
   ];
 
@@ -95,7 +110,7 @@ export class DevComponent implements OnInit {
     {key: "evenStrengthGoals", label: "Even strength goals against", weight: "-1 each", min: 0, max: 10},
     {key: "penaltyKillShots", label: "Penalty kill shots", weight: "+1/5 a save", min: 0, max: 20},
     {key: "penaltyKillGoals", label: "Penalty kill goals against", weight: "-1 each", min: 0, max: 8},
-    {key: "powerPlayShots", label: "Power play shots", weight: "Saves aren't counted yet (issue #104)", min: 0,
+    {key: "powerPlayShots", label: "Power play shots", weight: "Saves not counted yet (#104)", min: 0,
       max: 10},
     {key: "powerPlayGoals", label: "Power play goals against", weight: "-1 each", min: 0, max: 4}
   ];
@@ -103,38 +118,38 @@ export class DevComponent implements OnInit {
   public readonly skaterPresets: StatLinePreset[] = [
     {
       name: "First star",
-      line: {goals: 1, assists: 1, primaryAssists: 1, powerPlayAssists: 0, sog: 4, hits: 3, blockedShots: 2,
+      line: {goals: 1, primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: 0, sog: 4, hits: 3, blockedShots: 2,
         takeaways: 1, giveaways: 1, pim: 0, plusMinus: 1, powerPlayGoals: 0, faceoffsTaken: 14, faceoffWins: 8}
     },
     {
       name: "Quiet night",
-      line: {goals: 0, assists: 0, primaryAssists: 0, powerPlayAssists: 0, sog: 1, hits: 1, blockedShots: 0, takeaways: 0,
-        giveaways: 1, pim: 0, plusMinus: 0, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
+      line: {goals: 0, primaryAssists: 0, secondaryAssists: 0, powerPlayAssists: 0, sog: 1, hits: 1, blockedShots: 0,
+        takeaways: 0, giveaways: 1, pim: 0, plusMinus: 0, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
     },
     {
       name: "Three points",
-      line: {goals: 1, assists: 2, primaryAssists: 1, powerPlayAssists: 1, sog: 5, hits: 2, blockedShots: 1, takeaways: 2,
-        giveaways: 1, pim: 0, plusMinus: 3, powerPlayGoals: 1, faceoffsTaken: 22, faceoffWins: 13}
+      line: {goals: 1, primaryAssists: 1, secondaryAssists: 1, powerPlayAssists: 1, sog: 5, hits: 2, blockedShots: 1,
+        takeaways: 2, giveaways: 1, pim: 0, plusMinus: 3, powerPlayGoals: 1, faceoffsTaken: 22, faceoffWins: 13}
     },
     {
       name: "Hat trick",
-      line: {goals: 3, assists: 1, primaryAssists: 0, powerPlayAssists: 1, sog: 7, hits: 1, blockedShots: 0, takeaways: 1,
-        giveaways: 2, pim: 0, plusMinus: 4, powerPlayGoals: 1, faceoffsTaken: 1, faceoffWins: 0}
+      line: {goals: 3, primaryAssists: 0, secondaryAssists: 1, powerPlayAssists: 1, sog: 7, hits: 1, blockedShots: 0,
+        takeaways: 1, giveaways: 2, pim: 0, plusMinus: 4, powerPlayGoals: 1, faceoffsTaken: 1, faceoffWins: 0}
     },
     {
       name: "Shutdown D",
-      line: {goals: 0, assists: 1, primaryAssists: 1, powerPlayAssists: 0, sog: 2, hits: 4, blockedShots: 5, takeaways: 1,
-        giveaways: 2, pim: 0, plusMinus: 1, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
+      line: {goals: 0, primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: 0, sog: 2, hits: 4, blockedShots: 5,
+        takeaways: 1, giveaways: 2, pim: 0, plusMinus: 1, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
     },
     {
       name: "Heavyweight",
-      line: {goals: 0, assists: 0, primaryAssists: 0, powerPlayAssists: 0, sog: 1, hits: 8, blockedShots: 1, takeaways: 0,
-        giveaways: 1, pim: 5, plusMinus: 0, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
+      line: {goals: 0, primaryAssists: 0, secondaryAssists: 0, powerPlayAssists: 0, sog: 1, hits: 8, blockedShots: 1,
+        takeaways: 0, giveaways: 1, pim: 5, plusMinus: 0, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
     },
     {
       name: "Rough night",
-      line: {goals: 0, assists: 0, primaryAssists: 0, powerPlayAssists: 0, sog: 0, hits: 1, blockedShots: 1, takeaways: 0,
-        giveaways: 5, pim: 4, plusMinus: -4, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
+      line: {goals: 0, primaryAssists: 0, secondaryAssists: 0, powerPlayAssists: 0, sog: 0, hits: 1, blockedShots: 1,
+        takeaways: 0, giveaways: 5, pim: 4, plusMinus: -4, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
     }
   ];
 
@@ -182,9 +197,8 @@ export class DevComponent implements OnInit {
     "The five minutes of a fighting major are forgiven, which 5, 7, 9 and 11 penalty minutes are each read as holding.",
     "Plus/minus doesn't count a power play goal at all, so a skater's power play goals and assists are added back " +
         "before the term is weighted.",
-    "The stat line above assumes both extra sources are loaded. A page only has the draw count once the " +
-        "play-by-play is in, and only has the assist split and the power play assists once the landing's scoring " +
-        "summary is (StatsUtils.getAssistCounts).",
+    "The stat line above assumes all of a game's details are loaded. A game page only has the draw count once the " +
+        "play-by-play is in, and only has the assist split and the power play assists once the scoring summary is.",
     "Without a draw count, only a center gets the faceoff term, and he gets all of it rather than a share scaled by " +
         "the draws he took.",
     "Without the assist split — or with one that doesn't add up to the boxscore's assist count — every assist " +
@@ -194,10 +208,16 @@ export class DevComponent implements OnInit {
 
   public breakdown: RatingBreakdown;
 
-  /** The rating axis the waterfall is drawn on, widened past 0 to 10 when a stat line runs off either end. */
-  public axisMin: number = DevComponent.axisFloor;
+  /**
+   * The player the stat line came from, when a game page opened the page on one. It is forgotten once that stat line
+   * is cleared or swapped for a preset; editing it stat by stat keeps it.
+   */
+  public gameStatLine: GameStatLineSource;
 
-  public axisMax: number = DevComponent.axisCeiling;
+  /** The rating axis the waterfall is drawn on, widened past 0 to 10 when a stat line runs off either end. */
+  public axisMin: number = RatingsComponent.axisFloor;
+
+  public axisMax: number = RatingsComponent.axisCeiling;
 
   public axisTicks: number[] = [];
 
@@ -216,13 +236,18 @@ export class DevComponent implements OnInit {
     return this.subject === "skater" ? this.skaterControls : this.goalieControls;
   }
 
+  /** Whether to say which player's game the stat line on screen came from. */
+  public get showGameStatLine(): boolean {
+    return this.gameStatLine?.subject === this.subject;
+  }
+
   public get presets(): StatLinePreset[] {
     return this.subject === "skater" ? this.skaterPresets : this.goaliePresets;
   }
 
-  /** The secondary assists, which the split leaves over once the primary ones are set. */
-  public get secondaryAssists(): number {
-    return Math.max(0, this.skaterLine["assists"] - this.skaterLine["primaryAssists"]);
+  /** The skater's assists, the primary and secondary ones together. */
+  public get assists(): number {
+    return this.skaterLine["primaryAssists"] + this.skaterLine["secondaryAssists"];
   }
 
   /**
@@ -233,7 +258,7 @@ export class DevComponent implements OnInit {
     return {
       faceoffsTaken: this.skaterLine["faceoffsTaken"],
       primaryAssists: this.skaterLine["primaryAssists"],
-      secondaryAssists: this.secondaryAssists,
+      secondaryAssists: this.skaterLine["secondaryAssists"],
       powerPlayAssists: this.skaterLine["powerPlayAssists"]
     };
   }
@@ -243,10 +268,35 @@ export class DevComponent implements OnInit {
     return Object.values(this.statLine).every(value => value === 0);
   }
 
+  /** The waterfall's plot, whose width tells whether a term's value fits after its bar. */
+  @ViewChild("waterfallPlot") public waterfallPlot: ElementRef<HTMLElement>;
+
+  /** The plot's width in pixels, 0 until it has been laid out. */
+  public plotWidth = 0;
+
+  constructor(private route: ActivatedRoute, private location: Location, private changeDetector: ChangeDetectorRef) {}
+
   public ngOnInit(): void {
     this.skaterLine = {...this.skaterPresets[0].line};
     this.goalieLine = {...this.goaliePresets[0].line};
+    this.loadGameStatLine();
     this.updateBreakdown();
+  }
+
+  public ngAfterViewInit(): void {
+    this.measurePlot();
+  }
+
+  /**
+   * Measures the plot again when the window is resized, since how much room a value has after its bar depends on it.
+   */
+  @HostListener("window:resize")
+  public measurePlot(): void {
+    const width = this.waterfallPlot?.nativeElement?.clientWidth ?? 0;
+    if (width !== this.plotWidth) {
+      this.plotWidth = width;
+      this.changeDetector.detectChanges();
+    }
   }
 
   /**
@@ -295,6 +345,7 @@ export class DevComponent implements OnInit {
     } else {
       this.goalieLine = {...preset.line};
     }
+    this.forgetGameStatLine();
     this.updateBreakdown();
   }
 
@@ -305,6 +356,7 @@ export class DevComponent implements OnInit {
   public clearStatLine(): void {
     const line = this.statLine;
     Object.keys(line).forEach(stat => line[stat] = 0);
+    this.forgetGameStatLine();
     this.updateBreakdown();
   }
 
@@ -353,12 +405,26 @@ export class DevComponent implements OnInit {
   }
 
   /**
-   * Where a rating sits on the 0 to 10 color scale, as a percentage, clamped to its ends.
+   * Where a term's bar ends, as a percentage from the chart's left edge. The term's value is shown just past it.
    *
-   * @param rating - The rating.
+   * @param term - The term.
+   * @param index - The term's place in the breakdown.
    */
-  public getScalePercent(rating: number): number {
-    return Math.max(0, Math.min(100, (rating ?? 0) * 10));
+  public getBarEnd(term: RatingTerm, index: number): number {
+    return this.getBarStart(term, index) + this.getBarWidth(term, index);
+  }
+
+  /**
+   * Whether a term's value goes before its bar instead of after it, because the bar ends too close to the plot's
+   * right edge to fit the value there (valueAfterBarRoom). Before the plot is laid out, only a bar that runs to the
+   * edge does.
+   *
+   * @param term - The term.
+   * @param index - The term's place in the breakdown.
+   */
+  public isValueBeforeBar(term: RatingTerm, index: number): boolean {
+    const room = (100 - this.getBarEnd(term, index)) / 100 * this.plotWidth;
+    return this.plotWidth > 0 ? room < RatingsComponent.valueAfterBarRoom : this.getBarEnd(term, index) >= 100;
   }
 
   /**
@@ -371,6 +437,45 @@ export class DevComponent implements OnInit {
       return "0";
     }
     return (value > 0 ? "+" : "") + value.toFixed(2).replace(/\.?0+$/, "");
+  }
+
+  /**
+   * Loads the stat line a game page opened the page on, from the query parameters: the formula, the player, his
+   * rating there and every stat. A stat that is missing or not a number is 0. Without a known formula it does nothing.
+   */
+  private loadGameStatLine(): void {
+    const params = this.route.snapshot?.queryParamMap;
+    const subject = params?.get("subject");
+    if (subject !== "skater" && subject !== "goalie") {
+      return;
+    }
+    const keys = Object.keys(subject === "skater" ? this.skaterPresets[0].line : this.goaliePresets[0].line);
+    const line: StatLine = {};
+    keys.forEach(stat => {
+      const value = parseInt(params.get(stat), 10);
+      line[stat] = Number.isFinite(value) ? value : 0;
+    });
+    this.subject = subject;
+    if (subject === "skater") {
+      this.skaterLine = line;
+    } else {
+      this.goalieLine = line;
+    }
+    const rating = parseFloat(params.get("rating"));
+    this.gameStatLine = {subject, name: params.get("name") || "A player",
+      rating: Number.isFinite(rating) ? rating : undefined};
+  }
+
+  /**
+   * Forgets the game's stat line once the one on screen replaces it, and takes it out of the address, so reloading
+   * the page doesn't bring it back. The other formula's stat line doesn't replace it.
+   */
+  private forgetGameStatLine(): void {
+    if (!this.showGameStatLine) {
+      return;
+    }
+    this.gameStatLine = undefined;
+    this.location.replaceState(this.location.path().split("?")[0]);
   }
 
   /**
@@ -389,8 +494,8 @@ export class DevComponent implements OnInit {
    */
   private updateAxis(): void {
     const totals = this.breakdown.terms.map(term => term.total);
-    this.axisMin = Math.floor(Math.min(DevComponent.axisFloor, ...totals));
-    this.axisMax = Math.ceil(Math.max(DevComponent.axisCeiling, ...totals));
+    this.axisMin = Math.floor(Math.min(RatingsComponent.axisFloor, ...totals));
+    this.axisMax = Math.ceil(Math.max(RatingsComponent.axisCeiling, ...totals));
     const step = this.axisMax - this.axisMin > 14 ? 2 : 1;
     this.axisTicks = [];
     for (let tick = this.axisMin; tick <= this.axisMax; tick += step) {
@@ -410,21 +515,21 @@ export class DevComponent implements OnInit {
    * assists, a won draw one of the draws taken).
    */
   private clamp(control: StatControl, value: number): number {
-    const max = control.maxStat != null ? Math.min(control.max, this.statLine[control.maxStat] ?? 0) : control.max;
+    const cap = control.maxStat === "assists" ? this.assists : this.statLine[control.maxStat];
+    const max = control.maxStat != null ? Math.min(control.max, cap ?? 0) : control.max;
     return Math.max(control.min, Math.min(max, value));
   }
 
   /**
-   * Keeps the stats that depend on each other in step: a won draw, a primary assist and a power play assist are each
-   * one of the draws or assists the skater had, goals against never pass the shots faced at that strength, and power
-   * play goals never pass the goals scored.
+   * Keeps the stats that depend on each other in step: a won draw and a power play assist are each one of the draws or
+   * assists the skater had, goals against never pass the shots faced at that strength, and power play goals never
+   * pass the goals scored.
    */
   private keepStatLineConsistent(changedStat: string): void {
     const line = this.statLine;
     if (this.subject === "skater") {
       line["faceoffWins"] = Math.min(line["faceoffWins"], line["faceoffsTaken"]);
-      line["primaryAssists"] = Math.min(line["primaryAssists"], line["assists"]);
-      line["powerPlayAssists"] = Math.min(line["powerPlayAssists"], line["assists"]);
+      line["powerPlayAssists"] = Math.min(line["powerPlayAssists"], this.assists);
       if (changedStat === "goals") {
         line["sog"] = Math.max(line["sog"], line["goals"]);
       } else {
@@ -447,10 +552,10 @@ export class DevComponent implements OnInit {
       playerId: 0,
       sweaterNumber: undefined,
       name: {default: "Stat line"},
-      position: DevComponent.skaterPosition,
+      position: RatingsComponent.skaterPosition,
       goals: line["goals"],
-      assists: line["assists"],
-      points: line["goals"] + line["assists"],
+      assists: this.assists,
+      points: line["goals"] + this.assists,
       plusMinus: line["plusMinus"],
       pim: line["pim"],
       hits: line["hits"],

@@ -350,15 +350,17 @@ export class StatsUtils {
     };
     const skaters = [...(players.forwards ?? []), ...(players.defense ?? [])].map(skater => {
       const assists = assistCounts?.get(skater.playerId);
+      const ratingContext: SkaterRatingContext = {
+        faceoffsTaken: faceoffCounts ? (faceoffCounts.get(skater.playerId) ?? 0) : undefined,
+        primaryAssists: assistCounts ? (assists?.primary ?? 0) : undefined,
+        secondaryAssists: assistCounts ? (assists?.secondary ?? 0) : undefined,
+        powerPlayAssists: assistCounts ? (assists?.powerPlay ?? 0) : undefined
+      };
       return {
         ...toGamePlayer(skater),
         skaterStats: skater,
-        hokmobRating: StatsUtils.calculateSkaterHokmobRating(skater, {
-          faceoffsTaken: faceoffCounts ? (faceoffCounts.get(skater.playerId) ?? 0) : undefined,
-          primaryAssists: assistCounts ? (assists?.primary ?? 0) : undefined,
-          secondaryAssists: assistCounts ? (assists?.secondary ?? 0) : undefined,
-          powerPlayAssists: assistCounts ? (assists?.powerPlay ?? 0) : undefined
-        })
+        ratingContext,
+        hokmobRating: StatsUtils.calculateSkaterHokmobRating(skater, ratingContext)
       };
     });
     const goalies = (players.goalies ?? []).map(goalie => ({
