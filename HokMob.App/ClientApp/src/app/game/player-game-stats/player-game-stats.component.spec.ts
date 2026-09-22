@@ -39,6 +39,14 @@ describe('PlayerGameStatsComponent', () => {
         .find(player => player.playerId === playerId);
   }
 
+  /** A player of 2025021057 with the faceoffs taken from the play-by-play, which the game page passes once loaded. */
+  function gamePlayerWithFaceoffCounts(playerId: number): GamePlayer {
+    const playByPlay = mockGamePlayByPlay(2025021057);
+    return [true, false].flatMap(isHome => StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), isHome,
+        PlayByPlayUtils.getRosterSpotMap(playByPlay), PlayByPlayUtils.getFaceoffCounts(playByPlay)))
+        .find(player => player.playerId === playerId);
+  }
+
   function show(player: GamePlayer): void {
     fixture.componentRef.setInput('player', player);
     fixture.detectChanges();
@@ -137,6 +145,28 @@ describe('PlayerGameStatsComponent', () => {
     await settle();
     expect(stats()[2]).toEqual(['Save %', 'N/A']);
     expect(stats()[0]).toEqual(['HokMob Rating', '0']);
+  });
+
+  it('should hide the faceoffs of a player who took none, even a center, when the faceoff counts are known', () => {
+    // Vilardi (C) took no faceoffs
+    show(gamePlayerWithFaceoffCounts(8480014));
+    httpMock.expectOne('/api/nhl/player/8480014/landing');
+    expect(labels()).not.toContain('Faceoff %');
+    // Neighbours (L) took one and lost it
+    show(gamePlayerWithFaceoffCounts(8482089));
+    httpMock.expectOne('/api/nhl/player/8482089/landing');
+    expect(stats()).toContain(['Faceoff %', '0.0%']);
+    // Scheifele (C) took some
+    show(gamePlayerWithFaceoffCounts(8476460));
+    httpMock.expectOne('/api/nhl/player/8476460/landing');
+    expect(stats()).toContain(['Faceoff %', '70.6%']);
+  });
+
+  it('should fall back to centers and faceoff winners without the faceoff counts', () => {
+    // Vilardi (C) took no faceoffs, which the boxscore alone cannot tell
+    show(gamePlayer(8480014));
+    httpMock.expectOne('/api/nhl/player/8480014/landing');
+    expect(stats()).toContain(['Faceoff %', '0.0%']);
   });
 
   it('should hide the faceoffs of a winger who won none, and show the ones of a winger who did', () => {

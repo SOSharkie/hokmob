@@ -63,7 +63,7 @@ import { MiniEventTimelineComponent } from './game/mini-event-timeline/mini-even
 import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-event.component';
 import { PlayerCareerComponent } from './player/player-career/player-career.component';
 import { DraftComponent } from './draft/draft.component';
-import { DevComponent } from './dev/dev.component';
+import { RatingsComponent } from './ratings/ratings.component';
 
 @NgModule({
   declarations: [
@@ -116,7 +116,7 @@ import { DevComponent } from './dev/dev.component';
     MiniEventComponent,
     PlayerCareerComponent,
     DraftComponent,
-    DevComponent
+    RatingsComponent
   ],
   imports: [
     BrowserModule,

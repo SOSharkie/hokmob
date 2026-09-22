@@ -2,6 +2,7 @@ import {Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Router} from "@angular/router";
 import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
+import {RatingStatLineUtils} from "@app/ratings/rating-stat-line";
 
 /**
  * Data of the player game dialog: a player's stats in the game, from the game page's boxscore.
@@ -34,6 +35,15 @@ export class PlayerGameDialogComponent implements OnInit {
       window.scrollTo(0, 0);
       this.router.navigate(['/player', this.player.playerId]);
     }, 100)
+  }
+
+  /**
+   * Opens the Ratings page's rating explorer in a new tab, on the player's stat line as it is in the game right now.
+   */
+  public openRatingsPage(): void {
+    const url = this.router.serializeUrl(
+        this.router.createUrlTree(["/ratings"], {queryParams: RatingStatLineUtils.getQueryParams(this.player)}));
+    window.open(url, "_blank");
   }
 
   public closeDialog(): void {

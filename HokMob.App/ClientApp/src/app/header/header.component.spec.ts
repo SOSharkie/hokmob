@@ -5,7 +5,6 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { LUCIDE_ICONS, registerLucideIcons } from '@shared/icons/lucide-icons';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
-import { LocalEnvironmentUtils } from '@shared/utils/local-environment-utils';
 
 import { HeaderComponent } from './header.component';
 
@@ -45,24 +44,13 @@ describe('HeaderComponent', () => {
   it('should link the logo home and the menu to the about page', () => {
     expect(fixture.nativeElement.querySelector('.site-name').textContent.trim()).toBe('HOKMOB');
     expect(fixture.nativeElement.querySelector('.site-name').getAttribute('href')).toBe('/');
-    expect(menuItems()[0]).toEqual(['About', '/about']);
+    expect(menuItems()[1]).toEqual(['About', '/about']);
   });
 
-  it('should show the Dev link while the app is served locally, as Karma is', () => {
-    expect(component.isRunningLocally).toBeTrue();
-    expect(menuItems()).toEqual([['About', '/about'], ['Dev', '/dev']]);
-    expect((fixture.nativeElement.querySelector('.mobile-actions [aria-label="Dev"]') as HTMLElement)
-        .getAttribute('href')).toBe('/dev');
-  });
-
-  it('should hide the Dev link on the deployed site', () => {
-    spyOn(LocalEnvironmentUtils, 'isRunningLocally').and.returnValue(false);
-    fixture = TestBed.createComponent(HeaderComponent);
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.isRunningLocally).toBeFalse();
-    expect(menuItems()).toEqual([['About', '/about']]);
-    expect(fixture.nativeElement.querySelector('.mobile-actions [aria-label="Dev"]')).toBeNull();
+  it('should link the Ratings page, on desktop and on phones', () => {
+    expect(menuItems()).toEqual([['Ratings', '/ratings'], ['About', '/about']]);
+    expect((fixture.nativeElement.querySelector('.mobile-actions [aria-label="Ratings"]') as HTMLElement)
+        .getAttribute('href')).toBe('/ratings');
   });
 
   it('should start with the phone search closed', () => {
@@ -101,7 +89,7 @@ describe('HeaderComponent', () => {
 
   it('should use bundled Lucide icons', () => {
     const icons = Array.from(fixture.nativeElement.querySelectorAll('mat-icon')) as HTMLElement[];
-    // Search, About and, locally, Dev
+    // Search, Ratings and About
     expect(icons.length).toBe(3);
     icons.forEach(icon => {
       const name = icon.getAttribute('svgIcon') ?? icon.getAttribute('ng-reflect-svg-icon');

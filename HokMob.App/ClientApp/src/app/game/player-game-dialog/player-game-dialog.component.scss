@@ -15,6 +15,36 @@
   border-radius: 25px;
   background-color: $black-02;
 
+  // Opens the player's stat line on the Ratings page. Mirrors the close button in the other corner.
+  > .dialog-ratings-button {
+    position: absolute;
+    top: $spacing-large;
+    left: $spacing-large;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: $black-03;
+    color: $gray-04;
+    cursor: pointer;
+
+    .mat-icon {
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+    }
+
+    &:hover {
+      background-color: $gray-01;
+      color: white;
+    }
+  }
+
   // Sits over the centered header, which has room for it beside the headshot
   > .dialog-close-button {
     position: absolute;

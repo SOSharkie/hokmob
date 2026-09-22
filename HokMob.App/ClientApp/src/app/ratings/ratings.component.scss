@@ -1,48 +1,33 @@
 @import "variables";
 
-// The Dev page borrows the about page's look: a wide hero, then cards on the page background.
-.dev-page {
+// Below it the waterfall is too narrow for a term's detail beside its label
+$term-detail-breakpoint: 550px;
+
+// Below it the stat line and the chart stack. Just above it the chart still has about 500px, room for every term's
+// label, detail and value side by side; from about 800px down the values start running into the details.
+$lab-stack-breakpoint: $tiny-display-breakpoint;
+
+// The Ratings page borrows the about page's look: cards on the page background.
+.ratings-page {
   box-sizing: border-box;
   max-width: 1200px;
   margin: 0 auto;
   padding: $spacing-page-gap;
   color: white;
 
-  .dev-hero {
-    margin-bottom: $spacing-huge;
-  }
-
   section {
     margin-bottom: 48px;
   }
-
-  code {
-    padding: 1px 5px;
-    border-radius: 5px;
-    background-color: $black-03;
-    color: $green-01;
-    font-size: 0.92em;
-  }
 }
 
-// A single line: the page name with a pill saying it only exists on a developer's machine
-.dev-hero {
+// A section title with a small outlined pill beside it, like "How it works"
+.section-title-group {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: $spacing-x-large;
-  padding: $spacing-xx-large 0 $spacing-x-large;
-  border-bottom: 1px solid $black-03;
+  gap: $spacing-large $spacing-x-large;
 
-  .dev-headline {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    line-height: 1.2;
-    text-transform: uppercase;
-  }
-
-  .dev-badge {
+  .title-badge {
     padding: 3px $spacing-large;
     border: 1px solid $green-03;
     border-radius: 20px;
@@ -50,11 +35,12 @@
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.08em;
+    white-space: nowrap;
     text-transform: uppercase;
   }
 }
 
-.dev-section-title {
+.ratings-section-title {
   margin: 0;
   color: $green-01;
   font-size: 28px;
@@ -119,7 +105,8 @@
 
 .lab-grid {
   display: grid;
-  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  // Just wide enough for the presets to break after Three points and Heavyweight
+  grid-template-columns: minmax(300px, 345px) minmax(0, 1fr);
   gap: $spacing-card-gap;
   align-items: start;
 }
@@ -135,6 +122,17 @@
     font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+  }
+}
+
+.game-stat-line {
+  margin: (-$spacing-medium) 0 $spacing-x-large;
+  color: $gray-04;
+  font-size: 13px;
+
+  .game-player-name {
+    color: white;
+    font-weight: 500;
   }
 }
 
@@ -251,12 +249,12 @@
   }
 }
 
-// The rating badge, in the color the game page uses, and the 0 to 10 color scale under it
+// The rating badge, in the color the game page uses. The color scale under it is drawn on the waterfall's axis
 .rating-summary {
   display: flex;
   align-items: center;
   gap: $spacing-xx-large;
-  margin-bottom: $spacing-huge;
+  margin-bottom: $spacing-x-large;
 
   .rating-badge {
     display: flex;
@@ -292,28 +290,31 @@
 }
 
 .rating-scale {
-  margin-top: $spacing-large;
+  margin-bottom: $spacing-huge;
 
+  // As tall as the waterfall's bars
   .scale-track {
     position: relative;
-    display: flex;
-    gap: 2px;
-    height: 8px;
+    height: 16px;
   }
 
-  // The bands share the track in proportion to how much of the 0 to 10 scale each covers (a bound flex-grow)
+  // Each band spans its part of the 0 to 10 scale on the waterfall's axis, inset 1px a side for a gap between them
   .scale-band {
-    flex-basis: 0;
-    border-radius: 4px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    clip-path: inset(0 1px round 4px);
     opacity: 0.55;
   }
 
   .scale-marker {
     position: absolute;
+    // 3px past the track at the top and the bottom: 18px, plus its 2px border each way
     top: -3px;
     width: 4px;
-    height: 14px;
-    margin-left: -2px;
+    height: 18px;
+    // Half of its 8px width, border included, so it centers on the rating like the waterfall's line
+    margin-left: -4px;
     border: 2px solid white;
     border-radius: 3px;
     background-color: white;
@@ -370,9 +371,10 @@
     transition: left 0.2s;
   }
 
+  // One line a term: the label is laid over the bar's track, so it can sit on a bar
   .term-row {
     position: relative;
-    padding: $spacing-medium 0;
+    padding: $spacing-x-small * 2 0;
 
     &.empty {
       opacity: 0.45;
@@ -380,10 +382,28 @@
   }
 
   .term-header {
+    position: absolute;
+    top: $spacing-x-small * 2;
+    right: 0;
+    bottom: $spacing-x-small * 2;
+    left: 0;
+    z-index: 1;
     display: flex;
+    align-items: center;
+    // Keeps the label off the chart's left edge, where the gridline and the bars start
+    padding-left: $spacing-medium;
+    // Keeps the text readable where it crosses a bar
+    text-shadow: 0 0 3px $black-02, 0 0 2px $black-02;
+    pointer-events: none;
+  }
+
+  // The name and the smaller detail share a baseline, and the pair is centered on the row
+  .term-label {
+    display: flex;
+    flex: 1;
     align-items: baseline;
     gap: $spacing-large;
-    margin-bottom: $spacing-small;
+    min-width: 0;
   }
 
   .term-name {
@@ -402,17 +422,23 @@
     text-overflow: ellipsis;
   }
 
-  .term-value,
-  .term-total {
-    flex: none;
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-  }
-
+  // Just past the right end of its bar, or just before its start when the bar ends at the chart's right edge
   .term-value {
-    min-width: 42px;
+    position: absolute;
+    top: 50%;
+    margin-left: $spacing-medium;
+    transform: translateY(-50%);
     color: $gray-03;
-    text-align: right;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+    transition: left 0.2s;
+
+    &.before-bar {
+      margin-left: -$spacing-medium;
+      transform: translate(-100%, -50%);
+    }
 
     &.positive {
       color: $green-02;
@@ -423,28 +449,23 @@
     }
   }
 
-  .term-total {
-    min-width: 34px;
-    color: white;
-    font-weight: 500;
-    text-align: right;
-  }
-
   .term-track {
     position: relative;
-    height: 12px;
+    height: 26px;
   }
 
   .term-bar {
     position: absolute;
-    top: 0;
-    height: 100%;
+    top: 50%;
+    height: 16px;
+    transform: translateY(-50%);
     border-radius: 3px;
     background-color: $green-02;
     transition: left 0.2s, width 0.2s;
 
+    // Dark enough for the Base label, which always sits on it, to stay readable
     &.base {
-      background-color: $gray-02;
+      background-color: $gray-01;
     }
 
     &.negative {
@@ -490,23 +511,19 @@
   line-height: 1.6;
 }
 
-// Mobile and narrow desktop: the stat line moves above the chart
-@media only screen and (max-width: $small-display-breakpoint) {
+// Narrow windows: the stat line moves above the chart
+@media only screen and (max-width: $lab-stack-breakpoint) {
   .lab-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .dev-page section {
+  .ratings-page section {
     margin-bottom: 32px;
   }
 
-  .dev-page .dev-hero {
-    margin-bottom: $spacing-xx-large;
-  }
-
-  .dev-section-title {
+  .ratings-section-title {
     font-size: 22px;
   }
 
@@ -537,19 +554,15 @@
     height: 32px;
   }
 
-  .waterfall {
-    .term-header {
-      flex-wrap: wrap;
-      gap: $spacing-small $spacing-large;
-    }
-
-    .term-detail {
-      order: 3;
-      flex-basis: 100%;
-    }
-  }
-
   .quirk-list {
     font-size: 14px;
+  }
+}
+
+// Narrow phones: just the label on each term's line, so it can't run into the bars and values. The stat line's
+// steppers still show what each stat is worth.
+@media only screen and (max-width: $term-detail-breakpoint) {
+  .waterfall .term-detail {
+    display: none;
   }
 }

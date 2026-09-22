@@ -44,7 +44,8 @@ A request to one of them is a regression.
   - `enums/`: API enums (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...).
   - `components/`: shared components (scorecard, standings, ...).
 - Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`,
-  `draft` (`docs/draft-page.md`), `header`, `footer`, `about`.
+  `draft` (`docs/draft-page.md`), `ratings` (the HokMob rating explorer, which a game's player dialog can open on
+  a player's stat line), `header`, `footer`, `about`.
 - Path aliases: `@shared/*`, `@app/*`, `@home/*`, `@header/*`.
 
 ## Editing conventions
