@@ -3,8 +3,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
+    // The nhl-api-mocks fixtures are imported as JSON
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+    // Don't add "node": it clashes with the DOM lib and changes setInterval's return type
     "types": [
       "jasmine"
     ]

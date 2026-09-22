@@ -63,24 +63,13 @@ stats row gets the blank headshot without a request.
   case, so a player who re-entered the draft can't be matched to the wrong pick.
 - A forfeited pick shows "Forfeited" in muted text, with "-" in the other cells and no headshot.
 - States: a loading gif, "The draft couldn't be loaded" when the picks fail, and "No picks yet" for an empty round.
-- The table is styled like `player-career`'s season table, with the numbers right-aligned. The Team column is a fixed
-  210px, wide enough for the longest name beside the logo rather than growing with the table, and Pos is 48px. Nine
-  columns leave too little room for the names before the usual 700px, so there are two narrow bands:
-  - `$draft-mobile-screen-breakpoint` (900px) and under: the headshot, the logo, the paddings and the other columns
-    shrink, and the Team column is 190px.
+- The table is styled like `player-career`'s season table, with the numbers right-aligned and a fixed-width Team
+  column. Nine columns leave too little room for the names before the usual 700px, so there are two narrow bands:
+  - `$draft-mobile-screen-breakpoint` (900px) and under: the headshot, the logo, the paddings and the columns shrink.
   - `$mobile-screen-breakpoint` (700px) and under: the Team column shows the logo only and a long player name wraps
     to two lines, so there's no horizontal scroll.
-
-## Pickers
-
-The year and round pickers are the shared pill pickers: `.pill-picker`, `.pill-picker-menu` and
-`.pill-picker-option` in `styles.scss`, plus `PickerMenuUtils.scrollToSelectedOption(menuClass)`. The playoffs
-season picker uses the same ones. Each is a `mat-menu`, not a native `<select>`: a native list can't be
-height-capped and filled the screen with 21 years. The panel is capped at `min(320px, 55vh)`, opens scrolled to the
-selected option, and flips above the button when there's no room below. Options are `menuitemradio` with
-`aria-checked`, and the menu handles arrow keys, Escape and outside clicks. Panels render in the overlay, so their
-styles are global and have to set the page font explicitly. Each menu needs its own class, so scrolling to the
-selected option can't pick the other menu while its close animation is still running.
+- The year and round pickers are the shared pill pickers (`.pill-picker` in `styles.scss` and `PickerMenuUtils`),
+  also used by the playoffs season picker.
 
 ## Open items
 
