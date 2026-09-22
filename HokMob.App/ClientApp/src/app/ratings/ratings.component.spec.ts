@@ -69,7 +69,7 @@ describe('RatingsComponent', () => {
 
   it('should open on the skater formula and show its rating and terms', () => {
     expect(component.subject).toBe('skater');
-    expect(text('h1')).toBe('The HokMob rating');
+    expect(text('h1')).toBe('The HokMob Rating');
     expect(text('.title-badge')).toBe('How it works');
     expect(text('.rating-badge')).toBe(String(component.breakdown.rating));
     expect(termRows().map(row => row[0])).toEqual(['Base', 'Goals', 'Assists', 'Shots on goal', 'Hits',

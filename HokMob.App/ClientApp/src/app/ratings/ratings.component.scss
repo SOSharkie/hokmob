@@ -292,9 +292,10 @@ $lab-stack-breakpoint: $tiny-display-breakpoint;
 .rating-scale {
   margin-bottom: $spacing-huge;
 
+  // As tall as the waterfall's bars
   .scale-track {
     position: relative;
-    height: 8px;
+    height: 16px;
   }
 
   // Each band spans its part of the 0 to 10 scale on the waterfall's axis, inset 1px a side for a gap between them
@@ -308,9 +309,10 @@ $lab-stack-breakpoint: $tiny-display-breakpoint;
 
   .scale-marker {
     position: absolute;
+    // 3px past the track at the top and the bottom: 18px, plus its 2px border each way
     top: -3px;
     width: 4px;
-    height: 14px;
+    height: 18px;
     // Half of its 8px width, border included, so it centers on the rating like the waterfall's line
     margin-left: -4px;
     border: 2px solid white;
@@ -388,12 +390,20 @@ $lab-stack-breakpoint: $tiny-display-breakpoint;
     z-index: 1;
     display: flex;
     align-items: center;
-    gap: $spacing-large;
     // Keeps the label off the chart's left edge, where the gridline and the bars start
     padding-left: $spacing-medium;
     // Keeps the text readable where it crosses a bar
     text-shadow: 0 0 3px $black-02, 0 0 2px $black-02;
     pointer-events: none;
+  }
+
+  // The name and the smaller detail share a baseline, and the pair is centered on the row
+  .term-label {
+    display: flex;
+    flex: 1;
+    align-items: baseline;
+    gap: $spacing-large;
+    min-width: 0;
   }
 
   .term-name {
@@ -447,7 +457,7 @@ $lab-stack-breakpoint: $tiny-display-breakpoint;
   .term-bar {
     position: absolute;
     top: 50%;
-    height: 14px;
+    height: 16px;
     transform: translateY(-50%);
     border-radius: 3px;
     background-color: $green-02;

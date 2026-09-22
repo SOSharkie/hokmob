@@ -2,7 +2,7 @@
   <section class="rating-lab">
     <div class="section-heading">
       <div class="section-title-group">
-        <h1 class="ratings-section-title">The HokMob rating</h1>
+        <h1 class="ratings-section-title">The HokMob Rating</h1>
         <span class="title-badge">How it works</span>
       </div>
       <div class="subject-toggle" role="group" aria-label="Rating formula">
@@ -88,8 +88,10 @@
           <div *ngFor="let term of breakdown.terms; let index = index" class="term-row"
                [class.empty]="!term.value && index > 0">
             <div class="term-header">
-              <span class="term-name">{{term.label}}</span>
-              <span class="term-detail">{{term.detail}}</span>
+              <span class="term-label">
+                <span class="term-name">{{term.label}}</span>
+                <span class="term-detail">{{term.detail}}</span>
+              </span>
             </div>
             <div class="term-track">
               <span class="term-bar" [class.base]="index === 0" [class.negative]="term.value < 0"
