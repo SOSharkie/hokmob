@@ -74,8 +74,13 @@ A request to one of them is a regression.
   It sets `DOTNET_ROLL_FORWARD=Major`, so a newer .NET runtime works.
 - In Claude Code, start it with the Browser pane's `preview_start` using the `hokmob` config in `.claude/launch.json`.
   Don't start dev servers from Bash. The first start takes ~20s; wait before navigating, or reload.
-- **Always stop your dev server when the work is done** (`preview_stop` with its `serverId`), as the last step. A
-  server left running holds port 4200 and blocks other sessions from starting their own.
+- **If port 4200 is already in use when you start, the user is running the app themselves.** Navigate the Browser
+  pane to `http://localhost:4200` and use it. Don't restart or stop it, and don't kill its processes.
+- **Always stop the dev server you started when the work is done**, as the last step, and only that one. A server left
+  running holds port 4200 and blocks other sessions from starting their own. Call `preview_stop` with its `serverId`,
+  then check that port 4200 is free. `preview_stop` can leave the `node dev.js` process and its `ng serve` and
+  `dotnet run` child processes running. If it does, stop only those processes, and only when their creation time
+  matches when you called `preview_start`.
 - `dotnet run` from `HokMob.App` is the HTTPS/SPA-proxy route (port 44424) and needs a trusted dev certificate; see
   `README.md` troubleshooting.
 - Check the proxy alone: `https://localhost:7157/api/nhl/score/now`, or `fetch('/api/nhl/...')` from the page.
@@ -87,9 +92,15 @@ A request to one of them is a regression.
   Release`). Both have to pass before merging into `master`.
 - **Type-check:** from `HokMob.App/ClientApp`, run `npx ng build --configuration development` (~10–20s). This catches
   template type errors that `tsc` alone misses. Run it after every change.
-- **Unit tests:** from `HokMob.App/ClientApp`, run `npm run test:ci` (Karma + headless Chrome, single run, ~30s).
-  `npm test` watches and opens Chrome. To run a subset, add `--include "src/app/home/**/*.spec.ts"` (repeatable) to
-  `npx ng test --watch=false --browsers=ChromeHeadless`.
+- **Unit tests:** run only the specs for the areas you touched. From `HokMob.App/ClientApp`, run
+  `npx ng test --watch=false --browsers=ChromeHeadless --include "src/app/home/**/*.spec.ts"`, repeating `--include`
+  for each area. Include the specs of the code that uses what you changed, e.g. the components that call a service
+  you edited (find them with a grep).
+  - Run the full suite (`npm run test:ci`, Karma + headless Chrome, single run) only when a change reaches too many
+    places to target: shared testing setup (`AppTestingModule`, `nhl-api-mocks`, `src/test.ts`), test or build config
+    (`karma.conf.js`, `tsconfig*.json`, `angular.json`), `app.module.ts`, a model or util used across the app, or
+    dependency upgrades. CI runs the full suite on every pull request anyway.
+  - `npm test` watches and opens Chrome.
   - **Add or update tests for every service, util and component you touch:** the happy path, empty data, HTTP
     errors and the important edge cases.
   - **Use real API data.** `src/app/shared/testing/nhl-api-mocks/` holds real api-web.nhle.com responses (JSON, only
