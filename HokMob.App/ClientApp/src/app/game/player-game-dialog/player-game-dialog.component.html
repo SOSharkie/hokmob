@@ -9,7 +9,11 @@
   <app-player-game-stats [player]="player"></app-player-game-stats>
   <footer class="player-footer-container">
     <div class="profile-container" (click)="clickPlayerProfile()">
-      <mat-icon>person</mat-icon>
+      <img *ngIf="profileHeadshot; else profileIcon" [src]="profileHeadshot" (error)="headshotFailed = true" alt=""
+           class="profile-headshot">
+      <ng-template #profileIcon>
+        <mat-icon>person</mat-icon>
+      </ng-template>
       <span class="profile-label">Player Profile</span>
     </div>
     <div class="done-button" (click)="closeDialog()">

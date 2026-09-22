@@ -67,8 +67,13 @@ A request to one of them is a regression.
   It sets `DOTNET_ROLL_FORWARD=Major`, so a newer .NET runtime works.
 - In Claude Code, start it with the Browser pane's `preview_start` using the `hokmob` config in `.claude/launch.json`.
   Don't start dev servers from Bash. The first start takes ~20s; wait before navigating, or reload.
-- **Always stop your dev server when the work is done** (`preview_stop` with its `serverId`), as the last step. A
-  server left running holds port 4200 and blocks other sessions from starting their own.
+- **If port 4200 is already in use when you start, the user is running the app themselves.** Navigate the Browser
+  pane to `http://localhost:4200` and use it. Don't restart or stop it, and don't kill its processes.
+- **Always stop the dev server you started when the work is done**, as the last step, and only that one. A server left
+  running holds port 4200 and blocks other sessions from starting their own. Call `preview_stop` with its `serverId`,
+  then check that port 4200 is free. `preview_stop` can leave the `node dev.js` process and its `ng serve` and
+  `dotnet run` child processes running. If it does, stop only those processes, and only when their creation time
+  matches when you called `preview_start`.
 - `dotnet run` from `HokMob.App` is the HTTPS/SPA-proxy route (port 44424) and needs a trusted dev certificate; see
   `README.md` troubleshooting.
 - Check the proxy alone: `https://localhost:7157/api/nhl/score/now`, or `fetch('/api/nhl/...')` from the page.

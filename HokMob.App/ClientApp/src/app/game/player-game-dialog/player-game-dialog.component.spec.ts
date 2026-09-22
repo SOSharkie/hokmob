@@ -58,6 +58,29 @@ describe('PlayerGameDialogComponent', () => {
     expect(close).toHaveBeenCalledTimes(2);
   }));
 
+  it("should show the player's headshot on the profile button", () => {
+    const player = gamePlayer(8476460);
+    open(player);
+    const headshot: HTMLImageElement = fixture.nativeElement.querySelector('.profile-container .profile-headshot');
+    expect(player.headshot).toContain('8476460');
+    expect(headshot.getAttribute('src')).toBe(player.headshot);
+    expect(fixture.nativeElement.querySelector('.profile-container mat-icon')).toBeNull();
+  });
+
+  it('should show the person icon on the profile button without a headshot', () => {
+    open({...gamePlayer(8476460), headshot: undefined});
+    expect(fixture.nativeElement.querySelector('.profile-container .profile-headshot')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.profile-container mat-icon').textContent).toBe('person');
+  });
+
+  it('should fall back to the person icon when the headshot fails to load', () => {
+    open(gamePlayer(8476460));
+    fixture.nativeElement.querySelector('.profile-container .profile-headshot').dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.profile-container .profile-headshot')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.profile-container mat-icon').textContent).toBe('person');
+  });
+
   it('should close when the close button is clicked', () => {
     open(gamePlayer(8476460));
     const close = spyOn(TestBed.inject(MatDialogRef), 'close');
