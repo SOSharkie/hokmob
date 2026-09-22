@@ -1,6 +1,10 @@
 /**
  * Helpers for the pill pickers: a .pill-picker button opening a mat-menu with the .pill-picker-menu class, whose
  * options are .pill-picker-option buttons with .selected on the current one (styles in styles.scss).
+ *
+ * A mat-menu rather than a native <select>, because a native list can't be height-capped: the draft's 21 years
+ * filled the screen. The menu also gives the options menuitemradio roles and handles arrow keys, Escape and outside
+ * clicks, and flips above the button when there's no room below.
  */
 export class PickerMenuUtils {
 

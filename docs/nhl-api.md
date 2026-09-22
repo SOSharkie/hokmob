@@ -14,9 +14,6 @@ api-web well. For the stats API it lists endpoints and query parameters but not 
 syntax or the response fields, so those are written down below (its WADL is at
 `https://api.nhle.com/stats/rest/application.wadl?detail=true`). `search.d3.nhle.com` isn't in the reference at all.
 
-The old hosts (`statsapi.web.nhl.com`, `cms.nhl.bamgrid.com`, `suggest.svc.nhl.com`) are dead and no longer resolve.
-A request to one of them is a regression.
-
 ## Which API for what
 
 | Need | Source | Why |
@@ -91,7 +88,9 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
   separately.
 - **Per-game rows** (`isGame=true`): newest first when sorted by `gameDate` then `gameId`. They have no `gameTypeId`
   (read it from the game ID: `2025030414` → `03`) and no score — the `game` report returns the scores for a list of
-  game IDs in one request.
+  game IDs in one request. Checked field by field against a boxscore (game `2025030414`): every stat matches, saves
+  by strength included, and both sources give the same HokMob rating.
+- **No preseason rows at all** (see the open items).
 - **Aggregate leaderboards:** any report sorted by one of its fields, e.g. `skater/realtime` by `hits` with
   `cayenneExp=seasonId=20252026 and gameTypeId=2`.
 
@@ -109,18 +108,15 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
 | `game` | `homeTeamId`, `visitingTeamId`, `homeScore`, `visitingScore`, `gameStateId`, `gameType`, `gameDate`, `easternStartTime` |
 | `season` | `id`, `formattedSeasonId`, `preseasonStartdate`, `startDate`, `regularSeasonEndDate`, `endDate`, `numberOfGames` |
 
-Per-game rows were checked field by field against a boxscore (game `2025030414`, Barbashev and Bussi): every stat
-matches, saves by strength included, and both sources give the same HokMob rating.
-
 ## Player search
 
 `search.d3.nhle.com/api/v1/search/player?culture=en-us&limit={n}&q={query}&active=true` returns players only (the
 `team` search returns nothing): `playerId`, `name`, `positionCode`, `teamId`, `teamAbbrev`, `lastTeamAbbrev`,
-`lastSeasonId`, `sweaterNumber` and `active`. It does allow CORS, but it still goes through the backend, so there's
-one convention (relative URLs), popular queries are cached, and a CORS change can't break the site.
-`NhlSearchController` forwards only allowlisted query parameters.
+`lastSeasonId`, `sweaterNumber` and `active`. It allows CORS, but still goes through the backend so there's one
+convention, popular queries are cached, and a CORS change can't break the site. `NhlSearchController` forwards only
+allowlisted query parameters.
 
-## Backend caching
+## Caching
 
 `NhlApiClient` caches each api-web response in memory per path root, so many visitors share one upstream request:
 
@@ -134,40 +130,27 @@ one convention (relative URLs), popular queries are cached, and a CORS change ca
 
 `score/{date}` is special: a future day is kept for 30 minutes, and a past day of the current regular season is kept
 with a 24-hour sliding expiration once it settles (1pm Eastern the day after it's played, which leaves time for stats
-corrections, highlight clips and three stars), so only the days people open stay in memory.
-
-### Surviving an api-web outage
-
-The current day's `score/{date}` is the one path with no safety net upstream: api-web sends it with
-`cache-control: must-revalidate, no-cache, no-store`, so every request reaches the NHL origin. When that origin is
-struggling the day takes 3-20 seconds or answers a 500 (an HTML error page, not JSON), while every other date still
-serves from their edge in under 300ms. Two things in `NhlApiClient` keep the scoreboard up through it:
-
-- **Last known good.** Every successful response is also kept for 1 minute under a separate key. When a call times
-  out, can't be reached, or answers 5xx, that copy is served instead of failing. A 4xx is passed through, because it
-  is a real answer about the path rather than an outage. Scores can lag by up to a minute while api-web is down.
-- **One call per URL.** Concurrent callers for the same URL share a single upstream request. It matters most for the
-  current day, where the 10 second cache expires more often than the upstream answers, so every poller would
-  otherwise start a request of its own. The in-flight map holds a `Lazy`, because `ConcurrentDictionary.GetOrAdd`
-  can run its factory more than once and calling an async method starts it.
-
-The shared call deliberately ignores any one caller's cancellation token, so one visitor navigating away doesn't
-cancel the fetch everyone else is waiting on; `HttpClient.Timeout` bounds it instead. That timeout is 20 seconds for
-`NhlApiClient`, twice what the stats and search clients get, because responses regularly land between 10 and 20
-seconds while api-web is struggling - at 10s those became 502s, and on a cold cache there was no last known good to
-fall back on yet. It is a ceiling rather than a target: callers waiting on a shared request wait up to 20 seconds
-before the fallback copy is served.
-
-What's left uncovered is a long outage. Two 20 second timeouts in a row outlast the 1 minute the fallback copy is
-held, so a sustained one still reaches the browser as a 502 eventually. That is the intended bound - a live
-scoreboard shouldn't show minutes-old scores - and the client recovers on its next refresh.
-
-`NhlController` never passes an upstream error body through: api-web answers errors with HTML, which would reach the
-Angular app labelled `application/json` and fail in its parser instead of its error handler. Any status of 400 or
-more comes back as `{"status": <code>, "error": "The NHL API request failed."}`.
+corrections, highlight clips and three stars). The client mirrors these rules for the home scoreboard's days
+(`GameDayCacheUtils`, used by `NhlGameService`): a settled day is kept until the season changes, a future day for 30
+minutes, and today, live games and unsettled days are always refetched.
 
 `NhlStatsApiClient` and `NhlSearchApiClient` cache each upstream URL for 5 minutes. A stats endpoint that can't reach
 upstream returns 502 rather than a partial answer.
+
+### Surviving an api-web outage
+
+api-web sends the current day's `score/{date}` with `no-store`, so every request reaches the NHL origin. When that
+origin struggles, the day takes 3-20 seconds or answers a 500 with an HTML page, while every other date still serves
+from their edge. `NhlApiClient` keeps the scoreboard up through it (the reasoning is in its comments and `Program.cs`):
+
+- **Last known good:** every successful response is also kept for 1 minute and served when a call times out, can't be
+  reached or answers 5xx. A 4xx is passed through. Scores can lag by up to a minute.
+- **One call per URL:** concurrent callers share one upstream request, which ignores any one caller's cancellation.
+- **20s timeout** (10s for the stats and search clients): struggling responses regularly land between 10 and 20
+  seconds. A sustained outage still reaches the browser as a 502 once the fallback copy expires, which is the
+  intended bound; the client recovers on its next refresh.
+- **Errors are JSON:** `NhlController` never passes an upstream error body through. Any status of 400 or more comes
+  back as `{"status": <code>, "error": "The NHL API request failed."}`.
 
 ## Season dates and playoff mode
 
@@ -187,6 +170,8 @@ started.
 back when it fails: home shows the standings summary, `/stats` the regular season without filters, and `/playoffs`
 the latest bracket that has series.
 
+2026-27 dates: preseason from 2026-09-19, regular season from 2026-09-29. The 2025-26 playoffs are all finished.
+
 ## Live game data
 
 Checked against **DAL 2 @ STL 1** (game `2026010001`, preseason, 2026-09-19), captured from the 1st period to the
@@ -194,71 +179,49 @@ final with `npm run capture-live-fixtures -- --watch` from `HokMob.App/ClientApp
 `mockGameBundle(2026010001)` (the start of the 3rd period), `mockIntermissionLanding()`, `mockCriticalLanding()` and
 `mockLiveScoreResponse()`.
 
-**The clock and period.** During an intermission `clock.inIntermission` is true and `clock.secondsRemaining` counts
-the intermission down — 969s, and 909s a minute later — while `periodDescriptor` stays the period that just *ended*,
-so "End 1st" and "16:09 till 2nd" are both right. At a period change the clock resets to `20:00` with
-`running: false` until the opening faceoff. `running` is false at every whistle, so it tracks live play and not
-whether the game is on.
+- **Intermission:** `clock.inIntermission` is true and `clock.secondsRemaining` counts the intermission down, while
+  `periodDescriptor` stays the period that just *ended*, so "End 1st" and "16:09 till 2nd" are both right.
+- **Period change:** the clock resets to `20:00` with `running: false` until the opening faceoff. `running` is false
+  at every whistle, so it tracks live play, not whether the game is on.
+- **`CRIT`** occurs in the last minutes of a close game (3rd period, 2:59 left) and is otherwise identical to `LIVE`.
+- **`summary.scoring` lists the period in progress before it has a goal**, with an empty `goals` array.
+- **Each `summary.scoring` goal has a `strength`** (`"ev"`, `"pp"` or `"sh"`), and its `assists` are primary then
+  secondary. This is the only place a goal's strength is stated: a play-by-play `goal` has just a `situationCode`,
+  and skater counts can't settle it (a pulled goalie on a delayed penalty is 6 on 5 at even strength). Over 10 games
+  (70 goals) it agreed exactly with the play-by-play, live too. `StatsUtils.getAssistCounts` reads it. A shootout
+  goal is listed too, with no assists.
+- **A `situation` object** is on the landing and the play-by-play while a team is short-handed, and drives the game
+  header's power play badge. The short-handed team has no `situationDescriptions`. The key is **absent** at even
+  strength and after the game, so read it with `?.`. It stays through an intermission when a penalty carries over,
+  and the right-rail `powerPlay` stat counts the power play as soon as it starts (`"0/1"`).
 
-**`CRIT`** does occur, in the last minutes of a close game (3rd period, 2:59 left), and carries the same
-`periodDescriptor` and running clock as `LIVE`. Nothing else about it differs.
+  ```json
+  {"homeTeam": {"abbrev": "STL", "situationDescriptions": ["PP"], "strength": 5},
+   "awayTeam": {"abbrev": "DAL", "strength": 4},
+   "situationCode": "1451", "timeRemaining": "01:01", "secondsRemaining": 61}
+  ```
 
-**`summary.scoring` lists the period in progress before it has a goal**, with an empty `goals` array, so the goal
-scorers list has to allow a period with no goals. `summary.iceSurface` is only on a live response — the players
-currently on the ice, empty during an intermission — and is gone once the game is `FINAL`. Nothing reads it yet.
+- **`summary.iceSurface`** (players on the ice, empty during an intermission) is only on a live response. Nothing
+  reads it yet.
+- **The play-by-play, boxscore and right-rail have their finished-game shape while the game is on** (every play with
+  a `situationCode`, all `rosterSpots`, `playerByGameStats` from the 1st period, all `teamGameStats`), so top players
+  and game stats need no live special case. `gameOutcome` only appears once the game is final.
+- **A goal's `highlightClip` is added within minutes**, picked up by the page's normal refresh.
+- **`score` lags the landing at a period change** by a few seconds (the landing was in the 2nd while `score` still
+  showed the 1st intermission), so don't assert that the two agree.
 
-**Each `summary.scoring` goal has a `strength`** of `"ev"`, `"pp"` or `"sh"`, and its `assists` array is the
-primary assist then the secondary one. This is the only place a goal's strength is stated: a play-by-play `goal`
-play has just a `situationCode`, and skater counts alone don't settle it, because a team that pulls its goalie on a
-delayed penalty scores 6 on 5 at even strength while a team already on a power play can pull its goalie too. Over 10
-games (70 goals, 12 on the power play) the landing's `strength` and the play-by-play's scorer and assist order agreed
-exactly, on a live game as well. `StatsUtils.getAssistCounts` reads the assist split and the power play assists from
-it. A shootout goal is listed too, with an empty `assists` array.
+## Open items
 
-**A `situation` object** is on both the landing and the play-by-play while a team is short-handed, and is the source
-for the game header's power play badge:
-
-```json
-{"homeTeam": {"abbrev": "STL", "situationDescriptions": ["PP"], "strength": 5},
- "awayTeam": {"abbrev": "DAL", "strength": 4},
- "situationCode": "1451", "timeRemaining": "01:01", "secondsRemaining": 61}
-```
-
-The short-handed team has no `situationDescriptions`. The key is **absent** at even strength and once the game ends,
-so read it with `?.`. It stays through an intermission when a penalty carries into the next period, and the
-right-rail `powerPlay` stat counts the power play as soon as it starts (`"0/1"`).
-
-**The play-by-play, boxscore and right-rail all have their finished-game shape while the game is on**: every play so
-far with a `situationCode` (297 of 297 at the final), the 40 `rosterSpots`, `playerByGameStats` for 20 players a
-side from the 1st period on, and all 10 `teamGameStats`. Top players and game stats need no live special case.
-`gameOutcome` only appears on the final response.
-
-**A goal's `highlightClip` is added within minutes, without a reload.** The 1st period goal had no clip when it was
-scored and had one by the intermission; a 2nd period goal got its clip during the 3rd. The page picks them up on its
-normal refresh.
-
-**The score response lags the landing at a period change.** Both carry `clock` and `periodDescriptor` for a live
-game, but one capture had the landing already in the 2nd (`20:00`, not in intermission) while `score` still showed
-the 1st in an intermission with `00:20` left. The scorecard can show "End 1st" for a few seconds after the game page
-has moved on, so don't assert that the two agree.
-
-### Still open
-
-- **The stats API has no preseason rows at all**: `skater/summary` with `isGame=true` returns 0 rows for
-  `gameId=2026010001`, and 0 for `seasonId=20262027 and gameTypeId=1`, while a regular season game (`2025021057`)
-  returns 36. So the player page's recent games stay empty for preseason games. Whether rows exist for a *regular
-  season* game while it is in progress, and how soon after it ends, still needs checking from **2026-09-29**.
-- **An in-progress playoff series** and **playoff leaders before any playoff game**: see below, both need the 2027
-  playoffs.
-
-## Other open items
-
-- **A local Utah logo** (`NhlTeamLogoUtils` TODO).
+- **Stats API rows for regular season games.** It has no preseason rows at all (`skater/summary` with `isGame=true`
+  returns 0 rows for `gameId=2026010001` and for `seasonId=20262027 and gameTypeId=1`, but 36 for `2025021057`), so
+  the player page's recent games stay empty for preseason games. Whether rows exist while a regular season game is
+  in progress, and how soon after it ends, needs checking from **2026-09-29**.
 - **An in-progress playoff series** has never been seen live: the next game date on series cards, unplayed games in
   the series dialog (they have no `seriesStatus`), whether the carousel lists a series before both teams are known,
   and how `playoff-bracket` lists a TBD series. Check during the 2027 playoffs.
 - **Playoff leaders before any playoff game** are unverified. For a finished season each category has 5 entries, and
   the api-web `toi` leader value is in seconds.
+- **A local Utah logo** (`NhlTeamLogoUtils` TODO).
 - **Historical abbreviations** the team utils don't know (`ATL`, `PHX`, `HFD`, ...) get the fallback logo, and `UTA`
   maps to 68 even for Utah Hockey Club (59) seasons.
 - **Team form across seasons** only fills in from one previous season and assumes the team kept its abbreviation, so

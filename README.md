@@ -12,13 +12,8 @@ The app has two parts:
 
 ## Prerequisites
 
-- [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0) (or a newer SDK, see note below)
+- [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0) or newer
 - [Node.js](https://nodejs.org/) and npm
-- A trusted ASP.NET Core dev certificate: `dotnet dev-certs https --trust`
-
-> **Only have .NET 8+ installed?** The project targets `net7.0`. To run it on a newer runtime,
-> set `DOTNET_ROLL_FORWARD=Major` before running (PowerShell: `$env:DOTNET_ROLL_FORWARD="Major"`,
-> bash: `export DOTNET_ROLL_FORWARD=Major`).
 
 ## NHL API proxy
 
@@ -40,9 +35,6 @@ GET /api/nhl/score/now  ->  https://api-web.nhle.com/v1/score/now
 - Responses are cached in memory, from 10 seconds for live data to hours for data that rarely changes.
 - In Angular services, always use relative URLs like `/api/nhl/score/now` rather than an NHL host.
 
-[`docs/nhl-api.md`](docs/nhl-api.md) describes which API serves what, what each page loads, the response
-conventions, the stats API query syntax and the cache durations.
-
 ## Development server
 
 The simplest way to run both parts, from `HokMob.App/ClientApp`:
@@ -52,10 +44,11 @@ npm run dev
 ```
 
 It starts the backend on `https://localhost:7157` and an Angular dev server on plain HTTP; open
-`http://localhost:4200`. Output is prefixed with `[api]` and `[web]`, and Ctrl+C stops both. Use this when a browser
-doesn't trust the dev certificate. It also works without .NET 7 installed.
+`http://localhost:4200`. Output is prefixed with `[api]` and `[web]`, and Ctrl+C stops both. It needs no trusted dev
+certificate, and runs on a newer .NET runtime too (it sets `DOTNET_ROLL_FORWARD=Major`).
 
-The HTTPS route runs both from the backend project instead:
+The HTTPS route runs both from the backend project instead. It needs a trusted dev certificate
+(`dotnet dev-certs https --trust`) and, with only .NET 8+ installed, `DOTNET_ROLL_FORWARD=Major` set first:
 
 ```
 cd HokMob.App
@@ -91,9 +84,8 @@ From `HokMob.App/ClientApp`:
 npm run test:ci
 ```
 
-That runs the [Karma](https://karma-runner.github.io) suite once in headless Chrome. `npm test` watches instead and
-opens a browser. The `PR tests` workflow runs the production Angular build, the unit tests and `dotnet build -c
-Release` on every pull request; all of it has to pass before merging into `master`.
+That runs the [Karma](https://karma-runner.github.io) suite once in headless Chrome; `npm test` watches instead. The
+same tests, a production build and a backend build run on every pull request and have to pass before merging.
 
 ## Build
 
