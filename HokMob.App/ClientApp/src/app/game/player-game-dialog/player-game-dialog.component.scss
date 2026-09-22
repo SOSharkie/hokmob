@@ -69,6 +69,15 @@
       width: fit-content;
       color: white;
 
+      .profile-headshot {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: $black-02;
+        object-fit: cover;
+        object-position: top;
+      }
+
       .profile-label {
         margin-left: $spacing-medium;
       }
@@ -77,6 +86,12 @@
     .profile-container:hover {
       cursor: pointer;
       color: $gray-04 !important;
+
+      // Dims the headshot as much as the label, which fades from white to $gray-04 over the footer's $black-03.
+      // The person icon follows the label's color on its own.
+      .profile-headshot {
+        opacity: 0.6;
+      }
     }
 
     .profile-container:focus {

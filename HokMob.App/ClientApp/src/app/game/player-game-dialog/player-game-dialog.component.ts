@@ -21,6 +21,18 @@ export class PlayerGameDialogComponent implements OnInit {
 
   public player: GamePlayer;
 
+  /**
+   * Whether the player's headshot failed to load, so the profile button falls back to the person icon.
+   */
+  public headshotFailed: boolean = false;
+
+  /**
+   * The player's headshot for the profile button, or undefined when there is none or it failed to load.
+   */
+  public get profileHeadshot(): string {
+    return this.headshotFailed ? undefined : this.player?.headshot || undefined;
+  }
+
   constructor(private router: Router,
               private dialogRef: MatDialogRef<PlayerGameDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: PlayerGameDialogData) {}
