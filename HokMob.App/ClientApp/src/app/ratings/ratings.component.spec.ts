@@ -6,7 +6,12 @@ import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { StatsUtils } from '@shared/utils/stats-utils';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
 import { GamePlayer } from '@shared/models/nhl-web-api/boxscore.model';
-import { mockGameBoxscore, mockGameLanding, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  MockGamecenterGameId,
+  mockGameBoxscore,
+  mockGameLanding,
+  mockGamePlayByPlay
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { RatingsComponent, StatControl } from './ratings.component';
 import { RatingStatLineUtils } from './rating-stat-line';
@@ -73,8 +78,9 @@ describe('RatingsComponent', () => {
     expect(text('.title-badge')).toBe('How it works');
     expect(text('.rating-badge')).toBe(String(component.breakdown.rating));
     expect(termRows().map(row => row[0])).toEqual(['Base', 'Goals', 'Assists', 'Shots on goal', 'Hits',
-      'Blocked shots', 'Takeaways', 'Penalty minutes', 'Plus/minus', 'Giveaways', 'Faceoffs']);
+      'Blocked shots', 'Takeaways', 'Penalty minutes', 'Penalties drawn', 'Plus/minus', 'Giveaways', 'Faceoffs']);
     expect(component.ratingContext.faceoffsTaken).toBe(component.skaterLine['faceoffsTaken']);
+    expect(component.ratingContext.penaltiesDrawn).toBe(component.skaterLine['penaltiesDrawn']);
     expect(termRows()[0]).toEqual(['Base', '+5']);
     // The running totals are drawn as where the bars end, not written out
     expect(elements('.term-total').length).toBe(0);
@@ -162,6 +168,23 @@ describe('RatingsComponent', () => {
     component.skaterLine['goals'] = 1;
     step('Goals', -1);
     expect(stepperValue('Power play goals')).toBe('0');
+  });
+
+  it('should add 0.3 for a penalty drawn', () => {
+    component.skaterLine['penaltiesDrawn'] = 0;
+    step('Hits', 1);
+    const before = component.breakdown.rawTotal;
+    step('Penalties drawn', 1);
+    expect(stepperValue('Penalties drawn')).toBe('1');
+    expect(component.breakdown.rawTotal - before).toBeCloseTo(0.3, 10);
+    expect(termRows().find(row => row[0] === 'Penalties drawn')).toBeDefined();
+  });
+
+  it('should rate the presets with the penalties drawn, and a fight as one drawn', () => {
+    const heavyweight = component.skaterPresets.find(preset => preset.name === 'Heavyweight');
+    expect(heavyweight.line['pim']).toBe(5);
+    expect(heavyweight.line['penaltiesDrawn']).toBe(1);
+    expect(component.skaterPresets.every(preset => preset.line['penaltiesDrawn'] != null)).toBeTrue();
   });
 
   it('should never let more faceoffs be won than were taken', () => {
@@ -373,13 +396,14 @@ describe('RatingsComponent opened on a game stat line', () => {
     return fixture.componentInstance;
   }
 
-  /** The players of 2025021057 (STL @ WPG) as the game page builds them, with the play-by-play and landing loaded. */
-  function gamePlayers(): GamePlayer[] {
-    const playByPlay = mockGamePlayByPlay(2025021057);
+  /** The players of a game as the game page builds them, with the play-by-play and landing loaded. */
+  function gamePlayers(gameId: MockGamecenterGameId = 2025021057): GamePlayer[] {
+    const playByPlay = mockGamePlayByPlay(gameId);
     const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(playByPlay);
-    const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(2025021057));
-    return [true, false].flatMap(isHome => StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), isHome,
-        PlayByPlayUtils.getRosterSpotMap(playByPlay), faceoffCounts, assistCounts));
+    const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(gameId));
+    const penaltiesDrawnCounts = PlayByPlayUtils.getPenaltiesDrawnCounts(playByPlay);
+    return [true, false].flatMap(isHome => StatsUtils.getGamePlayers(mockGameBoxscore(gameId), isHome,
+        PlayByPlayUtils.getRosterSpotMap(playByPlay), faceoffCounts, assistCounts, penaltiesDrawnCounts));
   }
 
   it("should load a skater's line from the game, and show who it came from", () => {
@@ -402,6 +426,17 @@ describe('RatingsComponent opened on a game stat line', () => {
       expect(component.subject).withContext(player.name).toBe(player.goalieStats ? 'goalie' : 'skater');
       expect(component.breakdown.rating).withContext(player.name).toBe(player.hokmobRating);
     });
+  });
+
+  it('should show the penalties a skater drew in the game', () => {
+    // Eichel drew an interference minor in game 4 of the final.
+    const eichel = gamePlayers(2025030414).find(player => player.playerId === 8478403);
+    const component = open(RatingStatLineUtils.getQueryParams(eichel));
+    expect(component.skaterLine['penaltiesDrawn']).toBe(1);
+    const term = component.breakdown.terms.find(ratingTerm => ratingTerm.label === 'Penalties drawn');
+    expect(term.detail).toBe('1 x 0.3');
+    expect(term.value).toBe(0.3);
+    expect(component.breakdown.rating).toBe(eichel.hokmobRating);
   });
 
   it('should read a missing or unreadable stat as 0', () => {

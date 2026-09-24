@@ -13,8 +13,9 @@ describe('RatingStatLineUtils', () => {
     const rosterSpots = PlayByPlayUtils.getRosterSpotMap(playByPlay);
     const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(playByPlay);
     const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(2025021057));
+    const penaltiesDrawnCounts = PlayByPlayUtils.getPenaltiesDrawnCounts(playByPlay);
     return [true, false].flatMap(isHome => StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), isHome,
-        rosterSpots, faceoffCounts, assistCounts));
+        rosterSpots, faceoffCounts, assistCounts, penaltiesDrawnCounts));
   }
 
   function player(playerId: number): GamePlayer {
@@ -32,6 +33,12 @@ describe('RatingStatLineUtils', () => {
       expect(params['hits']).toBe(scheifele.skaterStats.hits);
       expect(params['faceoffsTaken']).toBe(scheifele.ratingContext.faceoffsTaken);
       expect(params['primaryAssists'] + params['secondaryAssists']).toBe(scheifele.skaterStats.assists);
+    });
+
+    it('should hold the penalties a skater drew', () => {
+      // Connor drew a tripping minor; Scheifele drew none.
+      expect(RatingStatLineUtils.getQueryParams(player(8478398))['penaltiesDrawn']).toBe(1);
+      expect(RatingStatLineUtils.getQueryParams(player(8476460))['penaltiesDrawn']).toBe(0);
     });
 
     it("should hold a goalie's shots and goals against", () => {
@@ -54,12 +61,14 @@ describe('RatingStatLineUtils', () => {
       expect(line['faceoffWins'] / line['faceoffsTaken']).toBeCloseTo(center.skaterStats.faceoffWinningPctg, 2);
     });
 
-    it('should read every assist as primary, and no draws or power play assists, without the context', () => {
+    it('should read every assist as primary, and no draws, power play assists or penalties drawn, without the context',
+        () => {
       const withAssist = gamePlayers().find(gamePlayer => gamePlayer.skaterStats?.assists > 0);
       const line = RatingStatLineUtils.getSkaterLine(withAssist.skaterStats);
       expect(line['primaryAssists']).toBe(withAssist.skaterStats.assists);
       expect(line['secondaryAssists']).toBe(0);
       expect(line['powerPlayAssists']).toBe(0);
+      expect(line['penaltiesDrawn']).toBe(0);
       expect(line['faceoffsTaken']).toBe(0);
       expect(line['faceoffWins']).toBe(0);
     });

@@ -36,11 +36,12 @@ describe('RatingBreakdownUtils', () => {
 
     it('should add up to the rating StatsUtils returns, for every skater of a real game', () => {
       // Every shape of context a page can hand the formula: none at all, the draws only, a split that adds up, one
-      // that doesn't, and power play assists
+      // that doesn't, power play assists and penalties drawn
       const contexts: SkaterRatingContext[] = [undefined, {}, {faceoffsTaken: 0}, {faceoffsTaken: 4},
         {faceoffsTaken: 18}, {primaryAssists: 1, secondaryAssists: 0}, {primaryAssists: 1, secondaryAssists: 1},
         {primaryAssists: 5, secondaryAssists: 5}, {powerPlayAssists: 1}, {powerPlayAssists: 9},
-        {faceoffsTaken: 12, primaryAssists: 0, secondaryAssists: 1, powerPlayAssists: 1}];
+        {penaltiesDrawn: 0}, {penaltiesDrawn: 1}, {penaltiesDrawn: 3}, {penaltiesDrawn: -1},
+        {faceoffsTaken: 12, primaryAssists: 0, secondaryAssists: 1, powerPlayAssists: 1, penaltiesDrawn: 2}];
       realSkaters().forEach(skater => {
         contexts.forEach(ratingContext => {
           const breakdown = RatingBreakdownUtils.getSkaterBreakdown(skater, ratingContext);
@@ -58,8 +59,8 @@ describe('RatingBreakdownUtils', () => {
       expect(breakdown.terms[0].label).toBe('Base');
       expect(breakdown.terms[0].value).toBe(5);
       expect(breakdown.terms.map(ratingTerm => ratingTerm.label)).toEqual(['Base', 'Goals', 'Assists',
-        'Shots on goal', 'Hits', 'Blocked shots', 'Takeaways', 'Penalty minutes', 'Plus/minus', 'Giveaways',
-        'Faceoffs']);
+        'Shots on goal', 'Hits', 'Blocked shots', 'Takeaways', 'Penalty minutes', 'Penalties drawn', 'Plus/minus',
+        'Giveaways', 'Faceoffs']);
       expect(breakdown.rating).toBe(5);
       expect(breakdown.clampNote).toBeUndefined();
     });
@@ -85,6 +86,26 @@ describe('RatingBreakdownUtils', () => {
       expect(fightAndTrip.terms[7].detail).toBe('(7 - 5 for fighting) x 0.25, at most 3');
     });
 
+    it('should add 0.3 for each penalty drawn, right after the penalty minutes', () => {
+      const drewTwo = RatingBreakdownUtils.getSkaterBreakdown(emptySkater({pim: 2}), {penaltiesDrawn: 2});
+      expect(term(drewTwo, 'Penalties drawn')).toBeCloseTo(0.6, 10);
+      expect(drewTwo.terms[8].label).toBe('Penalties drawn');
+      expect(drewTwo.terms[8].detail).toBe('2 x 0.3');
+      expect(drewTwo.rating).toBe(5.1);
+      // A fight: the major is forgiven, and drawing the other fighter's major still counts.
+      const fighter = RatingBreakdownUtils.getSkaterBreakdown(emptySkater({pim: 5}), {penaltiesDrawn: 1});
+      expect(term(fighter, 'Penalty minutes')).toBe(0);
+      expect(term(fighter, 'Penalties drawn')).toBe(0.3);
+      expect(fighter.rating).toBe(5.3);
+    });
+
+    it('should not count penalties drawn without a count', () => {
+      const breakdown = RatingBreakdownUtils.getSkaterBreakdown(emptySkater(), {primaryAssists: 0, secondaryAssists: 0});
+      expect(term(breakdown, 'Penalties drawn')).toBe(0);
+      expect(breakdown.terms[8].detail).toBe('Not counted (no count)');
+      expect(breakdown.rating).toBe(5);
+    });
+
     it('should pay a plus only for the goals the skater was on the ice for', () => {
       // A goal and an assist on the same two goals: the plus is already paid, so it adds nothing
       const scorer = RatingBreakdownUtils.getSkaterBreakdown(emptySkater({goals: 1, assists: 1, sog: 1, plusMinus: 2}));
@@ -100,7 +121,7 @@ describe('RatingBreakdownUtils', () => {
       expect(term(RatingBreakdownUtils.getSkaterBreakdown(skater), 'Plus/minus')).toBe(0);
       const onThePowerPlay = RatingBreakdownUtils.getSkaterBreakdown(skater, {powerPlayAssists: 1});
       expect(term(onThePowerPlay, 'Plus/minus')).toBe(0.3);
-      expect(onThePowerPlay.terms[8].detail).toBe('(1 - 0 G + 0 PPG - 1 A + 1 PPA) x 0.3');
+      expect(onThePowerPlay.terms[9].detail).toBe('(1 - 0 G + 0 PPG - 1 A + 1 PPA) x 0.3');
       // More power play assists than assists can't buy a bigger plus
       expect(term(RatingBreakdownUtils.getSkaterBreakdown(skater, {powerPlayAssists: 5}), 'Plus/minus')).toBe(0.3);
     });
@@ -143,7 +164,7 @@ describe('RatingBreakdownUtils', () => {
       const winger = emptySkater({position: 'L', faceoffWinningPctg: 0.6});
       const breakdown = RatingBreakdownUtils.getSkaterBreakdown(winger);
       expect(term(breakdown, 'Faceoffs')).toBe(0);
-      expect(breakdown.terms[10].detail).toBe('Not counted (no draw count, and not a center)');
+      expect(breakdown.terms[11].detail).toBe('Not counted (no draw count, and not a center)');
     });
 
     it('should cap the rating at 10 and say so', () => {

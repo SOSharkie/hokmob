@@ -99,6 +99,7 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     {key: "takeaways", label: "Takeaways", weight: "+0.2 each", min: 0, max: 10},
     {key: "giveaways", label: "Giveaways", weight: "-0.2 each", min: 0, max: 10},
     {key: "pim", label: "Penalty minutes", weight: "-0.25 each, at most 3", min: 0, max: 20},
+    {key: "penaltiesDrawn", label: "Penalties drawn", weight: "+0.3 each", min: 0, max: 5},
     {key: "plusMinus", label: "Plus/minus", weight: "+0.3 a plus, -0.5 a minus", min: -5, max: 5},
     {key: "faceoffsTaken", label: "Faceoffs taken", weight: "Full weight at 10", min: 0, max: 40},
     {key: "faceoffWins", label: "Faceoffs won", weight: "+/- 0.5 at 100% / 0%", min: 0, max: 40,
@@ -118,37 +119,44 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     {
       name: "First star",
       line: {goals: 1, primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: 0, sog: 4, hits: 3, blockedShots: 2,
-        takeaways: 1, giveaways: 1, pim: 0, plusMinus: 1, powerPlayGoals: 0, faceoffsTaken: 14, faceoffWins: 8}
+        takeaways: 1, giveaways: 1, pim: 0, penaltiesDrawn: 1, plusMinus: 1, powerPlayGoals: 0,
+        faceoffsTaken: 14, faceoffWins: 8}
     },
     {
       name: "Quiet night",
       line: {goals: 0, primaryAssists: 0, secondaryAssists: 0, powerPlayAssists: 0, sog: 1, hits: 1, blockedShots: 0,
-        takeaways: 0, giveaways: 1, pim: 0, plusMinus: 0, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
+        takeaways: 0, giveaways: 1, pim: 0, penaltiesDrawn: 0, plusMinus: 0, powerPlayGoals: 0,
+        faceoffsTaken: 0, faceoffWins: 0}
     },
     {
       name: "Three points",
       line: {goals: 1, primaryAssists: 1, secondaryAssists: 1, powerPlayAssists: 1, sog: 5, hits: 2, blockedShots: 1,
-        takeaways: 2, giveaways: 1, pim: 0, plusMinus: 3, powerPlayGoals: 1, faceoffsTaken: 22, faceoffWins: 13}
+        takeaways: 2, giveaways: 1, pim: 0, penaltiesDrawn: 0, plusMinus: 3, powerPlayGoals: 1,
+        faceoffsTaken: 22, faceoffWins: 13}
     },
     {
       name: "Hat trick",
       line: {goals: 3, primaryAssists: 0, secondaryAssists: 1, powerPlayAssists: 1, sog: 7, hits: 1, blockedShots: 0,
-        takeaways: 1, giveaways: 2, pim: 0, plusMinus: 4, powerPlayGoals: 1, faceoffsTaken: 1, faceoffWins: 0}
+        takeaways: 1, giveaways: 2, pim: 0, penaltiesDrawn: 0, plusMinus: 4, powerPlayGoals: 1,
+        faceoffsTaken: 1, faceoffWins: 0}
     },
     {
       name: "Shutdown D",
       line: {goals: 0, primaryAssists: 1, secondaryAssists: 0, powerPlayAssists: 0, sog: 2, hits: 4, blockedShots: 5,
-        takeaways: 1, giveaways: 2, pim: 0, plusMinus: 1, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
+        takeaways: 1, giveaways: 2, pim: 0, penaltiesDrawn: 0, plusMinus: 1, powerPlayGoals: 0,
+        faceoffsTaken: 0, faceoffWins: 0}
     },
     {
       name: "Heavyweight",
       line: {goals: 0, primaryAssists: 0, secondaryAssists: 0, powerPlayAssists: 0, sog: 1, hits: 8, blockedShots: 1,
-        takeaways: 0, giveaways: 1, pim: 5, plusMinus: 0, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
+        takeaways: 0, giveaways: 1, pim: 5, penaltiesDrawn: 1, plusMinus: 0, powerPlayGoals: 0,
+        faceoffsTaken: 0, faceoffWins: 0}
     },
     {
       name: "Rough night",
       line: {goals: 0, primaryAssists: 0, secondaryAssists: 0, powerPlayAssists: 0, sog: 0, hits: 1, blockedShots: 1,
-        takeaways: 0, giveaways: 5, pim: 4, plusMinus: -4, powerPlayGoals: 0, faceoffsTaken: 0, faceoffWins: 0}
+        takeaways: 0, giveaways: 5, pim: 4, penaltiesDrawn: 0, plusMinus: -4, powerPlayGoals: 0,
+        faceoffsTaken: 0, faceoffWins: 0}
     }
   ];
 
@@ -194,15 +202,19 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     "A goalie who faced no shots is rated 0, not 5, so a backup who never played doesn't outrank his starter.",
     "A plus is worth 0.3 and a minus 0.5, and the plus is paid on top of goals and assists that have already scored.",
     "The five minutes of a fighting major are forgiven, which 5, 7, 9 and 11 penalty minutes are each read as holding.",
+    "Penalties drawn are the NHL's count, so each fighter draws the other's major and coincidental minors count, " +
+        "even though neither gives a power play. With the major forgiven, a fight is worth +0.3.",
     "Plus/minus doesn't count a power play goal at all, so a skater's power play goals and assists are added back " +
         "before the term is weighted.",
-    "The stat line above assumes all of a game's details are loaded. A game page only has the draw count once the " +
-        "play-by-play is in, and only has the assist split and the power play assists once the scoring summary is.",
+    "The stat line above assumes all of a game's details are loaded. A game page only has the draw count and the " +
+        "penalties drawn once the play-by-play is in, and only has the assist split and the power play assists once " +
+        "the scoring summary is.",
     "Without a draw count, only a center gets the faceoff term, and he gets all of it rather than a share scaled by " +
         "the draws he took.",
     "Without the assist split — or with one that doesn't add up to the boxscore's assist count — every assist " +
         "counts a flat 0.5, so one game is never rated two ways while a second request is still out.",
-    "Without the power play assists, the correction to plus/minus is skipped rather than guessed."
+    "Without the power play assists, the correction to plus/minus is skipped rather than guessed.",
+    "Without a count of the penalties drawn, the term is left out, the same as drawing none."
   ];
 
   public breakdown: RatingBreakdown;
@@ -258,7 +270,8 @@ export class RatingsComponent implements OnInit, AfterViewInit {
       faceoffsTaken: this.skaterLine["faceoffsTaken"],
       primaryAssists: this.skaterLine["primaryAssists"],
       secondaryAssists: this.skaterLine["secondaryAssists"],
-      powerPlayAssists: this.skaterLine["powerPlayAssists"]
+      powerPlayAssists: this.skaterLine["powerPlayAssists"],
+      penaltiesDrawn: this.skaterLine["penaltiesDrawn"]
     };
   }
 
