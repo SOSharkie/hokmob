@@ -72,7 +72,8 @@ export class RecentPlayerGamesComponent implements OnChanges {
       faceoffsTaken: game.totalFaceoffs,
       primaryAssists: game.totalPrimaryAssists,
       secondaryAssists: game.totalSecondaryAssists,
-      powerPlayAssists: game.ppAssists
+      powerPlayAssists: game.ppAssists,
+      penaltiesDrawn: game.penaltiesDrawn
     });
     return {
       ...RecentPlayerGamesComponent.toGameRow(game, hokmobRating),

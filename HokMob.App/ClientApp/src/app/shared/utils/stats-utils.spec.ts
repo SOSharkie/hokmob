@@ -467,6 +467,17 @@ describe('StatsUtils', () => {
           }));
     });
 
+    it('should give a real game the same rating as its boxscore with penalties drawn', () => {
+      const penaltiesDrawnCounts = PlayByPlayUtils.getPenaltiesDrawnCounts(mockGamePlayByPlay(2025030414));
+      const game = statsApiSkater();
+      expect(game.penaltiesDrawn).toBe(1);
+      const fromStatsApi = StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game),
+          {penaltiesDrawn: game.penaltiesDrawn});
+      expect(fromStatsApi).toBe(5.6);
+      expect(fromStatsApi).toBe(StatsUtils.calculateSkaterHokmobRating(
+          boxscorePlayer<BoxscoreSkater>(8477964, 2025030414), {penaltiesDrawn: penaltiesDrawnCounts.get(8477964)}));
+    });
+
     it('should map a faceoff percentage, and treat a player without faceoffs as 0', () => {
       const centre = {...statsApiSkater(), positionCode: 'C', faceoffWinPct: 0.56362};
       expect(StatsUtils.toBoxscoreSkater(centre).faceoffWinningPctg).toBe(0.56362);

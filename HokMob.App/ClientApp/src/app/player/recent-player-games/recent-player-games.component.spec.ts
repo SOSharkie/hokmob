@@ -7,7 +7,14 @@ import {
   GoalieGameStats,
   SkaterGameStats
 } from '@shared/models/nhl-stats-api/player-stats.model';
-import { mockPlayerStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  mockGameBoxscore,
+  mockGameLanding,
+  mockGamePlayByPlay,
+  mockPlayerStats
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
+import { StatsUtils } from '@shared/utils/stats-utils';
 
 import { RecentPlayerGamesComponent } from './recent-player-games.component';
 
@@ -63,8 +70,8 @@ describe('RecentPlayerGamesComponent', () => {
     // Stanley Cup Final game 6: VGK 0, CAR 3 at home, 11:48 played, 2 shots, 3 hits, -2
     expect(row(0)).toEqual(['Jun 14', 'CAR(0 - 3)', '11:48', '0', '0', '2', '3', '-2', '0', '5.2']);
     expect(opponentLogo(0)).toBe('assets/logos/carolina.png');
-    // His best game of the run: 2 goals and a secondary assist in a 3-1 win at COL
-    expect(row(8)).toEqual(['May 22', 'COL(3 - 1)', '16:15', '2', '1', '3', '7', '3', '0', '9.5']);
+    // His best game of the run: 2 goals, a secondary assist and a penalty drawn in a 3-1 win at COL
+    expect(row(8)).toEqual(['May 22', 'COL(3 - 1)', '16:15', '2', '1', '3', '7', '3', '0', '9.8']);
     expect(opponentLogo(8)).toBe('assets/logos/colorado.png');
     // A game with a penalty
     expect(row(9)).toEqual(['May 20', 'COL(4 - 2)', '16:25', '0', '0', '2', '2', '-1', '2', '4.6']);
@@ -107,6 +114,31 @@ describe('RecentPlayerGamesComponent', () => {
     const ratings = component.rows.map(gameRow => gameRow.hokmobRating);
     // On the ice for goals as well, the power play assist is added back, at 0.3 per goal.
     expect(ratings[1] - ratings[2]).toBeCloseTo(0.3, 5);
+  });
+
+  it('should add the penalties drawn in the game', () => {
+    const games = mockPlayerStats(8477964).recentGames as SkaterGameStats[];
+    // Barbashev drew a slashing minor in game 4 of the final.
+    const game = games[2];
+    expect(game.gameId).toBe(2025030414);
+    expect(game.penaltiesDrawn).toBe(1);
+    show([game, {...game, penaltiesDrawn: 0}, {...game, penaltiesDrawn: undefined}], false);
+    const ratings = component.rows.map(gameRow => gameRow.hokmobRating);
+    expect(ratings).toEqual([5.6, 5.3, 5.3]);
+    expect(games.filter(recentGame => recentGame.penaltiesDrawn > 0).length).toBe(4);
+  });
+
+  it('should rate a real game like the game page does', () => {
+    const game = (mockPlayerStats(8477964).recentGames as SkaterGameStats[])
+        .find(recentGame => recentGame.gameId === 2025030414);
+    show([game], false);
+    const playByPlay = mockGamePlayByPlay(2025030414);
+    const gamePagePlayers = StatsUtils.getGamePlayers(mockGameBoxscore(2025030414), true,
+        PlayByPlayUtils.getRosterSpotMap(playByPlay), PlayByPlayUtils.getFaceoffCounts(playByPlay),
+        StatsUtils.getAssistCounts(mockGameLanding(2025030414)), PlayByPlayUtils.getPenaltiesDrawnCounts(playByPlay));
+    const barbashev = gamePagePlayers.find(player => player.playerId === 8477964);
+    expect(barbashev.ratingContext.penaltiesDrawn).toBe(1);
+    expect(component.rows[0].hokmobRating).toBe(barbashev.hokmobRating);
   });
 
   it('should rate the real games of a skater with faceoffs, an assist split and power play assists', () => {
