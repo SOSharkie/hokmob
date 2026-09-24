@@ -16,6 +16,7 @@ import {NhlGameService} from "@shared/services/nhl-game.service";
 import * as dayjs from 'dayjs'
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Component({
   selector: 'app-scores',
@@ -55,7 +56,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
   public displayDayLabel: string = "Today";
 
   /**
-   * The list of NHL games for the currently selected day.
+   * The list of NHL games for the currently selected day, live games first (see orderGames).
    */
   public currentDayGames: ScoreGame[] = [];
 
@@ -186,7 +187,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
     const day = this.selectedDay;
     this.nhlGameService.getNhlGames(day).then(games => {
       if (day === this.selectedDay) {
-        this.currentDayGames = games;
+        this.currentDayGames = this.orderGames(games);
       }
     }).catch(() => {
       // The service logs the error. Show no games rather than another day's games
@@ -212,7 +213,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
       const day = this.selectedDay;
       this.nhlGameService.getNhlGames(day).then(games => {
         if (day === this.selectedDay) {
-          this.applyRefreshedGames(games);
+          this.applyRefreshedGames(this.orderGames(games));
         }
       }).catch(() => {
         // The service logs the error. Keep the shown games until the next refresh
@@ -225,7 +226,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
    * but a different set of games replaces the list. Without that, a day whose first load failed would poll forever
    * over an empty list and keep showing "No Games", and a day whose schedule changed would never pick it up.
    *
-   * @param games - The games the refresh returned.
+   * @param games - The games the refresh returned, already ordered.
    */
   private applyRefreshedGames(games: ScoreGame[]): void {
     if (!this.isSameGameList(games)) {
@@ -251,6 +252,18 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
   private isSameGameList(games: ScoreGame[]): boolean {
     return games.length === this.currentDayGames.length &&
         games.every((game, index) => game.id === this.currentDayGames[index].id);
+  }
+
+  /**
+   * Moves live games to the top. Otherwise the games keep the API's order, which is by start time, so a game that
+   * goes live moves up on the next refresh.
+   *
+   * @param games - The day's games, in the API's order.
+   */
+  private orderGames(games: ScoreGame[]): ScoreGame[] {
+    const liveGames = games.filter(game => NhlGameInfoUtils.isLiveGame(game.gameState));
+    const otherGames = games.filter(game => !NhlGameInfoUtils.isLiveGame(game.gameState));
+    return [...liveGames, ...otherGames];
   }
 
   private stopContinuousNhlGameUpdates(): void {

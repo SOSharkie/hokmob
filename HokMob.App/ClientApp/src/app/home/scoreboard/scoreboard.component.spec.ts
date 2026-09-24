@@ -5,7 +5,10 @@ import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ScoreGame, ScoreResponse } from '@shared/models/nhl-web-api/score.model';
 import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
-import { derivedLiveGame, mockOvertimeFinal, mockScoreResponse } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
+import {
+  derivedLiveGame, mockFutureGame, mockLiveScoreGame, mockOvertimeFinal, mockScoreResponse, mockShootoutFinal
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { ScoreboardComponent } from './scoreboard.component';
 
@@ -85,6 +88,21 @@ describe('ScoreboardComponent', () => {
     expect(component.currentDayGames.map(game => game.id)).toEqual([2025020947, 2025020950, 2025020952]);
     expect(scorecardCount()).toBe(3);
     expect(text()).not.toContain('No Games');
+  });
+
+  it('should show live games first, keeping the API order for the rest', async () => {
+    const criticalGame = mockLiveScoreGame();
+    criticalGame.gameState = NhlGameStateEnum.CRITICAL;
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(scoreResponse(
+        [mockOvertimeFinal(), derivedLiveGame(), mockShootoutFinal(), criticalGame, mockFutureGame()]));
+    await settle();
+
+    expect(component.currentDayGames.map(game => game.id))
+        .toEqual([2025020947, 2026010001, 2025020950, 2025020952, 2026020056]);
+    const shownGameIds = Array.from(fixture.nativeElement.querySelectorAll('app-scorecard'))
+        .map((scorecard: any) => scorecard.game.id);
+    expect(shownGameIds).toEqual([2025020947, 2026010001, 2025020950, 2025020952, 2026020056]);
   });
 
   it('should abbreviate the month on a phone, where the full month would wrap', async () => {
@@ -331,6 +349,27 @@ describe('ScoreboardComponent', () => {
 
     expect(component.currentDayGames.map(game => game.id))
         .toEqual([derivedLiveGame().id, mockOvertimeFinal().id]);
+    expect(scorecardCount()).toBe(2);
+
+    fixture.destroy();
+  }));
+
+  it('should move a game to the top when a refresh finds it live', fakeAsync(() => {
+    const todayUrl = '/api/nhl/score/' + dayjs().format('YYYY-MM-DD');
+    openDay(dayjs().format('YYYYMMDD'));
+    httpMock.expectOne(todayUrl).flush(scoreResponse([mockOvertimeFinal(), mockFutureGame()]));
+    flushMicrotasks();
+    expect(component.currentDayGames.map(game => game.id)).toEqual([2025020950, 2026020056]);
+
+    const startedGame = mockFutureGame();
+    startedGame.gameState = NhlGameStateEnum.LIVE;
+    tick(10000);
+    httpMock.expectOne(todayUrl).flush(scoreResponse([mockOvertimeFinal(), startedGame]));
+    flushMicrotasks();
+    fixture.detectChanges();
+
+    expect(component.currentDayGames.map(game => game.id)).toEqual([2026020056, 2025020950]);
+    expect(component.currentDayGames[0].gameState).toBe(NhlGameStateEnum.LIVE);
     expect(scorecardCount()).toBe(2);
 
     fixture.destroy();
