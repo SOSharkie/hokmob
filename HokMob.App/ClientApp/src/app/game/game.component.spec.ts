@@ -283,6 +283,33 @@ describe('GameComponent', () => {
     expect(topPlayers.awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
   });
 
+  it('should rate the players with the penalties they drew in the play-by-play', async () => {
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    // Connor drew a tripping minor and Finley a holding-the-stick one; Scheifele drew none.
+    const player = (playerId: number) => [...component.homePlayers, ...component.awayPlayers]
+        .find(gamePlayer => gamePlayer.playerId === playerId);
+    expect(player(8478398).ratingContext.penaltiesDrawn).toBe(1);
+    expect(player(8482090).ratingContext.penaltiesDrawn).toBe(1);
+    expect(player(8476460).ratingContext.penaltiesDrawn).toBe(0);
+    expect(element('app-game-top-players').homePlayers.find(gamePlayer => gamePlayer.playerId === 8478398)
+        .ratingContext.penaltiesDrawn).toBe(1);
+  });
+
+  it('should rate the players without penalties drawn when the play-by-play fails', async () => {
+    open('2025021057');
+    const bundle = mockGameBundle(2025021057);
+    flushBundle('2025021057', {landing: bundle.landing, boxscore: bundle.boxscore, rightRail: bundle.rightRail});
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    const connor = component.homePlayers.find(gamePlayer => gamePlayer.playerId === 8478398);
+    expect(connor.ratingContext.penaltiesDrawn).toBeUndefined();
+  });
+
   it('should highlight the player hovered in the goal scorers or an event timeline in the top players', async () => {
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));

@@ -130,6 +130,32 @@ describe('StatsUtils', () => {
       expect(StatsUtils.calculateSkaterHokmobRating(barron, {primaryAssists: 2, secondaryAssists: 2})).toBe(6.5);
     });
 
+    it('should add the penalty drawn weight for each penalty drawn', () => {
+      // Vilardi drew a holding minor in 2025021057: 5 + 0.3 (1 shot) - 0.5 (-1) = 4.8, with no faceoffs taken.
+      const vilardi = boxscorePlayer<BoxscoreSkater>(8480014);
+      expect(StatsUtils.calculateSkaterHokmobRating(vilardi, {faceoffsTaken: 0})).toBe(4.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(vilardi, {faceoffsTaken: 0, penaltiesDrawn: 1})).toBe(5.1);
+      expect(StatsUtils.calculateSkaterHokmobRating(vilardi, {faceoffsTaken: 0, penaltiesDrawn: 2})).toBe(5.4);
+      // Hall drew one minor and took another in 2025030414, so he nets -0.5 + 0.3.
+      const hall = boxscorePlayer<BoxscoreSkater>(8475791, 2025030414);
+      expect(hall.pim).toBe(2);
+      expect(StatsUtils.calculateSkaterHokmobRating(hall)).toBe(6.1);
+      expect(StatsUtils.calculateSkaterHokmobRating(hall, {penaltiesDrawn: 1})).toBe(6.4);
+    });
+
+    it('should give a fighter the penalty drawn weight without deducting his major', () => {
+      const scheifele = {...boxscorePlayer<BoxscoreSkater>(8476460), pim: 5};
+      expect(StatsUtils.calculateSkaterHokmobRating(scheifele)).toBe(7.1);
+      expect(StatsUtils.calculateSkaterHokmobRating(scheifele, {penaltiesDrawn: 1})).toBe(7.4);
+    });
+
+    it('should leave the rating unchanged without penalties drawn', () => {
+      const vilardi = boxscorePlayer<BoxscoreSkater>(8480014);
+      expect(StatsUtils.calculateSkaterHokmobRating(vilardi, {faceoffsTaken: 0, penaltiesDrawn: undefined})).toBe(4.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(vilardi, {faceoffsTaken: 0, penaltiesDrawn: 0})).toBe(4.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(vilardi, {faceoffsTaken: 0, penaltiesDrawn: -1})).toBe(4.8);
+    });
+
     it('should cap the rating at 10', () => {
       const scheifele = boxscorePlayer<BoxscoreSkater>(8476460);
       scheifele.goals = 5;
@@ -325,6 +351,26 @@ describe('StatsUtils', () => {
       expect(rating(withCounts, 8476460)).toBe(rating(withoutCounts, 8476460));
 
       const ratings = withCounts.map(player => player.hokmobRating);
+      expect(ratings).toEqual([...ratings].sort((ratingA, ratingB) => ratingB - ratingA));
+    });
+
+    it('should add the play-by-play penalties drawn to the rating context', () => {
+      const playByPlay = mockGamePlayByPlay(2025021057);
+      const player = (players: GamePlayer[], playerId: number) => players.find(p => p.playerId === playerId);
+      const withCounts = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots(),
+          PlayByPlayUtils.getFaceoffCounts(playByPlay), undefined, PlayByPlayUtils.getPenaltiesDrawnCounts(playByPlay));
+      const withoutCounts = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots(),
+          PlayByPlayUtils.getFaceoffCounts(playByPlay));
+
+      // Vilardi drew a holding minor; Scheifele drew none, so he gets 0 rather than no count.
+      expect(player(withCounts, 8480014).ratingContext.penaltiesDrawn).toBe(1);
+      expect(player(withCounts, 8480014).hokmobRating).toBe(5.1);
+      expect(player(withoutCounts, 8480014).hokmobRating).toBe(4.8);
+      expect(player(withCounts, 8476460).ratingContext.penaltiesDrawn).toBe(0);
+      expect(player(withCounts, 8476460).hokmobRating).toBe(player(withoutCounts, 8476460).hokmobRating);
+      expect(player(withoutCounts, 8480014).ratingContext.penaltiesDrawn).toBeUndefined();
+
+      const ratings = withCounts.map(p => p.hokmobRating);
       expect(ratings).toEqual([...ratings].sort((ratingA, ratingB) => ratingB - ratingA));
     });
 

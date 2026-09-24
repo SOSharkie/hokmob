@@ -23,7 +23,7 @@ export interface AssistCounts {
 
 /**
  * The stats the HokMob skater rating needs that the boxscore alone doesn't give: the faceoffs a skater took, his
- * primary/secondary assist split and his power play assists. Every field is optional, and the rating falls back to a
+ * primary/secondary assist split, his power play assists and the penalties he drew. Every field is optional, and the rating falls back to a
  * flat weighting without one, so a rating never changes just because a second request hasn't come back yet.
  */
 export interface SkaterRatingContext {
@@ -41,6 +41,12 @@ export interface SkaterRatingContext {
    * count a power play goal, so these are added back to realPlusMinus. Without them the correction is skipped.
    */
   powerPlayAssists?: number;
+
+  /**
+   * The penalties the skater drew (PlayByPlayUtils.getPenaltiesDrawnCounts, or the stats API's penaltiesDrawn), each
+   * worth penaltyDrawnWeight. Without them the term is skipped.
+   */
+  penaltiesDrawn?: number;
 }
 
 export class StatsUtils {
@@ -67,6 +73,12 @@ export class StatsUtils {
 
   public static readonly unknownAssistWeight = 0.5;
 
+  /**
+   * The rating weight of a penalty drawn. It's less than a minor penalty taken costs (0.5), since not every penalty
+   * drawn gives a power play.
+   */
+  public static readonly penaltyDrawnWeight = 0.3;
+
   /** The landing's goal strength for a power play goal; the others are "ev" and "sh". */
   public static readonly powerPlayStrength = "pp";
 
@@ -78,12 +90,16 @@ export class StatsUtils {
    *
    * An assist is weighted by whether it was primary or secondary (getAssistRating), when the context says which.
    *
+   * Each penalty drawn adds penaltyDrawnWeight, when the context has the count. It's the NHL's count, so a fight
+   * credits each fighter with the other's major, and that major's 5 minutes aren't deducted.
+   *
    * realPlusMinus takes out the skater's own points, so what is left is the goals he was on the ice for. Plus/minus
    * doesn't count power play goals at all, so his power play goals and assists are added back in; the boxscore has
    * powerPlayGoals but no powerPlayAssists, so those come from the context.
    *
    * @param skater - The skater's boxscore stats.
-   * @param context - The faceoffs the skater took, his assist split and his power play assists, whichever are known.
+   * @param context - The faceoffs the skater took, his assist split, his power play assists and the penalties he drew,
+   * whichever are known.
    */
   public static calculateSkaterHokmobRating(skater: BoxscoreSkater, context?: SkaterRatingContext): number {
     const goals = skater.goals ?? 0;
@@ -104,6 +120,7 @@ export class StatsUtils {
       }
       hokmobRating -= Math.min(3, penaltyDeduction * 0.25);
     }
+    hokmobRating += (Math.max(0, context?.penaltiesDrawn ?? 0) * StatsUtils.penaltyDrawnWeight);
 
     const powerPlayAssists = Math.min(assists, Math.max(0, context?.powerPlayAssists ?? 0));
     let realPlusMinus = (plusMinus - goals + (skater.powerPlayGoals ?? 0) - assists + powerPlayAssists);
@@ -330,10 +347,13 @@ export class StatsUtils {
    * @param rosterSpots - The play-by-play roster spots by player ID, if loaded.
    * @param faceoffCounts - The faceoffs taken by player ID (PlayByPlayUtils.getFaceoffCounts), if loaded.
    * @param assistCounts - The assists by player ID (StatsUtils.getAssistCounts), if the landing is loaded.
+   * @param penaltiesDrawnCounts - The penalties drawn by player ID (PlayByPlayUtils.getPenaltiesDrawnCounts), if
+   * loaded.
    */
   public static getGamePlayers(boxscore: Boxscore, isHome: boolean, rosterSpots?: Map<number, RosterSpot>,
                                faceoffCounts?: Map<number, number>,
-                               assistCounts?: Map<number, AssistCounts>): GamePlayer[] {
+                               assistCounts?: Map<number, AssistCounts>,
+                               penaltiesDrawnCounts?: Map<number, number>): GamePlayer[] {
     const team = isHome ? boxscore?.homeTeam : boxscore?.awayTeam;
     const players = isHome ? boxscore?.playerByGameStats?.homeTeam : boxscore?.playerByGameStats?.awayTeam;
     if (!team || !players) {
@@ -357,7 +377,8 @@ export class StatsUtils {
         faceoffsTaken: faceoffCounts ? (faceoffCounts.get(skater.playerId) ?? 0) : undefined,
         primaryAssists: assistCounts ? (assists?.primary ?? 0) : undefined,
         secondaryAssists: assistCounts ? (assists?.secondary ?? 0) : undefined,
-        powerPlayAssists: assistCounts ? (assists?.powerPlay ?? 0) : undefined
+        powerPlayAssists: assistCounts ? (assists?.powerPlay ?? 0) : undefined,
+        penaltiesDrawn: penaltiesDrawnCounts ? (penaltiesDrawnCounts.get(skater.playerId) ?? 0) : undefined
       };
       return {
         ...toGamePlayer(skater),
