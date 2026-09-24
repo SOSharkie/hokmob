@@ -1,16 +1,25 @@
 @import "variables";
 
+// Fills its cell, so the game page's paired rows keep their separators level when one of them has a wrapped name
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
 .previous-game-container {
+  flex: 1 1 auto;
   display: flex;
   justify-content: center;
-  align-items: center;
+  // The logos and the score line up along the top, so a name that wraps only grows the row downwards
+  align-items: flex-start;
   min-height: 45px;
   border-bottom: 1px solid $gray-01;
   margin: $spacing-medium;
   // The score's margins scale with the row's width (cqi), and narrow rows stack the logos, see the container query below
   container: previous-game / inline-size;
   padding-bottom: $spacing-large;
-  padding-top: $spacing-large;
+  // Room for the game type label above the score, so every row is laid out the same with or without one
+  padding-top: $spacing-x-large;
 
   // The team sides share the width left by the score. In a narrow row the logo slots give up their spare width first
   // and the names wrap between words, but never narrower than a logo and the longest word
@@ -33,6 +42,11 @@
     overflow-wrap: break-word;
   }
 
+  // Only the narrowest rows show it, in place of the name, see the container query below
+  .team-abbrev {
+    display: none;
+  }
+
   .home {
     text-align: right;
   }
@@ -46,12 +60,11 @@
     align-items: center;
   }
 
-  // The score, with the label of a preseason or playoff game above it, like the scorecard's
+  // The score, with the label of a preseason or playoff game above it, like the scorecard's. The label sits outside
+  // the flow, in the row's top padding, so the score always lines up with the logos
   .score-column {
     flex: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    position: relative;
     margin-left: clamp(#{$spacing-small}, 2cqi, #{$spacing-large});
     margin-right: clamp(#{$spacing-small}, 2cqi, #{$spacing-large});
 
@@ -62,11 +75,15 @@
       text-align: center;
     }
 
-    // Like the scorecard's label, a point smaller so it stays narrower than the score below it and never squeezes the
-    // team names of a narrow row
+    // Like the scorecard's label, a point smaller so it stays about as narrow as the score below it
     .game-type-label {
-      margin-bottom: $spacing-small;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: $spacing-x-small;
       font-size: 9px;
+      line-height: 11px;
       letter-spacing: 0.5px;
       white-space: nowrap;
       color: $gray-03;
@@ -126,6 +143,20 @@
   @container previous-game (max-width: 279.98px) {
     @include stacked-previous-game;
   }
+
+  // Too narrow for two names even stacked: "Blackhawks" and "Hurricanes" need a 184px row with the score between them.
+  // Show each team's abbreviation under its logo instead
+  @container previous-game (max-width: 183.98px) {
+    .previous-game-container {
+      .team-name {
+        display: none;
+      }
+
+      .team-abbrev {
+        display: inline;
+      }
+    }
+  }
 }
 
 // Desktop Styling
@@ -135,7 +166,7 @@
 
 // Mobile Styling
 @media only screen and (max-width: $game-mobile-screen-breakpoint) {
-  .team-name {
+  .team-name, .team-abbrev {
     font-size: small;
   }
 }

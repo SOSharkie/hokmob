@@ -12,22 +12,38 @@
     height: 40px;
   }
 
+  // Each team's games fill a column, row by row, so a row that grows (a wrapped name like "Golden Knights") grows the
+  // game beside it too and the two columns stay level
   .previous-games-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: 45% 45%;
     justify-content: space-around;
 
-    .home-games {
-      width: 45%;
+    .home-games, .away-games {
+      display: contents;
     }
 
-    .away-games {
-      width: 45%;
+    .home-games > * {
+      grid-column: 1;
+    }
+
+    .away-games > * {
+      grid-column: 2;
     }
 
     .no-games {
+      grid-row: 1;
       text-align: center;
       padding: $spacing-large;
       color: $gray-01;
     }
+  }
+}
+
+// Phones: the columns take the whole width, so the rows fit two names for as long as they can, see previous-game
+@media only screen and (max-width: $game-mobile-screen-breakpoint) {
+  .team-form-container .previous-games-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: $spacing-large;
   }
 }

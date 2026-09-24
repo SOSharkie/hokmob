@@ -67,6 +67,13 @@ describe('TeamFormComponent', () => {
     expect(fixture.nativeElement.querySelector('.no-games')).toBeNull();
   });
 
+  it('should put each home game in the same grid row as the away game beside it', () => {
+    show(formBeforeFutureGame('BOS'), formBeforeFutureGame('UTA').slice(0, 3));
+    expect(previousGames('home').map(game => game.style.gridRow)).toEqual(['1', '2', '3', '4', '5']);
+    expect(previousGames('away').map(game => game.style.gridRow)).toEqual(['1', '2', '3']);
+    expect(previousGames('away').map(game => game.isLast)).toEqual([false, false, true]);
+  });
+
   it('should show a message for a team without games', () => {
     show(formBeforeFutureGame('BOS'), []);
     expect(previousGames('home').length).toBe(5);
