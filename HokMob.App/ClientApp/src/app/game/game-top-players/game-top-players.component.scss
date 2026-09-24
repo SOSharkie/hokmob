@@ -21,6 +21,13 @@ $standing-corner-along-width: 25.13%;
 // The benches, 39.5ft long, sit 53.9ft from each end
 $bench-start: 26.93%;
 $bench-length: 19.74%;
+// Opened, a bench slides out along the boards a little way under the rink's corner, keeping its end by the center line,
+// and grows down to seat its players above the coach
+$open-bench-start: 10%;
+$open-bench-length: calc(#{$bench-start} + #{$bench-length} - #{$open-bench-start});
+$bench-height: 44px;
+$bench-players-height: 78px;
+$bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
 .game-top-players-container {
   background-color: $black-02;
@@ -86,8 +93,10 @@ $bench-length: 19.74%;
   }
 }
 
+// Above the benches, so it covers the part of an open bench's side that runs up behind the boards
 .rink {
   position: relative;
+  z-index: 1;
   border: 2px solid $rink-line;
   background-color: $rink-surface;
 }
@@ -135,19 +144,24 @@ $bench-length: 19.74%;
 }
 
 .top-player {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   position: absolute;
   max-width: 110px;
   // Centers the headshot on the player's spot
   transform: translate(-50%, -25px);
   pointer-events: auto;
-  cursor: pointer;
 
   &:hover {
     opacity: 0.7;
   }
+}
+
+// A player on the rink or on a bench
+.top-player,
+.bench-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
 
   .player-avatar {
     position: relative;
@@ -263,38 +277,152 @@ $bench-length: 19.74%;
 
   .bench {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: $spacing-medium;
-    min-width: 0;
-    height: 44px;
-    padding: 0 $spacing-medium;
+    flex-direction: column;
     box-sizing: border-box;
     border: 2px solid $rink-line;
     border-top: none;
     border-radius: 0 0 8px 8px;
   }
 
-  .coach-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+  &.expanded {
+    .bench-players {
+      height: $bench-players-height;
+    }
 
-    span {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+    .bench-player {
+      opacity: 1;
+      transform: none;
+      transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+      transition-delay: calc(0.1s + var(--index) * 0.05s);
     }
   }
+}
 
-  .coach-name {
-    font-size: 11px;
-    font-weight: 500;
+.coach {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: $spacing-medium;
+  // The bench's bottom border makes up the rest of its height
+  height: calc(#{$bench-height} - 2px);
+  padding: 0 $spacing-medium;
+  box-sizing: border-box;
+}
+
+.coach-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.coach-name {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.coach-label {
+  font-size: 10px;
+  color: $gray-03;
+}
+
+// Closed, the players are folded away under the boards. Opened, a line sets them apart from the coach.
+.bench-players {
+  box-shadow: inset 0 -1px $black-04;
+  display: flex;
+  height: 0;
+  overflow: hidden;
+  transition: height $bench-transition;
+}
+
+// Each player drops onto the bench after the one before when it opens, and they all leave together when it closes
+.bench-player {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-top: $spacing-large + 1px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.15s ease-in, transform 0.15s ease-in;
+
+  &:hover > * {
+    opacity: 0.7;
   }
 
-  .coach-label {
+  .player-avatar,
+  .player-headshot-container {
+    width: 38px;
+    height: 38px;
+  }
+
+  .player-headshot-container .player-headshot {
+    width: 44px;
+    height: 44px;
+    margin-top: 6px;
+  }
+
+  .hokmob-score-container {
+    top: -6px;
+    left: 25px;
+    padding: 0 4px;
+    font-size: 11px;
+    line-height: 15px;
+  }
+
+  .player-goals {
+    top: 25px;
+    left: 26px;
+  }
+
+  // A long name breaks inside its own seat instead of running into the next player's
+  .player-name {
+    max-width: 100%;
+    margin-top: $spacing-small;
     font-size: 10px;
-    color: $gray-03;
+    line-height: 12px;
+    overflow-wrap: anywhere;
+  }
+}
+
+// A small tab hanging off the boards between the benches, its arrow turning over when they open
+.bench-toggle {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 22px;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 2px solid $rink-line;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  background-color: transparent;
+  color: $gray-03;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    background-color: $black-03;
+    color: white;
+  }
+
+  .toggle-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    transition: transform $bench-transition;
+  }
+
+  &[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
   }
 }
 
@@ -330,12 +458,27 @@ $bench-length: 19.74%;
   }
 
   .benches {
-    height: 44px;
+    height: $bench-height;
+    transition: height $bench-transition;
 
     .bench {
       position: absolute;
       top: 0;
       width: $bench-length;
+      transition: left $bench-transition, right $bench-transition, width $bench-transition;
+
+      // The bench's sides run up behind the rink, so where an open bench reaches under a corner its outer side meets
+      // the boards curving away above it
+      &::before {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: -2px;
+        right: -2px;
+        height: 12px;
+        border: solid $rink-line;
+        border-width: 0 2px;
+      }
     }
 
     .home-bench {
@@ -344,6 +487,22 @@ $bench-length: 19.74%;
 
     .away-bench {
       right: $bench-start;
+    }
+
+    &.expanded {
+      height: calc(#{$bench-height} + #{$bench-players-height});
+
+      .bench {
+        width: $open-bench-length;
+      }
+
+      .home-bench {
+        left: $open-bench-start;
+      }
+
+      .away-bench {
+        right: $open-bench-start;
+      }
     }
   }
 }
