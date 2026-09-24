@@ -352,6 +352,122 @@ describe('GameTopPlayersComponent', () => {
       expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
     });
   });
+
+  describe('bench players', () => {
+    function benchToggle(): HTMLButtonElement {
+      return fixture.nativeElement.querySelector('.bench-toggle');
+    }
+
+    function benchPlayers(side: Side): HTMLElement[] {
+      return Array.from(bench(side).querySelectorAll('.bench-player'));
+    }
+
+    function benchNames(side: Side): string[] {
+      return benchPlayers(side).map(cardName);
+    }
+
+    function isOpen(): boolean {
+      return fixture.nativeElement.querySelector('.benches').classList.contains('expanded');
+    }
+
+    function clickToggle(): void {
+      benchToggle().click();
+      fixture.detectChanges();
+    }
+
+    beforeEach(() => {
+      fixture.componentRef.setInput('homeCoach', 'Bruce Cassidy');
+      fixture.componentRef.setInput('awayCoach', "Rod Brind'Amour");
+    });
+
+    it('should seat the four next best rated players of each team on its bench, best first', () => {
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      // Aho and Gostisbehere are both rated 6.2, and Aho is one of the Carolina stars
+      expect(benchNames('away')).toEqual(['Jackson Blake', 'Sebastian Aho', 'Shayne Gostisbehere', 'Taylor Hall']);
+      expect(benchPlayers('away').map(rating)).toEqual(['6.7', '6.2', '6.2', '6.1']);
+      // Vegas' third defenseman sits behind two forwards
+      expect(benchNames('home')).toEqual(['William Karlsson', 'Cole Smith', 'Keegan Kolesar', 'Noah Hanifin']);
+      expect(benchPlayers('home').map(rating)).toEqual(['6.4', '6', '6', '5.8']);
+      // Nobody on the bench is on the rink too
+      for (const side of ['home', 'away'] as Side[]) {
+        expect(benchNames(side).filter(name => card(side, name))).toEqual([]);
+      }
+    });
+
+    it('should keep the benches closed until the toggle is pressed, then close them again', () => {
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      expect(isOpen()).toBeFalse();
+      expect(benchToggle().getAttribute('aria-expanded')).toBe('false');
+      expect(benchToggle().title).toBe('Show the bench players');
+      expect(bench('home').querySelector('.bench-players').getAttribute('aria-hidden')).toBe('true');
+
+      clickToggle();
+      expect(isOpen()).toBeTrue();
+      expect(benchToggle().getAttribute('aria-expanded')).toBe('true');
+      expect(benchToggle().title).toBe('Hide the bench players');
+      expect(bench('away').querySelector('.bench-players').getAttribute('aria-hidden')).toBe('false');
+
+      clickToggle();
+      expect(isOpen()).toBeFalse();
+    });
+
+    it('should seat the players above the coach', () => {
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      const children = Array.from(bench('away').children).map(child => child.className);
+      expect(children[0]).toContain('bench-players');
+      expect(children[1]).toContain('coach');
+      expect(bench('away').querySelector('.coach .coach-name').textContent.trim()).toBe("Rod Brind'Amour");
+    });
+
+    it("should move the rated players the star lineup leaves off the rink onto the bench", () => {
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      fixture.nativeElement.querySelector('.lineup-toggle').click();
+      fixture.detectChanges();
+      expect(benchNames('away')).toEqual(['Jordan Staal', 'Logan Stankoven', 'Jalen Chatfield', 'Jackson Blake']);
+      // The rink's star stays on the rink, so no one on the bench has one
+      expect(benchPlayers('away')[0].querySelector('.star-icon')).toBeNull();
+      expect(benchPlayers('away')[0].querySelectorAll('.puck-icon').length).toBe(2);
+    });
+
+    it('should seat a backup goalie, and fewer players when the team has fewer left', () => {
+      const homePlayers = gamePlayers(2025021057, true);
+      const forwards = homePlayers.filter(player => player.skaterStats && player.position !== 'D').slice(0, 4);
+      const defense = homePlayers.filter(player => player.position === 'D').slice(0, 2);
+      const goalies = homePlayers.filter(player => player.goalieStats);
+      show([...forwards, ...defense, ...goalies], gamePlayers(2025021057, false));
+      // Hellebuyck didn't play and is rated 0
+      expect(benchNames('home')).toEqual(['Morgan Barron', 'Connor Hellebuyck']);
+      expect(benchPlayers('home')[1].querySelector('.goalie-icon')).not.toBeNull();
+      expect(benchPlayers('home')[0].querySelector('.goalie-icon')).toBeNull();
+    });
+
+    it('should emit the player ID when a bench player is clicked', () => {
+      const clickedIds: number[] = [];
+      component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      clickToggle();
+      benchPlayers('away')[0].click();
+      expect(clickedIds).toEqual([8482809]);
+    });
+
+    it('should highlight a hovered bench player', () => {
+      show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
+      fixture.componentRef.setInput('highlightedPlayer', {playerId: 8478427});
+      fixture.detectChanges();
+      const aho = benchPlayers('away')[1];
+      expect(aho.classList).toContain('highlighted');
+      expect(aho.style.getPropertyValue('--highlight-color')).toBe(StatsUtils.hokmobRatingGreen);
+    });
+
+    it('should leave the benches empty and hide the toggle without players', () => {
+      show(undefined, []);
+      expect(fixture.nativeElement.querySelector('.benches')).not.toBeNull();
+      expect(benchPlayers('home').length).toBe(0);
+      expect(benchPlayers('away').length).toBe(0);
+      expect(benchToggle()).toBeNull();
+    });
+  });
+
   describe('highlighted player', () => {
     function highlight(highlightedPlayer: PlayerHighlight): void {
       fixture.componentRef.setInput('highlightedPlayer', highlightedPlayer);

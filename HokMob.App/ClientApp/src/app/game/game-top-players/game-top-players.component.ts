@@ -163,7 +163,23 @@ export class GameTopPlayersComponent implements OnChanges {
 
   public readonly numDefenseToShow = 2;
 
+  /** How many of each team's next best rated players sit on its bench when the benches are open. */
+  public readonly numBenchPlayersToShow = 4;
+
   public readonly maxGoalPucks = 3;
+
+  /**
+   * Each team's best rated players left off the rink, best first, for its bench.
+   */
+  public homeBenchPlayers: GamePlayer[] = [];
+
+  public awayBenchPlayers: GamePlayer[] = [];
+
+  /**
+   * Whether the benches are open, showing each team's bench players above its coach. The toggle between the benches
+   * opens and closes them, on screens wide enough to show the benches.
+   */
+  public showBenchPlayers = false;
 
   public ngOnChanges(changes: SimpleChanges): void {
     this.buildSpots();
@@ -184,8 +200,22 @@ export class GameTopPlayersComponent implements OnChanges {
     return this.showStarLineup ? 'Star Players' : 'Top Players';
   }
 
+  /**
+   * Opens or closes the benches.
+   */
+  public toggleBenchPlayers(): void {
+    this.showBenchPlayers = !this.showBenchPlayers;
+  }
+
   public get showBenches(): boolean {
     return !!this.homeCoach || !!this.awayCoach;
+  }
+
+  /**
+   * Whether either team has a player left off the rink, so the benches have someone to show.
+   */
+  public get hasBenchPlayers(): boolean {
+    return this.homeBenchPlayers.length > 0 || this.awayBenchPlayers.length > 0;
   }
 
   public getHokmobScoreColor(player: GamePlayer): string {
@@ -227,17 +257,35 @@ export class GameTopPlayersComponent implements OnChanges {
     return spot.player.playerId;
   }
 
+  public trackByPlayer(index: number, player: GamePlayer): number {
+    return player.playerId;
+  }
+
   public clickPlayer(player: GamePlayer): void {
     this.playerClicked.emit(player.playerId);
   }
 
   /**
-   * Fills both rinks and stars the best rated player on them, for the lineup the card is showing.
+   * Fills both rinks and their benches, and stars the best rated player on the rink, for the lineup the card is
+   * showing.
    */
   private buildSpots(): void {
     this.homeSpots = this.getSpots(this.homePlayers);
     this.awaySpots = this.getSpots(this.awayPlayers);
+    this.homeBenchPlayers = this.getBenchPlayers(this.homePlayers, this.homeSpots);
+    this.awayBenchPlayers = this.getBenchPlayers(this.awayPlayers, this.awaySpots);
     this.gameMvpPlayerId = this.getGameMvpPlayerId();
+  }
+
+  /**
+   * Returns a team's best rated players who aren't on the rink, skaters and goalies alike, best first. Ties are split
+   * the same way as on the rink (GameTopPlayersComponent.sortPlayers).
+   */
+  private getBenchPlayers(players: GamePlayer[], spots: TopPlayerSpot[]): GamePlayer[] {
+    const rinkPlayerIds = new Set(spots.map(spot => spot.player.playerId));
+    return GameTopPlayersComponent.sortPlayers(players)
+        .filter(player => !rinkPlayerIds.has(player.playerId))
+        .slice(0, this.numBenchPlayersToShow);
   }
 
   /**
@@ -249,8 +297,7 @@ export class GameTopPlayersComponent implements OnChanges {
    * rated 0, so a tie there goes to the goalie who played the most.
    */
   private getSpots(players: GamePlayer[]): TopPlayerSpot[] {
-    const sortedPlayers = [...(players ?? [])].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
-        StatsUtils.sortByStarPlayer(playerA, playerB));
+    const sortedPlayers = GameTopPlayersComponent.sortPlayers(players);
     const skaters = sortedPlayers.filter(player => player.skaterStats);
     const goalies = sortedPlayers.filter(player => player.goalieStats)
         .sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
@@ -354,6 +401,14 @@ export class GameTopPlayersComponent implements OnChanges {
     const round = (value: number) => Math.round(value * 100) / 100;
     return [-1.5, 1.5].map(offset =>
         `M${round(x + offset)} ${round(y - radius)} v-2 M${round(x + offset)} ${round(y + radius)} v2`).join(' ');
+  }
+
+  /**
+   * Returns a copy of the players, best rated first, with the bigger star first in a tie (StatsUtils.sortByStarPlayer).
+   */
+  private static sortPlayers(players: GamePlayer[]): GamePlayer[] {
+    return [...(players ?? [])].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
+        StatsUtils.sortByStarPlayer(playerA, playerB));
   }
 
   private static placeLine(line: TopPlayerLine, players: GamePlayer[]): TopPlayerSpot[] {

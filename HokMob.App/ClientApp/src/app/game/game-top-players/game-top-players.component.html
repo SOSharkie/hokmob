@@ -44,48 +44,76 @@
       <ng-container *ngTemplateOutlet="playerSpots; context: {$implicit: awaySpots}"></ng-container>
     </div>
   </div>
-  <div *ngIf="showBenches" class="benches">
+  <!-- Opened, each bench slides out along the boards and shows its next best rated players above the coach -->
+  <div *ngIf="showBenches" class="benches" [class.expanded]="showBenchPlayers">
     <div class="bench home-bench">
-      <app-team-logo *ngIf="homeTeamLogo" class="team-logo" [src]="homeTeamLogo" [size]="logoSize"></app-team-logo>
-      <div class="coach-info">
-        <span class="coach-name">{{homeCoach || '-'}}</span>
-        <span class="coach-label">Head Coach</span>
+      <ng-container *ngTemplateOutlet="benchPlayers; context: {$implicit: homeBenchPlayers}"></ng-container>
+      <div class="coach">
+        <app-team-logo *ngIf="homeTeamLogo" class="team-logo" [src]="homeTeamLogo" [size]="logoSize"></app-team-logo>
+        <div class="coach-info">
+          <span class="coach-name">{{homeCoach || '-'}}</span>
+          <span class="coach-label">Head Coach</span>
+        </div>
       </div>
     </div>
+    <button *ngIf="hasBenchPlayers" type="button" class="bench-toggle" [attr.aria-expanded]="showBenchPlayers"
+            [title]="showBenchPlayers ? 'Hide the bench players' : 'Show the bench players'" (click)="toggleBenchPlayers()">
+      <mat-icon class="toggle-icon">expand_more</mat-icon>
+    </button>
     <div class="bench away-bench">
-      <app-team-logo *ngIf="awayTeamLogo" class="team-logo" [src]="awayTeamLogo" [size]="logoSize"></app-team-logo>
-      <div class="coach-info">
-        <span class="coach-name">{{awayCoach || '-'}}</span>
-        <span class="coach-label">Head Coach</span>
+      <ng-container *ngTemplateOutlet="benchPlayers; context: {$implicit: awayBenchPlayers}"></ng-container>
+      <div class="coach">
+        <app-team-logo *ngIf="awayTeamLogo" class="team-logo" [src]="awayTeamLogo" [size]="logoSize"></app-team-logo>
+        <div class="coach-info">
+          <span class="coach-name">{{awayCoach || '-'}}</span>
+          <span class="coach-label">Head Coach</span>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<ng-template #benchPlayers let-players>
+  <div class="bench-players" [attr.aria-hidden]="!showBenchPlayers">
+    <div *ngFor="let player of players; let index = index; trackBy: trackByPlayer" (click)="clickPlayer(player)"
+         class="bench-player" [class.highlighted]="isHighlighted(player)" [style.--index]="index"
+         [style.--highlight-color]="isHighlighted(player) ? getHighlightColor(player) : null">
+      <ng-container *ngTemplateOutlet="playerAvatar; context: {$implicit: player}"></ng-container>
+      <div class="player-name">
+        <span>{{player.name}}</span>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
 <ng-template #playerSpots let-spots>
   <div *ngFor="let spot of spots; trackBy: trackBySpot" (click)="clickPlayer(spot.player)" class="top-player"
        [ngClass]="spot.line" [class.highlighted]="isHighlighted(spot.player)"
        [style.--highlight-color]="isHighlighted(spot.player) ? getHighlightColor(spot.player) : null" [style.--length.%]="spot.length" [style.--across.%]="spot.across">
-    <div class="player-avatar">
-      <div class="player-headshot-container">
-        <img [src]="spot.player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
-      </div>
-      <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(spot.player)}">
-        <span>{{spot.player.hokmobRating}}</span>
-        <mat-icon *ngIf="spot.player.playerId === gameMvpPlayerId" class="star-icon">star</mat-icon>
-      </div>
-      <div *ngIf="spot.player.skaterStats?.goals > 0" class="player-goals">
-        <div *ngFor="let puckIndex of getGoalPuckIndexes(spot.player)" class="player-goal-container"
-             [class.highlighted-goal]="isHighlightedGoal(spot.player, puckIndex)">
-          <img class="puck-icon" src="assets/puck.png" alt="">
-        </div>
-      </div>
-      <div *ngIf="spot.player.goalieStats" class="goalie-icon-container">
-        <img class="goalie-icon" src="assets/goalie_mask.png" alt="">
-      </div>
-    </div>
+    <ng-container *ngTemplateOutlet="playerAvatar; context: {$implicit: spot.player}"></ng-container>
     <div class="player-name">
       <span>{{spot.player.name}}</span>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #playerAvatar let-player>
+  <div class="player-avatar">
+    <div class="player-headshot-container">
+      <img [src]="player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
+    </div>
+    <div class="hokmob-score-container" [ngStyle]="{'background-color': getHokmobScoreColor(player)}">
+      <span>{{player.hokmobRating}}</span>
+      <mat-icon *ngIf="player.playerId === gameMvpPlayerId" class="star-icon">star</mat-icon>
+    </div>
+    <div *ngIf="player.skaterStats?.goals > 0" class="player-goals">
+      <div *ngFor="let puckIndex of getGoalPuckIndexes(player)" class="player-goal-container"
+           [class.highlighted-goal]="isHighlightedGoal(player, puckIndex)">
+        <img class="puck-icon" src="assets/puck.png" alt="">
+      </div>
+    </div>
+    <div *ngIf="player.goalieStats" class="goalie-icon-container">
+      <img class="goalie-icon" src="assets/goalie_mask.png" alt="">
     </div>
   </div>
 </ng-template>
