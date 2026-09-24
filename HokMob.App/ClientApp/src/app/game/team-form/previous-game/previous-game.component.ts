@@ -47,6 +47,17 @@ export class PreviousGameComponent {
   }
 
   /**
+   * The home team's abbreviation, like "BOS", shown in place of its name in the narrowest rows.
+   */
+  public get homeTeamAbbrev(): string {
+    return PreviousGameComponent.getAbbrev(this.game?.homeTeam);
+  }
+
+  public get awayTeamAbbrev(): string {
+    return PreviousGameComponent.getAbbrev(this.game?.awayTeam);
+  }
+
+  /**
    * The score as "home - away", or "N/A" without a score.
    */
   public get score(): string {
@@ -89,6 +100,13 @@ export class PreviousGameComponent {
    */
   private static getShortName(team: ClubScheduleTeam): string {
     return team?.commonName?.default ?? NhlTeamUtils.getTeam(team?.id).teamName;
+  }
+
+  /**
+   * The team's abbreviation from the schedule, like "BOS", or from the team utils when it's missing.
+   */
+  private static getAbbrev(team: ClubScheduleTeam): string {
+    return team?.abbrev ?? NhlTeamUtils.getTeam(team?.id).triCode;
   }
 
 }

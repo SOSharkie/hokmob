@@ -61,6 +61,8 @@ describe('PreviousGameComponent', () => {
     show(bostonGame(2025021292), 6);
     expect(text('.home.team-name')).toBe('Bruins');
     expect(text('.away.team-name')).toBe('Devils');
+    expect(text('.home.team-abbrev')).toBe('BOS');
+    expect(text('.away.team-abbrev')).toBe('NJD');
     expect(text('.score-container')).toBe('4 - 0');
     expect(scoreClasses()).toEqual(['green']);
     expect(logoTeamIds()).toEqual([6, 1]);
@@ -121,10 +123,13 @@ describe('PreviousGameComponent', () => {
   it('should fall back to the team utils for a missing name and an unknown team', () => {
     const game = bostonGame(2025021292);
     delete game.homeTeam.commonName;
+    delete game.homeTeam.abbrev;
     game.awayTeam.id = 999;
     show(game, 6);
     expect(text('.home.team-name')).toBe('Bruins');
+    expect(text('.home.team-abbrev')).toBe('BOS');
     expect(text('.away.team-name')).toBe('Devils');
+    expect(text('.away.team-abbrev')).toBe('NJD');
     // The unknown ID is passed straight through; app-team-logo falls back to the placeholder, see its own spec
     expect(logoTeamIds()[1]).toBe(999);
   });
