@@ -178,17 +178,20 @@ describe('RatingBreakdownUtils', () => {
       });
     });
 
-    it('should pay a save at even strength less than one on the penalty kill', () => {
+    it('should pay a save on the penalty kill more than one at even strength or on the power play', () => {
       const breakdown = RatingBreakdownUtils.getGoalieBreakdown({
         evenStrengthShotsAgainst: '24/25', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '1/1',
         savePctg: 0.968, shotsAgainst: 31, saves: 30
       } as BoxscoreGoalie);
       expect(breakdown.terms.map(ratingTerm => ratingTerm.label)).toEqual(['Base', 'Even strength saves',
-        'Penalty kill saves', 'Goals against']);
+        'Penalty kill saves', 'Power play saves', 'Goals against']);
       expect(term(breakdown, 'Even strength saves')).toBe(4);
       expect(term(breakdown, 'Penalty kill saves')).toBe(1);
+      expect(term(breakdown, 'Power play saves')).toBe(0.17);
       expect(term(breakdown, 'Goals against')).toBe(-1);
-      expect(breakdown.rating).toBe(9);
+      // 5 + 4 + 1 + 1/6 - 1 = 9.17
+      expect(breakdown.rawTotal).toBe(9.17);
+      expect(breakdown.rating).toBe(9.2);
     });
 
     it('should rate a goalie who faced no shots 0, not 5', () => {

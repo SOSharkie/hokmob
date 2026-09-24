@@ -153,7 +153,7 @@ describe('RecentPlayerGamesComponent', () => {
     show(games, true);
     expect(gameRows().length).toBe(10);
     // A 6 goal loss in Vegas: 32 of 38 saved in a full game, so the GAA is 6.00
-    expect(row(0)).toEqual(['Apr 13', 'VGK(2 - 6)', '60:00', '.842', '6.00', '38', '6', '4.6']);
+    expect(row(0)).toEqual(['Apr 13', 'VGK(2 - 6)', '60:00', '.842', '6.00', '38', '6', '4.8']);
     expect(opponentLogo(0)).toBe('assets/logos/vegas.png');
     // A game that went to overtime, so the GAA is below the goals against
     expect(games[6].timeOnIce).toBe(3633);

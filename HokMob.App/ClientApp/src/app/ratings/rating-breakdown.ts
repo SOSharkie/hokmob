@@ -162,11 +162,13 @@ export class RatingBreakdownUtils {
     terms.push({label: "Base", detail: "An average game", value: RatingBreakdownUtils.baseRating, total});
 
     const evenStrengthSaves = StatsUtils.getSaves(goalie.evenStrengthShotsAgainst);
-    const shorthandedSaves = StatsUtils.getSaves(goalie.powerPlayShotsAgainst);
+    const penaltyKillSaves = StatsUtils.getSaves(goalie.powerPlayShotsAgainst);
+    const powerPlaySaves = StatsUtils.getSaves(goalie.shorthandedShotsAgainst);
     const goalsAgainst = (goalie.shotsAgainst ?? 0) - (goalie.saves ?? 0);
     addTerm("Even strength saves", evenStrengthSaves + " / 6", evenStrengthSaves / 6);
-    addTerm("Penalty kill saves", shorthandedSaves + " / 5, the boxscore's power play split",
-        shorthandedSaves / 5);
+    addTerm("Penalty kill saves", penaltyKillSaves + " / 5, the boxscore's power play split",
+        penaltyKillSaves / 5);
+    addTerm("Power play saves", powerPlaySaves + " / 6, the boxscore's shorthanded split", powerPlaySaves / 6);
     addTerm("Goals against", goalsAgainst + " x -1", -goalsAgainst);
 
     let clampNote: string;

@@ -182,7 +182,9 @@ export class StatsUtils {
 
   /**
    * Calculates the HokMob rating of a goalie for a single live or past game, from 0 to 10. A goalie who faced no
-   * shots (no savePctg) gets 0.
+   * shots (no savePctg) gets 0. Saves count by strength: the boxscore's power play split (shots faced on the penalty
+   * kill) pays 1/5 a save, and even strength and its shorthanded split (shots faced on his own team's power play) pay
+   * 1/6. Every goal against costs 1.
    *
    * @param goalie - The goalie's boxscore stats.
    */
@@ -193,6 +195,7 @@ export class StatsUtils {
     let hokmobRating = 5;
     hokmobRating += (StatsUtils.getSaves(goalie.evenStrengthShotsAgainst) / 6);
     hokmobRating += (StatsUtils.getSaves(goalie.powerPlayShotsAgainst) / 5);
+    hokmobRating += (StatsUtils.getSaves(goalie.shorthandedShotsAgainst) / 6);
     hokmobRating -= ((goalie.shotsAgainst ?? 0) - (goalie.saves ?? 0));
 
     return parseFloat(Math.max(0, Math.min(10.0, hokmobRating)).toFixed(1));

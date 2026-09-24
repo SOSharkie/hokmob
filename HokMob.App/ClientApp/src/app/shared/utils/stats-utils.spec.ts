@@ -144,11 +144,27 @@ describe('StatsUtils', () => {
   });
 
   describe('calculateGoalieHokMobRating', () => {
-    it('should rate a real goalie from his even strength and power play saves', () => {
-      // Comrie: 28/30 even strength, 1/1 power play, 29 saves on 31 shots: 5 + 28/6 + 1/5 - 2 = 7.87
+    it('should rate a real goalie from his saves at every strength', () => {
+      // Comrie: 28/30 even strength, 1/1 power play, 0/0 shorthanded, 29 saves on 31 shots: 5 + 28/6 + 1/5 - 2 = 7.87
       expect(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer(8477480))).toBe(7.9);
-      // Binnington: 8/11 even strength, 4/4 power play, 13 saves on 16 shots: 5 + 8/6 + 4/5 - 3 = 4.13
-      expect(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer(8476412))).toBe(4.1);
+      // Binnington: 8/11 even strength, 4/4 power play, 1/1 shorthanded, 13 saves on 16 shots:
+      // 5 + 8/6 + 4/5 + 1/6 - 3 = 4.3
+      expect(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer(8476412))).toBe(4.3);
+    });
+
+    it('should pay a save made while his team is on the power play like one at even strength', () => {
+      const comrie = boxscorePlayer<BoxscoreGoalie>(8477480);
+      const withoutShorthandedShot = StatsUtils.calculateGoalieHokMobRating(comrie);
+      // One more shot faced while the Jets had the man advantage: 7.87 + 1/6 = 8.03
+      comrie.shorthandedShotsAgainst = '1/1';
+      comrie.shotsAgainst = 32;
+      comrie.saves = 30;
+      expect(StatsUtils.calculateGoalieHokMobRating(comrie)).toBe(8.0);
+      expect(StatsUtils.calculateGoalieHokMobRating(comrie)).toBeGreaterThan(withoutShorthandedShot);
+      // Scored on instead: the goal costs 1 and the shot earns nothing, 7.87 - 1 = 6.87
+      comrie.shorthandedShotsAgainst = '0/1';
+      comrie.saves = 29;
+      expect(StatsUtils.calculateGoalieHokMobRating(comrie)).toBe(6.9);
     });
 
     it('should rate a goalie who faced no shots 0', () => {
@@ -450,8 +466,8 @@ describe('StatsUtils', () => {
     it('should give a real game the same rating as its boxscore', () => {
       expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(statsApiGoalie())))
           .toBe(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer<BoxscoreGoalie>(8483548, 2025030414)));
-      // 5 + 12 even strength saves / 6 + 5 power play saves / 5 - 3 goals against = 5.0
-      expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(statsApiGoalie()))).toBe(5.0);
+      // 5 + 12 even strength saves / 6 + 5 power play saves / 5 + 1 shorthanded save / 6 - 3 goals against = 5.17
+      expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(statsApiGoalie()))).toBe(5.2);
     });
 
     it('should mark an overtime loss and a regulation loss', () => {
