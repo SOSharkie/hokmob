@@ -127,6 +127,8 @@ export interface SkaterGameStats extends PlayerGameStatsRow {
   totalSecondaryAssists?: number;
   /** Power play assists, from the powerplay report; missing when that call failed. */
   ppAssists?: number;
+  /** Penalties drawn, from the penalties report; missing when that call failed. */
+  penaltiesDrawn?: number;
 }
 
 export interface GoalieGameStats extends PlayerGameStatsRow {

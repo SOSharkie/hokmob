@@ -26,6 +26,9 @@ namespace HokMob.App.Controllers
         /// <summary>The power play assists merged into a skater's per game rows, for the HokMob rating's plus/minus.</summary>
         private static readonly string[] SkaterPowerPlayFields = {"ppAssists"};
 
+        /// <summary>The penalties drawn merged into a skater's per game rows, for the HokMob rating's penalties drawn.</summary>
+        private static readonly string[] SkaterPenaltyFields = {"penaltiesDrawn"};
+
         /// <summary>The saves by strength fields merged into a goalie's per game rows.</summary>
         private static readonly string[] GoalieSavesByStrengthFields =
             {"evSaves", "evShotsAgainst", "ppSaves", "ppShotsAgainst", "shSaves", "shShotsAgainst"};
@@ -57,8 +60,8 @@ namespace HokMob.App.Controllers
         /// <summary>
         /// Returns a player's NHL stats by season and for their last 10 games, as
         /// { regularSeasons, playoffSeasons, recentGames }. A skater's rows include the realtime stats (hits, blocks,
-        /// takeaways and giveaways), and their per game rows the faceoffs taken, the primary/secondary assist split
-        /// and the power play assists. A goalie's per game rows include the saves by strength. Recent games have the
+        /// takeaways and giveaways), and their per game rows the faceoffs taken, the primary/secondary assist split,
+        /// the power play assists and the penalties drawn. A goalie's per game rows include the saves by strength. Recent games have the
         /// final score, and are newest first with playoff and regular season games mixed.
         /// </summary>
         /// <param name="id">The NHL player ID.</param>
@@ -94,10 +97,13 @@ namespace HokMob.App.Controllers
             var recentGamePowerPlayTask = isGoalie
                 ? Task.FromResult<List<JsonObject>?>(null)
                 : _nhlStatsApiClient.GetReportAsync("skater/powerplay", GetRecentGameParameters(id), cancellationToken);
+            var recentGamePenaltiesTask = isGoalie
+                ? Task.FromResult<List<JsonObject>?>(null)
+                : _nhlStatsApiClient.GetReportAsync("skater/penalties", GetRecentGameParameters(id), cancellationToken);
 
             await Task.WhenAll(regularSeasonsTask, playoffSeasonsTask, recentGamesTask, recentGameExtrasTask,
                 regularSeasonExtrasTask, playoffSeasonExtrasTask, recentGameFaceoffsTask, recentGameAssistsTask,
-                recentGamePowerPlayTask);
+                recentGamePowerPlayTask, recentGamePenaltiesTask);
 
             var regularSeasons = regularSeasonsTask.Result;
             var playoffSeasons = playoffSeasonsTask.Result;
@@ -115,6 +121,7 @@ namespace HokMob.App.Controllers
             Merge(recentGames, recentGameFaceoffsTask.Result, "gameId", SkaterFaceoffFields);
             Merge(recentGames, recentGameAssistsTask.Result, "gameId", SkaterAssistFields);
             Merge(recentGames, recentGamePowerPlayTask.Result, "gameId", SkaterPowerPlayFields);
+            Merge(recentGames, recentGamePenaltiesTask.Result, "gameId", SkaterPenaltyFields);
             SortBySeason(regularSeasons);
             SortBySeason(playoffSeasons);
             await AddGameScores(recentGames, cancellationToken);

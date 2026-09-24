@@ -98,6 +98,24 @@ export class PlayByPlayUtils {
   }
 
   /**
+   * Counts the penalties each player drew, by player ID, from the drawnByPlayerId of each penalty. This matches the
+   * stats API's penaltiesDrawn: each fighter draws the other's major, coincidental minors count, and a penalty with no
+   * drawer (too many men, a misconduct, delay of game) counts for nobody. Goalies can draw penalties too.
+   *
+   * @param playByPlay - The game's play-by-play.
+   */
+  public static getPenaltiesDrawnCounts(playByPlay: PlayByPlay): Map<number, number> {
+    const penaltiesDrawnCounts = new Map<number, number>();
+    (playByPlay?.plays ?? []).filter(play => play.typeDescKey === NhlPlayTypeEnum.PENALTY).forEach(play => {
+      const playerId = play.details?.drawnByPlayerId;
+      if (playerId != null) {
+        penaltiesDrawnCounts.set(playerId, (penaltiesDrawnCounts.get(playerId) ?? 0) + 1);
+      }
+    });
+    return penaltiesDrawnCounts;
+  }
+
+  /**
    * Maps player IDs to the game's roster spots, for names and headshots.
    *
    * @param playByPlay - The game's play-by-play.

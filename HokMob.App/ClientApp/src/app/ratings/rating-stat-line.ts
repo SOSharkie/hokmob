@@ -28,8 +28,8 @@ export class RatingStatLineUtils {
 
   /**
    * A skater's boxscore stats as the Ratings page's skater line. Draws won come from the boxscore's win percentage and
-   * the draws taken. Without an assist split every assist is read as primary, and without a draw count or power play
-   * assists those are 0.
+   * the draws taken. Without an assist split every assist is read as primary, and without a draw count, power play
+   * assists or penalties drawn those are 0.
    *
    * @param skater - The skater's boxscore stats.
    * @param context - What the game page rated him with beyond the boxscore.
@@ -50,6 +50,7 @@ export class RatingStatLineUtils {
       takeaways: skater?.takeaways ?? 0,
       giveaways: skater?.giveaways ?? 0,
       pim: skater?.pim ?? 0,
+      penaltiesDrawn: context?.penaltiesDrawn ?? 0,
       plusMinus: skater?.plusMinus ?? 0,
       faceoffsTaken,
       faceoffWins: Math.round((skater?.faceoffWinningPctg ?? 0) * faceoffsTaken)

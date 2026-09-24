@@ -426,9 +426,12 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.rightRail = bundle.rightRail ?? this.rightRail;
     const rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
     const faceoffCounts = this.playByPlay ? PlayByPlayUtils.getFaceoffCounts(this.playByPlay) : undefined;
+    const penaltiesDrawnCounts = this.playByPlay ? PlayByPlayUtils.getPenaltiesDrawnCounts(this.playByPlay) : undefined;
     const assistCounts = this.landing ? StatsUtils.getAssistCounts(this.landing) : undefined;
-    this.homePlayers = StatsUtils.getGamePlayers(this.boxscore, true, rosterSpots, faceoffCounts, assistCounts);
-    this.awayPlayers = StatsUtils.getGamePlayers(this.boxscore, false, rosterSpots, faceoffCounts, assistCounts);
+    this.homePlayers = StatsUtils.getGamePlayers(this.boxscore, true, rosterSpots, faceoffCounts, assistCounts,
+        penaltiesDrawnCounts);
+    this.awayPlayers = StatsUtils.getGamePlayers(this.boxscore, false, rosterSpots, faceoffCounts, assistCounts,
+        penaltiesDrawnCounts);
     this.updateIntermission();
   }
 

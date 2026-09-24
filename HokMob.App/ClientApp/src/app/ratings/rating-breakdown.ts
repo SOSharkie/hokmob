@@ -49,7 +49,8 @@ export class RatingBreakdownUtils {
    * Breaks a skater's rating into its terms, in the order `StatsUtils.calculateSkaterHokmobRating` applies them.
    *
    * @param skater - The skater's boxscore stats.
-   * @param context - The faceoffs taken, the assist split and the power play assists, whichever are known.
+   * @param context - The faceoffs taken, the assist split, the power play assists and the penalties drawn, whichever
+   * are known.
    */
   public static getSkaterBreakdown(skater: BoxscoreSkater, context?: SkaterRatingContext): RatingBreakdown {
     const goals = skater.goals ?? 0;
@@ -75,6 +76,13 @@ export class RatingBreakdownUtils {
     addTerm("Takeaways", (skater.takeaways ?? 0) + " x 0.2", (skater.takeaways ?? 0) * 0.2);
     addTerm("Penalty minutes", RatingBreakdownUtils.getPenaltyDetail(skater.pim ?? 0),
         RatingBreakdownUtils.getPenaltyValue(skater.pim ?? 0));
+    const penaltiesDrawn = context?.penaltiesDrawn;
+    if (penaltiesDrawn != null) {
+      addTerm("Penalties drawn", penaltiesDrawn + " x " + StatsUtils.penaltyDrawnWeight,
+          Math.max(0, penaltiesDrawn) * StatsUtils.penaltyDrawnWeight);
+    } else {
+      addTerm("Penalties drawn", "Not counted (no count)", 0);
+    }
 
     // Goals and assists have already paid off above, so a plus the skater earned himself doesn't pay twice. His power
     // play points are added back, since plus/minus doesn't count a power play goal in the first place.

@@ -102,6 +102,27 @@ describe('PlayByPlayUtils', () => {
     });
   });
 
+  describe('getPenaltiesDrawnCounts', () => {
+    it('should count the penalties each player of a real game drew', () => {
+      const penaltiesDrawnCounts = PlayByPlayUtils.getPenaltiesDrawnCounts(mockGamePlayByPlay(2025030414));
+      expect(penaltiesDrawnCounts.get(8475791)).toBe(1); // Hall
+      expect(penaltiesDrawnCounts.get(8477964)).toBe(1); // Barbashev
+      expect(penaltiesDrawnCounts.get(8478403)).toBe(1); // Eichel
+      expect(penaltiesDrawnCounts.get(8481604)).toBe(1); // Dorofeyev
+      expect(penaltiesDrawnCounts.get(8482702)).toBe(1); // Stankoven
+      expect(penaltiesDrawnCounts.get(8482809)).toBe(1); // Blake
+      expect(penaltiesDrawnCounts.get(8479394)).toBe(1); // Hart, a goalie
+      // The too-many-men bench minor has no drawer, so its 8 penalties credit 7 players.
+      expect(penaltiesDrawnCounts.size).toBe(7);
+      expect(penaltiesDrawnCounts.has(8477447)).toBeFalse(); // Theodore, who only took one
+    });
+
+    it('should return an empty map without plays', () => {
+      expect(PlayByPlayUtils.getPenaltiesDrawnCounts(mockGamePlayByPlay(2026020056)).size).toBe(0);
+      expect(PlayByPlayUtils.getPenaltiesDrawnCounts(undefined).size).toBe(0);
+    });
+  });
+
   describe('getRosterSpotMap', () => {
     it('should map the player IDs of a real game to roster spots', () => {
       const rosterSpots = PlayByPlayUtils.getRosterSpotMap(mockGamePlayByPlay(2025021057));
