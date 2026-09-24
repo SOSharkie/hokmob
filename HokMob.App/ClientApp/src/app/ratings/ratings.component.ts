@@ -110,8 +110,7 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     {key: "evenStrengthGoals", label: "Even strength goals against", weight: "-1 each", min: 0, max: 10},
     {key: "penaltyKillShots", label: "Penalty kill shots", weight: "+1/5 a save", min: 0, max: 20},
     {key: "penaltyKillGoals", label: "Penalty kill goals against", weight: "-1 each", min: 0, max: 8},
-    {key: "powerPlayShots", label: "Power play shots", weight: "Saves not counted yet (#104)", min: 0,
-      max: 10},
+    {key: "powerPlayShots", label: "Power play shots", weight: "+1/6 a save", min: 0, max: 10},
     {key: "powerPlayGoals", label: "Power play goals against", weight: "-1 each", min: 0, max: 4}
   ];
 

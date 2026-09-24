@@ -309,7 +309,7 @@ describe('RatingsComponent', () => {
 
     expect(component.subject).toBe('goalie');
     expect(termRows().map(row => row[0])).toEqual(['Base', 'Even strength saves', 'Penalty kill saves',
-      'Goals against']);
+      'Power play saves', 'Goals against']);
     expect(stepperValue('Even strength shots')).toBe('22');
   });
 

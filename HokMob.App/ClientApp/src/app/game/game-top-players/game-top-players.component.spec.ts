@@ -207,9 +207,9 @@ describe('GameTopPlayersComponent', () => {
   });
 
   it('should pick the goalie who played over a better or equally rated backup who did not', () => {
-    // Hofer didn't play and is rated 0, below Binnington's 4.1
+    // Hofer didn't play and is rated 0, below Binnington's 4.3
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
-    expect(rating(cards('away', 'goalies')[0])).toBe('4.1');
+    expect(rating(cards('away', 'goalies')[0])).toBe('4.3');
     expect(cards('away', 'goalies')[0].querySelector('.goalie-icon')).not.toBeNull();
     expect(cards('away', 'forwards')[0].querySelector('.goalie-icon')).toBeNull();
 
