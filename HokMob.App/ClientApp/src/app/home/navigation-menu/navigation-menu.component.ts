@@ -14,6 +14,7 @@ export class NavigationMenuComponent {
     // {name: "Playoffs", iconName: "ballot"},
     {name: "Standings", iconName: "list-ordered"},
     {name: "Stats", iconName: "chart-no-axes-column"},
+    {name: "History", iconName: "history"},
     {name: "Draft", iconName: "clipboard-list"},
     {name: "News", iconName: "newspaper"},
     {name: "Teams", iconName: "shield"}
@@ -37,6 +38,9 @@ export class NavigationMenuComponent {
         break;
       case "Stats":
         this.router.navigate(['stats']);
+        break;
+      case "History":
+        this.router.navigate(['history']);
         break;
       case "Draft":
         this.router.navigate(['draft']);

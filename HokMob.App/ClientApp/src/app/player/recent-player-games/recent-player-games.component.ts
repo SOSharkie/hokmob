@@ -36,7 +36,7 @@ export interface RecentGameRow {
 /**
  * The player's last 10 games, newest first, with regular season and playoff games mixed as the stats API returns
  * them (/api/nhl-stats/player/{id}). The ratings use the same formulas as the game page, through
- * StatsUtils.toBoxscoreSkater / toBoxscoreGoalie.
+ * StatsUtils.calculateSkaterGameRating / calculateGoalieGameRating, like the history page.
  */
 @Component({
   selector: 'app-recent-player-games',
@@ -68,13 +68,7 @@ export class RecentPlayerGamesComponent implements OnChanges {
   }
 
   private static toSkaterRow(game: SkaterGameStats): RecentGameRow {
-    const hokmobRating = StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game), {
-      faceoffsTaken: game.totalFaceoffs,
-      primaryAssists: game.totalPrimaryAssists,
-      secondaryAssists: game.totalSecondaryAssists,
-      powerPlayAssists: game.ppAssists,
-      penaltiesDrawn: game.penaltiesDrawn
-    });
+    const hokmobRating = StatsUtils.calculateSkaterGameRating(game);
     return {
       ...RecentPlayerGamesComponent.toGameRow(game, hokmobRating),
       timeOnIce: StatsUtils.formatSeconds(game.timeOnIcePerGame),
@@ -88,7 +82,7 @@ export class RecentPlayerGamesComponent implements OnChanges {
   }
 
   private static toGoalieRow(game: GoalieGameStats): RecentGameRow {
-    const hokmobRating = StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(game));
+    const hokmobRating = StatsUtils.calculateGoalieGameRating(game);
     return {
       ...RecentPlayerGamesComponent.toGameRow(game, hokmobRating),
       timeOnIce: StatsUtils.formatSeconds(game.timeOnIce),

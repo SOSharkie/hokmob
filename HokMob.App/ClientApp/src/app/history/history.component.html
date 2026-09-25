@@ -1,0 +1,33 @@
+<div class="history-page">
+  <div class="history-header">
+    <div class="history-heading">
+      <h1 class="history-title">History</h1>
+      <p class="history-lead">
+        Every HokMob rating of a finished season, from each player's stat line in every game, rated with the same
+        formula as the game and player pages.
+      </p>
+    </div>
+    <button type="button" class="pill-picker season-picker"
+            [attr.aria-label]="'Season, ' + getSeasonLabel(selectedSeason)"
+            [matMenuTriggerFor]="seasonMenu"
+            (menuOpened)="scrollToSelectedSeason()">{{getSeasonLabel(selectedSeason)}}</button>
+    <mat-menu #seasonMenu="matMenu" class="pill-picker-menu season-menu" xPosition="before">
+      <button *ngFor="let option of seasonOptions" mat-menu-item role="menuitemradio" class="pill-picker-option"
+              [class.selected]="isSelected(option)" [attr.aria-checked]="isSelected(option)"
+              (click)="selectSeason(option)">{{getSeasonLabel(option)}}</button>
+    </mat-menu>
+  </div>
+  <div *ngIf="isLoading" class="loading-container">
+    <img src="assets/loading.gif" alt="" class="loading-gif">
+  </div>
+  <div *ngIf="hasError" class="history-message">
+    <span>The season couldn't be loaded</span>
+  </div>
+  <ng-container *ngIf="ratedSeason">
+    <app-rating-distribution class="history-section" [ratedGames]="ratedSeason.ratedGames"></app-rating-distribution>
+    <div class="history-columns">
+      <app-average-rating-leaders [ratedSeason]="ratedSeason"></app-average-rating-leaders>
+      <app-best-games [ratedSeason]="ratedSeason"></app-best-games>
+    </div>
+  </ng-container>
+</div>

@@ -13,7 +13,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
-    "capture-live-fixtures": "node capture-live-fixtures.js"
+    "capture-live-fixtures": "node capture-live-fixtures.js",
+    "build-season-data": "node build-season-data.js"
   },
   "private": true,
   "dependencies": {

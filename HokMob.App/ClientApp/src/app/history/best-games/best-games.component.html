@@ -1,0 +1,39 @@
+<section class="history-card best-games-card">
+  <div class="card-header">
+    <h2 class="card-title">Best single games</h2>
+    <div class="position-toggle" role="group" aria-label="Position">
+      <button *ngFor="let option of positionOptions" type="button" class="toggle-option"
+              [class.selected]="position === option.value" [attr.aria-pressed]="position === option.value"
+              (click)="selectPosition(option.value)">{{option.label}}</button>
+    </div>
+  </div>
+  <ol *ngIf="rows.length; else noGames" class="player-list">
+    <li *ngFor="let row of rows; trackBy: trackRow" class="player-row">
+      <span class="rank">{{row.rank}}</span>
+      <img [src]="row.headshot" (error)="showBlankHeadshot($event)" alt="" loading="lazy" class="player-headshot">
+      <div class="player-info">
+        <a class="player-name" [routerLink]="['/player', row.playerId]">{{row.name}}</a>
+        <span class="player-detail">
+          <app-team-logo class="team-logo" [teamId]="row.teamId" [size]="18"></app-team-logo>
+          <span class="position">{{row.position}}</span>
+        </span>
+      </div>
+      <a class="game-link" [routerLink]="['/game', row.gameId]"
+         [attr.aria-label]="'Game on ' + row.date + ', ' + row.score">
+        <span class="matchup">
+          <span class="versus">{{row.isHome ? 'vs' : '@'}}</span>
+          <app-team-logo class="team-logo" [teamId]="row.opponentId" [size]="20"></app-team-logo>
+        </span>
+        <span class="game-detail">
+          <span class="score">{{row.score}}</span>
+          <span class="date">{{row.date}}</span>
+        </span>
+      </a>
+      <span class="rating-badge" [style.background-color]="row.ratingColor"
+            [attr.title]="row.ratingNote">{{row.rating}}</span>
+    </li>
+  </ol>
+  <ng-template #noGames>
+    <div class="list-message">No games</div>
+  </ng-template>
+</section>

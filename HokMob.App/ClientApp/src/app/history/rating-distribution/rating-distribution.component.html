@@ -1,0 +1,36 @@
+<section class="history-card distribution-card">
+  <div class="card-header">
+    <h2 class="card-title">Rating distribution</h2>
+    <div class="position-toggle" role="group" aria-label="Position">
+      <button *ngFor="let option of positionOptions" type="button" class="toggle-option"
+              [class.selected]="position === option.value" [attr.aria-pressed]="position === option.value"
+              (click)="selectPosition(option.value)">{{option.label}}</button>
+    </div>
+  </div>
+  <div class="summary-stats">
+    <div class="summary-stat">
+      <span class="summary-value games-value">{{gameCount}}</span>
+      <span class="summary-label">Games</span>
+    </div>
+    <div class="summary-stat">
+      <span class="summary-value mean-value">{{mean}}</span>
+      <span class="summary-label">Mean</span>
+    </div>
+    <div class="summary-stat">
+      <span class="summary-value median-value">{{median}}</span>
+      <span class="summary-label">Median</span>
+    </div>
+    <div class="summary-stat">
+      <span class="summary-value green-value" [style.color]="greenColor">{{greenShare}}</span>
+      <span class="summary-label">7+</span>
+    </div>
+    <div class="summary-stat">
+      <span class="summary-value blue-value" [style.color]="blueColor">{{blueShare}}</span>
+      <span class="summary-label">8.5+</span>
+    </div>
+  </div>
+  <div class="chart-container">
+    <canvas #distributionChart role="img"
+            [attr.aria-label]="'Histogram of ' + gameCount + ' game ratings from 0 to 10'"></canvas>
+  </div>
+</section>

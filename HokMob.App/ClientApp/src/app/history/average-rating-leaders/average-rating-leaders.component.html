@@ -1,0 +1,40 @@
+<section class="history-card leaders-card">
+  <div class="card-header">
+    <h2 class="card-title">Top average rating</h2>
+    <div class="card-controls">
+      <div class="position-toggle" role="group" aria-label="Position">
+        <button *ngFor="let option of positionOptions" type="button" class="toggle-option"
+                [class.selected]="position === option.value" [attr.aria-pressed]="position === option.value"
+                (click)="selectPosition(option.value)">{{option.label}}</button>
+      </div>
+      <button type="button" class="pill-picker team-picker" [attr.aria-label]="'Team, ' + selectedTeamName"
+              [matMenuTriggerFor]="teamMenu" (menuOpened)="scrollToSelectedTeam()">{{selectedTeamName}}</button>
+      <mat-menu #teamMenu="matMenu" class="pill-picker-menu team-menu" xPosition="before">
+        <button mat-menu-item role="menuitemradio" class="pill-picker-option" [class.selected]="!teamId"
+                [attr.aria-checked]="!teamId" (click)="selectTeam(null)">All teams</button>
+        <button *ngFor="let team of teamOptions" mat-menu-item role="menuitemradio" class="pill-picker-option"
+                [class.selected]="team.id === teamId" [attr.aria-checked]="team.id === teamId"
+                (click)="selectTeam(team.id)">{{team.name}}</button>
+      </mat-menu>
+    </div>
+  </div>
+  <p class="card-note">Minimum {{minGames}} games<ng-container *ngIf="teamId"> for the team</ng-container></p>
+  <ol *ngIf="rows.length; else noLeaders" class="player-list">
+    <li *ngFor="let row of rows; trackBy: trackRow" class="player-row">
+      <span class="rank">{{row.rank}}</span>
+      <img [src]="row.headshot" (error)="showBlankHeadshot($event)" alt="" loading="lazy" class="player-headshot">
+      <div class="player-info">
+        <a class="player-name" [routerLink]="['/player', row.playerId]">{{row.name}}</a>
+        <span class="player-detail">
+          <app-team-logo class="team-logo" [teamId]="row.teamId" [size]="18"></app-team-logo>
+          <span class="position">{{row.position}}</span>
+        </span>
+      </div>
+      <span class="games-played" title="Games played">{{row.gamesPlayed}} GP</span>
+      <span class="rating-badge" [style.background-color]="row.ratingColor">{{row.averageRating}}</span>
+    </li>
+  </ol>
+  <ng-template #noLeaders>
+    <div class="list-message">No player has {{minGames}} games</div>
+  </ng-template>
+</section>

@@ -1,0 +1,90 @@
+@import "variables";
+
+// Below it the leaderboard and the best games stack
+$history-columns-breakpoint: $tiny-display-breakpoint;
+
+.history-page {
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-page-gap;
+  color: white;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $spacing-large $spacing-xx-large;
+  margin-bottom: $spacing-card-gap;
+
+  .history-title {
+    margin: 0 0 $spacing-medium;
+    color: $green-01;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .history-lead {
+    max-width: 720px;
+    margin: 0;
+    color: $gray-04;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .season-picker {
+    flex: none;
+    margin-top: $spacing-small;
+  }
+}
+
+.history-section {
+  display: block;
+  margin-bottom: $spacing-card-gap;
+}
+
+.history-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $spacing-card-gap;
+  align-items: start;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+
+  .loading-gif {
+    margin-top: $spacing-xx-large;
+    width: 100px;
+    height: 100px;
+  }
+}
+
+.history-message {
+  margin: $spacing-huge;
+  color: $gray-03;
+  text-align: center;
+}
+
+@media only screen and (max-width: $history-columns-breakpoint) {
+  .history-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .history-header {
+    flex-direction: column;
+
+    .history-title {
+      font-size: 22px;
+    }
+
+    .history-lead {
+      font-size: 14px;
+    }
+  }
+}

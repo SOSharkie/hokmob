@@ -9,6 +9,7 @@ import {
   mockPlayoffBracket,
   mockSkaterStatsLeaders,
   mockSeasonDates,
+  mockSeasonHistory,
   mockTeamStats
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 import {GoalieGameStats, SkaterGameStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
@@ -225,6 +226,36 @@ describe('nhl-api-mocks', () => {
     it('should return a fresh copy', () => {
       mockDraftStats().players.pop();
       expect(mockDraftStats().players.length).toBe(30);
+    });
+  });
+
+  describe('mockSeasonHistory', () => {
+    it('should return the 7 generated games, with every column of a table as long as the table', () => {
+      const history = mockSeasonHistory();
+      expect(history.season).toBe(20252026);
+      expect(history.gameType).toBe(2);
+      expect(history.games.id).toEqual([2025020259, 2025021057, 2025021061, 2025021237, 2025021290, 2025021292,
+        2025021293]);
+      const tables: [object, number][] = [[history.games, 7], [history.players, 208], [history.skaters, 252],
+        [history.goalies, 16]];
+      tables.forEach(([table, length]) => Object.entries(table).forEach(([field, column]) =>
+          expect((column as unknown[]).length).withContext(field).toBe(length)));
+    });
+
+    it('should point every row at a player and a game in the file', () => {
+      const history = mockSeasonHistory();
+      [history.skaters, history.goalies].forEach(rows => {
+        expect(rows.player.every(index => index >= 0 && index < 208)).toBeTrue();
+        expect(rows.game.every(index => index >= 0 && index < 7)).toBeTrue();
+      });
+      const lindholm = history.players.name.indexOf('Elias Lindholm');
+      expect(history.players.id[lindholm]).toBe(8477496);
+      expect(history.players.position[lindholm]).toBe('C');
+    });
+
+    it('should return a fresh copy every time', () => {
+      mockSeasonHistory().games.id.pop();
+      expect(mockSeasonHistory().games.id.length).toBe(7);
     });
   });
 });

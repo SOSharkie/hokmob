@@ -16,6 +16,10 @@
       <mat-icon svgIcon="lucide:chart-no-axes-column"></mat-icon>
       <span>Stats</span>
     </div>
+    <div id="history-item" class="menu-item" [ngClass]="{selected : menuUrl === '/history'}" [routerLink]="['/history']">
+      <mat-icon svgIcon="lucide:history"></mat-icon>
+      <span>History</span>
+    </div>
   </div>
   <app-footer></app-footer>
 </div>
