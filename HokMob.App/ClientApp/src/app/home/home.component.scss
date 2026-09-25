@@ -1,5 +1,17 @@
 @import "variables";
 
+// The nav menu grows from 160px up to 200px as the window widens, and the side padding stays 16px. The columns stay
+// centered, so the menu stays against the scores.
+@mixin growing-nav-menu {
+  padding-left: $spacing-card-gap;
+  padding-right: $spacing-card-gap;
+
+  .nav-menu {
+    flex: 1 0 160px;
+    max-width: 200px;
+  }
+}
+
 .home-page {
   display: flex;
   justify-content: center;
@@ -31,14 +43,14 @@
 @media only screen and (min-width: $small-display-breakpoint) {
   .home-page {
     flex-direction: row;
+    // At 1200px, a 160px menu leaves just enough room for the 16px padding next to the full-width scores and standings
+    @include growing-nav-menu;
 
-    .nav-menu {
-      width: 200px;
-    }
     .scores {
       min-width: 653px;
     }
     .news-and-standings {
+      flex-shrink: 0;
       width: 308px;
     }
   }
@@ -48,10 +60,8 @@
 @media only screen and (min-width: $tiny-display-breakpoint) and (max-width: $small-display-breakpoint){
   .home-page {
     flex-direction: row;
+    @include growing-nav-menu;
 
-    .nav-menu {
-      width: 150px;
-    }
     .scores {
       min-width: 601px;
     }
@@ -65,12 +75,12 @@
 @media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint){
   .home-page {
     flex-direction: row;
+    @include growing-nav-menu;
 
-    .nav-menu {
-      width: 130px;
-    }
+    // The scores shrink below 551px when the window is too narrow for them next to the menu
     .scores {
-      min-width: 551px;
+      flex: 0 1 551px;
+      min-width: 0;
     }
     .news-and-standings {
       display: none;
