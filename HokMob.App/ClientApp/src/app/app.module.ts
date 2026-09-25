@@ -64,6 +64,11 @@ import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-e
 import { PlayerCareerComponent } from './player/player-career/player-career.component';
 import { DraftComponent } from './draft/draft.component';
 import { RatingsComponent } from './ratings/ratings.component';
+import { HistoryComponent } from './history/history.component';
+import { RatingDistributionComponent } from './history/rating-distribution/rating-distribution.component';
+import { AverageRatingLeadersComponent } from './history/average-rating-leaders/average-rating-leaders.component';
+import { BestGamesComponent } from './history/best-games/best-games.component';
+import {SeasonHistoryService} from "@shared/services/season-history.service";
 
 @NgModule({
   declarations: [
@@ -116,7 +121,11 @@ import { RatingsComponent } from './ratings/ratings.component';
     MiniEventComponent,
     PlayerCareerComponent,
     DraftComponent,
-    RatingsComponent
+    RatingsComponent,
+    HistoryComponent,
+    RatingDistributionComponent,
+    AverageRatingLeadersComponent,
+    BestGamesComponent
   ],
   imports: [
     BrowserModule,
@@ -136,7 +145,8 @@ import { RatingsComponent } from './ratings/ratings.component';
     NhlStatsApiService,
     NhlLeadersService,
     RouterExtensionService,
-    NhlSearchService
+    NhlSearchService,
+    SeasonHistoryService
   ],
   bootstrap: [AppComponent]
 })

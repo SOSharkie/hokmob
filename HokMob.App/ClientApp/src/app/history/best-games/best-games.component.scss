@@ -1,0 +1,41 @@
+@import "../history-card";
+
+.game-link {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: $spacing-medium;
+  padding: $spacing-small $spacing-medium;
+  border-radius: 10px;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: $black-03;
+  }
+
+  .matchup {
+    display: flex;
+    align-items: center;
+    gap: $spacing-small;
+  }
+
+  .versus {
+    color: $gray-03;
+    font-size: 11px;
+  }
+
+  .game-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 46px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .date {
+    color: $gray-03;
+  }
+}

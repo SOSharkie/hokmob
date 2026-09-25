@@ -541,6 +541,56 @@ describe('StatsUtils', () => {
     });
   });
 
+  describe('calculateSkaterGameRating and calculateGoalieGameRating', () => {
+    function statsApiGame<T extends SkaterGameStats | GoalieGameStats>(playerId: 8477964 | 8483548): T {
+      return (mockPlayerStats(playerId).recentGames as T[]).find(game => game.gameId === 2025030414);
+    }
+
+    it('should rate a real skater row with its faceoffs, assist split, power play assists and penalties drawn', () => {
+      const game = statsApiGame<SkaterGameStats>(8477964);
+      expect(StatsUtils.calculateSkaterGameRating(game)).toBe(StatsUtils.calculateSkaterHokmobRating(
+          StatsUtils.toBoxscoreSkater(game), {
+            faceoffsTaken: game.totalFaceoffs,
+            primaryAssists: game.totalPrimaryAssists,
+            secondaryAssists: game.totalSecondaryAssists,
+            powerPlayAssists: game.ppAssists,
+            penaltiesDrawn: game.penaltiesDrawn
+          }));
+      // 5 + 1 shot * 0.3 + 1 hit * 0.2 - 1 giveaway * 0.2 + 1 penalty drawn * 0.3
+      expect(StatsUtils.calculateSkaterGameRating(game)).toBe(5.6);
+    });
+
+    it('should rate a real goalie row like its boxscore', () => {
+      expect(StatsUtils.calculateGoalieGameRating(statsApiGame<GoalieGameStats>(8483548)))
+          .toBe(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer<BoxscoreGoalie>(8483548, 2025030414)));
+    });
+
+    it('should give the uncapped totals, which round to the ratings below 10', () => {
+      expect(StatsUtils.getSkaterGameRawRating(statsApiGame<SkaterGameStats>(8477964))).toBeCloseTo(5.6, 5);
+      // 5 + 12 / 6 + 5 / 5 + 1 / 6 - 3
+      expect(StatsUtils.getGoalieGameRawRating(statsApiGame<GoalieGameStats>(8483548))).toBeCloseTo(5.1667, 4);
+    });
+  });
+
+  describe('getSkaterRawRating and getGoalieRawRating', () => {
+    it('should give the total of a rating capped at 10', () => {
+      // Scheifele's real game (7.106), with 3 more goals at 1.2 each
+      const scheifele = boxscorePlayer<BoxscoreSkater>(8476460);
+      const hatTrickMore = {...scheifele, goals: scheifele.goals + 3, sog: scheifele.sog + 3};
+      expect(StatsUtils.getSkaterRawRating(scheifele)).toBeCloseTo(7.106, 3);
+      expect(StatsUtils.getSkaterRawRating(hatTrickMore)).toBeCloseTo(10.706, 3);
+      expect(StatsUtils.calculateSkaterHokmobRating(hatTrickMore)).toBe(10);
+    });
+
+    it('should give the total of a goalie rating kept between 0 and 10', () => {
+      const goalie = boxscorePlayer<BoxscoreGoalie>(8483548, 2025030414);
+      const shelled = {...goalie, shotsAgainst: goalie.shotsAgainst + 8};
+      // 5.17 - 8 more goals against
+      expect(StatsUtils.getGoalieRawRating(shelled)).toBeCloseTo(-2.8333, 4);
+      expect(StatsUtils.calculateGoalieHokMobRating(shelled)).toBe(0);
+    });
+  });
+
   describe('sorting', () => {
     it('should sort goalies by time on ice, most first', () => {
       const goalies = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), false).filter(player => player.goalieStats);

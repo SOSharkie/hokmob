@@ -1,0 +1,46 @@
+@import "../history-card";
+
+.chart-container {
+  position: relative;
+  height: 280px;
+}
+
+.summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-large $spacing-huge;
+  margin-bottom: $spacing-xx-large;
+
+  .summary-stat {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-x-small;
+  }
+
+  .summary-value {
+    font-size: 22px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .summary-label {
+    color: $gray-03;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .chart-container {
+    height: 220px;
+  }
+
+  .summary-stats {
+    gap: $spacing-large $spacing-xx-large;
+
+    .summary-value {
+      font-size: 18px;
+    }
+  }
+}

@@ -10,6 +10,7 @@ import {TeamComponent} from "@app/team/team.component";
 import {LeagueStandingsComponent} from "@app/league-standings/league-standings.component";
 import {DraftComponent} from "@app/draft/draft.component";
 import {RatingsComponent} from "@app/ratings/ratings.component";
+import {HistoryComponent} from "@app/history/history.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent, data: {routeIdx: 0} },
@@ -22,6 +23,7 @@ const routes: Routes = [
   { path: 'standings', component: LeagueStandingsComponent, data: {routeIdx: 7} },
   { path: 'draft', component: DraftComponent, data: {routeIdx: 8} },
   { path: 'ratings', component: RatingsComponent, data: {routeIdx: 9} },
+  { path: 'history', component: HistoryComponent, data: {routeIdx: 10} },
   // The page's old address while it was local only; the redirect keeps a game's stat line in the query parameters
   { path: 'dev', redirectTo: 'ratings' },
   { path: '**', redirectTo: '' }

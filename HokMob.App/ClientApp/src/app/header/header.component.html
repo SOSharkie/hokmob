@@ -5,6 +5,7 @@
     <button type="button" class="cancel-search-button" (click)="closeSearch()">Cancel</button>
     <nav class="header-menu">
       <a class="menu-item" [routerLink]="['/ratings']">Ratings</a>
+      <a class="menu-item" [routerLink]="['/history']">History</a>
       <a class="menu-item" [routerLink]="['/about']">About</a>
     </nav>
     <div class="mobile-actions">
@@ -13,6 +14,9 @@
       </button>
       <a class="icon-button" aria-label="Ratings" [routerLink]="['/ratings']">
         <mat-icon svgIcon="lucide:gauge"></mat-icon>
+      </a>
+      <a class="icon-button" aria-label="History" [routerLink]="['/history']">
+        <mat-icon svgIcon="lucide:history"></mat-icon>
       </a>
       <a class="icon-button" aria-label="About" [routerLink]="['/about']">
         <mat-icon svgIcon="lucide:info"></mat-icon>

@@ -90,6 +90,8 @@ import draftStats2006 from './draft-stats-2006-1.json';
 import draftStats2015 from './draft-stats-2015-1.json';
 import {DraftPicksResponse} from "@shared/models/nhl-web-api/draft-picks.model";
 import {DraftStatsResponse} from "@shared/models/nhl-stats-api/draft-stats.model";
+import seasonHistory20252026 from './season-history-20252026-2.json';
+import {SeasonHistory} from "@shared/models/nhl-history/season-history.model";
 
 /*
  * Real responses for unit tests, captured on 2026-09-15: api-web.nhle.com responses, the player search
@@ -99,7 +101,8 @@ import {DraftStatsResponse} from "@shared/models/nhl-stats-api/draft-stats.model
  * unchanged responses, except score-2026-03-01 (trimmed to 3 games), score-2026-10-08 and score-2026-09-19 (trimmed to
  * 2 games, the latter captured on 2026-09-18) and the club-schedule-season-* responses (trimmed games, see
  * mockClubScheduleSeason). The
- * gamecenter-* responses are unchanged. To refresh one, download it again with curl and re-check the values the specs
+ * gamecenter-* responses are unchanged. season-history-20252026-2 isn't a response but the history page's data file,
+ * generated for a few games (see mockSeasonHistory). To refresh one, download it again with curl and re-check the values the specs
  * assert.
  *
  * Every function returns a fresh deep copy, so tests can change the data. "derived" helpers turn real data into states
@@ -446,6 +449,18 @@ export type MockDraftStatsYear = 2006 | 2015;
  */
 export function mockDraftStats(year: MockDraftStatsYear = 2015): DraftStatsResponse {
   return copy(year === 2006 ? draftStats2006 : draftStats2015);
+}
+
+/**
+ * src/assets/history/20252026-2.json for 7 games, generated on 2026-09-24 with `npm run build-season-data -- 20252026
+ * --games 2025020259,2025021057,2025021061,2025021237,2025021290,2025021292,2025021293 --out ...`: 208 players, 252
+ * skater rows and 16 goalie rows. The games overlap the recent games of mockPlayerStats: BOS 5 @ CAR 6 (2025021237)
+ * has both Elias Lindholm and Brandon Bussi, Lindholm and Bussi also play 2025021292 and 2025021293, Leon Draisaitl
+ * 2025021061 and Connor Hellebuyck 2025021290. STL @ WPG (2025021057) is the captured gamecenter game, and in WSH 4 @
+ * CAR 1 (2025020259) Pyotr Kochetkov faced no shots in relief.
+ */
+export function mockSeasonHistory(): SeasonHistory {
+  return copy(seasonHistory20252026);
 }
 
 /** Teams with captured club-schedule-season responses: the teams of the future game 2026020056 (UTA @ BOS). */

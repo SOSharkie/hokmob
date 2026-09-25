@@ -102,6 +102,18 @@ export class StatsUtils {
    * whichever are known.
    */
   public static calculateSkaterHokmobRating(skater: BoxscoreSkater, context?: SkaterRatingContext): number {
+    return parseFloat(Math.min(10.0, StatsUtils.getSkaterRawRating(skater, context)).toFixed(1));
+  }
+
+  /**
+   * The total of a skater's rating terms (calculateSkaterHokmobRating) before it's capped at 10 and rounded. The
+   * history page ranks the games capped at 10 by it.
+   *
+   * @param skater - The skater's boxscore stats.
+   * @param context - The faceoffs the skater took, his assist split, his power play assists and the penalties he drew,
+   * whichever are known.
+   */
+  public static getSkaterRawRating(skater: BoxscoreSkater, context?: SkaterRatingContext): number {
     const goals = skater.goals ?? 0;
     const assists = skater.assists ?? 0;
     const plusMinus = skater.plusMinus ?? 0;
@@ -140,7 +152,7 @@ export class StatsUtils {
       hokmobRating += faceoffTerm;
     }
 
-    return parseFloat(Math.min(10.0, hokmobRating).toFixed(1));
+    return hokmobRating;
   }
 
   /**
@@ -209,13 +221,22 @@ export class StatsUtils {
     if (!goalie.savePctg) {
       return 0;
     }
+    return parseFloat(Math.max(0, Math.min(10.0, StatsUtils.getGoalieRawRating(goalie))).toFixed(1));
+  }
+
+  /**
+   * The total of a goalie's rating terms (calculateGoalieHokMobRating) before it's kept between 0 and 10 and rounded.
+   * The history page ranks the games capped at 10 by it.
+   *
+   * @param goalie - The goalie's boxscore stats.
+   */
+  public static getGoalieRawRating(goalie: BoxscoreGoalie): number {
     let hokmobRating = 5;
     hokmobRating += (StatsUtils.getSaves(goalie.evenStrengthShotsAgainst) / 6);
     hokmobRating += (StatsUtils.getSaves(goalie.powerPlayShotsAgainst) / 5);
     hokmobRating += (StatsUtils.getSaves(goalie.shorthandedShotsAgainst) / 6);
     hokmobRating -= ((goalie.shotsAgainst ?? 0) - (goalie.saves ?? 0));
-
-    return parseFloat(Math.max(0, Math.min(10.0, hokmobRating)).toFixed(1));
+    return hokmobRating;
   }
 
   /**
@@ -296,6 +317,58 @@ export class StatsUtils {
       decision: StatsUtils.getGoalieDecision(game),
       shotsAgainst: game?.shotsAgainst ?? 0,
       saves: game?.saves ?? 0
+    };
+  }
+
+  /**
+   * Rates a stats API skater game row: toBoxscoreSkater, with the row's faceoffs taken, assist split, power play
+   * assists and penalties drawn as the rating context. The player page's recent games and the history page both rate
+   * rows through it, so the two always agree.
+   *
+   * @param game - The skater's stats for one game.
+   */
+  public static calculateSkaterGameRating(game: SkaterGameStats): number {
+    return StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(game), StatsUtils.toRatingContext(game));
+  }
+
+  /**
+   * A stats API skater game row's rating before it's capped at 10 (getSkaterRawRating).
+   *
+   * @param game - The skater's stats for one game.
+   */
+  public static getSkaterGameRawRating(game: SkaterGameStats): number {
+    return StatsUtils.getSkaterRawRating(StatsUtils.toBoxscoreSkater(game), StatsUtils.toRatingContext(game));
+  }
+
+  /**
+   * Rates a stats API goalie game row, through toBoxscoreGoalie. A goalie who faced no shots gets 0.
+   *
+   * @param game - The goalie's stats for one game.
+   */
+  public static calculateGoalieGameRating(game: GoalieGameStats): number {
+    return StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(game));
+  }
+
+  /**
+   * A stats API goalie game row's rating before it's kept between 0 and 10 (getGoalieRawRating).
+   *
+   * @param game - The goalie's stats for one game.
+   */
+  public static getGoalieGameRawRating(game: GoalieGameStats): number {
+    return StatsUtils.getGoalieRawRating(StatsUtils.toBoxscoreGoalie(game));
+  }
+
+  /**
+   * The rating context of a stats API skater game row: its faceoffs taken, assist split, power play assists and
+   * penalties drawn.
+   */
+  private static toRatingContext(game: SkaterGameStats): SkaterRatingContext {
+    return {
+      faceoffsTaken: game?.totalFaceoffs,
+      primaryAssists: game?.totalPrimaryAssists,
+      secondaryAssists: game?.totalSecondaryAssists,
+      powerPlayAssists: game?.ppAssists,
+      penaltiesDrawn: game?.penaltiesDrawn
     };
   }
 

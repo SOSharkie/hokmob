@@ -13,6 +13,7 @@ import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {NhlLeadersService} from "@shared/services/nhl-leaders.service";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {NhlSearchService} from "@shared/services/nhl-search.service";
+import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
 import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe";
 
@@ -44,6 +45,7 @@ const modules = [
     NhlLeadersService,
     RouterExtensionService,
     NhlSearchService,
+    SeasonHistoryService,
     {provide: MatDialogRef, useValue: {close: () => {}}},
     {provide: MAT_DIALOG_DATA, useValue: {}}
   ]

@@ -1,0 +1,18 @@
+@import "../history-card";
+
+.team-picker {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.games-played {
+  flex: none;
+  color: $gray-03;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rating-badge {
+  min-width: 48px;
+}

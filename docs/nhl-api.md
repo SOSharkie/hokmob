@@ -42,6 +42,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Standings | `standings/now` |
 | Draft | `draft/picks/{year}/{round}` (or `draft/picks/now`), `/api/nhl-stats/draft?year=&round=` — see [`draft-page.md`](draft-page.md) |
 | Header search | `/api/nhl-search/player?q=…`; teams come from `NhlTeamUtils`, with no request |
+| History | `assets/history/{season}-{gameType}.json`, a static file generated from the stats API (see [History data](#history-data)), with no NHL API request |
 
 ## api-web conventions
 
@@ -172,6 +173,52 @@ back when it fails: home shows the standings summary, `/stats` the regular seaso
 the latest bracket that has series.
 
 2026-27 dates: preseason from 2026-09-19, regular season from 2026-09-29. The 2025-26 playoffs are all finished.
+
+## History data
+
+The history page doesn't call the NHL APIs. A finished season's per game stat lines are preloaded into
+`src/assets/history/{season}-{gameType}.json` (`20252026-2.json` is the 2025-26 regular season), which only the history
+page loads (`SeasonHistoryService`), and they're rated in the browser with `StatsUtils.calculateSkaterGameRating` /
+`calculateGoalieGameRating`, the same as the player page's recent games. The file holds the rating's inputs, not
+ratings, so a formula change shows up on the history page without regenerating it.
+
+- **Generating a season:** `npm run build-season-data -- 20252026 [gameType]` from `HokMob.App/ClientApp` (game type 2
+  by default), once the season is over: it fails while any of its games isn't final. It takes about a minute. Add the
+  new file's season to `SeasonHistoryService.seasons` for the page's picker. Nobody edits the file by hand.
+- **Reports:** the per game rows (`isGame=true`) of the reports the player page's recent games merge: `skater/summary`,
+  `skater/realtime`, `skater/faceoffwins`, `skater/scoringpergame`, `skater/powerplay` and `skater/penalties`, plus
+  `skater/summaryshooting` for the 5v5 Corsi (`satFor`, `satAgainst`) and Fenwick (`usatFor`, `usatAgainst`) counts,
+  which aren't rated yet (#120). Goalies: `goalie/summary` and `goalie/savesByStrength`. The `game` report gives each
+  game's date, teams and score. The reports are merged by `playerId` + `gameId`.
+- **The 10,000 row cap:** the stats API returns at most 10,000 rows per query, even with `limit=-1`, without an
+  error, and `total` says 10,000 too. A regular season is about 47,000 skater game rows, so the skater reports are
+  asked for per team (`seasonId=20252026 and gameTypeId=2 and teamId=<id>`, about 1,500 rows each). The goalies (2,768
+  rows) fit in one query. The script fails when a response has 10,000 rows or more.
+- **Rate limit:** the stats API answers 429 to a few dozen requests at once, so the script sends two at a time and
+  waits on a 429.
+- **Quirks:** `skater/summaryshooting` leaves a Corsi or Fenwick count null instead of 0 for a skater with a few 5v5
+  shifts (stored as 0). `faceoffWinPct` is null without faceoffs (stored as 0, as the rating reads it) and truncated
+  to 5 decimals (0.38461 for 5 of 13), so it's stored as given rather than worked out from the counts. A goalie's
+  `goalsAgainst` isn't always `shotsAgainst - saves` (24 of the 2,768 games in 2025-26); the rating only uses shots and
+  saves, so the file has no goals against.
+- **Validation** before the file is written: every game is final and has skaters and goalies of both teams, every
+  report has the same rows, each skater row's team matches its `homeRoad`, the primary and secondary assists add up to
+  the assists, and the saves by strength add up to the saves and shots.
+- **Format:** four columnar tables (`games`, `players`, `skaters`, `goalies`), each an object of equally long arrays,
+  one per field, so no field name or player name repeats. A skater or goalie row points at its player and game by
+  their index, and `home` (1 or 0) gives the team. A player's position is stored once (a player has one position per
+  season). The fields are the stats API's; the `SeasonHistory` model describes them. 2025-26: 1,312 games, 1,038
+  players, 47,230 skater rows and 2,768 goalie rows, 2.85 MB (491 KB gzipped). The browser parses it in about 10 ms
+  and rates every row in under 100 ms, so there's no web worker.
+- **What the page leaves out:** goalies who faced no shots, whom the rating gives 0 (3 in 2025-26). A goalie who
+  faced shots and made no saves also gets 0, and is kept, as on the game page.
+- **Capped ratings:** 119 games of 2025-26 are rated exactly 10. The service works out their uncapped total
+  (`StatsUtils.getSkaterRawRating` / `getGoalieRawRating`), which ranks them in the best single games list.
+- **Serving:** the file is copied to `dist/assets` with the other assets and served by `UseStaticFiles`, outside the
+  main bundle and the `angular.json` initial budget. Azure (IIS) gzips JSON, so check that the deployed file comes
+  back with `Content-Encoding: gzip`.
+- **Test fixture:** `season-history-20252026-2.json` in `nhl-api-mocks` is the same script's output for 7 games
+  (`--games <ids> --out <file>`, see `mockSeasonHistory`).
 
 ## Live game data
 
