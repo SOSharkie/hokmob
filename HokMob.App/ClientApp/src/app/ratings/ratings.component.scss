@@ -511,10 +511,15 @@ $lab-stack-breakpoint: $tiny-display-breakpoint;
   line-height: 1.6;
 }
 
-// Narrow windows: the stat line moves above the chart
+// Narrow windows: the stat line and the chart stack, chart first, so the rating shows without scrolling past the
+// steppers
 @media only screen and (max-width: $lab-stack-breakpoint) {
   .lab-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .breakdown-card {
+    order: -1;
   }
 }
 
