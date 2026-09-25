@@ -45,6 +45,19 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('#games-item')?.textContent).toContain('Games');
   });
 
+  it('should link the History page as the mobile menu\'s 4th item, and select it there', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const items = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.mobile-menu .menu-item'));
+    expect(items.map(item => item.textContent.trim())).toEqual(['Games', 'Standings', 'Stats', 'History']);
+
+    const history = fixture.nativeElement.querySelector('#history-item') as HTMLElement;
+    expect(history.classList).not.toContain('selected');
+    fixture.componentInstance.menuUrl = '/history';
+    fixture.detectChanges();
+    expect(history.classList).toContain('selected');
+  });
+
   it('should hide the mobile menu while the page scrolls down, and bring it back on the way up', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
@@ -79,7 +92,8 @@ describe('AppComponent', () => {
     const mobileIcons = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.mobile-menu mat-icon'))
       .map(icon => icon.getAttribute('svgIcon'));
 
-    expect(mobileIcons).toEqual(['lucide:calendar-days', 'lucide:list-ordered', 'lucide:chart-no-axes-column']);
+    expect(mobileIcons).toEqual(['lucide:calendar-days', 'lucide:list-ordered', 'lucide:chart-no-axes-column',
+      'lucide:history']);
     for (const name of Object.keys(LUCIDE_ICONS)) {
       const svg = await firstValueFrom(iconRegistry.getNamedSvgIcon(name, 'lucide'));
       expect(svg.getAttribute('viewBox')).withContext(name).toBe('0 0 24 24');

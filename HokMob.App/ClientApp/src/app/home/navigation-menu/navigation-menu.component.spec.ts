@@ -39,6 +39,17 @@ describe('NavigationMenuComponent', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['draft']);
   });
 
+  it('should show a History menu item under Stats that navigates to the history page', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
+    const menuTexts = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.nav-menu-text'))
+      .map(el => el.textContent.trim());
+
+    expect(menuTexts.indexOf('History')).toBe(menuTexts.indexOf('Stats') + 1);
+    component.onClickMenuItem(component.navMenuItems.find(item => item.name === 'History'));
+    expect(navigateSpy).toHaveBeenCalledWith(['history']);
+  });
+
   it('should use a bundled Lucide icon for every menu item', () => {
     for (const menuItem of component.navMenuItems) {
       expect(component.getSvgIcon(menuItem)).toBe(`lucide:${menuItem.iconName}`);

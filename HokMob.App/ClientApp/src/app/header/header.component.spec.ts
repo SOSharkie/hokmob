@@ -44,15 +44,13 @@ describe('HeaderComponent', () => {
   it('should link the logo home and the menu to the about page', () => {
     expect(fixture.nativeElement.querySelector('.site-name').textContent.trim()).toBe('HOKMOB');
     expect(fixture.nativeElement.querySelector('.site-name').getAttribute('href')).toBe('/');
-    expect(menuItems()[2]).toEqual(['About', '/about']);
+    expect(menuItems()[1]).toEqual(['About', '/about']);
   });
 
-  it('should link the Ratings and History pages, on desktop and on phones', () => {
-    expect(menuItems()).toEqual([['Ratings', '/ratings'], ['History', '/history'], ['About', '/about']]);
+  it('should link the Ratings page, on desktop and on phones', () => {
+    expect(menuItems()).toEqual([['Ratings', '/ratings'], ['About', '/about']]);
     expect((fixture.nativeElement.querySelector('.mobile-actions [aria-label="Ratings"]') as HTMLElement)
         .getAttribute('href')).toBe('/ratings');
-    expect((fixture.nativeElement.querySelector('.mobile-actions [aria-label="History"]') as HTMLElement)
-        .getAttribute('href')).toBe('/history');
   });
 
   it('should start with the phone search closed', () => {
@@ -91,8 +89,8 @@ describe('HeaderComponent', () => {
 
   it('should use bundled Lucide icons', () => {
     const icons = Array.from(fixture.nativeElement.querySelectorAll('mat-icon')) as HTMLElement[];
-    // Search, Ratings, History and About
-    expect(icons.length).toBe(4);
+    // Search, Ratings and About
+    expect(icons.length).toBe(3);
     icons.forEach(icon => {
       const name = icon.getAttribute('svgIcon') ?? icon.getAttribute('ng-reflect-svg-icon');
       expect(LUCIDE_ICONS[name.replace('lucide:', '')]).withContext(name).toBeDefined();
