@@ -127,13 +127,13 @@
   }
 }
 
-// Tiny display Styling
+// Tiny display Styling: fills the home page's column, which shrinks below 551px on the narrowest windows
 @media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $tiny-display-breakpoint) {
   .day-select-container {
-    width: 550px;
+    width: 100%;
   }
   .games-container {
-    width: 550px;
+    width: 100%;
   }
 }
 
