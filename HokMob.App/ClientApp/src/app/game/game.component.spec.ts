@@ -115,6 +115,11 @@ describe('GameComponent', () => {
     fixture.detectChanges();
   }
 
+  /** Fakes where the bottom of the page's game header is in the viewport (layout is stubbed in these specs). */
+  function spyOnGameHeaderBottom(bottom: number): jasmine.Spy {
+    return spyOn(element('.game-header'), 'getBoundingClientRect').and.returnValue({bottom} as DOMRect);
+  }
+
   function element(selector: string): any {
     return fixture.nativeElement.querySelector(selector);
   }
@@ -163,20 +168,27 @@ describe('GameComponent', () => {
     const dropdownHeader = element('.dropdown-header');
     expect(dropdownHeader.classList).not.toContain('header-show');
 
-    scrollY.next(GameComponent.dropdownHeaderScrollY + 1);
+    const bottom = spyOnGameHeaderBottom(1);
+    scrollY.next(100);
+    expect(dropdownHeader.classList).not.toContain('header-show');
+
+    bottom.and.returnValue({bottom: 0} as DOMRect);
+    scrollY.next(101);
     expect(dropdownHeader.classList).toContain('header-show');
 
-    scrollY.next(GameComponent.dropdownHeaderScrollY);
+    bottom.and.returnValue({bottom: 1} as DOMRect);
+    scrollY.next(0);
     expect(dropdownHeader.classList).not.toContain('header-show');
   });
 
   it('should drop the header down right away on a page that is already scrolled', async () => {
-    scrollY.next(GameComponent.dropdownHeaderScrollY + 1);
     open('2025021057');
     flushBundle('2025021057', mockGameBundle(2025021057));
     await settle();
     flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     await settle();
+    spyOnGameHeaderBottom(0);
+    scrollY.next(500);
 
     expect(element('.dropdown-header').classList).toContain('header-show');
   });
@@ -190,7 +202,8 @@ describe('GameComponent', () => {
     const dropdownHeader = element('.dropdown-header');
 
     fixture.destroy();
-    scrollY.next(GameComponent.dropdownHeaderScrollY + 1);
+    spyOnGameHeaderBottom(0);
+    scrollY.next(500);
     expect(dropdownHeader.classList).not.toContain('header-show');
   });
 

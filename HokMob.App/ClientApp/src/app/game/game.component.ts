@@ -45,11 +45,6 @@ import {Subject, takeUntil} from "rxjs";
 })
 export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  /**
-   * How far the page has to scroll before the game header drops down from the top of it.
-   */
-  public static readonly dropdownHeaderScrollY = 265;
-
   public landing: GameLanding;
 
   public playByPlay: PlayByPlay;
@@ -264,8 +259,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.stickyHeader = document.getElementById("dropdownHeader");
     // The shared scroll listener, so the drop-down header and the app's mobile menu don't listen to scrolling twice.
     // It replays where the page is now, so a header opened on an already scrolled page drops down right away.
-    this.scrollDirectionService.scrollY$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(scrollY => {
-      this.showDropdownHeader(scrollY > GameComponent.dropdownHeaderScrollY);
+    this.scrollDirectionService.scrollY$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
+      this.showDropdownHeader(this.isGameHeaderScrolledPast());
     });
   }
 
@@ -531,6 +526,15 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       clearInterval(this.intermissionTimerId);
       this.intermissionTimerId = null;
     }
+  }
+
+  /**
+   * Whether the bottom of the page's game header (scorecard, goal scorers and game info) has scrolled off the top.
+   * False while the header isn't on the page (loading, failed load).
+   */
+  private isGameHeaderScrolledPast(): boolean {
+    const gameHeader = document.querySelector(".main-game .game-header");
+    return !!gameHeader && gameHeader.getBoundingClientRect().bottom <= 0;
   }
 
   /**
