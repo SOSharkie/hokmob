@@ -83,6 +83,46 @@ export class StatsUtils {
   public static readonly powerPlayStrength = "pp";
 
   /**
+   * Where a goalie's rating starts. It's under 6 so that, with the win and shutout bonuses, goalie games average about
+   * 5.9, like forwards (2025-26).
+   */
+  public static readonly goalieBaseRating = 5.75;
+
+  /** What each goal a goalie saves above average is worth (getGoalsSavedAboveAverage). */
+  public static readonly goalieSavedAboveAverageWeight = 0.6;
+
+  /**
+   * The league's save percentage at each strength, the average a goalie's saves are measured against: at even
+   * strength, on the penalty kill (the boxscore's power play split) and on his own team's power play (its shorthanded
+   * split). From the 2025-26 regular season.
+   */
+  public static readonly leagueEvenStrengthSavePctg = 0.903;
+
+  public static readonly leaguePenaltyKillSavePctg = 0.853;
+
+  public static readonly leaguePowerPlaySavePctg = 0.910;
+
+  /**
+   * The shots a goalie faced in an average full game of the 2025-26 regular season, where the workload term is 0. A
+   * goalie who played less is measured against his share of it (getGoalieExpectedShotsAgainst).
+   */
+  public static readonly goalieAverageShotsAgainst = 26;
+
+  /** The length of a regulation game, in seconds, that a goalie's time on ice is measured against. */
+  public static readonly fullGameSeconds = 3600;
+
+  /** What each shot faced over getGoalieExpectedShotsAgainst adds, or each one under takes off. */
+  public static readonly goalieWorkloadWeight = 0.02;
+
+  /** What a goalie's win adds, and what a shutout win adds on top of it (isShutoutWin). */
+  public static readonly goalieWinBonus = 0.3;
+
+  public static readonly goalieShutoutBonus = 0.8;
+
+  /** A boxscore goalie's decision for a win; the others are "L" and "O" (an overtime or shootout loss). */
+  public static readonly winDecision = "W";
+
+  /**
    * Calculates the HokMob rating of a skater for a single live or past game, from 0 to 10.
    *
    * The faceoff term, (win percentage - 0.5), is scaled by the faceoffs taken up to fullWeightFaceoffCount, so losing
@@ -211,9 +251,7 @@ export class StatsUtils {
 
   /**
    * Calculates the HokMob rating of a goalie for a single live or past game, from 0 to 10. A goalie who faced no
-   * shots (no savePctg) gets 0. Saves count by strength: the boxscore's power play split (shots faced on the penalty
-   * kill) pays 1/5 a save, and even strength and its shorthanded split (shots faced on his own team's power play) pay
-   * 1/6. Every goal against costs 1.
+   * shots (no savePctg) gets 0. The terms are in getGoalieRawRating.
    *
    * @param goalie - The goalie's boxscore stats.
    */
@@ -228,9 +266,93 @@ export class StatsUtils {
    * The total of a goalie's rating terms (calculateGoalieHokMobRating) before it's kept between 0 and 10 and rounded.
    * The history page ranks the games capped at 10 by it.
    *
+   * It starts from goalieBaseRating and adds:
+   * - The goals he saved above an average goalie (getGoalsSavedAboveAverage), times goalieSavedAboveAverageWeight. An
+   *   average save percentage rates the same on 20 shots as on 45.
+   * - goalieWorkloadWeight for every shot faced over the ones an average goalie faces in his time on ice
+   *   (getGoalieExpectedShotsAgainst), or takes it off for every shot under, so a live game's goalie isn't marked down
+   *   for the shots he hasn't had time to face yet.
+   * - goalieWinBonus for a win, and goalieShutoutBonus on top when he started it and no shot he faced went in
+   *   (isShutoutWin). A live game has no decision yet, so both only count once it's over.
+   *
    * @param goalie - The goalie's boxscore stats.
    */
   public static getGoalieRawRating(goalie: BoxscoreGoalie): number {
+    let hokmobRating = StatsUtils.goalieBaseRating;
+    hokmobRating += StatsUtils.getGoalsSavedAboveAverage(goalie) * StatsUtils.goalieSavedAboveAverageWeight;
+    hokmobRating += ((goalie.shotsAgainst ?? 0) - StatsUtils.getGoalieExpectedShotsAgainst(goalie)) *
+        StatsUtils.goalieWorkloadWeight;
+    if (goalie.decision === StatsUtils.winDecision) {
+      hokmobRating += StatsUtils.goalieWinBonus;
+    }
+    if (StatsUtils.isShutoutWin(goalie)) {
+      hokmobRating += StatsUtils.goalieShutoutBonus;
+    }
+    return hokmobRating;
+  }
+
+  /**
+   * The goals a goalie saved above an average goalie facing the same shots: at each strength, his saves minus the
+   * saves the league's save percentage at that strength would have made. Negative when he let in more than average.
+   * The boxscore's power play split is the shots he faced on the penalty kill, and its shorthanded split the ones
+   * faced on his own team's power play.
+   *
+   * @param goalie - The goalie's boxscore stats.
+   */
+  public static getGoalsSavedAboveAverage(goalie: BoxscoreGoalie): number {
+    return StatsUtils.getSavesAboveAverage(goalie?.evenStrengthShotsAgainst, StatsUtils.leagueEvenStrengthSavePctg) +
+        StatsUtils.getSavesAboveAverage(goalie?.powerPlayShotsAgainst, StatsUtils.leaguePenaltyKillSavePctg) +
+        StatsUtils.getSavesAboveAverage(goalie?.shorthandedShotsAgainst, StatsUtils.leaguePowerPlaySavePctg);
+  }
+
+  /**
+   * The shots an average goalie faces in the time a goalie played, the workload term's baseline:
+   * goalieAverageShotsAgainst, scaled by his time on ice out of a full game (fullGameSeconds). It's the whole average
+   * once he's played 60 minutes, overtime or not, and for a time on ice that can't be read, so a missing time never
+   * reads as no time played.
+   *
+   * @param goalie - The goalie's boxscore stats.
+   */
+  public static getGoalieExpectedShotsAgainst(goalie: BoxscoreGoalie): number {
+    const seconds = StatsUtils.getTimeOnIceSeconds(goalie?.toi);
+    const share = seconds > 0 ? Math.min(1, seconds / StatsUtils.fullGameSeconds) : 1;
+    return StatsUtils.goalieAverageShotsAgainst * share;
+  }
+
+  /**
+   * The saves a boxscore "saves/shots" split has over the ones a league average save percentage would make on the
+   * same shots, like 28 - 0.903 x 30 = 0.91 for "28/30" at even strength.
+   *
+   * @param savesAndShots - The split, like "28/30".
+   * @param leagueSavePctg - The league's save percentage at that strength, 0 to 1.
+   */
+  public static getSavesAboveAverage(savesAndShots: string, leagueSavePctg: number): number {
+    return StatsUtils.getSaves(savesAndShots) - leagueSavePctg * StatsUtils.getShots(savesAndShots);
+  }
+
+  /**
+   * Whether a goalie gets the shutout bonus: he started, won, and none of the shots he faced went in. It's close to
+   * the NHL's shutout credit but not the same, since the boxscore doesn't carry that: it counts a win in which his
+   * team gave up a goal that wasn't on him (an empty net on a delayed penalty), and leaves out a 0-0 shootout loss.
+   *
+   * @param goalie - The goalie's boxscore stats.
+   */
+  public static isShutoutWin(goalie: BoxscoreGoalie): boolean {
+    return !!goalie?.starter && goalie.decision === StatsUtils.winDecision &&
+        (goalie.shotsAgainst ?? 0) > 0 && (goalie.saves ?? 0) === goalie.shotsAgainst;
+  }
+
+  /**
+   * The goalie rating before goals saved above average (getGoalieRawRating), from 5: 1/5 a save on the penalty kill,
+   * 1/6 a save at even strength and on the power play, and -1 a goal against. Unused, but kept to go back to.
+   *
+   * It paid for volume: it broke even at a .857 save percentage, well under the league's, so an average goalie rated
+   * higher the more shots he faced, and a goal costing a whole point spread goalies twice as wide as skaters (2025-26:
+   * 38.6% of goalie games green and 14.6% blue, against 15.1% and 1.8% for forwards).
+   *
+   * @param goalie - The goalie's boxscore stats.
+   */
+  public static getLegacyGoalieRawRating(goalie: BoxscoreGoalie): number {
     let hokmobRating = 5;
     hokmobRating += (StatsUtils.getSaves(goalie.evenStrengthShotsAgainst) / 6);
     hokmobRating += (StatsUtils.getSaves(goalie.powerPlayShotsAgainst) / 5);
@@ -245,6 +367,14 @@ export class StatsUtils {
   public static getSaves(savesAndShots: string): number {
     const saves = parseInt((savesAndShots ?? "").split("/")[0], 10);
     return isNaN(saves) ? 0 : saves;
+  }
+
+  /**
+   * Returns the shots from a boxscore saves/shots string, like 30 for "28/30", or 0 when it can't be read.
+   */
+  public static getShots(savesAndShots: string): number {
+    const shots = parseInt((savesAndShots ?? "").split("/")[1], 10);
+    return isNaN(shots) ? 0 : shots;
   }
 
   /**

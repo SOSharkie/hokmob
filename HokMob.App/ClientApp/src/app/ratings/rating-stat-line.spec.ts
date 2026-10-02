@@ -82,7 +82,29 @@ describe('RatingStatLineUtils', () => {
     it('should split the shots by strength, the power play split being the penalty kill', () => {
       const goalie = {evenStrengthShotsAgainst: '20/22', powerPlayShotsAgainst: '4/5', shorthandedShotsAgainst: '1/1'};
       expect(RatingStatLineUtils.getGoalieLine(goalie as BoxscoreGoalie)).toEqual({evenStrengthShots: 22,
-        evenStrengthGoals: 2, penaltyKillShots: 5, penaltyKillGoals: 1, powerPlayShots: 1, powerPlayGoals: 0});
+        evenStrengthGoals: 2, penaltyKillShots: 5, penaltyKillGoals: 1, powerPlayShots: 1, powerPlayGoals: 0,
+        timeOnIce: 0, started: 0, win: 0});
+    });
+
+    it('should carry the time on ice in seconds, up to a full game', () => {
+      const players = mockGameBoxscore(2025021057).playerByGameStats;
+      const binnington = players.awayTeam.goalies.find(goalie => goalie.playerId === 8476412);
+      expect(binnington.toi).toBe('56:13');
+      expect(RatingStatLineUtils.getGoalieLine(binnington)['timeOnIce']).toBe(3373);
+      // An overtime game rates the same as a full one
+      expect(RatingStatLineUtils.getGoalieLine({...binnington, toi: '65:00'})['timeOnIce']).toBe(3600);
+    });
+
+    it('should mark a start and a win from the boxscore, and nothing else as a win', () => {
+      const players = mockGameBoxscore(2025021057).playerByGameStats;
+      const comrie = players.homeTeam.goalies.find(goalie => goalie.playerId === 8477480);
+      const binnington = players.awayTeam.goalies.find(goalie => goalie.playerId === 8476412);
+      const hellebuyck = players.homeTeam.goalies.find(goalie => goalie.playerId === 8476945);
+      expect(RatingStatLineUtils.getGoalieLine(comrie)).toEqual(jasmine.objectContaining({started: 1, win: 1}));
+      expect(RatingStatLineUtils.getGoalieLine(binnington)).toEqual(jasmine.objectContaining({started: 1, win: 0}));
+      expect(RatingStatLineUtils.getGoalieLine(hellebuyck)).toEqual(jasmine.objectContaining({started: 0, win: 0}));
+      expect(RatingStatLineUtils.getGoalieLine({...comrie, decision: 'O'}))
+          .toEqual(jasmine.objectContaining({started: 1, win: 0}));
     });
 
     it('should read a missing or unreadable split as no shots', () => {

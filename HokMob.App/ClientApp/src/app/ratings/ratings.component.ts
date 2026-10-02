@@ -27,6 +27,10 @@ export interface StatControl {
    * and secondary assists together.
    */
   maxStat?: string;
+  /** How much one click of the stepper moves the stat, 1 by default. */
+  step?: number;
+  /** How the stat is shown, when not as a plain number, like a time on ice in seconds as "56:13". */
+  format?: (value: number) => string;
 }
 
 /** A stat line to load with one click, like a hat trick. */
@@ -107,12 +111,19 @@ export class RatingsComponent implements OnInit, AfterViewInit {
   ];
 
   public readonly goalieControls: StatControl[] = [
-    {key: "evenStrengthShots", label: "Even strength shots", weight: "+1/6 a save", min: 0, max: 45},
-    {key: "evenStrengthGoals", label: "Even strength goals against", weight: "-1 each", min: 0, max: 10},
-    {key: "penaltyKillShots", label: "Penalty kill shots", weight: "+1/5 a save", min: 0, max: 20},
-    {key: "penaltyKillGoals", label: "Penalty kill goals against", weight: "-1 each", min: 0, max: 8},
-    {key: "powerPlayShots", label: "Power play shots", weight: "+1/6 a save", min: 0, max: 10},
-    {key: "powerPlayGoals", label: "Power play goals against", weight: "-1 each", min: 0, max: 4}
+    {key: "evenStrengthShots", label: "Even strength shots", weight: "Saves against a .903 average", min: 0,
+      max: 45},
+    {key: "evenStrengthGoals", label: "Even strength goals against", weight: "-0.6 each", min: 0, max: 10},
+    {key: "penaltyKillShots", label: "Penalty kill shots", weight: "Saves against a .853 average", min: 0,
+      max: 20},
+    {key: "penaltyKillGoals", label: "Penalty kill goals against", weight: "-0.6 each", min: 0, max: 8},
+    {key: "powerPlayShots", label: "Power play shots", weight: "Saves against a .910 average", min: 0,
+      max: 10},
+    {key: "powerPlayGoals", label: "Power play goals against", weight: "-0.6 each", min: 0, max: 4},
+    {key: "timeOnIce", label: "Time on ice", weight: "Scales the 26 shot workload average", min: 0,
+      max: StatsUtils.fullGameSeconds, step: 60, format: seconds => StatsUtils.formatSeconds(seconds)},
+    {key: "started", label: "Started", weight: "Needed for the shutout bonus", min: 0, max: 1},
+    {key: "win", label: "Win", weight: "+0.3, and +0.8 more for a shutout", min: 0, max: 1}
   ];
 
   public readonly skaterPresets: StatLinePreset[] = [
@@ -164,27 +175,27 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     {
       name: "Routine win",
       line: {evenStrengthShots: 22, evenStrengthGoals: 2, penaltyKillShots: 5, penaltyKillGoals: 0,
-        powerPlayShots: 0, powerPlayGoals: 0}
+        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1}
     },
     {
       name: "Shutout",
       line: {evenStrengthShots: 26, evenStrengthGoals: 0, penaltyKillShots: 6, penaltyKillGoals: 0,
-        powerPlayShots: 1, powerPlayGoals: 0}
+        powerPlayShots: 1, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1}
     },
     {
       name: "Stolen game",
       line: {evenStrengthShots: 38, evenStrengthGoals: 1, penaltyKillShots: 9, penaltyKillGoals: 0,
-        powerPlayShots: 2, powerPlayGoals: 0}
+        powerPlayShots: 2, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1}
     },
     {
       name: "Pulled early",
       line: {evenStrengthShots: 11, evenStrengthGoals: 4, penaltyKillShots: 3, penaltyKillGoals: 1,
-        powerPlayShots: 0, powerPlayGoals: 0}
+        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 1500, started: 1, win: 0}
     },
     {
       name: "Never faced a shot",
       line: {evenStrengthShots: 0, evenStrengthGoals: 0, penaltyKillShots: 0, penaltyKillGoals: 0,
-        powerPlayShots: 0, powerPlayGoals: 0}
+        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 0, started: 0, win: 0}
     }
   ];
 
@@ -200,6 +211,13 @@ export class RatingsComponent implements OnInit, AfterViewInit {
   public readonly quirks: string[] = [
     "A skater's rating has no floor. It stops at 10, but a bad enough night goes below 0, and the game page shows it.",
     "A goalie who faced no shots is rated 0, not 5, so a backup who never played doesn't outrank his starter.",
+    "A goalie's saves are measured against the league's save percentage at each strength, so an average night rates " +
+        "about the same on 20 shots as on 45. Only the workload term, 0.02 a shot over or under 26, pays for volume.",
+    "A goalie's workload is measured against his share of the 26 shot average by his time on ice, so a live game's " +
+        "goalie isn't marked down for the shots he hasn't had time to face. Overtime doesn't raise the average.",
+    "A goalie's win and shutout bonuses only count once the game is over, since a live game has no decision yet.",
+    "The shutout bonus needs a start, a win and no goal on the shots the goalie faced, which isn't quite the NHL's " +
+        "shutout: a goal on a delayed penalty's empty net doesn't stop it, and a 0-0 shootout loss doesn't get it.",
     "A plus is worth 0.3 and a minus 0.5, and the plus is paid on top of goals and assists that have already scored.",
     "The five minutes of a fighting major are forgiven, which 5, 7, 9 and 11 penalty minutes are each read as holding.",
     "Penalties drawn are the NHL's count, so each fighter draws the other's major and coincidental minors count, " +
@@ -330,7 +348,7 @@ export class RatingsComponent implements OnInit, AfterViewInit {
    */
   public step(control: StatControl, change: number): void {
     const line = this.statLine;
-    line[control.key] = this.clamp(control, (line[control.key] ?? 0) + change);
+    line[control.key] = this.clamp(control, (line[control.key] ?? 0) + change * (control.step ?? 1));
     this.keepStatLineConsistent(control.key);
     this.updateBreakdown();
   }
@@ -343,7 +361,7 @@ export class RatingsComponent implements OnInit, AfterViewInit {
    */
   public isStepDisabled(control: StatControl, change: number): boolean {
     const value = this.statLine[control.key] ?? 0;
-    return this.clamp(control, value + change) === value;
+    return this.clamp(control, value + change * (control.step ?? 1)) === value;
   }
 
   /**
@@ -584,7 +602,8 @@ export class RatingsComponent implements OnInit, AfterViewInit {
 
   /**
    * The stat line on screen as a boxscore goalie, which the rating formula reads. The boxscore's strength splits are
-   * "saves/shots" strings, and its power play split is the shots faced on the penalty kill.
+   * "saves/shots" strings, and its power play split is the shots faced on the penalty kill. A line without a win has
+   * no decision, which the formula reads the same as a loss.
    */
   private toBoxscoreGoalie(): BoxscoreGoalie {
     const line = this.goalieLine;
@@ -608,9 +627,9 @@ export class RatingsComponent implements OnInit, AfterViewInit {
       shorthandedGoalsAgainst: line["powerPlayGoals"],
       pim: 0,
       goalsAgainst: goals,
-      toi: "60:00",
-      starter: true,
-      decision: undefined,
+      toi: StatsUtils.formatSeconds(line["timeOnIce"]),
+      starter: line["started"] === 1,
+      decision: line["win"] === 1 ? StatsUtils.winDecision : undefined,
       shotsAgainst: shots,
       saves: saves
     };

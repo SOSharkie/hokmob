@@ -275,7 +275,7 @@ describe('GameComponent', () => {
     await settle();
     const topPlayers = element('app-game-top-players');
     expect(topPlayers.homePlayers.length).toBe(20);
-    expect(topPlayers.homePlayers.slice(0, 2).map(player => player.name)).toEqual(['Eric Comrie', 'Haydn Fleury']);
+    expect(topPlayers.homePlayers.slice(0, 2).map(player => player.name)).toEqual(['Haydn Fleury', 'Mark Scheifele']);
     expect(topPlayers.awayPlayers[0].name).toBe('Dylan Holloway');
     expect(topPlayers.homeCoach).toBe('Scott Arniel');
     expect(topPlayers.awayCoach).toBe('Jim Montgomery');
@@ -370,7 +370,7 @@ describe('GameComponent', () => {
     fixture.debugElement.query(By.css('app-game-top-players')).triggerEventHandler('playerClicked', 8476412);
     expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
       panelClass: 'mobile-dialog-panel',
-      data: {player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.3})}
+      data: {player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.8})}
     }));
   });
 

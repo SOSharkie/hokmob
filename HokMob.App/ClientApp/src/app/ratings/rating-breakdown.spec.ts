@@ -196,23 +196,55 @@ describe('RatingBreakdownUtils', () => {
         const breakdown = RatingBreakdownUtils.getGoalieBreakdown(goalie);
         expect(breakdown.rating).withContext(goalie.name.default)
             .toBe(StatsUtils.calculateGoalieHokMobRating(goalie));
+        expect(breakdown.rawTotal).withContext(goalie.name.default)
+            .toBe(RatingBreakdownUtils.round(StatsUtils.getGoalieRawRating(goalie)));
       });
     });
 
-    it('should pay a save on the penalty kill more than one at even strength or on the power play', () => {
+    it('should rate saves against the league average at each strength, then the workload and the win', () => {
       const breakdown = RatingBreakdownUtils.getGoalieBreakdown({
-        evenStrengthShotsAgainst: '24/25', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '1/1',
-        savePctg: 0.968, shotsAgainst: 31, saves: 30
+        evenStrengthShotsAgainst: '24/26', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '1/1',
+        savePctg: 0.938, shotsAgainst: 32, saves: 30, starter: true, decision: 'W'
       } as BoxscoreGoalie);
       expect(breakdown.terms.map(ratingTerm => ratingTerm.label)).toEqual(['Base', 'Even strength saves',
-        'Penalty kill saves', 'Power play saves', 'Goals against']);
-      expect(term(breakdown, 'Even strength saves')).toBe(4);
-      expect(term(breakdown, 'Penalty kill saves')).toBe(1);
-      expect(term(breakdown, 'Power play saves')).toBe(0.17);
-      expect(term(breakdown, 'Goals against')).toBe(-1);
-      // 5 + 4 + 1 + 1/6 - 1 = 9.17
-      expect(breakdown.rawTotal).toBe(9.17);
-      expect(breakdown.rating).toBe(9.2);
+        'Penalty kill saves', 'Power play saves', 'Workload', 'Win', 'Shutout']);
+      expect(term(breakdown, 'Base')).toBe(5.75);
+      // 0.6 x (24 - 0.903 x 26), 0.6 x (5 - 0.853 x 5) and 0.6 x (1 - 0.910 x 1)
+      expect(term(breakdown, 'Even strength saves')).toBe(0.31);
+      expect(term(breakdown, 'Penalty kill saves')).toBe(0.44);
+      expect(term(breakdown, 'Power play saves')).toBe(0.05);
+      expect(breakdown.terms[1].detail).toBe('(24 - 0.903 x 26 shots) x 0.6');
+      expect(breakdown.terms[2].detail).toBe("(5 - 0.853 x 5 shots) x 0.6, the boxscore's power play split");
+      expect(term(breakdown, 'Workload')).toBe(0.12);
+      expect(breakdown.terms[4].detail).toBe('(32 shots - 26) x 0.02');
+      expect(term(breakdown, 'Win')).toBe(0.3);
+      expect(term(breakdown, 'Shutout')).toBe(0);
+      // 5.75 + 0.3132 + 0.441 + 0.054 + 0.12 + 0.3 = 6.98
+      expect(breakdown.rawTotal).toBe(6.98);
+      expect(breakdown.rating).toBe(7);
+    });
+
+    it('should measure a live goalie\'s workload against the shots expected in the time he has played', () => {
+      const breakdown = RatingBreakdownUtils.getGoalieBreakdown({
+        evenStrengthShotsAgainst: '9/10', powerPlayShotsAgainst: '0/0', shorthandedShotsAgainst: '0/0',
+        savePctg: 0.9, shotsAgainst: 10, saves: 9, toi: '20:00', starter: true
+      } as BoxscoreGoalie);
+      // 0.02 x (10 - 26 x 20 / 60)
+      expect(term(breakdown, 'Workload')).toBe(0.03);
+      expect(breakdown.terms[4].detail).toBe('(10 shots - 8.7 expected in 20:00) x 0.02');
+    });
+
+    it('should add the shutout bonus for a starter who won and let no shot in', () => {
+      const breakdown = RatingBreakdownUtils.getGoalieBreakdown({
+        evenStrengthShotsAgainst: '24/24', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '1/1',
+        savePctg: 1, shotsAgainst: 30, saves: 30, starter: true, decision: 'W'
+      } as BoxscoreGoalie);
+      expect(term(breakdown, 'Win')).toBe(0.3);
+      expect(term(breakdown, 'Shutout')).toBe(0.8);
+      expect(breakdown.rating).toBe(StatsUtils.calculateGoalieHokMobRating({
+        evenStrengthShotsAgainst: '24/24', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '1/1',
+        savePctg: 1, shotsAgainst: 30, saves: 30, starter: true, decision: 'W'
+      } as BoxscoreGoalie));
     });
 
     it('should rate a goalie who faced no shots 0, not 5', () => {
@@ -221,22 +253,23 @@ describe('RatingBreakdownUtils', () => {
         shotsAgainst: 0, saves: 0
       } as BoxscoreGoalie);
       expect(breakdown.rating).toBe(0);
-      expect(breakdown.rawTotal).toBe(5);
+      // 5.75 - 26 x 0.02 of workload
+      expect(breakdown.rawTotal).toBe(5.23);
       expect(breakdown.clampNote).toBe('Faced no shots, so the rating is 0');
     });
 
     it('should floor a rough night at 0 and cap a great one at 10', () => {
       const pulled = RatingBreakdownUtils.getGoalieBreakdown({
-        evenStrengthShotsAgainst: '4/10', powerPlayShotsAgainst: '1/4', shorthandedShotsAgainst: '0/0',
-        savePctg: 0.357, shotsAgainst: 14, saves: 5
+        evenStrengthShotsAgainst: '2/14', powerPlayShotsAgainst: '0/5', shorthandedShotsAgainst: '0/0',
+        savePctg: 0.105, shotsAgainst: 19, saves: 2, starter: true, decision: 'L'
       } as BoxscoreGoalie);
       expect(pulled.rawTotal).toBeLessThan(0);
       expect(pulled.rating).toBe(0);
       expect(pulled.clampNote).toBe('Floored at 0');
 
       const shutout = RatingBreakdownUtils.getGoalieBreakdown({
-        evenStrengthShotsAgainst: '30/30', powerPlayShotsAgainst: '8/8', shorthandedShotsAgainst: '2/2',
-        savePctg: 1, shotsAgainst: 40, saves: 40
+        evenStrengthShotsAgainst: '45/45', powerPlayShotsAgainst: '8/8', shorthandedShotsAgainst: '2/2',
+        savePctg: 1, shotsAgainst: 55, saves: 55, starter: true, decision: 'W'
       } as BoxscoreGoalie);
       expect(shutout.rawTotal).toBeGreaterThan(10);
       expect(shutout.rating).toBe(10);

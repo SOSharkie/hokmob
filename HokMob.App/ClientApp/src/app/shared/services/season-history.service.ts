@@ -158,6 +158,8 @@ export class SeasonHistoryService {
       const game = {
         playerId: players[goalies.player[row]].id,
         timeOnIce: goalies.timeOnIce[row],
+        gamesStarted: goalies.gamesStarted[row],
+        wins: goalies.wins[row],
         evSaves: goalies.evSaves[row],
         evShotsAgainst: goalies.evShotsAgainst[row],
         ppSaves: goalies.ppSaves[row],

@@ -332,8 +332,50 @@ describe('RatingsComponent', () => {
 
     expect(component.subject).toBe('goalie');
     expect(termRows().map(row => row[0])).toEqual(['Base', 'Even strength saves', 'Penalty kill saves',
-      'Power play saves', 'Goals against']);
+      'Power play saves', 'Workload', 'Win', 'Shutout']);
     expect(stepperValue('Even strength shots')).toBe('22');
+    expect(stepperValue('Win')).toBe('1');
+  });
+
+  it('should step the goalie time on ice a minute at a time, and scale the workload by it', () => {
+    component.selectSubject('goalie');
+    fixture.detectChanges();
+    const workload = () => component.breakdown.terms.find(ratingTerm => ratingTerm.label === 'Workload');
+    // Routine win: 27 shots in a full game
+    expect(stepperValue('Time on ice')).toBe('60:00');
+    expect(workload().value).toBe(0.02);
+
+    step('Time on ice', -1);
+    expect(stepperValue('Time on ice')).toBe('59:00');
+    // 0.02 x (27 - 26 x 59 / 60)
+    expect(workload().value).toBe(0.03);
+    expect(workload().detail).toBe('(27 shots - 25.6 expected in 59:00) x 0.02');
+    // A full game is the most
+    step('Time on ice', 1);
+    expect(component.isStepDisabled(component.goalieControls.find(control => control.key === 'timeOnIce'), 1))
+        .toBeTrue();
+  });
+
+  it('should add the win bonus, and the shutout bonus for a started win without a goal against', () => {
+    component.selectSubject('goalie');
+    component.selectPreset(component.goaliePresets.find(preset => preset.name === 'Shutout'));
+    fixture.detectChanges();
+    const bonus = (label: string) => component.breakdown.terms.find(ratingTerm => ratingTerm.label === label).value;
+    expect(bonus('Win')).toBe(0.3);
+    expect(bonus('Shutout')).toBe(0.8);
+
+    step('Started', -1);
+    expect(bonus('Win')).toBe(0.3);
+    expect(bonus('Shutout')).toBe(0);
+
+    step('Started', 1);
+    step('Win', -1);
+    expect(bonus('Win')).toBe(0);
+    expect(bonus('Shutout')).toBe(0);
+    // Both are yes or no
+    expect(component.isStepDisabled(component.goalieControls.find(control => control.key === 'win'), -1)).toBeTrue();
+    expect(component.isStepDisabled(component.goalieControls.find(control => control.key === 'started'), 1))
+        .toBeTrue();
   });
 
   it('should rate a goalie who faced no shots 0', () => {
