@@ -362,7 +362,8 @@ describe('RatingsComponent', () => {
     fixture.detectChanges();
     const bonus = (label: string) => component.breakdown.terms.find(ratingTerm => ratingTerm.label === label).value;
     expect(bonus('Win')).toBe(0.3);
-    expect(bonus('Shutout')).toBe(0.8);
+    // The preset's 33 shots x 0.065
+    expect(bonus('Shutout')).toBeCloseTo(33 * 0.065, 1);
 
     step('Started', -1);
     expect(bonus('Win')).toBe(0.3);

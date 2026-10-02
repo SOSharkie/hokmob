@@ -169,11 +169,12 @@ export class RatingBreakdownUtils {
 
     terms.push({label: "Base", detail: "An average game", value: StatsUtils.goalieBaseRating, total});
 
+    // Every strength gets the weight of the whole night, above or below average
+    const weight = StatsUtils.getGoalsSavedAboveAverageWeight(StatsUtils.getGoalsSavedAboveAverage(goalie));
     const addSavesTerm = (label: string, savesAndShots: string, leagueSavePctg: number, split: string): void => {
       const detail = "(" + StatsUtils.getSaves(savesAndShots) + " - " + leagueSavePctg + " x " +
-          StatsUtils.getShots(savesAndShots) + " shots) x " + StatsUtils.goalieSavedAboveAverageWeight + split;
-      addTerm(label, detail,
-          StatsUtils.getSavesAboveAverage(savesAndShots, leagueSavePctg) * StatsUtils.goalieSavedAboveAverageWeight);
+          StatsUtils.getShots(savesAndShots) + " shots) x " + weight + split;
+      addTerm(label, detail, StatsUtils.getSavesAboveAverage(savesAndShots, leagueSavePctg) * weight);
     };
     addSavesTerm("Even strength saves", goalie.evenStrengthShotsAgainst, StatsUtils.leagueEvenStrengthSavePctg, "");
     addSavesTerm("Penalty kill saves", goalie.powerPlayShotsAgainst, StatsUtils.leaguePenaltyKillSavePctg,
@@ -192,9 +193,9 @@ export class RatingBreakdownUtils {
 
     const isWin = goalie.decision === StatsUtils.winDecision;
     addTerm("Win", isWin ? "Got the win" : "No win", isWin ? StatsUtils.goalieWinBonus : 0);
-    const isShutoutWin = StatsUtils.isShutoutWin(goalie);
-    addTerm("Shutout", isShutoutWin ? "Started, won and let no shot in" : "Not a shutout win",
-        isShutoutWin ? StatsUtils.goalieShutoutBonus : 0);
+    addTerm("Shutout", StatsUtils.isShutoutWin(goalie)
+        ? shotsAgainst + " shots x " + StatsUtils.goalieShutoutBonusPerShot + ", started, won and let no shot in"
+        : "Not a shutout win", StatsUtils.getGoalieShutoutBonus(goalie));
 
     let clampNote: string;
     if (!goalie.savePctg) {

@@ -84,12 +84,17 @@ export class StatsUtils {
 
   /**
    * Where a goalie's rating starts. It's under 6 so that, with the win and shutout bonuses, goalie games average about
-   * 5.9, like forwards (2025-26).
+   * 6.0, a little over forwards' 5.9 (2025-26).
    */
   public static readonly goalieBaseRating = 5.75;
 
-  /** What each goal a goalie saves above average is worth (getGoalsSavedAboveAverage). */
-  public static readonly goalieSavedAboveAverageWeight = 0.6;
+  /**
+   * What each goal a goalie saves above average is worth (getGoalsSavedAboveAverage): more on a night above average
+   * than below it, since one goalie swings a game more than any skater, so a great night is rated up to it.
+   */
+  public static readonly goalieAboveAverageWeight = 0.7;
+
+  public static readonly goalieBelowAverageWeight = 0.6;
 
   /**
    * The league's save percentage at each strength, the average a goalie's saves are measured against: at even
@@ -114,10 +119,11 @@ export class StatsUtils {
   /** What each shot faced over getGoalieExpectedShotsAgainst adds, or each one under takes off. */
   public static readonly goalieWorkloadWeight = 0.02;
 
-  /** What a goalie's win adds, and what a shutout win adds on top of it (isShutoutWin). */
+  /** What a goalie's win adds. */
   public static readonly goalieWinBonus = 0.3;
 
-  public static readonly goalieShutoutBonus = 0.8;
+  /** What a shutout win adds on top of the win, for every shot faced (getGoalieShutoutBonus). */
+  public static readonly goalieShutoutBonusPerShot = 0.065;
 
   /** A boxscore goalie's decision for a win; the others are "L" and "O" (an overtime or shootout loss). */
   public static readonly winDecision = "W";
@@ -267,28 +273,47 @@ export class StatsUtils {
    * The history page ranks the games capped at 10 by it.
    *
    * It starts from goalieBaseRating and adds:
-   * - The goals he saved above an average goalie (getGoalsSavedAboveAverage), times goalieSavedAboveAverageWeight. An
-   *   average save percentage rates the same on 20 shots as on 45.
+   * - The goals he saved above an average goalie (getGoalsSavedAboveAverage), times getGoalsSavedAboveAverageWeight:
+   *   more for a night above average than below it. An average save percentage rates the same on 20 shots as on 45.
    * - goalieWorkloadWeight for every shot faced over the ones an average goalie faces in his time on ice
    *   (getGoalieExpectedShotsAgainst), or takes it off for every shot under, so a live game's goalie isn't marked down
    *   for the shots he hasn't had time to face yet.
-   * - goalieWinBonus for a win, and goalieShutoutBonus on top when he started it and no shot he faced went in
-   *   (isShutoutWin). A live game has no decision yet, so both only count once it's over.
+   * - goalieWinBonus for a win, and goalieShutoutBonusPerShot for every shot he faced on top when he started it and no
+   *   shot he faced went in (isShutoutWin). A live game has no decision yet, so both only count once it's over.
    *
    * @param goalie - The goalie's boxscore stats.
    */
   public static getGoalieRawRating(goalie: BoxscoreGoalie): number {
+    const goalsSavedAboveAverage = StatsUtils.getGoalsSavedAboveAverage(goalie);
     let hokmobRating = StatsUtils.goalieBaseRating;
-    hokmobRating += StatsUtils.getGoalsSavedAboveAverage(goalie) * StatsUtils.goalieSavedAboveAverageWeight;
+    hokmobRating += goalsSavedAboveAverage * StatsUtils.getGoalsSavedAboveAverageWeight(goalsSavedAboveAverage);
     hokmobRating += ((goalie.shotsAgainst ?? 0) - StatsUtils.getGoalieExpectedShotsAgainst(goalie)) *
         StatsUtils.goalieWorkloadWeight;
     if (goalie.decision === StatsUtils.winDecision) {
       hokmobRating += StatsUtils.goalieWinBonus;
     }
-    if (StatsUtils.isShutoutWin(goalie)) {
-      hokmobRating += StatsUtils.goalieShutoutBonus;
-    }
+    hokmobRating += StatsUtils.getGoalieShutoutBonus(goalie);
     return hokmobRating;
+  }
+
+  /**
+   * What each goal saved above average is worth: goalieAboveAverageWeight when the goalie saved more than an average
+   * goalie would have, and goalieBelowAverageWeight when he saved fewer.
+   *
+   * @param goalsSavedAboveAverage - The goalie's goals saved above average (getGoalsSavedAboveAverage).
+   */
+  public static getGoalsSavedAboveAverageWeight(goalsSavedAboveAverage: number): number {
+    return goalsSavedAboveAverage > 0 ? StatsUtils.goalieAboveAverageWeight : StatsUtils.goalieBelowAverageWeight;
+  }
+
+  /**
+   * The shutout bonus: goalieShutoutBonusPerShot for every shot faced in a shutout win (isShutoutWin), so a busy
+   * shutout is worth more than a quiet one, and 0 otherwise. A shutout of more than 30 shots reaches 10.
+   *
+   * @param goalie - The goalie's boxscore stats.
+   */
+  public static getGoalieShutoutBonus(goalie: BoxscoreGoalie): number {
+    return StatsUtils.isShutoutWin(goalie) ? (goalie.shotsAgainst ?? 0) * StatsUtils.goalieShutoutBonusPerShot : 0;
   }
 
   /**

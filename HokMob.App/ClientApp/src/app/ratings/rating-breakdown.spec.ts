@@ -202,26 +202,39 @@ describe('RatingBreakdownUtils', () => {
     });
 
     it('should rate saves against the league average at each strength, then the workload and the win', () => {
+      // Below average on the penalty kill, but 0.49 goals above average for the night, so every strength is at 0.7
       const breakdown = RatingBreakdownUtils.getGoalieBreakdown({
-        evenStrengthShotsAgainst: '24/26', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '1/1',
-        savePctg: 0.938, shotsAgainst: 32, saves: 30, starter: true, decision: 'W'
+        evenStrengthShotsAgainst: '24/26', powerPlayShotsAgainst: '5/6', shorthandedShotsAgainst: '1/1',
+        savePctg: 0.909, shotsAgainst: 33, saves: 30, starter: true, decision: 'W'
       } as BoxscoreGoalie);
       expect(breakdown.terms.map(ratingTerm => ratingTerm.label)).toEqual(['Base', 'Even strength saves',
         'Penalty kill saves', 'Power play saves', 'Workload', 'Win', 'Shutout']);
       expect(term(breakdown, 'Base')).toBe(5.75);
-      // 0.6 x (24 - 0.903 x 26), 0.6 x (5 - 0.853 x 5) and 0.6 x (1 - 0.910 x 1)
-      expect(term(breakdown, 'Even strength saves')).toBe(0.31);
-      expect(term(breakdown, 'Penalty kill saves')).toBe(0.44);
-      expect(term(breakdown, 'Power play saves')).toBe(0.05);
-      expect(breakdown.terms[1].detail).toBe('(24 - 0.903 x 26 shots) x 0.6');
-      expect(breakdown.terms[2].detail).toBe("(5 - 0.853 x 5 shots) x 0.6, the boxscore's power play split");
-      expect(term(breakdown, 'Workload')).toBe(0.12);
-      expect(breakdown.terms[4].detail).toBe('(32 shots - 26) x 0.02');
+      // 0.7 x (24 - 0.903 x 26), 0.7 x (5 - 0.853 x 6) and 0.7 x (1 - 0.910 x 1)
+      expect(term(breakdown, 'Even strength saves')).toBe(0.37);
+      expect(term(breakdown, 'Penalty kill saves')).toBe(-0.08);
+      expect(term(breakdown, 'Power play saves')).toBe(0.06);
+      expect(breakdown.terms[1].detail).toBe('(24 - 0.903 x 26 shots) x 0.7');
+      expect(breakdown.terms[2].detail).toBe("(5 - 0.853 x 6 shots) x 0.7, the boxscore's power play split");
+      expect(term(breakdown, 'Workload')).toBe(0.14);
+      expect(breakdown.terms[4].detail).toBe('(33 shots - 26) x 0.02');
       expect(term(breakdown, 'Win')).toBe(0.3);
       expect(term(breakdown, 'Shutout')).toBe(0);
-      // 5.75 + 0.3132 + 0.441 + 0.054 + 0.12 + 0.3 = 6.98
-      expect(breakdown.rawTotal).toBe(6.98);
-      expect(breakdown.rating).toBe(7);
+      // 5.75 + 0.3654 - 0.0826 + 0.063 + 0.14 + 0.3 = 6.54
+      expect(breakdown.rawTotal).toBe(6.54);
+      expect(breakdown.rating).toBe(6.5);
+    });
+
+    it('should weight a night below average at 0.6', () => {
+      const breakdown = RatingBreakdownUtils.getGoalieBreakdown({
+        evenStrengthShotsAgainst: '20/24', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '0/0',
+        savePctg: 0.862, shotsAgainst: 29, saves: 25, starter: true, decision: 'L'
+      } as BoxscoreGoalie);
+      expect(breakdown.terms[1].detail).toBe('(20 - 0.903 x 24 shots) x 0.6');
+      expect(breakdown.rating).toBe(StatsUtils.calculateGoalieHokMobRating({
+        evenStrengthShotsAgainst: '20/24', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '0/0',
+        savePctg: 0.862, shotsAgainst: 29, saves: 25, starter: true, decision: 'L'
+      } as BoxscoreGoalie));
     });
 
     it('should measure a live goalie\'s workload against the shots expected in the time he has played', () => {
@@ -240,7 +253,9 @@ describe('RatingBreakdownUtils', () => {
         savePctg: 1, shotsAgainst: 30, saves: 30, starter: true, decision: 'W'
       } as BoxscoreGoalie);
       expect(term(breakdown, 'Win')).toBe(0.3);
-      expect(term(breakdown, 'Shutout')).toBe(0.8);
+      // 30 shots x 0.065
+      expect(term(breakdown, 'Shutout')).toBe(1.95);
+      expect(breakdown.terms[6].detail).toBe('30 shots x 0.065, started, won and let no shot in');
       expect(breakdown.rating).toBe(StatsUtils.calculateGoalieHokMobRating({
         evenStrengthShotsAgainst: '24/24', powerPlayShotsAgainst: '5/5', shorthandedShotsAgainst: '1/1',
         savePctg: 1, shotsAgainst: 30, saves: 30, starter: true, decision: 'W'

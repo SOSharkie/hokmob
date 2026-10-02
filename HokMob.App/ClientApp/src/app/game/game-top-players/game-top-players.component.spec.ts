@@ -77,7 +77,7 @@ describe('GameTopPlayersComponent', () => {
     expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
     // Connor and Barron are both rated 6.5, and Connor is one of the Winnipeg stars
     expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Kyle Connor']);
-    expect(cards('home').map(rating)).toEqual(['6.8', '7.9', '6', '7.1', '6.7', '6.5']);
+    expect(cards('home').map(rating)).toEqual(['6.9', '7.9', '6', '7.1', '6.7', '6.5']);
 
     expect(names('away', 'goalies')).toEqual(['Jordan Binnington']);
     // Parayko and Mailloux are both rated 6.3, and Parayko is one of the St. Louis stars

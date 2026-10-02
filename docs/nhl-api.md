@@ -213,7 +213,7 @@ ratings, so a formula change shows up on the history page without regenerating i
   and rates every row in under 100 ms, so there's no web worker.
 - **What the page leaves out:** goalies who faced no shots, whom the rating gives 0 (3 in 2025-26). A goalie who
   faced shots and made no saves also gets 0, and is kept, as on the game page.
-- **Capped ratings:** 52 games of 2025-26 are rated exactly 10 (51 skaters and 1 goalie). The service works out their
+- **Capped ratings:** 91 games of 2025-26 are rated exactly 10 (51 skaters and 40 goalies). The service works out their
   uncapped total (`StatsUtils.getSkaterRawRating` / `getGoalieRawRating`), which ranks them in the best single games
   list.
 - **Serving:** the file is copied to `dist/assets` with the other assets and served by `UseStaticFiles`, outside the
