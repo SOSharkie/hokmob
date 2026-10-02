@@ -96,7 +96,7 @@ export class BestGamesComponent implements OnChanges {
       rating: ratedGame.rating,
       ratingColor: StatsUtils.getHokmobRatingColor(ratedGame.rating),
       ratingNote: ratedGame.uncappedRating > ratedGame.rating
-          ? "Capped at " + ratedGame.rating + ", from " + ratedGame.uncappedRating.toFixed(1)
+          ? "Capped at " + ratedGame.rating + ", from " + StatsUtils.roundRating(ratedGame.uncappedRating).toFixed(1)
           : undefined
     };
   }

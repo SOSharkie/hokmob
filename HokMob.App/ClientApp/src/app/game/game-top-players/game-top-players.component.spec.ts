@@ -231,10 +231,13 @@ describe('GameTopPlayersComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.star-icon').length).toBe(1);
     expect(card('away', 'Jordan Staal').querySelector('.star-icon')).not.toBeNull();
 
+    const awayPlayers = gamePlayers(2025030414, false);
+    const staal = awayPlayers.find(player => player.playerId === 8473533);
+    expect(staal.hokmobRating).toBe(9.4); // 9.35, rounded up
     const homePlayers = gamePlayers(2025030414, true);
     const homeForward = homePlayers.find(player => player.skaterStats && player.position !== 'D');
-    homeForward.hokmobRating = 9.3; // Staal's rating, so the home player takes the tie
-    show(homePlayers, gamePlayers(2025030414, false));
+    homeForward.hokmobRating = staal.hokmobRating; // so the home player takes the tie
+    show(homePlayers, awayPlayers);
     expect(component.gameMvpPlayerId).toBe(homeForward.playerId);
   });
 

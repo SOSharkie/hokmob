@@ -488,6 +488,20 @@ describe('RatingsComponent opened on a game stat line', () => {
     });
   });
 
+  it('should rate every skater exactly as the game page did when the faceoff percentage is rounded', () => {
+    // The boxscore gives Geekie's 2 of 3 draws as 0.666667, and the page rebuilds 2/3 from the draws.
+    const players = gamePlayers(2026020010).filter(player => player.skaterStats);
+    expect(players.length).toBeGreaterThan(30);
+    const geekie = players.find(player => player.playerId === 8483447);
+    expect(geekie.skaterStats.faceoffWinningPctg).toBe(0.666667);
+    expect(geekie.hokmobRating).toBe(5.7);
+    players.forEach(player => {
+      const component = open(RatingStatLineUtils.getQueryParams(player));
+      expect(component.subject).withContext(player.name).toBe('skater');
+      expect(component.breakdown.rating).withContext(player.name).toBe(player.hokmobRating);
+    });
+  });
+
   it("should rate a goalie's goal exactly as the game page did", () => {
     // Shesterkin scored into the empty net in 2026020010
     const players = gamePlayers(2026020010);

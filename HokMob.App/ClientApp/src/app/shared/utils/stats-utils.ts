@@ -169,7 +169,20 @@ export class StatsUtils {
    * whichever are known.
    */
   public static calculateSkaterHokmobRating(skater: BoxscoreSkater, context?: SkaterRatingContext): number {
-    return parseFloat(Math.min(10.0, StatsUtils.getSkaterRawRating(skater, context)).toFixed(1));
+    return StatsUtils.roundRating(Math.min(10.0, StatsUtils.getSkaterRawRating(skater, context)));
+  }
+
+  /**
+   * Rounds a raw rating to the one decimal it's shown with. It first rounds to 4 decimals, so float noise can't move
+   * a rating that sits on a half: the boxscore's faceoffWinningPctg is 0.666667 where the rating explorer rebuilds
+   * 2/3 from the draws, and 5.65000.. and 5.64999.. both have to come out 5.7. A half rounds away from zero, the way
+   * toFixed would round the exact value.
+   *
+   * @param rawRating - The raw rating, already clamped (getSkaterRawRating, getGoalieRawRating).
+   */
+  public static roundRating(rawRating: number): number {
+    const tenThousandths = Math.round(Math.abs(rawRating) * 10000);
+    return Math.sign(rawRating) * Math.round(tenThousandths / 1000) / 10;
   }
 
   /**
@@ -308,7 +321,7 @@ export class StatsUtils {
     if (!goalie.savePctg) {
       return 0;
     }
-    return parseFloat(Math.max(0, Math.min(10.0, StatsUtils.getGoalieRawRating(goalie, context))).toFixed(1));
+    return StatsUtils.roundRating(Math.max(0, Math.min(10.0, StatsUtils.getGoalieRawRating(goalie, context))));
   }
 
   /**
