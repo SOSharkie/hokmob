@@ -49,7 +49,20 @@ describe('RatingStatLineUtils', () => {
           .toBe(goalie.goalieStats.shotsAgainst);
       expect(params['evenStrengthGoals'] + params['penaltyKillGoals'] + params['powerPlayGoals'])
           .toBe(goalie.goalieStats.goalsAgainst);
-      expect(params['goals']).toBeUndefined();
+      // His own goals, none in this game
+      expect(params['goals']).toBe(0);
+    });
+
+    it("should hold a goalie's own goal, counted from the landing", () => {
+      const landing = mockGameLanding(2026020010);
+      const shesterkin = StatsUtils.getGamePlayers(mockGameBoxscore(2026020010), true, undefined, undefined,
+          StatsUtils.getAssistCounts(landing), undefined, landing).find(gamePlayer => gamePlayer.playerId === 8478048);
+      const params = RatingStatLineUtils.getQueryParams(shesterkin);
+      expect(params['subject']).toBe('goalie');
+      expect(params['rating']).toBe(8.5);
+      expect(params['goals']).toBe(1);
+      expect(params['primaryAssists']).toBe(0);
+      expect(params['secondaryAssists']).toBe(0);
     });
   });
 
@@ -83,7 +96,15 @@ describe('RatingStatLineUtils', () => {
       const goalie = {evenStrengthShotsAgainst: '20/22', powerPlayShotsAgainst: '4/5', shorthandedShotsAgainst: '1/1'};
       expect(RatingStatLineUtils.getGoalieLine(goalie as BoxscoreGoalie)).toEqual({evenStrengthShots: 22,
         evenStrengthGoals: 2, penaltyKillShots: 5, penaltyKillGoals: 1, powerPlayShots: 1, powerPlayGoals: 0,
-        timeOnIce: 0, started: 0, win: 0});
+        timeOnIce: 0, started: 0, win: 0, goals: 0, primaryAssists: 0, secondaryAssists: 0});
+    });
+
+    it("should carry a goalie's goals and assists, every assist primary without the split", () => {
+      const goalie = {evenStrengthShotsAgainst: '20/22'} as BoxscoreGoalie;
+      expect(RatingStatLineUtils.getGoalieLine(goalie, {goals: 1, assists: 2, primaryAssists: 0, secondaryAssists: 2}))
+          .toEqual(jasmine.objectContaining({goals: 1, primaryAssists: 0, secondaryAssists: 2}));
+      expect(RatingStatLineUtils.getGoalieLine(goalie, {goals: 0, assists: 2}))
+          .toEqual(jasmine.objectContaining({goals: 0, primaryAssists: 2, secondaryAssists: 0}));
     });
 
     it('should carry the time on ice in seconds, up to a full game', () => {

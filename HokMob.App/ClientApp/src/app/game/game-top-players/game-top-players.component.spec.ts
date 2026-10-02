@@ -5,7 +5,12 @@ import { GamePlayer } from '@shared/models/nhl-web-api/boxscore.model';
 import { PlayerHighlight } from '@shared/models/player-highlight.model';
 import { StatsUtils } from '@shared/utils/stats-utils';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
-import { MockGamecenterGameId, mockGameBoxscore, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  MockGamecenterGameId,
+  mockGameBoxscore,
+  mockGameLanding,
+  mockGamePlayByPlay
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 
@@ -226,10 +231,13 @@ describe('GameTopPlayersComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.star-icon').length).toBe(1);
     expect(card('away', 'Jordan Staal').querySelector('.star-icon')).not.toBeNull();
 
+    const awayPlayers = gamePlayers(2025030414, false);
+    const staal = awayPlayers.find(player => player.playerId === 8473533);
+    expect(staal.hokmobRating).toBe(9.4); // 9.35, rounded up
     const homePlayers = gamePlayers(2025030414, true);
     const homeForward = homePlayers.find(player => player.skaterStats && player.position !== 'D');
-    homeForward.hokmobRating = 9.3; // Staal's rating, so the home player takes the tie
-    show(homePlayers, gamePlayers(2025030414, false));
+    homeForward.hokmobRating = staal.hokmobRating; // so the home player takes the tie
+    show(homePlayers, awayPlayers);
     expect(component.gameMvpPlayerId).toBe(homeForward.playerId);
   });
 
@@ -245,6 +253,25 @@ describe('GameTopPlayersComponent', () => {
     awayPlayers.find(player => player.playerId === 8473533).skaterStats.goals = 4;
     show(gamePlayers(2025030414, true), awayPlayers);
     expect(pucks(card('away', 'Jordan Staal'))).toBe(3);
+  });
+
+  it("should show a puck for a goalie's goal, which only the landing has", () => {
+    // Shesterkin scored into the empty net in 2026020010
+    const landing = mockGameLanding(2026020010);
+    const withLanding = (isHome: boolean) => StatsUtils.getGamePlayers(mockGameBoxscore(2026020010), isHome,
+        PlayByPlayUtils.getRosterSpotMap(mockGamePlayByPlay(2026020010)), undefined,
+        StatsUtils.getAssistCounts(landing), undefined, landing);
+    const pucks = (playerCard: HTMLElement) => playerCard.querySelectorAll('.puck-icon').length;
+    show(withLanding(true), withLanding(false));
+    expect(names('home', 'goalies')).toEqual(['Igor Shesterkin']);
+    expect(pucks(cards('home', 'goalies')[0])).toBe(1);
+    expect(rating(cards('home', 'goalies')[0])).toBe('8.5');
+    expect(pucks(cards('away', 'goalies')[0])).toBe(0);
+
+    // Without the landing the boxscore has no goal for him
+    show(gamePlayers(2026020010, true), gamePlayers(2026020010, false));
+    expect(pucks(cards('home', 'goalies')[0])).toBe(0);
+    expect(rating(cards('home', 'goalies')[0])).toBe('7.3');
   });
 
   it('should show the roster headshots and fall back to the blank headshot', () => {

@@ -192,6 +192,18 @@ describe('RecentPlayerGamesComponent', () => {
     expect(row(6)).toEqual(['Mar 31', 'CHI(4 - 3)', '60:33', '.857', '2.97', '21', '3', '5.4']);
   });
 
+  it("should add a goalie's goals and assists to his rating", () => {
+    const games = mockPlayerStats(8476945).recentGames as GoalieGameStats[];
+    // Hellebuyck had no points in these games; give the overtime game an assist and a goal
+    expect(games[6].goals).toBe(0);
+    expect(games[6].assists).toBe(0);
+    show([games[6]], true);
+    expect(row(0)[7]).toBe('5.4');
+    // + 1.2 for the goal and the flat 0.5 for the assist
+    show([{...games[6], goals: 1, assists: 1}], true);
+    expect(row(0)[7]).toBe('7.1');
+  });
+
   it('should show no rows for a player without recent games', () => {
     show([], false);
     expect(gameRows().length).toBe(0);

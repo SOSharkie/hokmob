@@ -36,7 +36,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
 | Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `player/{id}/landing` for the player dialog |
 | Team | `standings/now` (division and conference), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams` |
-| Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating) |
+| Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
 | Playoffs | `playoff-bracket/{year}`, `schedule/playoff-series/{season}/{letter}` for the series dialog, `/api/nhl-stats/seasons` |
 | Standings | `standings/now` |
@@ -104,7 +104,7 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
 | `skater/powerplay` | `ppAssists` (also `ppPrimaryAssists` / `ppSecondaryAssists`), `ppTimeOnIce` |
 | `skater/penalties` | `penaltiesDrawn`. It matches a count of the play-by-play's `drawnByPlayerId`: fighting majors and coincidental minors count, and penalties with no drawer (too many men, misconducts) count for nobody |
 | `skater/bios`, `goalie/bios` | `playerId`, `draftYear`, `draftRound`, `draftOverall`; skater bios also have games, goals, assists and points |
-| `goalie/summary` | `goalieFullName`, `teamAbbrevs` / `teamAbbrev`, `gamesPlayed`, `gamesStarted`, `wins`, `losses`, `otLosses`, `shutouts`, `shotsAgainst`, `saves`, `goalsAgainst`, `goalsAgainstAverage`, `savePct`, `timeOnIce` |
+| `goalie/summary` | `goalieFullName`, `teamAbbrevs` / `teamAbbrev`, `gamesPlayed`, `gamesStarted`, `wins`, `losses`, `otLosses`, `shutouts`, `shotsAgainst`, `saves`, `goalsAgainst`, `goalsAgainstAverage`, `savePct`, `timeOnIce`, and the goalie's own `goals`, `assists` and `points` |
 | `goalie/savesByStrength` | `evSaves`, `ppSaves`, `shSaves`, `evShotsAgainst`, `ppShotsAgainst`, `savePct` |
 | `team/summary` | `teamId`, `teamFullName`, `powerPlayPct`, `penaltyKillPct`, `goalsForPerGame`, `goalsAgainstPerGame`, `shotsForPerGame`, `shotsAgainstPerGame`, `faceoffWinPct` |
 | `game` | `homeTeamId`, `visitingTeamId`, `homeScore`, `visitingScore`, `gameStateId`, `gameType`, `gameDate`, `easternStartTime` |
@@ -189,7 +189,8 @@ ratings, so a formula change shows up on the history page without regenerating i
   `skater/realtime`, `skater/faceoffwins`, `skater/scoringpergame`, `skater/powerplay` and `skater/penalties`, plus
   `skater/summaryshooting` for the 5v5 Corsi (`satFor`, `satAgainst`) and Fenwick (`usatFor`, `usatAgainst`) counts,
   which aren't rated yet (#120). Goalies: `goalie/summary` (`timeOnIce`, and `gamesStarted` and `wins` for the
-  rating's win and shutout bonuses, since file version 2) and `goalie/savesByStrength`. The `game` report gives each
+  rating's win and shutout bonuses, since file version 2, and the goalie's own `goals` and `assists` since version 3)
+  and `goalie/savesByStrength`. The `game` report gives each
   game's date, teams and score. The reports are merged by `playerId` + `gameId`.
 - **The 10,000 row cap:** the stats API returns at most 10,000 rows per query, even with `limit=-1`, without an
   error, and `total` says 10,000 too. A regular season is about 47,000 skater game rows, so the skater reports are
@@ -211,6 +212,10 @@ ratings, so a formula change shows up on the history page without regenerating i
   season). The fields are the stats API's; the `SeasonHistory` model describes them. 2025-26: 1,312 games, 1,038
   players, 47,230 skater rows and 2,768 goalie rows, 2.85 MB (491 KB gzipped). The browser parses it in about 10 ms
   and rates every row in under 100 ms, so there's no web worker.
+- **Goalie points:** the boxscore has no goals or assists for a goalie, so the game page counts them from the landing's
+  scoring summary (`StatsUtils.getGoalieRatingContext`), with the primary/secondary split. The stats API's goalie rows
+  have no split, so the player and history pages count a goalie's assists at the flat 0.5. 2025-26 had 58 goalie
+  assists, in 58 games, and no goalie goals.
 - **What the page leaves out:** goalies who faced no shots, whom the rating gives 0 (3 in 2025-26). A goalie who
   faced shots and made no saves also gets 0, and is kept, as on the game page.
 - **Capped ratings:** 91 games of 2025-26 are rated exactly 10 (51 skaters and 40 goalies). The service works out their

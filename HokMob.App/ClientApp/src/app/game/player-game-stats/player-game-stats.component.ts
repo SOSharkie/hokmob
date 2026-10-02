@@ -71,6 +71,19 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
     return this.player?.goalieStats;
   }
 
+  /**
+   * A goalie's goals and assists, which the boxscore doesn't have, so the game page counts them from the landing
+   * (StatsUtils.getGoalieRatingContext). 0 when he had none or the landing isn't loaded; the dialog only shows them
+   * above 0.
+   */
+  public get goalieGoals(): number {
+    return this.player?.goalieRatingContext?.goals ?? 0;
+  }
+
+  public get goalieAssists(): number {
+    return this.player?.goalieRatingContext?.assists ?? 0;
+  }
+
   public get isGoalie(): boolean {
     return !!this.goalieStats;
   }

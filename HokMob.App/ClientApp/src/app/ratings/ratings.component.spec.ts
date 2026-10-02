@@ -332,7 +332,7 @@ describe('RatingsComponent', () => {
 
     expect(component.subject).toBe('goalie');
     expect(termRows().map(row => row[0])).toEqual(['Base', 'Even strength saves', 'Penalty kill saves',
-      'Power play saves', 'Workload', 'Win', 'Shutout']);
+      'Power play saves', 'Workload', 'Win', 'Shutout', 'Goals', 'Assists']);
     expect(stepperValue('Even strength shots')).toBe('22');
     expect(stepperValue('Win')).toBe('1');
   });
@@ -377,6 +377,22 @@ describe('RatingsComponent', () => {
     expect(component.isStepDisabled(component.goalieControls.find(control => control.key === 'win'), -1)).toBeTrue();
     expect(component.isStepDisabled(component.goalieControls.find(control => control.key === 'started'), 1))
         .toBeTrue();
+  });
+
+  it("should add a goalie's goals and assists with their steppers", () => {
+    component.selectSubject('goalie');
+    fixture.detectChanges();
+    const points = (label: string) => component.breakdown.terms.find(ratingTerm => ratingTerm.label === label).value;
+    const rating = component.breakdown.rawTotal;
+    expect(points('Goals')).toBe(0);
+    expect(points('Assists')).toBe(0);
+
+    step('Goals', 1);
+    step('Primary assists', 1);
+    step('Secondary assists', 1);
+    expect(points('Goals')).toBe(1.2);
+    expect(points('Assists')).toBe(1);
+    expect(component.breakdown.rawTotal).toBeCloseTo(rating + 2.2, 2);
   });
 
   it('should rate a goalie who faced no shots 0', () => {
@@ -443,10 +459,11 @@ describe('RatingsComponent opened on a game stat line', () => {
   function gamePlayers(gameId: MockGamecenterGameId = 2025021057): GamePlayer[] {
     const playByPlay = mockGamePlayByPlay(gameId);
     const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(playByPlay);
-    const assistCounts = StatsUtils.getAssistCounts(mockGameLanding(gameId));
+    const landing = mockGameLanding(gameId);
+    const assistCounts = StatsUtils.getAssistCounts(landing);
     const penaltiesDrawnCounts = PlayByPlayUtils.getPenaltiesDrawnCounts(playByPlay);
     return [true, false].flatMap(isHome => StatsUtils.getGamePlayers(mockGameBoxscore(gameId), isHome,
-        PlayByPlayUtils.getRosterSpotMap(playByPlay), faceoffCounts, assistCounts, penaltiesDrawnCounts));
+        PlayByPlayUtils.getRosterSpotMap(playByPlay), faceoffCounts, assistCounts, penaltiesDrawnCounts, landing));
   }
 
   it("should load a skater's line from the game, and show who it came from", () => {
@@ -468,6 +485,36 @@ describe('RatingsComponent opened on a game stat line', () => {
       const component = open(RatingStatLineUtils.getQueryParams(player));
       expect(component.subject).withContext(player.name).toBe(player.goalieStats ? 'goalie' : 'skater');
       expect(component.breakdown.rating).withContext(player.name).toBe(player.hokmobRating);
+    });
+  });
+
+  it('should rate every skater exactly as the game page did when the faceoff percentage is rounded', () => {
+    // The boxscore gives Geekie's 2 of 3 draws as 0.666667, and the page rebuilds 2/3 from the draws.
+    const players = gamePlayers(2026020010).filter(player => player.skaterStats);
+    expect(players.length).toBeGreaterThan(30);
+    const geekie = players.find(player => player.playerId === 8483447);
+    expect(geekie.skaterStats.faceoffWinningPctg).toBe(0.666667);
+    expect(geekie.hokmobRating).toBe(5.7);
+    players.forEach(player => {
+      const component = open(RatingStatLineUtils.getQueryParams(player));
+      expect(component.subject).withContext(player.name).toBe('skater');
+      expect(component.breakdown.rating).withContext(player.name).toBe(player.hokmobRating);
+    });
+  });
+
+  it("should rate a goalie's goal exactly as the game page did", () => {
+    // Shesterkin scored into the empty net in 2026020010
+    const players = gamePlayers(2026020010);
+    const shesterkin = players.find(player => player.playerId === 8478048);
+    const component = open(RatingStatLineUtils.getQueryParams(shesterkin));
+    expect(component.subject).toBe('goalie');
+    expect(component.goalieLine['goals']).toBe(1);
+    const goals = component.breakdown.terms.find(ratingTerm => ratingTerm.label === 'Goals');
+    expect(goals.detail).toBe('1 x 1.2');
+    expect(component.breakdown.rating).toBe(8.5);
+    players.filter(player => player.goalieStats).forEach(player => {
+      expect(open(RatingStatLineUtils.getQueryParams(player)).breakdown.rating).withContext(player.name)
+          .toBe(player.hokmobRating);
     });
   });
 

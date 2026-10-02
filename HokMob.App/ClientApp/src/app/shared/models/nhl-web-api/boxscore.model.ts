@@ -7,7 +7,7 @@ import {
   LocalizedString,
   PeriodDescriptor
 } from "@shared/models/nhl-web-api/common.model";
-import {SkaterRatingContext} from "@shared/utils/stats-utils";
+import {GoalieRatingContext, SkaterRatingContext} from "@shared/utils/stats-utils";
 
 /**
  * Response of gamecenter/{id}/boxscore.
@@ -107,6 +107,8 @@ export interface GamePlayer {
   hokmobRating: number;
   /** What a skater's rating was calculated with beyond the boxscore, whichever of it was loaded. */
   ratingContext?: SkaterRatingContext;
+  /** A goalie's goals and assists, which the boxscore doesn't have, when the landing is loaded. */
+  goalieRatingContext?: GoalieRatingContext;
   skaterStats?: BoxscoreSkater;
   goalieStats?: BoxscoreGoalie;
 }

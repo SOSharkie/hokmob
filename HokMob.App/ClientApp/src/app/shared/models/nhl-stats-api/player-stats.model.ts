@@ -146,6 +146,9 @@ export interface GoalieGameStats extends PlayerGameStatsRow {
   savePct: number;
   /** Seconds. */
   timeOnIce: number;
+  /** The goalie's own goals and assists, which his rating adds. */
+  goals: number;
+  assists: number;
   /** From the saves by strength report; missing when that call failed. */
   evSaves?: number;
   evShotsAgainst?: number;

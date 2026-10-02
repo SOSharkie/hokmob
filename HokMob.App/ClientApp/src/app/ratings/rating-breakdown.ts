@@ -1,5 +1,8 @@
 import {BoxscoreGoalie, BoxscoreSkater} from "@shared/models/nhl-web-api/boxscore.model";
-import {SkaterRatingContext, StatsUtils} from "@shared/utils/stats-utils";
+import {GoalieRatingContext, SkaterRatingContext, StatsUtils} from "@shared/utils/stats-utils";
+
+/** The part of a rating context that says how a player's assists split. */
+type AssistSplit = { primaryAssists?: number, secondaryAssists?: number };
 
 /**
  * One term of a HokMob rating: what a stat contributed, and where the rating stood after it.
@@ -67,7 +70,7 @@ export class RatingBreakdownUtils {
     };
 
     terms.push({label: "Base", detail: "An average game", value: RatingBreakdownUtils.baseRating, total});
-    addTerm("Goals", goals + " x 1.2", goals * 1.2);
+    addTerm("Goals", goals + " x " + StatsUtils.goalWeight, goals * StatsUtils.goalWeight);
     addTerm("Assists", RatingBreakdownUtils.getAssistDetail(assists, context),
         RatingBreakdownUtils.getAssistValue(assists, context));
     addTerm("Shots on goal", "(" + shotsOnGoal + " - " + goals + " scored) x 0.3", (shotsOnGoal - goals) * 0.3);
@@ -121,18 +124,19 @@ export class RatingBreakdownUtils {
 
   /**
    * Whether the assist split can be used: both halves are known and they add up to the assists the boxscore credits
-   * the skater with. Anything else is rated at the flat weight, the way `StatsUtils.getAssistRating` does it.
+   * the skater or goalie with. Anything else is rated at the flat weight, the way `StatsUtils.getAssistRating` does
+   * it.
    */
-  private static hasAssistSplit(assists: number, context?: SkaterRatingContext): boolean {
+  private static hasAssistSplit(assists: number, context?: AssistSplit): boolean {
     return context?.primaryAssists != null && context?.secondaryAssists != null &&
         context.primaryAssists + context.secondaryAssists === assists;
   }
 
   /**
-   * What a skater's assists are worth: the primary and secondary weights when the split is known, and the flat
-   * weight otherwise.
+   * What a skater's or goalie's assists are worth: the primary and secondary weights when the split is known, and the
+   * flat weight otherwise.
    */
-  private static getAssistValue(assists: number, context?: SkaterRatingContext): number {
+  private static getAssistValue(assists: number, context?: AssistSplit): number {
     if (!RatingBreakdownUtils.hasAssistSplit(assists, context)) {
       return assists * StatsUtils.unknownAssistWeight;
     }
@@ -144,7 +148,7 @@ export class RatingBreakdownUtils {
    * The arithmetic behind the assist term, which says when the split was used and when it fell back to the flat
    * weight.
    */
-  private static getAssistDetail(assists: number, context?: SkaterRatingContext): string {
+  private static getAssistDetail(assists: number, context?: AssistSplit): string {
     if (!RatingBreakdownUtils.hasAssistSplit(assists, context)) {
       return assists + " x " + StatsUtils.unknownAssistWeight + ", the split unknown";
     }
@@ -157,8 +161,9 @@ export class RatingBreakdownUtils {
    * goalie who faced no shots is rated 0 outright, which the note says.
    *
    * @param goalie - The goalie's boxscore stats.
+   * @param context - The goalie's goals and assists, which the boxscore doesn't have.
    */
-  public static getGoalieBreakdown(goalie: BoxscoreGoalie): RatingBreakdown {
+  public static getGoalieBreakdown(goalie: BoxscoreGoalie, context?: GoalieRatingContext): RatingBreakdown {
     const terms: RatingTerm[] = [];
     let total = StatsUtils.goalieBaseRating;
 
@@ -197,6 +202,13 @@ export class RatingBreakdownUtils {
         ? shotsAgainst + " shots x " + StatsUtils.goalieShutoutBonusPerShot + ", started, won and let no shot in"
         : "Not a shutout win", StatsUtils.getGoalieShutoutBonus(goalie));
 
+    // A goalie's points count the same as a skater's
+    const goals = Math.max(0, context?.goals ?? 0);
+    const assists = Math.max(0, context?.assists ?? 0);
+    addTerm("Goals", goals + " x " + StatsUtils.goalWeight, goals * StatsUtils.goalWeight);
+    addTerm("Assists", RatingBreakdownUtils.getAssistDetail(assists, context),
+        RatingBreakdownUtils.getAssistValue(assists, context));
+
     let clampNote: string;
     if (!goalie.savePctg) {
       clampNote = "Faced no shots, so the rating is 0";
@@ -205,7 +217,8 @@ export class RatingBreakdownUtils {
     } else if (total < 0) {
       clampNote = "Floored at 0";
     }
-    return RatingBreakdownUtils.toBreakdown(terms, total, StatsUtils.calculateGoalieHokMobRating(goalie), clampNote);
+    return RatingBreakdownUtils.toBreakdown(terms, total, StatsUtils.calculateGoalieHokMobRating(goalie, context),
+        clampNote);
   }
 
   /**

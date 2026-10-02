@@ -46,6 +46,11 @@ import gamecenter2026010001Boxscore from './gamecenter-2026010001-boxscore-live.
 import gamecenter2026010001RightRail from './gamecenter-2026010001-right-rail-live.json';
 import gamecenter2026010001LandingIntermission from './gamecenter-2026010001-landing-intermission.json';
 import gamecenter2026010001LandingCritical from './gamecenter-2026010001-landing-critical.json';
+import gamecenter2026020010Landing from './gamecenter-2026020010-landing.json';
+import gamecenter2026020010PlayByPlay from './gamecenter-2026020010-play-by-play.json';
+import gamecenter2026020010Boxscore from './gamecenter-2026020010-boxscore.json';
+import gamecenter2026020010RightRail from './gamecenter-2026020010-right-rail.json';
+import gamecenter2025020191Landing from './gamecenter-2025020191-landing.json';
 import scoreLive from './score-2026-09-19-live.json';
 import playerLanding8476460 from './player-8476460-landing.json';
 import playerLanding8477480 from './player-8477480-landing.json';
@@ -245,14 +250,15 @@ export function mockPlayoffSeriesSchedule(seriesLetter: 'A' | 'O'): PlayoffSerie
 }
 
 /** Games with captured gamecenter/{id}/landing, play-by-play, boxscore and right-rail responses. */
-export type MockGamecenterGameId = 2025021057 | 2025020952 | 2025030414 | 2026020056 | 2026010001;
+export type MockGamecenterGameId = 2025021057 | 2025020952 | 2025030414 | 2026020056 | 2026010001 | 2026020010;
 
 const gamecenterResponses = {
   2025021057: {landing: gamecenter2025021057Landing, playByPlay: gamecenter2025021057PlayByPlay, boxscore: gamecenter2025021057Boxscore, rightRail: gamecenter2025021057RightRail},
   2025020952: {landing: gamecenter2025020952Landing, playByPlay: gamecenter2025020952PlayByPlay, boxscore: gamecenter2025020952Boxscore, rightRail: gamecenter2025020952RightRail},
   2025030414: {landing: gamecenter2025030414Landing, playByPlay: gamecenter2025030414PlayByPlay, boxscore: gamecenter2025030414Boxscore, rightRail: gamecenter2025030414RightRail},
   2026020056: {landing: gamecenter2026020056Landing, playByPlay: gamecenter2026020056PlayByPlay, boxscore: gamecenter2026020056Boxscore, rightRail: gamecenter2026020056RightRail},
-  2026010001: {landing: gamecenter2026010001Landing, playByPlay: gamecenter2026010001PlayByPlay, boxscore: gamecenter2026010001Boxscore, rightRail: gamecenter2026010001RightRail}
+  2026010001: {landing: gamecenter2026010001Landing, playByPlay: gamecenter2026010001PlayByPlay, boxscore: gamecenter2026010001Boxscore, rightRail: gamecenter2026010001RightRail},
+  2026020010: {landing: gamecenter2026020010Landing, playByPlay: gamecenter2026020010PlayByPlay, boxscore: gamecenter2026020010Boxscore, rightRail: gamecenter2026020010RightRail}
 };
 
 /**
@@ -264,6 +270,8 @@ const gamecenterResponses = {
  * - 2026010001: DAL 2 @ STL 1, captured live at the start of the 3rd period (preseason, 2026-09-19). STL is on a
  *   power play carried over from the 2nd, so the landing and play-by-play both have a `situation`. summary.scoring
  *   lists the 3rd period before it has a goal. No one scored in the 3rd, so this is also the final score.
+ * - 2026020010: TBL 1 @ NYR 5 on 2026-10-01, final in regulation. NYR's goalie Igor Shesterkin (8478048) scored the
+ *   last goal, into an empty net, and won on 24 of 25 shots. The boxscore has no goals or assists for a goalie.
  */
 export function mockGameLanding(gameId: MockGamecenterGameId): GameLanding {
   return copy(gamecenterResponses[gameId].landing);
@@ -292,6 +300,14 @@ export function mockGameBundle(gameId: MockGamecenterGameId): GameBundle {
     boxscore: mockGameBoxscore(gameId),
     rightRail: mockGameRightRail(gameId)
   };
+}
+
+/**
+ * gamecenter/2025020191/landing: NJD 4 @ LAK 1 on 2025-11-01. NJD's goalie Jacob Markstrom (8474593) has the primary
+ * assist on Dawson Mercer's shorthanded empty net goal, the last of the game. Only the landing was captured.
+ */
+export function mockGoalieAssistLanding(): GameLanding {
+  return copy(gamecenter2025020191Landing);
 }
 
 /**

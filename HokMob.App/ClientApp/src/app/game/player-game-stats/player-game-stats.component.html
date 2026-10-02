@@ -92,6 +92,14 @@
         <span class="game-stat-label" title="Time On Ice">{{compact ? 'TOI' : 'Time On Ice'}}</span>
         <span class="game-stat-value">{{goalieStats.toi}}</span>
       </div>
+      <div *ngIf="goalieGoals > 0" class="game-stat-item goalie-goals-stat">
+        <span class="game-stat-label">Goals</span>
+        <span class="game-stat-value">{{goalieGoals}}</span>
+      </div>
+      <div *ngIf="goalieAssists > 0" class="game-stat-item goalie-assists-stat">
+        <span class="game-stat-label">Assists</span>
+        <span class="game-stat-value">{{goalieAssists}}</span>
+      </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Save %</span>
         <span class="game-stat-value">{{goalieStats.savePctg | savePercentage}}</span>

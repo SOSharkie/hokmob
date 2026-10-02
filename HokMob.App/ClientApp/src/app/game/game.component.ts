@@ -424,9 +424,9 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     const penaltiesDrawnCounts = this.playByPlay ? PlayByPlayUtils.getPenaltiesDrawnCounts(this.playByPlay) : undefined;
     const assistCounts = this.landing ? StatsUtils.getAssistCounts(this.landing) : undefined;
     this.homePlayers = StatsUtils.getGamePlayers(this.boxscore, true, rosterSpots, faceoffCounts, assistCounts,
-        penaltiesDrawnCounts);
+        penaltiesDrawnCounts, this.landing);
     this.awayPlayers = StatsUtils.getGamePlayers(this.boxscore, false, rosterSpots, faceoffCounts, assistCounts,
-        penaltiesDrawnCounts);
+        penaltiesDrawnCounts, this.landing);
     this.updateIntermission();
   }
 

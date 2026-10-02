@@ -110,6 +110,30 @@ describe('SeasonHistoryService', () => {
     expect(withWin - withoutWin).toBeCloseTo(0.3, 5);
   });
 
+  it("should add a goalie's goals and assists, his assists at the flat weight", () => {
+    const history = mockSeasonHistory();
+    const bussiRow = history.goalies.player.findIndex((playerIndex, row) =>
+        history.players.name[playerIndex] === 'Brandon Bussi' && history.games.id[history.goalies.game[row]] === 2025021237);
+    expect(history.version).toBe(3);
+    expect(history.goalies.goals[bussiRow]).toBe(0);
+    expect(history.goalies.assists[bussiRow]).toBe(0);
+    const bussiGame = (ratedSeason: RatedSeason) => ratedGamesOf(ratedSeason, 'Brandon Bussi')
+        .find(ratedGame => ratedGame.game.id === 2025021237);
+    const withoutPoints = bussiGame(SeasonHistoryService.rateSeason(history)).rating;
+
+    history.goalies.goals[bussiRow] = 1;
+    history.goalies.assists[bussiRow] = 1;
+    expect(bussiGame(SeasonHistoryService.rateSeason(history)).rating - withoutPoints).toBeCloseTo(1.7, 5);
+  });
+
+  it('should give no points to the goalies of a file from before version 3', () => {
+    const history = mockSeasonHistory();
+    const ratings = SeasonHistoryService.rateSeason(history).ratedGames.map(ratedGame => ratedGame.rating);
+    delete history.goalies.goals;
+    delete history.goalies.assists;
+    expect(SeasonHistoryService.rateSeason(history).ratedGames.map(ratedGame => ratedGame.rating)).toEqual(ratings);
+  });
+
   it('should leave out a goalie who faced no shots, but not the other goalie of the team', async () => {
     const ratedSeason = await loadFixture();
     expect(ratedSeason.players.some(player => player.name === 'Pyotr Kochetkov')).toBeTrue();

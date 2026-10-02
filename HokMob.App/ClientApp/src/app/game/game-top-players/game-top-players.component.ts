@@ -227,10 +227,17 @@ export class GameTopPlayersComponent implements OnChanges {
   }
 
   /**
+   * Returns the player's goals. A goalie's come from the landing, since the boxscore doesn't have them.
+   */
+  public getGoals(player: GamePlayer): number {
+    return player.skaterStats?.goals ?? player.goalieRatingContext?.goals ?? 0;
+  }
+
+  /**
    * Returns the indexes of the player's goal pucks: one per goal, up to three.
    */
   public getGoalPuckIndexes(player: GamePlayer): number[] {
-    const goals = Math.min(player.skaterStats?.goals ?? 0, this.maxGoalPucks);
+    const goals = Math.min(this.getGoals(player), this.maxGoalPucks);
     return Array.from({length: Math.max(goals, 0)}, (_, index) => index);
   }
 

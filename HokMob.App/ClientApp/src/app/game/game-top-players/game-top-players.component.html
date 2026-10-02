@@ -106,7 +106,7 @@
       <span>{{player.hokmobRating}}</span>
       <mat-icon *ngIf="player.playerId === gameMvpPlayerId" class="star-icon">star</mat-icon>
     </div>
-    <div *ngIf="player.skaterStats?.goals > 0" class="player-goals">
+    <div *ngIf="getGoals(player) > 0" class="player-goals">
       <div *ngFor="let puckIndex of getGoalPuckIndexes(player)" class="player-goal-container"
            [class.highlighted-goal]="isHighlightedGoal(player, puckIndex)">
         <img class="puck-icon" src="assets/puck.png" alt="">
