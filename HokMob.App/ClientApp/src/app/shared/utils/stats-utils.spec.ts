@@ -168,6 +168,35 @@ describe('StatsUtils', () => {
       const skater = {playerId: 1, position: 'D'} as BoxscoreSkater;
       expect(StatsUtils.calculateSkaterHokmobRating(skater)).toBe(5);
     });
+
+    it('should round a rating on a half the same whether the faceoff percentage is rounded or exact', () => {
+      // Geekie in 2026020010: 3 hits, 2 of 3 faceoffs, which the boxscore gives as 0.666667
+      // 5 + 0.6 + (0.666667 - 0.5) x 0.3 = 5.65000.., and with 2/3 it's 5.64999..
+      const geekie = boxscorePlayer<BoxscoreSkater>(8483447, 2026020010);
+      expect(geekie.faceoffWinningPctg).toBe(0.666667);
+      expect(StatsUtils.calculateSkaterHokmobRating(geekie, {faceoffsTaken: 3})).toBe(5.7);
+      geekie.faceoffWinningPctg = 2 / 3;
+      expect(StatsUtils.getSkaterRawRating(geekie, {faceoffsTaken: 3})).toBeLessThan(5.65);
+      expect(StatsUtils.calculateSkaterHokmobRating(geekie, {faceoffsTaken: 3})).toBe(5.7);
+    });
+  });
+
+  describe('roundRating', () => {
+    it('should round to one decimal, a half away from zero', () => {
+      expect(StatsUtils.roundRating(7.106)).toBe(7.1);
+      expect(StatsUtils.roundRating(7.15)).toBe(7.2);
+      expect(StatsUtils.roundRating(8.45)).toBe(8.5); // (8.45).toFixed(1) is 8.4
+      expect(StatsUtils.roundRating(1.45)).toBe(1.5);
+      expect(StatsUtils.roundRating(-1.45)).toBe(-1.5);
+      expect(StatsUtils.roundRating(10)).toBe(10);
+      expect(StatsUtils.roundRating(0)).toBe(0);
+    });
+
+    it('should round float noise around a half to the half first', () => {
+      expect(StatsUtils.roundRating(5.649999999)).toBe(5.7);
+      expect(StatsUtils.roundRating(5.650000001)).toBe(5.7);
+      expect(StatsUtils.roundRating(5.6499)).toBe(5.6);
+    });
   });
 
   describe('calculateGoalieHokMobRating', () => {
