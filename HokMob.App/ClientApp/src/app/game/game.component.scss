@@ -14,14 +14,15 @@ $central-info-width: 130px;
   flex-direction: column;
   align-items: center;
 
+  // Slides with a transform, not by animating top, so iOS Safari doesn't lay the fixed header out again on every frame
+  // of a scroll
   .header-show {
-    top: 0 !important;
-    transition: top 1s;
+    transform: translateY(0) !important;
   }
 
   .dropdown-header {
     position: fixed;
-    top: -150px;
+    top: 0;
     left: 0;
     z-index: 10;
     width: 100%;
@@ -29,7 +30,11 @@ $central-info-width: 130px;
     display: flex;
     justify-content: center;
     opacity: 1;
-    transition: top 1s;
+    // Past its box shadow too, which would show below the top of the screen
+    transform: translateY(calc(-100% - 20px));
+    // Its own compositing layer, so it stays put while the page scrolls under it
+    will-change: transform;
+    transition: transform 1s;
     box-shadow: 0 4px 15px 0 $black-01;
   }
 

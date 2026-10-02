@@ -29,6 +29,9 @@
     justify-content: space-around;
     align-items: stretch;
     transform: translateY(0);
+    // Its own compositing layer, so iOS Safari keeps it at the bottom of the screen during a flick instead of drawing
+    // it where the page was a moment ago
+    will-change: transform;
     transition: transform 0.2s ease-in-out;
 
     &.hidden {

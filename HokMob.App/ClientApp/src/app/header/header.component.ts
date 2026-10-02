@@ -26,9 +26,11 @@ export class HeaderComponent {
   }
 
   /**
-   * Closes the phone search and clears what was typed.
+   * Closes the phone search and clears what was typed. The input is blurred first, so the keyboard closes before the
+   * input is hidden (see `SearchInputComponent.blur`).
    */
   public closeSearch(): void {
+    this.searchInput?.blur();
     this.isSearchOpen = false;
     this.searchInput?.clear();
   }
@@ -37,6 +39,7 @@ export class HeaderComponent {
    * Closes the phone search after a result is picked, since the page changes.
    */
   public onResultSelected(): void {
+    this.searchInput?.blur();
     this.isSearchOpen = false;
   }
 }

@@ -63,6 +63,15 @@ export class SearchInputComponent implements OnDestroy {
   }
 
   /**
+   * Takes the focus off the input, which closes the phone keyboard. Call it before hiding the input: iOS Safari keeps
+   * the keyboard's height off the screen when a focused input is hidden, which leaves the fixed mobile menu floating
+   * mid-screen.
+   */
+  public blur(): void {
+    this.inputRef?.nativeElement.blur();
+  }
+
+  /**
    * Clears the typed value and the results, closes the results panel, and ignores a search still in flight.
    */
   public clear(): void {

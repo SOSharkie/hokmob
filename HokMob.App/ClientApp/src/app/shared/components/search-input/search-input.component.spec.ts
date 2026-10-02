@@ -210,6 +210,13 @@ describe('SearchInputComponent', () => {
     expect(document.activeElement).toBe(input);
   });
 
+  it('should blur the input', () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('.search-input');
+    component.focus();
+    component.blur();
+    expect(document.activeElement).not.toBe(input);
+  });
+
   it('should emit resultSelected when a result is picked', () => {
     const emitted = jasmine.createSpy('resultSelected');
     component.resultSelected.subscribe(emitted);
