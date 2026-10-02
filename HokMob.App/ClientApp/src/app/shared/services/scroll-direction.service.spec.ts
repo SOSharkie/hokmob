@@ -1,3 +1,4 @@
+import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { ScrollDirectionService } from './scroll-direction.service';
@@ -121,6 +122,41 @@ describe('ScrollDirectionService', () => {
     window.dispatchEvent(new Event('scroll'));
 
     expect(frameCallbacks.length).toBe(1);
+  });
+
+  it('should emit a change of direction inside the Angular zone, for the mobile menu binding', () => {
+    const zones: boolean[] = [];
+    const subscription = service.scrollingUp$.subscribe(() => zones.push(NgZone.isInAngularZone()));
+
+    scrollTo(500);
+    subscription.unsubscribe();
+
+    expect(zones).toEqual([false, true]);
+  });
+
+  it('should only re-enter the Angular zone when the direction changes', () => {
+    let entered = 0;
+    const subscription = TestBed.inject(NgZone).onUnstable.subscribe(() => entered++);
+
+    scrollTo(500);
+    scrollTo(600);
+    scrollTo(700);
+    expect(entered).toBe(1);
+
+    scrollTo(600);
+    subscription.unsubscribe();
+    expect(entered).toBe(2);
+  });
+
+  it('should listen to scrolling outside the Angular zone', () => {
+    const addEventListener = spyOn(window, 'addEventListener').and.callFake(() => {
+      expect(NgZone.isInAngularZone()).toBeFalse();
+    });
+    const ngZone = TestBed.inject(NgZone);
+
+    ngZone.run(() => new ScrollDirectionService(ngZone)).ngOnDestroy();
+
+    expect(addEventListener).toHaveBeenCalledWith('scroll', jasmine.any(Function), {passive: true});
   });
 
   it('should stop listening when it is destroyed', () => {

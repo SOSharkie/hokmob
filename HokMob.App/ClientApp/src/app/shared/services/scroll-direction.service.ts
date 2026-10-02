@@ -1,10 +1,15 @@
-import {Injectable, OnDestroy} from '@angular/core';
+import {Injectable, NgZone, OnDestroy} from '@angular/core';
 import {BehaviorSubject, distinctUntilChanged, Observable} from "rxjs";
 
 /**
  * The page's scroll position and direction, from a single passive window listener throttled to one frame. Everything
  * that reacts to scrolling (the mobile menu at the bottom of the app, the game page's drop-down header) shares it,
  * instead of adding a listener each.
+ *
+ * The listener runs outside Angular's zone, so scrolling doesn't run change detection on every frame: that main
+ * thread work during a flick made iOS Safari draw the fixed bars (the mobile menu, the game page's drop-down header) at
+ * a stale scroll position, e.g. the mobile menu in the middle of the screen. Only a change of direction re-enters the
+ * zone; `scrollY$` emits outside it, so its subscribers update the DOM directly.
  */
 @Injectable({providedIn: 'root'})
 export class ScrollDirectionService implements OnDestroy {
@@ -33,8 +38,8 @@ export class ScrollDirectionService implements OnDestroy {
 
   private readonly scrollListener = () => this.requestUpdate();
 
-  constructor() {
-    window.addEventListener("scroll", this.scrollListener, {passive: true});
+  constructor(private ngZone: NgZone) {
+    this.ngZone.runOutsideAngular(() => window.addEventListener("scroll", this.scrollListener, {passive: true}));
     this.update();
   }
 
@@ -47,7 +52,8 @@ export class ScrollDirectionService implements OnDestroy {
   }
 
   /**
-   * The page's scroll position, emitted at most once per frame.
+   * The page's scroll position, emitted at most once per frame and outside Angular's zone, so a subscriber that
+   * changes what a template shows has to re-enter it (`NgZone.run`).
    */
   public get scrollY$(): Observable<number> {
     return this.scrollYSubject.pipe(distinctUntilChanged());
@@ -71,10 +77,10 @@ export class ScrollDirectionService implements OnDestroy {
     if (this.frameId !== null) {
       return;
     }
-    this.frameId = window.requestAnimationFrame(() => {
+    this.frameId = this.ngZone.runOutsideAngular(() => window.requestAnimationFrame(() => {
       this.frameId = null;
       this.update();
-    });
+    }));
   }
 
   private update(): void {
@@ -82,7 +88,7 @@ export class ScrollDirectionService implements OnDestroy {
     this.scrollYSubject.next(scrollY);
     if (this.isAtEdge(scrollY)) {
       this.lastDirectionScrollY = scrollY;
-      this.scrollingUpSubject.next(true);
+      this.setScrollingUp(true);
       return;
     }
     const delta = scrollY - this.lastDirectionScrollY;
@@ -90,7 +96,17 @@ export class ScrollDirectionService implements OnDestroy {
       return;
     }
     this.lastDirectionScrollY = scrollY;
-    this.scrollingUpSubject.next(delta < 0);
+    this.setScrollingUp(delta < 0);
+  }
+
+  /**
+   * Emits a change of direction inside Angular's zone, since it shows or hides the mobile menu through a template
+   * binding. The same direction again emits nothing, so a scroll stays outside the zone.
+   */
+  private setScrollingUp(scrollingUp: boolean): void {
+    if (scrollingUp !== this.scrollingUpSubject.value) {
+      this.ngZone.run(() => this.scrollingUpSubject.next(scrollingUp));
+    }
   }
 
   /**

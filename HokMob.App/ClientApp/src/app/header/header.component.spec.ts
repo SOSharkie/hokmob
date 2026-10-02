@@ -27,7 +27,7 @@ describe('HeaderComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     // The search input isn't declared, so stand in for it
-    searchInput = jasmine.createSpyObj<SearchInputComponent>('SearchInputComponent', ['focus', 'clear']);
+    searchInput = jasmine.createSpyObj<SearchInputComponent>('SearchInputComponent', ['focus', 'clear', 'blur']);
     component.searchInput = searchInput;
   });
 
@@ -75,6 +75,8 @@ describe('HeaderComponent', () => {
     fixture.detectChanges();
     expect(header().classList).not.toContain('search-open');
     expect(searchInput.clear).toHaveBeenCalledTimes(1);
+    // Closes the keyboard before the input is hidden, or iOS leaves the mobile menu mid-screen
+    expect(searchInput.blur).toHaveBeenCalledTimes(1);
   });
 
   it('should close the phone search when a result is picked', () => {
@@ -85,6 +87,7 @@ describe('HeaderComponent', () => {
     fixture.detectChanges();
     expect(header().classList).not.toContain('search-open');
     expect(searchInput.clear).not.toHaveBeenCalled();
+    expect(searchInput.blur).toHaveBeenCalledTimes(1);
   });
 
   it('should use bundled Lucide icons', () => {
