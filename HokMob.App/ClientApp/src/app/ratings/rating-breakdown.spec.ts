@@ -1,5 +1,5 @@
 import { BoxscoreGoalie, BoxscoreSkater } from '@shared/models/nhl-web-api/boxscore.model';
-import { SkaterRatingContext, StatsUtils } from '@shared/utils/stats-utils';
+import { GoalieRatingContext, SkaterRatingContext, StatsUtils } from '@shared/utils/stats-utils';
 import { mockGameBoxscore } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { RatingBreakdown, RatingBreakdownUtils } from './rating-breakdown';
@@ -208,7 +208,7 @@ describe('RatingBreakdownUtils', () => {
         savePctg: 0.909, shotsAgainst: 33, saves: 30, starter: true, decision: 'W'
       } as BoxscoreGoalie);
       expect(breakdown.terms.map(ratingTerm => ratingTerm.label)).toEqual(['Base', 'Even strength saves',
-        'Penalty kill saves', 'Power play saves', 'Workload', 'Win', 'Shutout']);
+        'Penalty kill saves', 'Power play saves', 'Workload', 'Win', 'Shutout', 'Goals', 'Assists']);
       expect(term(breakdown, 'Base')).toBe(5.75);
       // 0.7 x (24 - 0.903 x 26), 0.7 x (5 - 0.853 x 6) and 0.7 x (1 - 0.910 x 1)
       expect(term(breakdown, 'Even strength saves')).toBe(0.37);
@@ -223,6 +223,35 @@ describe('RatingBreakdownUtils', () => {
       // 5.75 + 0.3654 - 0.0826 + 0.063 + 0.14 + 0.3 = 6.54
       expect(breakdown.rawTotal).toBe(6.54);
       expect(breakdown.rating).toBe(6.5);
+    });
+
+    it("should add a goalie's goals and assists the way a skater's count", () => {
+      // Shesterkin's real win in 2026020010, where he scored into the empty net
+      const players = mockGameBoxscore(2026020010).playerByGameStats;
+      const shesterkin = players.homeTeam.goalies.find(goalie => goalie.playerId === 8478048);
+      const context: GoalieRatingContext = {goals: 1, assists: 2, primaryAssists: 1, secondaryAssists: 1};
+      const breakdown = RatingBreakdownUtils.getGoalieBreakdown(shesterkin, context);
+      expect(term(breakdown, 'Goals')).toBe(1.2);
+      expect(breakdown.terms.find(ratingTerm => ratingTerm.label === 'Goals').detail).toBe('1 x 1.2');
+      expect(term(breakdown, 'Assists')).toBe(1);
+      expect(breakdown.terms.find(ratingTerm => ratingTerm.label === 'Assists').detail)
+          .toBe('1 primary x 0.6 + 1 secondary x 0.4');
+      expect(breakdown.rating).toBe(StatsUtils.calculateGoalieHokMobRating(shesterkin, context));
+      expect(breakdown.rawTotal).toBe(RatingBreakdownUtils.round(StatsUtils.getGoalieRawRating(shesterkin, context)));
+      // 7.31 + 1.2 + 1.0
+      expect(breakdown.rating).toBe(9.5);
+
+      // Without the split, as the stats API gives it, every assist is the flat 0.5
+      const flat = RatingBreakdownUtils.getGoalieBreakdown(shesterkin, {goals: 0, assists: 1});
+      expect(term(flat, 'Assists')).toBe(0.5);
+      expect(flat.terms.find(ratingTerm => ratingTerm.label === 'Assists').detail).toBe('1 x 0.5, the split unknown');
+      expect(flat.rating).toBe(StatsUtils.calculateGoalieHokMobRating(shesterkin, {goals: 0, assists: 1}));
+
+      // Without a context, no points
+      const none = RatingBreakdownUtils.getGoalieBreakdown(shesterkin);
+      expect(term(none, 'Goals')).toBe(0);
+      expect(term(none, 'Assists')).toBe(0);
+      expect(none.rating).toBe(7.3);
     });
 
     it('should weight a night below average at 0.6', () => {

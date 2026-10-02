@@ -1,6 +1,6 @@
 import {Params} from "@angular/router";
 import {BoxscoreGoalie, BoxscoreSkater, GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
-import {SkaterRatingContext, StatsUtils} from "@shared/utils/stats-utils";
+import {GoalieRatingContext, SkaterRatingContext, StatsUtils} from "@shared/utils/stats-utils";
 
 /**
  * Turns a player's game stats into the Ratings page's stat lines, so the game page can open the rating explorer on a
@@ -16,7 +16,7 @@ export class RatingStatLineUtils {
    */
   public static getQueryParams(player: GamePlayer): Params {
     const line = player?.goalieStats
-        ? RatingStatLineUtils.getGoalieLine(player.goalieStats)
+        ? RatingStatLineUtils.getGoalieLine(player.goalieStats, player.goalieRatingContext)
         : RatingStatLineUtils.getSkaterLine(player?.skaterStats, player?.ratingContext);
     return {
       subject: player?.goalieStats ? "goalie" : "skater",
@@ -60,14 +60,18 @@ export class RatingStatLineUtils {
   /**
    * A goalie's boxscore stats as the Ratings page's goalie line: shots and goals against at each strength, his time on
    * ice in seconds, and whether he started and won. The boxscore's power play split is the shots he faced on the penalty kill, and its shorthanded
-   * split the ones on the power play.
+   * split the ones on the power play. His goals and assists come from the context; without an assist split every
+   * assist is read as primary, the same as a skater's.
    *
    * @param goalie - The goalie's boxscore stats.
+   * @param context - The goalie's goals and assists, as the game page counted them.
    */
-  public static getGoalieLine(goalie: BoxscoreGoalie): { [stat: string]: number } {
+  public static getGoalieLine(goalie: BoxscoreGoalie, context?: GoalieRatingContext): { [stat: string]: number } {
     const evenStrength = RatingStatLineUtils.parseShotsAgainst(goalie?.evenStrengthShotsAgainst);
     const penaltyKill = RatingStatLineUtils.parseShotsAgainst(goalie?.powerPlayShotsAgainst);
     const powerPlay = RatingStatLineUtils.parseShotsAgainst(goalie?.shorthandedShotsAgainst);
+    const assists = context?.assists ?? 0;
+    const hasAssistSplit = context?.primaryAssists != null && context?.secondaryAssists != null;
     return {
       evenStrengthShots: evenStrength.shots,
       evenStrengthGoals: evenStrength.shots - evenStrength.saves,
@@ -78,7 +82,10 @@ export class RatingStatLineUtils {
       // Past a full game (overtime) it rates the same, and the stepper stops there
       timeOnIce: Math.min(StatsUtils.fullGameSeconds, StatsUtils.getTimeOnIceSeconds(goalie?.toi)),
       started: goalie?.starter ? 1 : 0,
-      win: goalie?.decision === StatsUtils.winDecision ? 1 : 0
+      win: goalie?.decision === StatsUtils.winDecision ? 1 : 0,
+      goals: context?.goals ?? 0,
+      primaryAssists: hasAssistSplit ? context.primaryAssists : assists,
+      secondaryAssists: hasAssistSplit ? context.secondaryAssists : 0
     };
   }
 

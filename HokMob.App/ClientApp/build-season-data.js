@@ -23,7 +23,7 @@ const timeoutMs = 60000;
 const concurrency = 2;
 /** The stats API returns at most this many rows per query, however high the limit, without saying so. */
 const rowCap = 10000;
-const fileVersion = 2;
+const fileVersion = 3;
 
 /** The skater reports merged into one row per player and game, and the fields taken from each. */
 const skaterReports = {
@@ -47,7 +47,7 @@ const nullAsZeroFields = ['faceoffWinPct', 'satFor', 'satAgainst', 'usatFor', 'u
 
 /** The goalie reports, and the fields taken from each. The totals (saves, shots against) are the sums of these. */
 const goalieReports = {
-  'goalie/summary': ['timeOnIce', 'gamesStarted', 'wins'],
+  'goalie/summary': ['timeOnIce', 'gamesStarted', 'wins', 'goals', 'assists'],
   'goalie/savesByStrength': ['evSaves', 'evShotsAgainst', 'ppSaves', 'ppShotsAgainst', 'shSaves', 'shShotsAgainst']
 };
 

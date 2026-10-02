@@ -1,4 +1,4 @@
-import {StatsUtils} from "@shared/utils/stats-utils";
+import {GoalieRatingContext, StatsUtils} from "@shared/utils/stats-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {NhlPlayTypeEnum} from "@shared/enums/nhl-play-type.enum";
@@ -8,6 +8,7 @@ import {
   mockGameBoxscore,
   mockGameLanding,
   mockGamePlayByPlay,
+  mockGoalieAssistLanding,
   mockPlayerStats
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 import {GoalieGameStats, SkaterGameStats} from "@shared/models/nhl-stats-api/player-stats.model";
@@ -284,6 +285,72 @@ describe('StatsUtils', () => {
     });
   });
 
+  describe('calculateGoalieHokMobRating with goals and assists', () => {
+    /** Shesterkin's real win in 2026020010, where he scored into the empty net. */
+    const shesterkin = () => boxscorePlayer<BoxscoreGoalie>(8478048, 2026020010);
+
+    it('should add a goalie\'s goal at a skater\'s 1.2', () => {
+      // A win on 16/17 even strength and 8/8 power play (penalty kill), 24 saves on 25 shots in 60:00, above average
+      // so at 0.7: 5.75 + 0.7 x (16 - 0.903 x 17) + 0.7 x (8 - 0.853 x 8) + 0.02 x (25 - 26) + 0.3 = 7.31
+      expect(StatsUtils.calculateGoalieHokMobRating(shesterkin())).toBe(7.3);
+      // ... + 1.2 for the goal = 8.51
+      expect(StatsUtils.calculateGoalieHokMobRating(shesterkin(), {goals: 1, assists: 0})).toBe(8.5);
+      expect(StatsUtils.getGoalieRawRating(shesterkin(), {goals: 1, assists: 0}) -
+          StatsUtils.getGoalieRawRating(shesterkin())).toBeCloseTo(StatsUtils.goalWeight, 10);
+    });
+
+    it('should weight a goalie\'s assists like a skater\'s, by the split when it\'s known', () => {
+      const withoutPoints = StatsUtils.getGoalieRawRating(shesterkin());
+      const withAssists = (context: GoalieRatingContext) =>
+          StatsUtils.getGoalieRawRating(shesterkin(), context) - withoutPoints;
+      expect(withAssists({assists: 1, primaryAssists: 1, secondaryAssists: 0})).toBeCloseTo(0.6, 10);
+      expect(withAssists({assists: 1, primaryAssists: 0, secondaryAssists: 1})).toBeCloseTo(0.4, 10);
+      // The stats API has no split for a goalie, so his assists count the flat 0.5
+      expect(withAssists({assists: 2})).toBeCloseTo(1.0, 10);
+    });
+
+    it('should still rate 0 a goalie who faced no shots, and cap at 10', () => {
+      const backup = boxscorePlayer<BoxscoreGoalie>(8482193, 2026020010); // Garand, who didn't play
+      expect(StatsUtils.calculateGoalieHokMobRating(backup, {goals: 1, assists: 1})).toBe(0);
+      expect(StatsUtils.calculateGoalieHokMobRating(shesterkin(), {goals: 3, assists: 0})).toBe(10);
+    });
+
+    it('should not take anything off for missing or negative counts', () => {
+      const rating = StatsUtils.calculateGoalieHokMobRating(shesterkin());
+      expect(StatsUtils.calculateGoalieHokMobRating(shesterkin(), {})).toBe(rating);
+      expect(StatsUtils.calculateGoalieHokMobRating(shesterkin(), {goals: null, assists: undefined})).toBe(rating);
+      expect(StatsUtils.calculateGoalieHokMobRating(shesterkin(), {goals: -1, assists: -1})).toBe(rating);
+    });
+  });
+
+  describe('getGoalieRatingContext', () => {
+    it('should count a real goalie\'s goal from the scoring summary', () => {
+      expect(StatsUtils.getGoalieRatingContext(mockGameLanding(2026020010), 8478048))
+          .toEqual({goals: 1, assists: 0, primaryAssists: 0, secondaryAssists: 0});
+      // Vasilevskiy, in the other net, had no points
+      expect(StatsUtils.getGoalieRatingContext(mockGameLanding(2026020010), 8476883))
+          .toEqual({goals: 0, assists: 0, primaryAssists: 0, secondaryAssists: 0});
+    });
+
+    it('should count a real goalie\'s primary assist', () => {
+      expect(StatsUtils.getGoalieRatingContext(mockGoalieAssistLanding(), 8474593))
+          .toEqual({goals: 0, assists: 1, primaryAssists: 1, secondaryAssists: 0});
+    });
+
+    it('should use the assist counts it is given', () => {
+      const landing = mockGoalieAssistLanding();
+      const assistCounts = StatsUtils.getAssistCounts(landing);
+      expect(StatsUtils.getGoalieRatingContext(landing, 8474593, assistCounts))
+          .toEqual(StatsUtils.getGoalieRatingContext(landing, 8474593));
+    });
+
+    it('should give no points without a scoring summary', () => {
+      const none = {goals: 0, assists: 0, primaryAssists: 0, secondaryAssists: 0};
+      expect(StatsUtils.getGoalieRatingContext(mockGameLanding(2026020056), 8478048)).toEqual(none);
+      expect(StatsUtils.getGoalieRatingContext(undefined, 8478048)).toEqual(none);
+    });
+  });
+
   describe('getGoalieShutoutBonus', () => {
     it('should pay 0.065 a shot for a shutout win, and nothing otherwise', () => {
       const comrie = boxscorePlayer<BoxscoreGoalie>(8477480);
@@ -527,6 +594,19 @@ describe('StatsUtils', () => {
       expect(ratings).toEqual([...ratings].sort((ratingA, ratingB) => ratingB - ratingA));
     });
 
+    it('should rate a goalie\'s goal from the landing, which the boxscore doesn\'t have', () => {
+      const shesterkin = (players: GamePlayer[]) => players.find(player => player.playerId === 8478048);
+      const landing = mockGameLanding(2026020010);
+      const withLanding = StatsUtils.getGamePlayers(mockGameBoxscore(2026020010), true, undefined, undefined,
+          StatsUtils.getAssistCounts(landing), undefined, landing);
+      const withoutLanding = StatsUtils.getGamePlayers(mockGameBoxscore(2026020010), true);
+      expect(shesterkin(withLanding).goalieRatingContext)
+          .toEqual({goals: 1, assists: 0, primaryAssists: 0, secondaryAssists: 0});
+      expect(shesterkin(withLanding).hokmobRating).toBe(8.5);
+      expect(shesterkin(withoutLanding).goalieRatingContext).toBeUndefined();
+      expect(shesterkin(withoutLanding).hokmobRating).toBe(7.3);
+    });
+
     it('should use the short name and the season headshot without roster spots', () => {
       const players = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true);
       const scheifele = players.find(player => player.playerId === 8476460);
@@ -717,6 +797,22 @@ describe('StatsUtils', () => {
     it('should rate a real goalie row like its boxscore', () => {
       expect(StatsUtils.calculateGoalieGameRating(statsApiGame<GoalieGameStats>(8483548)))
           .toBe(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer<BoxscoreGoalie>(8483548, 2025030414)));
+    });
+
+    it('should add a goalie row\'s goals and assists, its assists at the flat weight', () => {
+      const game = statsApiGame<GoalieGameStats>(8483548);
+      expect(StatsUtils.toGoalieRatingContext(game)).toEqual({goals: 0, assists: 0});
+      const withPoints = {...game, goals: 1, assists: 1};
+      expect(StatsUtils.toGoalieRatingContext(withPoints)).toEqual({goals: 1, assists: 1});
+      // 5.518 + 1.2 + 0.5
+      expect(StatsUtils.getGoalieGameRawRating(withPoints)).toBeCloseTo(7.218, 4);
+      expect(StatsUtils.calculateGoalieGameRating(withPoints)).toBe(7.2);
+    });
+
+    it('should give a goalie row without goals or assists no points', () => {
+      const game = {...statsApiGame<GoalieGameStats>(8483548), goals: undefined, assists: undefined};
+      expect(StatsUtils.toGoalieRatingContext(game)).toEqual({goals: 0, assists: 0});
+      expect(StatsUtils.calculateGoalieGameRating(game)).toBe(5.5);
     });
 
     it('should give the uncapped totals, which round to the ratings below 10', () => {

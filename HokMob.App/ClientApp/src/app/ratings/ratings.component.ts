@@ -2,7 +2,7 @@ import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, O
 import {Location} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {BoxscoreGoalie, BoxscoreSkater} from "@shared/models/nhl-web-api/boxscore.model";
-import {SkaterRatingContext, StatsUtils} from "@shared/utils/stats-utils";
+import {GoalieRatingContext, SkaterRatingContext, StatsUtils} from "@shared/utils/stats-utils";
 import {RatingBreakdown, RatingBreakdownUtils, RatingTerm} from "@app/ratings/rating-breakdown";
 
 /** Which rating formula the page is showing. */
@@ -123,7 +123,10 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     {key: "timeOnIce", label: "Time on ice", weight: "Scales the 26 shot workload average", min: 0,
       max: StatsUtils.fullGameSeconds, step: 60, format: seconds => StatsUtils.formatSeconds(seconds)},
     {key: "started", label: "Started", weight: "Needed for the shutout bonus", min: 0, max: 1},
-    {key: "win", label: "Win", weight: "+0.3, and +0.065 a shot for a shutout", min: 0, max: 1}
+    {key: "win", label: "Win", weight: "+0.3, and +0.065 a shot for a shutout", min: 0, max: 1},
+    {key: "goals", label: "Goals", weight: "+1.2 each, like a skater's", min: 0, max: 2},
+    {key: "primaryAssists", label: "Primary assists", weight: "+0.6 each", min: 0, max: 3},
+    {key: "secondaryAssists", label: "Secondary assists", weight: "+0.4 each", min: 0, max: 3}
   ];
 
   public readonly skaterPresets: StatLinePreset[] = [
@@ -175,27 +178,32 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     {
       name: "Routine win",
       line: {evenStrengthShots: 22, evenStrengthGoals: 2, penaltyKillShots: 5, penaltyKillGoals: 0,
-        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1}
+        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1, goals: 0, primaryAssists: 0,
+        secondaryAssists: 0}
     },
     {
       name: "Shutout",
       line: {evenStrengthShots: 26, evenStrengthGoals: 0, penaltyKillShots: 6, penaltyKillGoals: 0,
-        powerPlayShots: 1, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1}
+        powerPlayShots: 1, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1, goals: 0, primaryAssists: 0,
+        secondaryAssists: 0}
     },
     {
       name: "Stolen game",
       line: {evenStrengthShots: 38, evenStrengthGoals: 1, penaltyKillShots: 9, penaltyKillGoals: 0,
-        powerPlayShots: 2, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1}
+        powerPlayShots: 2, powerPlayGoals: 0, timeOnIce: 3600, started: 1, win: 1, goals: 0, primaryAssists: 1,
+        secondaryAssists: 0}
     },
     {
       name: "Pulled early",
       line: {evenStrengthShots: 11, evenStrengthGoals: 4, penaltyKillShots: 3, penaltyKillGoals: 1,
-        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 1500, started: 1, win: 0}
+        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 1500, started: 1, win: 0, goals: 0, primaryAssists: 0,
+        secondaryAssists: 0}
     },
     {
       name: "Never faced a shot",
       line: {evenStrengthShots: 0, evenStrengthGoals: 0, penaltyKillShots: 0, penaltyKillGoals: 0,
-        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 0, started: 0, win: 0}
+        powerPlayShots: 0, powerPlayGoals: 0, timeOnIce: 0, started: 0, win: 0, goals: 0, primaryAssists: 0,
+        secondaryAssists: 0}
     }
   ];
 
@@ -218,6 +226,9 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     "A goalie's workload is measured against his share of the 26 shot average by his time on ice, so a live game's " +
         "goalie isn't marked down for the shots he hasn't had time to face. Overtime doesn't raise the average.",
     "A goalie's win and shutout bonuses only count once the game is over, since a live game has no decision yet.",
+    "A goalie's goals and assists count the same as a skater's. The boxscore has none for a goalie, so the game page " +
+        "counts them from the scoring summary, and the player and history pages, whose stats API rows have no assist " +
+        "split, count each of his assists a flat 0.5.",
     "The shutout bonus needs a start, a win and no goal on the shots the goalie faced, which isn't quite the NHL's " +
         "shutout: a goal on a delayed penalty's empty net doesn't stop it, and a 0-0 shootout loss doesn't get it. " +
         "It's 0.065 a shot, so a shutout of more than 30 shots is a 10.",
@@ -294,6 +305,14 @@ export class RatingsComponent implements OnInit, AfterViewInit {
       powerPlayAssists: this.skaterLine["powerPlayAssists"],
       penaltiesDrawn: this.skaterLine["penaltiesDrawn"]
     };
+  }
+
+  /** The goalie's goals and assists, which the goalie formula is told beyond the boxscore. */
+  public get goalieRatingContext(): GoalieRatingContext {
+    const primaryAssists = this.goalieLine["primaryAssists"];
+    const secondaryAssists = this.goalieLine["secondaryAssists"];
+    return {goals: this.goalieLine["goals"], assists: primaryAssists + secondaryAssists, primaryAssists,
+      secondaryAssists};
   }
 
   /** Whether every stat is already 0, so the Clear button has nothing left to do. */
@@ -517,7 +536,7 @@ export class RatingsComponent implements OnInit, AfterViewInit {
   private updateBreakdown(): void {
     this.breakdown = this.subject === "skater"
         ? RatingBreakdownUtils.getSkaterBreakdown(this.toBoxscoreSkater(), this.ratingContext)
-        : RatingBreakdownUtils.getGoalieBreakdown(this.toBoxscoreGoalie());
+        : RatingBreakdownUtils.getGoalieBreakdown(this.toBoxscoreGoalie(), this.goalieRatingContext);
     this.updateAxis();
   }
 

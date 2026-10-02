@@ -160,6 +160,8 @@ export class SeasonHistoryService {
         timeOnIce: goalies.timeOnIce[row],
         gamesStarted: goalies.gamesStarted[row],
         wins: goalies.wins[row],
+        goals: goalies.goals?.[row] ?? 0,
+        assists: goalies.assists?.[row] ?? 0,
         evSaves: goalies.evSaves[row],
         evShotsAgainst: goalies.evShotsAgainst[row],
         ppSaves: goalies.ppSaves[row],

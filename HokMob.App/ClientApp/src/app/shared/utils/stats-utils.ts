@@ -49,6 +49,24 @@ export interface SkaterRatingContext {
   penaltiesDrawn?: number;
 }
 
+/**
+ * A goalie's goals and assists, which his rating adds the way a skater's does (StatsUtils.getGoalieRawRating). The
+ * boxscore has neither for a goalie, so the game page counts them from the landing's scoring summary
+ * (StatsUtils.getGoalieRatingContext), with the primary/secondary split. The stats API's goalie rows have the goals
+ * and assists but no split, so their assists count at the flat weight. Without a context a goalie has no points.
+ */
+export interface GoalieRatingContext {
+  goals?: number;
+
+  assists?: number;
+
+  /** The goalie's primary (first) assists. Only counted together with secondaryAssists. */
+  primaryAssists?: number;
+
+  /** The goalie's secondary (second) assists. Only counted together with primaryAssists. */
+  secondaryAssists?: number;
+}
+
 export class StatsUtils {
 
   /**
@@ -63,9 +81,12 @@ export class StatsUtils {
    */
   public static readonly fullWeightFaceoffCount = 10;
 
+  /** The rating weight of a goal, a skater's or a goalie's. */
+  public static readonly goalWeight = 1.2;
+
   /**
-   * The rating weight of an assist: more for a primary (first) assist than for a secondary one, and a flat weight in
-   * between when the split isn't known.
+   * The rating weight of an assist, a skater's or a goalie's: more for a primary (first) assist than for a secondary
+   * one, and a flat weight in between when the split isn't known.
    */
   public static readonly primaryAssistWeight = 0.6;
 
@@ -164,7 +185,7 @@ export class StatsUtils {
     const assists = skater.assists ?? 0;
     const plusMinus = skater.plusMinus ?? 0;
     let hokmobRating = 5;
-    hokmobRating += (goals * 1.2);
+    hokmobRating += (goals * StatsUtils.goalWeight);
     hokmobRating += StatsUtils.getAssistRating(assists, context);
     hokmobRating += (((skater.sog ?? 0) - goals) * 0.3);
     hokmobRating += ((skater.hits ?? 0) * 0.2);
@@ -205,12 +226,14 @@ export class StatsUtils {
    * The rating a skater's assists are worth. A primary assist counts for primaryAssistWeight and a secondary one for
    * secondaryAssistWeight, but only when both are known and they add up to the assists the boxscore credits him with.
    * Anything else — a source without the split, or a live game whose landing and boxscore disagree for a moment —
-   * counts every assist at the flat unknownAssistWeight, rather than rating the same game two different ways.
+   * counts every assist at the flat unknownAssistWeight, rather than rating the same game two different ways. A
+   * goalie's assists are weighted the same way.
    *
-   * @param assists - The skater's assists.
+   * @param assists - The skater's or goalie's assists.
    * @param context - The rating context, which may carry the split.
    */
-  private static getAssistRating(assists: number, context?: SkaterRatingContext): number {
+  public static getAssistRating(assists: number,
+                                context?: { primaryAssists?: number, secondaryAssists?: number }): number {
     const primaryAssists = context?.primaryAssists;
     const secondaryAssists = context?.secondaryAssists;
     if (primaryAssists != null && secondaryAssists != null && primaryAssists + secondaryAssists === assists) {
@@ -256,16 +279,36 @@ export class StatsUtils {
   }
 
   /**
+   * Counts a goalie's goals and assists from the landing's scoring summary, which the boxscore doesn't have for a
+   * goalie: his goals, usually into an empty net, and his primary and secondary assists. Shootout goals aren't in the
+   * scoring summary, so they don't count, the same as for a skater.
+   *
+   * @param landing - The game's landing response.
+   * @param goalieId - The goalie's player ID.
+   * @param assistCounts - The game's assists by player ID (getAssistCounts), when they're already counted.
+   */
+  public static getGoalieRatingContext(landing: GameLanding, goalieId: number,
+                                       assistCounts?: Map<number, AssistCounts>): GoalieRatingContext {
+    const goals = (landing?.summary?.scoring ?? []).flatMap(period => period?.goals ?? [])
+        .filter(goal => goal?.playerId === goalieId).length;
+    const assists = (assistCounts ?? StatsUtils.getAssistCounts(landing)).get(goalieId);
+    const primaryAssists = assists?.primary ?? 0;
+    const secondaryAssists = assists?.secondary ?? 0;
+    return {goals, assists: primaryAssists + secondaryAssists, primaryAssists, secondaryAssists};
+  }
+
+  /**
    * Calculates the HokMob rating of a goalie for a single live or past game, from 0 to 10. A goalie who faced no
    * shots (no savePctg) gets 0. The terms are in getGoalieRawRating.
    *
    * @param goalie - The goalie's boxscore stats.
+   * @param context - The goalie's goals and assists, which the boxscore doesn't have.
    */
-  public static calculateGoalieHokMobRating(goalie: BoxscoreGoalie): number {
+  public static calculateGoalieHokMobRating(goalie: BoxscoreGoalie, context?: GoalieRatingContext): number {
     if (!goalie.savePctg) {
       return 0;
     }
-    return parseFloat(Math.max(0, Math.min(10.0, StatsUtils.getGoalieRawRating(goalie))).toFixed(1));
+    return parseFloat(Math.max(0, Math.min(10.0, StatsUtils.getGoalieRawRating(goalie, context))).toFixed(1));
   }
 
   /**
@@ -280,10 +323,12 @@ export class StatsUtils {
    *   for the shots he hasn't had time to face yet.
    * - goalieWinBonus for a win, and goalieShutoutBonusPerShot for every shot he faced on top when he started it and no
    *   shot he faced went in (isShutoutWin). A live game has no decision yet, so both only count once it's over.
+   * - goalWeight for each goal he scored and getAssistRating for his assists, the same as a skater gets.
    *
    * @param goalie - The goalie's boxscore stats.
+   * @param context - The goalie's goals and assists, which the boxscore doesn't have.
    */
-  public static getGoalieRawRating(goalie: BoxscoreGoalie): number {
+  public static getGoalieRawRating(goalie: BoxscoreGoalie, context?: GoalieRatingContext): number {
     const goalsSavedAboveAverage = StatsUtils.getGoalsSavedAboveAverage(goalie);
     let hokmobRating = StatsUtils.goalieBaseRating;
     hokmobRating += goalsSavedAboveAverage * StatsUtils.getGoalsSavedAboveAverageWeight(goalsSavedAboveAverage);
@@ -293,6 +338,8 @@ export class StatsUtils {
       hokmobRating += StatsUtils.goalieWinBonus;
     }
     hokmobRating += StatsUtils.getGoalieShutoutBonus(goalie);
+    hokmobRating += Math.max(0, context?.goals ?? 0) * StatsUtils.goalWeight;
+    hokmobRating += StatsUtils.getAssistRating(Math.max(0, context?.assists ?? 0), context);
     return hokmobRating;
   }
 
@@ -501,7 +548,8 @@ export class StatsUtils {
    * @param game - The goalie's stats for one game.
    */
   public static calculateGoalieGameRating(game: GoalieGameStats): number {
-    return StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(game));
+    return StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(game),
+        StatsUtils.toGoalieRatingContext(game));
   }
 
   /**
@@ -510,7 +558,7 @@ export class StatsUtils {
    * @param game - The goalie's stats for one game.
    */
   public static getGoalieGameRawRating(game: GoalieGameStats): number {
-    return StatsUtils.getGoalieRawRating(StatsUtils.toBoxscoreGoalie(game));
+    return StatsUtils.getGoalieRawRating(StatsUtils.toBoxscoreGoalie(game), StatsUtils.toGoalieRatingContext(game));
   }
 
   /**
@@ -525,6 +573,14 @@ export class StatsUtils {
       powerPlayAssists: game?.ppAssists,
       penaltiesDrawn: game?.penaltiesDrawn
     };
+  }
+
+  /**
+   * The rating context of a stats API goalie game row: its goals and assists. The stats API has no assist split for
+   * a goalie, so his assists count at the flat weight.
+   */
+  public static toGoalieRatingContext(game: GoalieGameStats): GoalieRatingContext {
+    return {goals: game?.goals ?? 0, assists: game?.assists ?? 0};
   }
 
   /**
@@ -577,11 +633,13 @@ export class StatsUtils {
    * @param assistCounts - The assists by player ID (StatsUtils.getAssistCounts), if the landing is loaded.
    * @param penaltiesDrawnCounts - The penalties drawn by player ID (PlayByPlayUtils.getPenaltiesDrawnCounts), if
    * loaded.
+   * @param landing - The game's landing, if loaded, for the goalies' goals and assists (getGoalieRatingContext).
    */
   public static getGamePlayers(boxscore: Boxscore, isHome: boolean, rosterSpots?: Map<number, RosterSpot>,
                                faceoffCounts?: Map<number, number>,
                                assistCounts?: Map<number, AssistCounts>,
-                               penaltiesDrawnCounts?: Map<number, number>): GamePlayer[] {
+                               penaltiesDrawnCounts?: Map<number, number>,
+                               landing?: GameLanding): GamePlayer[] {
     const team = isHome ? boxscore?.homeTeam : boxscore?.awayTeam;
     const players = isHome ? boxscore?.playerByGameStats?.homeTeam : boxscore?.playerByGameStats?.awayTeam;
     if (!team || !players) {
@@ -615,11 +673,17 @@ export class StatsUtils {
         hokmobRating: StatsUtils.calculateSkaterHokmobRating(skater, ratingContext)
       };
     });
-    const goalies = (players.goalies ?? []).map(goalie => ({
-      ...toGamePlayer(goalie),
-      goalieStats: goalie,
-      hokmobRating: StatsUtils.calculateGoalieHokMobRating(goalie)
-    }));
+    const goalies = (players.goalies ?? []).map(goalie => {
+      const goalieRatingContext = landing
+          ? StatsUtils.getGoalieRatingContext(landing, goalie.playerId, assistCounts)
+          : undefined;
+      return {
+        ...toGamePlayer(goalie),
+        goalieStats: goalie,
+        goalieRatingContext,
+        hokmobRating: StatsUtils.calculateGoalieHokMobRating(goalie, goalieRatingContext)
+      };
+    });
     return [...skaters, ...goalies].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
         StatsUtils.sortByStarPlayer(playerA, playerB));
   }

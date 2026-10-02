@@ -6,7 +6,12 @@ import { GamePlayer } from '@shared/models/nhl-web-api/boxscore.model';
 import { StatsUtils } from '@shared/utils/stats-utils';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
-import { mockGameBoxscore, mockGamePlayByPlay, mockPlayerLanding } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  mockGameBoxscore,
+  mockGameLanding,
+  mockGamePlayByPlay,
+  mockPlayerLanding
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { PlayerGameStatsComponent } from './player-game-stats.component';
 
@@ -137,6 +142,50 @@ describe('PlayerGameStatsComponent', () => {
       ['Shots Against', '31'],
       ['Penalty Minutes', '0']
     ]);
+  });
+
+  it("should show a goalie's goal, counted from the landing", async () => {
+    // Shesterkin scored into the empty net in 2026020010
+    const landing = mockGameLanding(2026020010);
+    const shesterkin = StatsUtils.getGamePlayers(mockGameBoxscore(2026020010), true,
+        PlayByPlayUtils.getRosterSpotMap(mockGamePlayByPlay(2026020010)), undefined,
+        StatsUtils.getAssistCounts(landing), undefined, landing).find(player => player.playerId === 8478048);
+    show(shesterkin);
+    httpMock.expectOne('/api/nhl/player/8478048/landing').flush(mockPlayerLanding(8477480));
+    await settle();
+    expect(stats()).toEqual([
+      ['HokMob Rating', '8.5'],
+      ['Time On Ice', '60:00'],
+      ['Goals', '1'],
+      ['Save %', '.960'],
+      ['Saves', '24'],
+      ['Shots Against', '25'],
+      ['Penalty Minutes', '0']
+    ]);
+  });
+
+  it("should show a goalie's assists, and leave out the goals he didn't score", async () => {
+    const comrie = gamePlayer(8477480);
+    comrie.goalieRatingContext = {goals: 0, assists: 2, primaryAssists: 1, secondaryAssists: 1};
+    show(comrie);
+    httpMock.expectOne('/api/nhl/player/8477480/landing').flush(mockPlayerLanding(8477480));
+    await settle();
+    expect(labels()).toEqual(['HokMob Rating', 'Time On Ice', 'Assists', 'Save %', 'Saves', 'Shots Against',
+      'Penalty Minutes']);
+    expect(stats()[2]).toEqual(['Assists', '2']);
+  });
+
+  it('should leave out the goals and assists of a goalie with none, once the landing is loaded', async () => {
+    const landing = mockGameLanding(2025021057);
+    const comrie = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, undefined, undefined,
+        StatsUtils.getAssistCounts(landing), undefined, landing).find(player => player.playerId === 8477480);
+    expect(comrie.goalieRatingContext.goals).toBe(0);
+    expect(comrie.goalieRatingContext.assists).toBe(0);
+    show(comrie);
+    httpMock.expectOne('/api/nhl/player/8477480/landing').flush(mockPlayerLanding(8477480));
+    await settle();
+    expect(labels()).not.toContain('Goals');
+    expect(labels()).not.toContain('Assists');
   });
 
   it('should show N/A for a goalie who faced no shots', async () => {

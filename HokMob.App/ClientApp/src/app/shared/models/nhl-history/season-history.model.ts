@@ -8,7 +8,7 @@
  * in those tables. The field names are the stats API's.
  */
 export interface SeasonHistory {
-  /** The file format's version, 2 since the goalie rows have gamesStarted and wins. */
+  /** The file format's version: 2 since the goalie rows have gamesStarted and wins, 3 since goals and assists. */
   version: number;
   /** Like 20252026. */
   season: number;
@@ -94,6 +94,9 @@ export interface SeasonHistoryGoalieRows extends SeasonHistoryRows {
   gamesStarted: number[];
   /** 1 when the goalie got the win, 0 otherwise. */
   wins: number[];
+  /** The goalie's own goals and assists, since file version 3. */
+  goals?: number[];
+  assists?: number[];
   evSaves: number[];
   evShotsAgainst: number[];
   ppSaves: number[];
