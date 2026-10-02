@@ -97,6 +97,14 @@
           [awayTeamLogo]="awayTeamLogo"
       ></app-game-stats>
     </div>
+    <!-- Without the side column the event timeline goes below the stats, second to last before the team form -->
+    <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
+      <app-mini-event-timeline
+          [playByPlay]="playByPlay"
+          (playerClicked)="openGoalOrPlayerDialog($event)"
+          (playerHovered)="highlightPlayer($event)"
+      ></app-mini-event-timeline>
+    </div>
     <div *ngIf="landing && showTeamForm" class="game-container">
       <app-team-form
           [homeTeamId]="landing.homeTeam.id"
@@ -104,14 +112,6 @@
           [homeTeamGames]="homeTeamFormGames"
           [awayTeamGames]="awayTeamFormGames"
       ></app-team-form>
-    </div>
-    <!-- On mobile the event timeline comes last, below the stats -->
-    <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
-      <app-mini-event-timeline
-          [playByPlay]="playByPlay"
-          (playerClicked)="openGoalOrPlayerDialog($event)"
-          (playerHovered)="highlightPlayer($event)"
-      ></app-mini-event-timeline>
     </div>
   </div>
   <div *ngIf="!futureGame && playByPlay" class="side-game">

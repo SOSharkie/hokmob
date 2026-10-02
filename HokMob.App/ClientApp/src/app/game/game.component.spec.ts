@@ -577,6 +577,28 @@ describe('GameComponent', () => {
         .toEqual([2025030176, 2025030175, 2025030174, 2025030173, 2025030172]);
   });
 
+  it('should put the mobile event timeline second to last, before the team form', fakeAsync(() => {
+    // The team form is only shown before the game is over, so start the real future game
+    const bundle = mockGameBundle(2026020056);
+    bundle.landing.gameState = NhlGameStateEnum.LIVE;
+    open('2026020056');
+    flushBundle('2026020056', bundle);
+    settleFakeAsync();
+    flushClubSchedule('BOS', 20262027, mockClubScheduleSeason('BOS', 20262027));
+    flushClubSchedule('UTA', 20262027, mockClubScheduleSeason('UTA', 20262027));
+    settleFakeAsync();
+    flushClubSchedule('BOS', 20252026, mockClubScheduleSeason('BOS', 20252026));
+    flushClubSchedule('UTA', 20252026, mockClubScheduleSeason('UTA', 20252026));
+    settleFakeAsync();
+
+    const sections: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.main-game > .game-container'));
+    const lastTwo = sections.slice(-2).map(section => section.firstElementChild.tagName.toLowerCase());
+    expect(lastTwo).toEqual(['app-mini-event-timeline', 'app-team-form']);
+    expect(sections[sections.length - 2].classList).toContain('mobile-only');
+
+    fixture.destroy();
+  }));
+
   it('should show the team form when only one team has games', async () => {
     open('2026020056');
     flushBundle('2026020056', mockGameBundle(2026020056));
