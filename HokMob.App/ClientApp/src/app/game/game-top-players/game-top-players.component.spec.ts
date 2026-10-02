@@ -77,7 +77,7 @@ describe('GameTopPlayersComponent', () => {
     expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
     // Connor and Barron are both rated 6.5, and Connor is one of the Winnipeg stars
     expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Kyle Connor']);
-    expect(cards('home').map(rating)).toEqual(['7.9', '7.9', '6', '7.1', '6.7', '6.5']);
+    expect(cards('home').map(rating)).toEqual(['6.9', '7.9', '6', '7.1', '6.7', '6.5']);
 
     expect(names('away', 'goalies')).toEqual(['Jordan Binnington']);
     // Parayko and Mailloux are both rated 6.3, and Parayko is one of the St. Louis stars
@@ -207,9 +207,9 @@ describe('GameTopPlayersComponent', () => {
   });
 
   it('should pick the goalie who played over a better or equally rated backup who did not', () => {
-    // Hofer didn't play and is rated 0, below Binnington's 4.3
+    // Hofer didn't play and is rated 0, below Binnington's 4.8
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
-    expect(rating(cards('away', 'goalies')[0])).toBe('4.3');
+    expect(rating(cards('away', 'goalies')[0])).toBe('4.8');
     expect(cards('away', 'goalies')[0].querySelector('.goalie-icon')).not.toBeNull();
     expect(cards('away', 'forwards')[0].querySelector('.goalie-icon')).toBeNull();
 

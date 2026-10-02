@@ -94,6 +94,22 @@ describe('SeasonHistoryService', () => {
     expect(compared).toBe(6);
   });
 
+  it('should rate a goalie with his start and win', async () => {
+    const history = mockSeasonHistory();
+    const bussiRow = history.goalies.player.findIndex((playerIndex, row) =>
+        history.players.name[playerIndex] === 'Brandon Bussi' && history.games.id[history.goalies.game[row]] === 2025021237);
+    // Bussi started and won BOS 5 @ CAR 6
+    expect(history.goalies.gamesStarted[bussiRow]).toBe(1);
+    expect(history.goalies.wins[bussiRow]).toBe(1);
+    const bussiGame = (ratedSeason: RatedSeason) => ratedGamesOf(ratedSeason, 'Brandon Bussi')
+        .find(ratedGame => ratedGame.game.id === 2025021237);
+    const withWin = bussiGame(SeasonHistoryService.rateSeason(history)).rating;
+
+    history.goalies.wins[bussiRow] = 0;
+    const withoutWin = bussiGame(SeasonHistoryService.rateSeason(history)).rating;
+    expect(withWin - withoutWin).toBeCloseTo(0.3, 5);
+  });
+
   it('should leave out a goalie who faced no shots, but not the other goalie of the team', async () => {
     const ratedSeason = await loadFixture();
     expect(ratedSeason.players.some(player => player.name === 'Pyotr Kochetkov')).toBeTrue();

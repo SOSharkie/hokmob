@@ -36,7 +36,7 @@ export interface RatingBreakdown {
  */
 export class RatingBreakdownUtils {
 
-  /** Where a rating starts, for both skaters and goalies: an average game. */
+  /** Where a skater's rating starts: an average game. A goalie's starts at StatsUtils.goalieBaseRating. */
   public static readonly baseRating = 5;
 
   /** The most a rating can reach. Skaters have no floor; goalies stop at 0. */
@@ -160,24 +160,42 @@ export class RatingBreakdownUtils {
    */
   public static getGoalieBreakdown(goalie: BoxscoreGoalie): RatingBreakdown {
     const terms: RatingTerm[] = [];
-    let total = RatingBreakdownUtils.baseRating;
+    let total = StatsUtils.goalieBaseRating;
 
     const addTerm = (label: string, detail: string, value: number): void => {
       total += value;
       terms.push({label, detail, value, total});
     };
 
-    terms.push({label: "Base", detail: "An average game", value: RatingBreakdownUtils.baseRating, total});
+    terms.push({label: "Base", detail: "An average game", value: StatsUtils.goalieBaseRating, total});
 
-    const evenStrengthSaves = StatsUtils.getSaves(goalie.evenStrengthShotsAgainst);
-    const penaltyKillSaves = StatsUtils.getSaves(goalie.powerPlayShotsAgainst);
-    const powerPlaySaves = StatsUtils.getSaves(goalie.shorthandedShotsAgainst);
-    const goalsAgainst = (goalie.shotsAgainst ?? 0) - (goalie.saves ?? 0);
-    addTerm("Even strength saves", evenStrengthSaves + " / 6", evenStrengthSaves / 6);
-    addTerm("Penalty kill saves", penaltyKillSaves + " / 5, the boxscore's power play split",
-        penaltyKillSaves / 5);
-    addTerm("Power play saves", powerPlaySaves + " / 6, the boxscore's shorthanded split", powerPlaySaves / 6);
-    addTerm("Goals against", goalsAgainst + " x -1", -goalsAgainst);
+    // Every strength gets the weight of the whole night, above or below average
+    const weight = StatsUtils.getGoalsSavedAboveAverageWeight(StatsUtils.getGoalsSavedAboveAverage(goalie));
+    const addSavesTerm = (label: string, savesAndShots: string, leagueSavePctg: number, split: string): void => {
+      const detail = "(" + StatsUtils.getSaves(savesAndShots) + " - " + leagueSavePctg + " x " +
+          StatsUtils.getShots(savesAndShots) + " shots) x " + weight + split;
+      addTerm(label, detail, StatsUtils.getSavesAboveAverage(savesAndShots, leagueSavePctg) * weight);
+    };
+    addSavesTerm("Even strength saves", goalie.evenStrengthShotsAgainst, StatsUtils.leagueEvenStrengthSavePctg, "");
+    addSavesTerm("Penalty kill saves", goalie.powerPlayShotsAgainst, StatsUtils.leaguePenaltyKillSavePctg,
+        ", the boxscore's power play split");
+    addSavesTerm("Power play saves", goalie.shorthandedShotsAgainst, StatsUtils.leaguePowerPlaySavePctg,
+        ", the boxscore's shorthanded split");
+
+    // The average is scaled down for a goalie who has played less than a full game, like a live game's
+    const shotsAgainst = goalie.shotsAgainst ?? 0;
+    const expectedShots = StatsUtils.getGoalieExpectedShotsAgainst(goalie);
+    const expectedDetail = expectedShots < StatsUtils.goalieAverageShotsAgainst
+        ? RatingBreakdownUtils.round(expectedShots, 1) + " expected in " + goalie.toi
+        : String(StatsUtils.goalieAverageShotsAgainst);
+    addTerm("Workload", "(" + shotsAgainst + " shots - " + expectedDetail + ") x " + StatsUtils.goalieWorkloadWeight,
+        (shotsAgainst - expectedShots) * StatsUtils.goalieWorkloadWeight);
+
+    const isWin = goalie.decision === StatsUtils.winDecision;
+    addTerm("Win", isWin ? "Got the win" : "No win", isWin ? StatsUtils.goalieWinBonus : 0);
+    addTerm("Shutout", StatsUtils.isShutoutWin(goalie)
+        ? shotsAgainst + " shots x " + StatsUtils.goalieShutoutBonusPerShot + ", started, won and let no shot in"
+        : "Not a shutout win", StatsUtils.getGoalieShutoutBonus(goalie));
 
     let clampNote: string;
     if (!goalie.savePctg) {

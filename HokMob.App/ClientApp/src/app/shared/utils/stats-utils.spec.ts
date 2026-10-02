@@ -170,27 +170,97 @@ describe('StatsUtils', () => {
   });
 
   describe('calculateGoalieHokMobRating', () => {
-    it('should rate a real goalie from his saves at every strength', () => {
-      // Comrie: 28/30 even strength, 1/1 power play, 0/0 shorthanded, 29 saves on 31 shots: 5 + 28/6 + 1/5 - 2 = 7.87
-      expect(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer(8477480))).toBe(7.9);
-      // Binnington: 8/11 even strength, 4/4 power play, 1/1 shorthanded, 13 saves on 16 shots:
-      // 5 + 8/6 + 4/5 + 1/6 - 3 = 4.3
-      expect(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer(8476412))).toBe(4.3);
+    /** Comrie's real game with one saves/shots split per strength, the totals they add up to, and a start and decision. */
+    function goalieWith(evenStrength: string, penaltyKill: string = '0/0', powerPlay: string = '0/0',
+                        starter: boolean = true, decision: string = undefined): BoxscoreGoalie {
+      const splits = [evenStrength, penaltyKill, powerPlay];
+      const saves = splits.reduce((total, split) => total + StatsUtils.getSaves(split), 0);
+      const shots = splits.reduce((total, split) => total + StatsUtils.getShots(split), 0);
+      return {
+        ...boxscorePlayer<BoxscoreGoalie>(8477480),
+        evenStrengthShotsAgainst: evenStrength,
+        powerPlayShotsAgainst: penaltyKill,
+        shorthandedShotsAgainst: powerPlay,
+        saves,
+        shotsAgainst: shots,
+        savePctg: shots ? saves / shots : undefined,
+        starter,
+        decision
+      };
+    }
+
+    it('should rate a real goalie from his saves above average at every strength, his workload and the result', () => {
+      // Comrie won on 28/30 even strength, 1/1 power play (penalty kill), 0/0 shorthanded, 29 saves on 31 shots in
+      // 59:52, above average so at 0.7: 5.75 + 0.7 x (28 - 0.903 x 30) + 0.7 x (1 - 0.853 x 1)
+      // + 0.02 x (31 - 26 x 3592 / 3600) + 0.3 = 6.89
+      expect(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer(8477480))).toBe(6.9);
+      // Binnington lost on 8/11 even strength, 4/4 power play, 1/1 shorthanded, 13 saves on 16 shots in 56:13:
+      // 5.75 + 0.6 x (8 - 0.903 x 11) + 0.6 x (4 - 0.853 x 4) + 0.6 x (1 - 0.910 x 1) + 0.02 x (16 - 26 x 3373 / 3600)
+      // = 4.83
+      expect(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer(8476412))).toBe(4.8);
     });
 
-    it('should pay a save made while his team is on the power play like one at even strength', () => {
-      const comrie = boxscorePlayer<BoxscoreGoalie>(8477480);
-      const withoutShorthandedShot = StatsUtils.calculateGoalieHokMobRating(comrie);
-      // One more shot faced while the Jets had the man advantage: 7.87 + 1/6 = 8.03
-      comrie.shorthandedShotsAgainst = '1/1';
-      comrie.shotsAgainst = 32;
-      comrie.saves = 30;
-      expect(StatsUtils.calculateGoalieHokMobRating(comrie)).toBe(8.0);
-      expect(StatsUtils.calculateGoalieHokMobRating(comrie)).toBeGreaterThan(withoutShorthandedShot);
-      // Scored on instead: the goal costs 1 and the shot earns nothing, 7.87 - 1 = 6.87
-      comrie.shorthandedShotsAgainst = '0/1';
-      comrie.saves = 29;
-      expect(StatsUtils.calculateGoalieHokMobRating(comrie)).toBe(6.9);
+    it('should measure the workload against the shots an average goalie faces in his time on ice', () => {
+      // 10 shots at .900 even strength after 20 minutes of a live game: 26 x 1/3 = 8.67 shots expected, so
+      // 5.75 + 0.6 x (9 - 0.903 x 10) + 0.02 x (10 - 8.67) = 5.76, where a full game's 26 would take off 0.32
+      const live = {...goalieWith('9/10'), toi: '20:00'};
+      expect(StatsUtils.getGoalieRawRating(live)).toBeCloseTo(5.75 - 0.018 + 0.02 * (10 - 26 / 3), 4);
+      expect(StatsUtils.calculateGoalieHokMobRating(live)).toBe(5.8);
+      expect(StatsUtils.calculateGoalieHokMobRating({...live, toi: '60:00'})).toBe(5.4);
+    });
+
+    it('should measure a save against the league average at its strength, and charge 0.6 for a goal below it', () => {
+      // 1.04 goals below average
+      const base = StatsUtils.getGoalieRawRating(goalieWith('19/22', '4/5', '1/1'));
+      // One more saved shot: 0.6 x (1 - the league average) + 0.02 of workload
+      expect(StatsUtils.getGoalieRawRating(goalieWith('20/23', '4/5', '1/1')) - base).toBeCloseTo(0.0782, 4);
+      expect(StatsUtils.getGoalieRawRating(goalieWith('19/22', '5/6', '1/1')) - base).toBeCloseTo(0.1082, 4);
+      expect(StatsUtils.getGoalieRawRating(goalieWith('19/22', '4/5', '2/2')) - base).toBeCloseTo(0.074, 4);
+      // A save turned into a goal, at any strength
+      expect(StatsUtils.getGoalieRawRating(goalieWith('18/22', '4/5', '1/1')) - base).toBeCloseTo(-0.6, 4);
+      expect(StatsUtils.getGoalieRawRating(goalieWith('19/22', '3/5', '1/1')) - base).toBeCloseTo(-0.6, 4);
+    });
+
+    it('should weight goals saved above average at 0.7 on a night above average', () => {
+      // 1.96 goals above average
+      const base = StatsUtils.getGoalieRawRating(goalieWith('22/22', '4/5', '1/1'));
+      // One more saved shot: 0.7 x (1 - 0.903) + 0.02 of workload, and a save turned into a goal costs 0.7
+      expect(StatsUtils.getGoalieRawRating(goalieWith('23/23', '4/5', '1/1')) - base).toBeCloseTo(0.0879, 4);
+      expect(StatsUtils.getGoalieRawRating(goalieWith('21/22', '4/5', '1/1')) - base).toBeCloseTo(-0.7, 4);
+      // 45 saves on 46 shots in a win: 5.75 + 0.7 x (45 - 0.903 x 46) + 0.02 x (46 - 26 x 3592 / 3600) + 0.3 = 8.87
+      expect(StatsUtils.calculateGoalieHokMobRating(goalieWith('45/46', '0/0', '0/0', true, 'W'))).toBe(8.9);
+    });
+
+    it('should take the weight from the whole night, not each strength', () => {
+      expect(StatsUtils.getGoalsSavedAboveAverageWeight(1.96)).toBe(0.7);
+      expect(StatsUtils.getGoalsSavedAboveAverageWeight(0)).toBe(0.6);
+      expect(StatsUtils.getGoalsSavedAboveAverageWeight(-1.04)).toBe(0.6);
+      // Below average on the penalty kill, but above it for the night: (24 - 0.903 x 25) + (3 - 0.853 x 4) = 1.01
+      expect(StatsUtils.getGoalieRawRating(goalieWith('24/25', '3/4')))
+          .toBeCloseTo(5.75 + 0.7 * 1.013 + 0.02 * (29 - 26 * 3592 / 3600), 4);
+    });
+
+    it('should rate the same save percentage about the same on few shots as on many', () => {
+      // .900 at even strength on 20 and on 40 shots: only the workload term (20 x 0.02) and the 0.003 a shot under
+      // the league average (x 0.6) tell them apart
+      const fewShots = StatsUtils.getGoalieRawRating(goalieWith('18/20'));
+      const manyShots = StatsUtils.getGoalieRawRating(goalieWith('36/40'));
+      expect(manyShots - fewShots).toBeCloseTo(0.4 - 0.6 * 0.06, 4);
+    });
+
+    it('should add the win bonus, and the shutout bonus on top for a starter who let no shot in', () => {
+      const noDecision = StatsUtils.getGoalieRawRating(goalieWith('26/26', '4/4'));
+      // 0.3 for the win and 0.065 for each of the 30 shots
+      expect(StatsUtils.getGoalieRawRating(goalieWith('26/26', '4/4', '0/0', true, 'W')) - noDecision)
+          .toBeCloseTo(0.3 + 1.95, 4);
+      // A reliever who let nothing in and got the win only gets the win
+      expect(StatsUtils.getGoalieRawRating(goalieWith('26/26', '4/4', '0/0', false, 'W')) - noDecision)
+          .toBeCloseTo(0.3, 4);
+      // Neither for an overtime loss
+      expect(StatsUtils.getGoalieRawRating(goalieWith('26/26', '4/4', '0/0', true, 'O'))).toBeCloseTo(noDecision, 4);
+      // A win with a goal against is only the win
+      expect(StatsUtils.getGoalieRawRating(goalieWith('25/26', '4/4', '0/0', true, 'W')) -
+          StatsUtils.getGoalieRawRating(goalieWith('25/26', '4/4'))).toBeCloseTo(0.3, 4);
     });
 
     it('should rate a goalie who faced no shots 0', () => {
@@ -200,22 +270,105 @@ describe('StatsUtils', () => {
     });
 
     it('should keep the rating between 0 and 10', () => {
-      const comrie = boxscorePlayer<BoxscoreGoalie>(8477480);
-      comrie.saves = 19;
-      expect(StatsUtils.calculateGoalieHokMobRating(comrie)).toBe(0);
-      comrie.saves = 31;
-      comrie.evenStrengthShotsAgainst = '60/60';
-      expect(StatsUtils.calculateGoalieHokMobRating(comrie)).toBe(10);
+      // 5.75 + 0.6 x (10 - 0.903 x 30) + 0.02 x 4 = -4.42
+      expect(StatsUtils.calculateGoalieHokMobRating(goalieWith('10/30'))).toBe(0);
+      // A 60 shot shutout win: 5.75 + 0.7 x (60 - 0.903 x 60) + 0.02 x 34 + 0.3 + 0.065 x 60 = 14.70
+      expect(StatsUtils.calculateGoalieHokMobRating(goalieWith('60/60', '0/0', '0/0', true, 'W'))).toBe(10);
+    });
+
+    it('should rate a shutout win of more than 30 shots a 10, and a quieter one less', () => {
+      // 31 shots: 5.75 + 0.7 x (31 - 0.903 x 31) + 0.02 x (31 - 25.94) + 0.3 + 0.065 x 31 = 10.27
+      expect(StatsUtils.calculateGoalieHokMobRating(goalieWith('31/31', '0/0', '0/0', true, 'W'))).toBe(10);
+      // 20 shots: 5.75 + 0.7 x (20 - 0.903 x 20) + 0.02 x (20 - 25.94) + 0.3 + 0.065 x 20 = 8.59
+      expect(StatsUtils.calculateGoalieHokMobRating(goalieWith('20/20', '0/0', '0/0', true, 'W'))).toBe(8.6);
     });
   });
 
-  describe('getSaves', () => {
-    it('should read the saves of a saves/shots string', () => {
+  describe('getGoalieShutoutBonus', () => {
+    it('should pay 0.065 a shot for a shutout win, and nothing otherwise', () => {
+      const comrie = boxscorePlayer<BoxscoreGoalie>(8477480);
+      expect(StatsUtils.getGoalieShutoutBonus(comrie)).toBe(0); // 29 saves on 31 shots
+      expect(StatsUtils.getGoalieShutoutBonus({...comrie, saves: 31})).toBeCloseTo(2.015, 4);
+      expect(StatsUtils.getGoalieShutoutBonus({...comrie, saves: 31, starter: false})).toBe(0);
+      expect(StatsUtils.getGoalieShutoutBonus(undefined)).toBe(0);
+    });
+  });
+
+  describe('getGoalieExpectedShotsAgainst', () => {
+    it('should scale the average shots by the time on ice, up to a full game', () => {
+      const goalie = boxscorePlayer<BoxscoreGoalie>(8476412);
+      expect(StatsUtils.getGoalieExpectedShotsAgainst({...goalie, toi: '20:00'})).toBeCloseTo(26 / 3, 4);
+      expect(StatsUtils.getGoalieExpectedShotsAgainst({...goalie, toi: '30:00'})).toBe(13);
+      expect(StatsUtils.getGoalieExpectedShotsAgainst({...goalie, toi: '60:00'})).toBe(26);
+      // Overtime doesn't raise it
+      expect(StatsUtils.getGoalieExpectedShotsAgainst({...goalie, toi: '65:00'})).toBe(26);
+      // Binnington's real 56:13
+      expect(StatsUtils.getGoalieExpectedShotsAgainst(goalie)).toBeCloseTo(26 * 3373 / 3600, 4);
+    });
+
+    it('should use a full game when the time on ice is missing or unreadable', () => {
+      const goalie = boxscorePlayer<BoxscoreGoalie>(8476412);
+      expect(StatsUtils.getGoalieExpectedShotsAgainst({...goalie, toi: undefined})).toBe(26);
+      expect(StatsUtils.getGoalieExpectedShotsAgainst({...goalie, toi: '-'})).toBe(26);
+      expect(StatsUtils.getGoalieExpectedShotsAgainst(undefined)).toBe(26);
+    });
+  });
+
+  describe('getGoalsSavedAboveAverage', () => {
+    it('should add up the saves above the league average at every strength', () => {
+      // Comrie: (28 - 0.903 x 30) + (1 - 0.853 x 1) + 0 = 1.057
+      expect(StatsUtils.getGoalsSavedAboveAverage(boxscorePlayer(8477480))).toBeCloseTo(1.057, 4);
+      // Binnington: (8 - 0.903 x 11) + (4 - 0.853 x 4) + (1 - 0.910 x 1) = -1.255
+      expect(StatsUtils.getGoalsSavedAboveAverage(boxscorePlayer(8476412))).toBeCloseTo(-1.255, 4);
+    });
+
+    it('should be 0 for a goalie who faced no shots or has no splits', () => {
+      expect(StatsUtils.getGoalsSavedAboveAverage(boxscorePlayer(8476945))).toBe(0);
+      expect(StatsUtils.getGoalsSavedAboveAverage({} as BoxscoreGoalie)).toBe(0);
+      expect(StatsUtils.getGoalsSavedAboveAverage(undefined)).toBe(0);
+    });
+  });
+
+  describe('isShutoutWin', () => {
+    it('should need a start, a win and no goal against', () => {
+      const comrie = boxscorePlayer<BoxscoreGoalie>(8477480);
+      expect(comrie.starter).toBeTrue();
+      expect(comrie.decision).toBe('W');
+      expect(StatsUtils.isShutoutWin(comrie)).toBeFalse(); // 29 saves on 31 shots
+      expect(StatsUtils.isShutoutWin({...comrie, saves: 31})).toBeTrue();
+      expect(StatsUtils.isShutoutWin({...comrie, saves: 31, starter: false})).toBeFalse();
+      expect(StatsUtils.isShutoutWin({...comrie, saves: 31, decision: 'O'})).toBeFalse();
+      expect(StatsUtils.isShutoutWin({...comrie, saves: 31, decision: undefined})).toBeFalse();
+    });
+
+    it('should not count a win without a shot faced', () => {
+      expect(StatsUtils.isShutoutWin({...boxscorePlayer<BoxscoreGoalie>(8476945), starter: true, decision: 'W'}))
+          .toBeFalse();
+      expect(StatsUtils.isShutoutWin(undefined)).toBeFalse();
+    });
+  });
+
+  describe('getLegacyGoalieRawRating', () => {
+    it('should keep the formula before goals saved above average', () => {
+      // Comrie: 5 + 28/6 + 1/5 - 2 = 7.87
+      expect(StatsUtils.getLegacyGoalieRawRating(boxscorePlayer(8477480))).toBeCloseTo(7.8667, 4);
+      // Binnington: 5 + 8/6 + 4/5 + 1/6 - 3 = 4.3
+      expect(StatsUtils.getLegacyGoalieRawRating(boxscorePlayer(8476412))).toBeCloseTo(4.3, 4);
+    });
+  });
+
+  describe('getSaves and getShots', () => {
+    it('should read the saves and the shots of a saves/shots string', () => {
       expect(StatsUtils.getSaves('28/30')).toBe(28);
+      expect(StatsUtils.getShots('28/30')).toBe(30);
       expect(StatsUtils.getSaves('0/0')).toBe(0);
+      expect(StatsUtils.getShots('0/0')).toBe(0);
     });
 
     it('should return 0 for a missing or unreadable string', () => {
+      for (const split of [null, '', '-', '28']) {
+        expect(StatsUtils.getShots(split)).toBe(0);
+      }
       expect(StatsUtils.getSaves(null)).toBe(0);
       expect(StatsUtils.getSaves('')).toBe(0);
       expect(StatsUtils.getSaves('-')).toBe(0);
@@ -295,7 +448,7 @@ describe('StatsUtils', () => {
       const players = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots());
       expect(players.length).toBe(20);
       expect(players.slice(0, 3).map(player => [player.name, player.position, player.hokmobRating]))
-          .toEqual([['Haydn Fleury', 'D', 7.9], ['Eric Comrie', 'G', 7.9], ['Mark Scheifele', 'C', 7.1]]);
+          .toEqual([['Haydn Fleury', 'D', 7.9], ['Mark Scheifele', 'C', 7.1], ['Eric Comrie', 'G', 6.9]]);
       expect(players[players.length - 1].name).toBe('Connor Hellebuyck');
       expect(players.every(player => player.teamId === 52 && player.isHome)).toBeTrue();
       const ratings = players.map(player => player.hokmobRating);
@@ -523,8 +676,9 @@ describe('StatsUtils', () => {
     it('should give a real game the same rating as its boxscore', () => {
       expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(statsApiGoalie())))
           .toBe(StatsUtils.calculateGoalieHokMobRating(boxscorePlayer<BoxscoreGoalie>(8483548, 2025030414)));
-      // 5 + 12 even strength saves / 6 + 5 power play saves / 5 + 1 shorthanded save / 6 - 3 goals against = 5.17
-      expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(statsApiGoalie()))).toBe(5.2);
+      // A win on 12/15 even strength, 5/5 power play (penalty kill), 1/1 shorthanded: 5.75 + 0.6 x (12 - 0.903 x 15)
+      // + 0.6 x (5 - 0.853 x 5) + 0.6 x (1 - 0.910 x 1) + 0.02 x (21 - 26) + 0.3 = 5.52
+      expect(StatsUtils.calculateGoalieHokMobRating(StatsUtils.toBoxscoreGoalie(statsApiGoalie()))).toBe(5.5);
     });
 
     it('should mark an overtime loss and a regulation loss', () => {
@@ -567,8 +721,8 @@ describe('StatsUtils', () => {
 
     it('should give the uncapped totals, which round to the ratings below 10', () => {
       expect(StatsUtils.getSkaterGameRawRating(statsApiGame<SkaterGameStats>(8477964))).toBeCloseTo(5.6, 5);
-      // 5 + 12 / 6 + 5 / 5 + 1 / 6 - 3
-      expect(StatsUtils.getGoalieGameRawRating(statsApiGame<GoalieGameStats>(8483548))).toBeCloseTo(5.1667, 4);
+      // 5.75 + 0.6 x (12 - 0.903 x 15) + 0.6 x (5 - 0.853 x 5) + 0.6 x (1 - 0.910 x 1) + 0.02 x (21 - 26) + 0.3
+      expect(StatsUtils.getGoalieGameRawRating(statsApiGame<GoalieGameStats>(8483548))).toBeCloseTo(5.518, 4);
     });
   });
 
@@ -584,9 +738,9 @@ describe('StatsUtils', () => {
 
     it('should give the total of a goalie rating kept between 0 and 10', () => {
       const goalie = boxscorePlayer<BoxscoreGoalie>(8483548, 2025030414);
-      const shelled = {...goalie, shotsAgainst: goalie.shotsAgainst + 8};
-      // 5.17 - 8 more goals against
-      expect(StatsUtils.getGoalieRawRating(shelled)).toBeCloseTo(-2.8333, 4);
+      // 15 more even strength goals against than his real 12/15: 5.518 - 15 x 0.6 x 0.903 + 15 x 0.02 of workload
+      const shelled = {...goalie, evenStrengthShotsAgainst: '12/30', shotsAgainst: goalie.shotsAgainst + 15};
+      expect(StatsUtils.getGoalieRawRating(shelled)).toBeCloseTo(-2.309, 4);
       expect(StatsUtils.calculateGoalieHokMobRating(shelled)).toBe(0);
     });
   });

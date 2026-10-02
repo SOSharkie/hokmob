@@ -188,7 +188,8 @@ ratings, so a formula change shows up on the history page without regenerating i
 - **Reports:** the per game rows (`isGame=true`) of the reports the player page's recent games merge: `skater/summary`,
   `skater/realtime`, `skater/faceoffwins`, `skater/scoringpergame`, `skater/powerplay` and `skater/penalties`, plus
   `skater/summaryshooting` for the 5v5 Corsi (`satFor`, `satAgainst`) and Fenwick (`usatFor`, `usatAgainst`) counts,
-  which aren't rated yet (#120). Goalies: `goalie/summary` and `goalie/savesByStrength`. The `game` report gives each
+  which aren't rated yet (#120). Goalies: `goalie/summary` (`timeOnIce`, and `gamesStarted` and `wins` for the
+  rating's win and shutout bonuses, since file version 2) and `goalie/savesByStrength`. The `game` report gives each
   game's date, teams and score. The reports are merged by `playerId` + `gameId`.
 - **The 10,000 row cap:** the stats API returns at most 10,000 rows per query, even with `limit=-1`, without an
   error, and `total` says 10,000 too. A regular season is about 47,000 skater game rows, so the skater reports are
@@ -212,8 +213,9 @@ ratings, so a formula change shows up on the history page without regenerating i
   and rates every row in under 100 ms, so there's no web worker.
 - **What the page leaves out:** goalies who faced no shots, whom the rating gives 0 (3 in 2025-26). A goalie who
   faced shots and made no saves also gets 0, and is kept, as on the game page.
-- **Capped ratings:** 119 games of 2025-26 are rated exactly 10. The service works out their uncapped total
-  (`StatsUtils.getSkaterRawRating` / `getGoalieRawRating`), which ranks them in the best single games list.
+- **Capped ratings:** 91 games of 2025-26 are rated exactly 10 (51 skaters and 40 goalies). The service works out their
+  uncapped total (`StatsUtils.getSkaterRawRating` / `getGoalieRawRating`), which ranks them in the best single games
+  list.
 - **Serving:** the file is copied to `dist/assets` with the other assets and served by `UseStaticFiles`, outside the
   main bundle and the `angular.json` initial budget. Azure (IIS) gzips JSON, so check that the deployed file comes
   back with `Content-Encoding: gzip`.

@@ -130,7 +130,7 @@ describe('PlayerGameStatsComponent', () => {
     await settle();
     expect(component.isGoalie).toBeTrue();
     expect(stats()).toEqual([
-      ['HokMob Rating', '7.9'],
+      ['HokMob Rating', '6.9'],
       ['Time On Ice', '59:52'],
       ['Save %', '.935'],
       ['Saves', '29'],
