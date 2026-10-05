@@ -5,8 +5,10 @@ import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
+import {ClubStats} from "@shared/models/nhl-web-api/club-stats.model";
 import {
   mockClubScheduleSeason,
+  mockClubStats,
   mockDraftPicks,
   mockGameBoxscore,
   mockGameLanding,
@@ -423,4 +425,129 @@ describe('NhlGameService', () => {
       expect(console.error).toHaveBeenCalled();
     });
   });
+
+  describe('getClubStats', () => {
+    it("should load a team's totals for one season and game type", async () => {
+      const stats = service.getClubStats('BOS', 20252026, NhlGameTypeEnum.REGULAR_SEASON);
+      httpMock.expectOne('/api/nhl/club-stats/BOS/20252026/2').flush(mockClubStats('BOS-20252026-2'));
+      const response = await stats;
+      expect(response.season).toBe('20252026');
+      expect(response.skaters.find(skater => skater.playerId === 8477956).points).toBe(100);
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const stats = service.getClubStats('BOS', 20272028, NhlGameTypeEnum.REGULAR_SEASON);
+      const rejection = expectAsync(stats).toBeRejected();
+      httpMock.expectOne('/api/nhl/club-stats/BOS/20272028/2').flush('Not found', {status: 404, statusText: 'Not Found'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getSeasonLeaderStats', () => {
+    const statsUrl = '/api/nhl/club-stats/';
+
+    /** Waits for the service to make its next requests. */
+    function nextRequest(): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve));
+    }
+
+    /** A team's totals before its first game of the season: the shape of the playoffs before they start. */
+    function noGames(stats: ClubStats): ClubStats {
+      return {...stats, skaters: [], goalies: []};
+    }
+
+    function notFound(url: string): void {
+      httpMock.expectOne(url).flush('Not found', {status: 404, statusText: 'Not Found'});
+    }
+
+    it("should use the game's season once both teams have played a game of it", async () => {
+      // UTA @ BOS, three games into 2026-27
+      const leaderStats = service.getSeasonLeaderStats(mockGameLanding(2026020056));
+      httpMock.expectOne(statsUrl + 'BOS/20262027/2').flush(mockClubStats('BOS-20262027-2'));
+      httpMock.expectOne(statsUrl + 'UTA/20262027/2').flush(mockClubStats('UTA-20262027-2'));
+      const stats = await leaderStats;
+      expect(stats.home.season).toBe('20262027');
+      expect(stats.away.season).toBe('20262027');
+      expect(stats.away.skaters.find(skater => skater.playerId === 8482699).points).toBe(5);
+    });
+
+    it('should use the previous season for both teams until both have played', async () => {
+      const leaderStats = service.getSeasonLeaderStats(mockGameLanding(2026020056));
+      httpMock.expectOne(statsUrl + 'BOS/20262027/2').flush(mockClubStats('BOS-20262027-2'));
+      httpMock.expectOne(statsUrl + 'UTA/20262027/2').flush(noGames(mockClubStats('UTA-20262027-2')));
+      await nextRequest();
+      httpMock.expectOne(statsUrl + 'BOS/20252026/2').flush(mockClubStats('BOS-20252026-2'));
+      httpMock.expectOne(statsUrl + 'UTA/20252026/2').flush(mockClubStats('UTA-20252026-2'));
+      const stats = await leaderStats;
+      expect(stats.home.season).toBe('20252026');
+      expect(stats.away.season).toBe('20252026');
+    });
+
+    it("should use the previous season when the game's season has no totals yet", async () => {
+      // A season with no games for the team is a 404
+      const leaderStats = service.getSeasonLeaderStats(mockGameLanding(2026020056));
+      notFound(statsUrl + 'BOS/20262027/2');
+      notFound(statsUrl + 'UTA/20262027/2');
+      await nextRequest();
+      httpMock.expectOne(statsUrl + 'BOS/20252026/2').flush(mockClubStats('BOS-20252026-2'));
+      httpMock.expectOne(statsUrl + 'UTA/20252026/2').flush(mockClubStats('UTA-20252026-2'));
+      expect((await leaderStats).home.season).toBe('20252026');
+    });
+
+    it("should use a playoff game's playoff totals", async () => {
+      // VGK hosting CAR in the 2025-26 final
+      const leaderStats = service.getSeasonLeaderStats(mockGameLanding(2025030414));
+      httpMock.expectOne(statsUrl + 'VGK/20252026/3').flush(mockClubStats('VGK-20252026-3'));
+      httpMock.expectOne(statsUrl + 'CAR/20252026/3').flush(mockClubStats('CAR-20252026-3'));
+      const stats = await leaderStats;
+      expect(stats.home.gameType).toBe(NhlGameTypeEnum.PLAYOFFS);
+      expect(stats.away.gameType).toBe(NhlGameTypeEnum.PLAYOFFS);
+    });
+
+    it("should use the same season's regular season before the first playoff game", async () => {
+      const landing = {...mockGameLanding(2026020056), gameType: NhlGameTypeEnum.PLAYOFFS};
+      const leaderStats = service.getSeasonLeaderStats(landing);
+      httpMock.expectOne(statsUrl + 'BOS/20262027/3').flush(mockClubStats('BOS-20262027-3'));
+      httpMock.expectOne(statsUrl + 'UTA/20262027/3').flush(noGames(mockClubStats('UTA-20262027-2')));
+      await nextRequest();
+      httpMock.expectOne(statsUrl + 'BOS/20262027/2').flush(mockClubStats('BOS-20262027-2'));
+      httpMock.expectOne(statsUrl + 'UTA/20262027/2').flush(mockClubStats('UTA-20262027-2'));
+      const stats = await leaderStats;
+      expect(stats.home.season).toBe('20262027');
+      expect(stats.home.gameType).toBe(NhlGameTypeEnum.REGULAR_SEASON);
+    });
+
+    it("should use a preseason game's regular season", async () => {
+      const landing = {...mockGameLanding(2026020056), gameType: NhlGameTypeEnum.PRESEASON};
+      const leaderStats = service.getSeasonLeaderStats(landing);
+      httpMock.expectOne(statsUrl + 'BOS/20262027/2').flush(mockClubStats('BOS-20262027-2'));
+      httpMock.expectOne(statsUrl + 'UTA/20262027/2').flush(mockClubStats('UTA-20262027-2'));
+      expect((await leaderStats).home.season).toBe('20262027');
+    });
+
+    it("should keep the game's totals when the previous season fails", async () => {
+      const leaderStats = service.getSeasonLeaderStats(mockGameLanding(2026020056));
+      httpMock.expectOne(statsUrl + 'BOS/20262027/2').flush(mockClubStats('BOS-20262027-2'));
+      httpMock.expectOne(statsUrl + 'UTA/20262027/2').flush(noGames(mockClubStats('UTA-20262027-2')));
+      await nextRequest();
+      notFound(statsUrl + 'BOS/20252026/2');
+      notFound(statsUrl + 'UTA/20252026/2');
+      const stats = await leaderStats;
+      expect(stats.home.season).toBe('20262027');
+      expect(stats.away.skaters).toEqual([]);
+    });
+
+    it('should reject when neither season can be loaded', async () => {
+      const leaderStats = service.getSeasonLeaderStats(mockGameLanding(2026020056));
+      const rejection = expectAsync(leaderStats).toBeRejected();
+      notFound(statsUrl + 'BOS/20262027/2');
+      notFound(statsUrl + 'UTA/20262027/2');
+      await nextRequest();
+      notFound(statsUrl + 'BOS/20252026/2');
+      notFound(statsUrl + 'UTA/20252026/2');
+      await rejection;
+    });
+  });
+
 });

@@ -36,6 +36,7 @@ import {
 import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.model";
 import {ScrollDirectionService} from "@shared/services/scroll-direction.service";
 import {Subject, takeUntil} from "rxjs";
+import {ClubStats} from "@shared/models/nhl-web-api/club-stats.model";
 
 @Component({
   selector: 'app-game',
@@ -106,6 +107,14 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public homeTeamFormGames: ClubScheduleGame[] = [];
 
   public awayTeamFormGames: ClubScheduleGame[] = [];
+
+  /**
+   * Each team's season totals for the season leaders, from the same season and game type. Only loaded for future
+   * games.
+   */
+  public homeSeasonStats: ClubStats;
+
+  public awaySeasonStats: ClubStats;
 
   private intermissionSecondsRemaining: number;
 
@@ -223,6 +232,15 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public get showTopPlayers(): boolean {
     return this.homePlayers.length > 0 && this.awayPlayers.length > 0 &&
         (this.completedGame || (this.liveGame && this.playByPlay?.plays?.length > 10));
+  }
+
+  /**
+   * Whether the season leaders show: a future game, with someone who has played for each team in the totals.
+   */
+  public get showSeasonLeaders(): boolean {
+    const hasPlayers = (stats: ClubStats) => !!stats?.skaters?.some(skater => skater.gamesPlayed > 0) ||
+        !!stats?.goalies?.some(goalie => goalie.gamesPlayed > 0);
+    return this.futureGame && hasPlayers(this.homeSeasonStats) && hasPlayers(this.awaySeasonStats);
   }
 
   public get homeCoach(): string {
@@ -381,6 +399,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       this.awayTeamLogo = NhlTeamLogoUtils.getTeamPrimaryLogo(this.landing.awayTeam.id);
       this.loadScoreGame();
       this.loadTeamForm();
+      this.loadSeasonLeaders();
       if (!this.completedGame && (this.liveGame || this.gameDay === "Today")) {
         this.startContinuousNhlGameUpdates();
       }
@@ -404,6 +423,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.highlightedPlayer = null;
     this.homeTeamFormGames = [];
     this.awayTeamFormGames = [];
+    this.homeSeasonStats = undefined;
+    this.awaySeasonStats = undefined;
     this.homeTeamLogo = undefined;
     this.awayTeamLogo = undefined;
     this.isIntermission = false;
@@ -468,6 +489,25 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
             this.awayTeamFormGames = awayGames;
           }
         });
+  }
+
+  /**
+   * Loads both teams' season totals for a future game's season leaders (NhlGameService.getSeasonLeaderStats), once, not
+   * on refresh. If they can't be loaded the section stays hidden.
+   */
+  private loadSeasonLeaders(): void {
+    if (!this.futureGame) {
+      return;
+    }
+    const gameId = this.gameId;
+    this.nhlGameService.getSeasonLeaderStats(this.landing).then(stats => {
+      if (gameId === this.gameId) {
+        this.homeSeasonStats = stats.home;
+        this.awaySeasonStats = stats.away;
+      }
+    }).catch(() => {
+      // Already logged by the service
+    });
   }
 
   /**

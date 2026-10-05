@@ -9,6 +9,7 @@ import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameBundle } from '@shared/models/nhl-web-api/game-bundle.model';
 import { ClubScheduleSeason } from '@shared/models/nhl-web-api/club-schedule.model';
+import { ClubStats } from '@shared/models/nhl-web-api/club-stats.model';
 import { ScoreResponse } from '@shared/models/nhl-web-api/score.model';
 import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
@@ -22,6 +23,7 @@ import {
   derivedIntermissionLanding,
   derivedLiveLanding,
   mockClubScheduleSeason,
+  mockClubStats,
   mockGameBundle,
   mockGameLanding,
   mockPlayoffScoreResponse,
@@ -91,6 +93,16 @@ describe('GameComponent', () => {
     } else {
       request.flush('Server error', {status: 500, statusText: 'Internal Server Error'});
     }
+  }
+
+  /**
+   * Answers the season leader requests of the future game 2026020056 (UTA @ BOS) for 2026-27, by default with the
+   * teams' totals three games in, so the previous season isn't needed.
+   */
+  function flushSeasonLeaders(home: ClubStats = mockClubStats('BOS-20262027-2'),
+                              away: ClubStats = mockClubStats('UTA-20262027-2')): void {
+    httpMock.expectOne('/api/nhl/club-stats/BOS/20262027/2').flush(home);
+    httpMock.expectOne('/api/nhl/club-stats/UTA/20262027/2').flush(away);
   }
 
   /** Answers the score request of a finished or playoff game with the response, or with a server error without one. */
@@ -534,6 +546,7 @@ describe('GameComponent', () => {
     open('2026020056');
     flushBundle('2026020056', mockGameBundle(2026020056));
     await settle();
+    flushSeasonLeaders();
     flushClubSchedule('BOS', 20262027);
     flushClubSchedule('UTA', 20262027);
     await settle();
@@ -559,6 +572,7 @@ describe('GameComponent', () => {
     open('2026020056');
     flushBundle('2026020056', mockGameBundle(2026020056));
     await settle();
+    flushSeasonLeaders();
     expect(element('app-team-form')).toBeNull();
 
     flushClubSchedule('BOS', 20262027, mockClubScheduleSeason('BOS', 20262027));
@@ -603,6 +617,7 @@ describe('GameComponent', () => {
     open('2026020056');
     flushBundle('2026020056', mockGameBundle(2026020056));
     await settle();
+    flushSeasonLeaders();
     flushClubSchedule('BOS', 20262027, mockClubScheduleSeason('BOS', 20262027));
     flushClubSchedule('UTA', 20262027);
     await settle();
@@ -621,6 +636,7 @@ describe('GameComponent', () => {
 
     routeParams.next({id: '2025021057'});
     flushBundle('2025021057', mockGameBundle(2025021057));
+    flushSeasonLeaders();
     flushClubSchedule('BOS', 20262027, mockClubScheduleSeason('BOS', 20262027));
     flushClubSchedule('UTA', 20262027, mockClubScheduleSeason('UTA', 20262027));
     await settle();
@@ -633,6 +649,8 @@ describe('GameComponent', () => {
     expect(component.landing.id).toBe(2025021057);
     expect(component.homeTeamFormGames).toEqual([]);
     expect(component.awayTeamFormGames).toEqual([]);
+    expect(component.homeSeasonStats).toBeUndefined();
+    expect(element('app-game-season-leaders')).toBeNull();
   });
 
   it('should refresh a future game scheduled today', fakeAsync(() => {
@@ -641,18 +659,131 @@ describe('GameComponent', () => {
     open('2026020056');
     flushBundle('2026020056', bundle);
     settleFakeAsync();
+    flushSeasonLeaders();
     flushClubSchedule('BOS', 20262027);
     flushClubSchedule('UTA', 20262027);
     settleFakeAsync();
     tick(10000);
     flushBundle('2026020056', bundle);
     settleFakeAsync();
-    // The team form is only loaded once
-    httpMock.expectNone(request => request.url.includes('club-schedule-season'));
+    // The team form and the season leaders are only loaded once
+    httpMock.expectNone(request => request.url.includes('club-schedule-season') || request.url.includes('club-stats'));
     fixture.destroy();
     tick(10000);
     httpMock.expectNone('/api/nhl/gamecenter/2026020056/landing');
   }));
+
+  describe('season leaders', () => {
+    /** Opens the future game 2026020056 (UTA @ BOS) and answers its team form requests with server errors. */
+    async function openFutureGame(bundle: GameBundle = mockGameBundle(2026020056)): Promise<void> {
+      open('2026020056');
+      flushBundle('2026020056', bundle);
+      await settle();
+      flushClubSchedule('BOS', 20262027);
+      flushClubSchedule('UTA', 20262027);
+    }
+
+    function clubStatsUrl(teamAbbrev: string, season: number): string {
+      return `/api/nhl/club-stats/${teamAbbrev}/${season}/2`;
+    }
+
+    it("should show each team's season leaders for a future game, right below the game header", async () => {
+      await openFutureGame();
+      flushSeasonLeaders();
+      await settle();
+
+      const seasonLeaders = element('app-game-season-leaders');
+      expect(seasonLeaders.homeStats.season).toBe('20262027');
+      expect(seasonLeaders.homeStats.skaters.some(skater => skater.lastName.default === 'Pastrnak')).toBeTrue();
+      expect(seasonLeaders.awayStats.skaters.some(skater => skater.lastName.default === 'Keller')).toBeTrue();
+      expect(seasonLeaders.homeTeamId).toBe(6);
+      expect(seasonLeaders.awayTeamId).toBe(68);
+      const firstSection: HTMLElement = fixture.nativeElement.querySelector('.main-game > .game-container');
+      expect(firstSection.firstElementChild.tagName.toLowerCase()).toBe('app-game-season-leaders');
+    });
+
+    it("should show last season's leaders until both teams have played", async () => {
+      await openFutureGame();
+      flushSeasonLeaders(mockClubStats('BOS-20262027-2'), {...mockClubStats('UTA-20262027-2'), skaters: [], goalies: []});
+      await settle();
+      expect(element('app-game-season-leaders')).toBeNull();
+
+      httpMock.expectOne(clubStatsUrl('BOS', 20252026)).flush(mockClubStats('BOS-20252026-2'));
+      httpMock.expectOne(clubStatsUrl('UTA', 20252026)).flush(mockClubStats('UTA-20252026-2'));
+      await settle();
+      expect(element('app-game-season-leaders').awayStats.season).toBe('20252026');
+    });
+
+    it('should hide the season leaders when the totals fail to load', async () => {
+      await openFutureGame();
+      const serverError = {status: 500, statusText: 'Internal Server Error'};
+      httpMock.expectOne(clubStatsUrl('BOS', 20262027)).flush('Server error', serverError);
+      httpMock.expectOne(clubStatsUrl('UTA', 20262027)).flush('Server error', serverError);
+      await settle();
+      httpMock.expectOne(clubStatsUrl('BOS', 20252026)).flush('Server error', serverError);
+      httpMock.expectOne(clubStatsUrl('UTA', 20252026)).flush('Server error', serverError);
+      await settle();
+      expect(component.showSeasonLeaders).toBeFalse();
+      expect(element('app-game-season-leaders')).toBeNull();
+      expect(element('.game-header')).not.toBeNull();
+    });
+
+    it('should hide the season leaders when a team has no one in its totals', async () => {
+      await openFutureGame();
+      const noGames = (stats: ClubStats): ClubStats => ({...stats, skaters: [], goalies: []});
+      flushSeasonLeaders(noGames(mockClubStats('BOS-20262027-2')), mockClubStats('UTA-20262027-2'));
+      await settle();
+      // The previous season fails too, so the game's own totals are kept
+      httpMock.expectOne(clubStatsUrl('BOS', 20252026)).flush('Not found', {status: 404, statusText: 'Not Found'});
+      httpMock.expectOne(clubStatsUrl('UTA', 20252026)).flush('Not found', {status: 404, statusText: 'Not Found'});
+      await settle();
+      expect(component.awaySeasonStats.skaters.length).toBeGreaterThan(0);
+      expect(element('app-game-season-leaders')).toBeNull();
+    });
+
+    it('should not load the season leaders for a live or finished game', async () => {
+      open('2025021057');
+      flushBundle('2025021057', mockGameBundle(2025021057));
+      await settle();
+      flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+      await settle();
+      httpMock.expectNone(request => request.url.startsWith('/api/nhl/club-stats/'));
+      expect(element('app-game-season-leaders')).toBeNull();
+
+      routeParams.next({id: '2026020056'});
+      const live = mockGameBundle(2026020056);
+      live.landing.gameState = NhlGameStateEnum.LIVE;
+      flushBundle('2026020056', live);
+      await settle();
+      flushClubSchedule('BOS', 20262027);
+      flushClubSchedule('UTA', 20262027);
+      await settle();
+      httpMock.expectNone(request => request.url.startsWith('/api/nhl/club-stats/'));
+      expect(element('app-game-season-leaders')).toBeNull();
+    });
+
+    it('should hide the season leaders once the game starts', fakeAsync(() => {
+      const bundle = mockGameBundle(2026020056);
+      bundle.landing.startTimeUTC = dayjs().toISOString();
+      open('2026020056');
+      flushBundle('2026020056', bundle);
+      settleFakeAsync();
+      flushSeasonLeaders();
+      flushClubSchedule('BOS', 20262027);
+      flushClubSchedule('UTA', 20262027);
+      settleFakeAsync();
+      expect(element('app-game-season-leaders')).not.toBeNull();
+
+      const live = mockGameBundle(2026020056);
+      live.landing.gameState = NhlGameStateEnum.LIVE;
+      tick(10000);
+      flushBundle('2026020056', live);
+      settleFakeAsync();
+      expect(component.showSeasonLeaders).toBeFalse();
+      expect(element('app-game-season-leaders')).toBeNull();
+      fixture.destroy();
+    }));
+  });
 
   it('should refresh a live game every 10 seconds and stop once it is over', fakeAsync(() => {
     open('2025021057');

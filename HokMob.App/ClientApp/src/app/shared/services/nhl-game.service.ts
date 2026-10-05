@@ -18,6 +18,8 @@ import {DraftPicksResponse} from "@shared/models/nhl-web-api/draft-picks.model";
 import {GameDayCacheUtils} from "@shared/utils/game-day-cache-utils";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {CurrentSeason} from "@shared/models/nhl-stats-api/season-dates.model";
+import {ClubStats, SeasonLeaderStats} from "@shared/models/nhl-web-api/club-stats.model";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 
 interface CachedGameDay {
   games: ScoreGame[];
@@ -38,6 +40,8 @@ export class NhlGameService {
   private readonly nhlClubScheduleSeasonUrl = "/api/nhl/club-schedule-season/";
 
   private readonly nhlDraftPicksUrl = "/api/nhl/draft/picks/";
+
+  private readonly nhlClubStatsUrl = "/api/nhl/club-stats/";
 
   private readonly teamFormGameCount = 5;
 
@@ -156,6 +160,49 @@ export class NhlGameService {
   }
 
   /**
+   * Gets a team's totals for one season and game type: every skater and goalie who played for it, from
+   * club-stats/{abbrev}/{season}/{gameType}. A season the team has no games in yet (or didn't exist in) rejects (404),
+   * while a game type without games, like the playoffs before they start, resolves with empty lists.
+   *
+   * @param teamAbbrev - The team abbreviation, like "BOS".
+   * @param season - The season, like 20252026.
+   * @param gameType - The regular season or the playoffs.
+   */
+  public getClubStats(teamAbbrev: string, season: number, gameType: NhlGameTypeEnum): Promise<ClubStats> {
+    return this.get<ClubStats>(this.nhlClubStatsUrl + teamAbbrev + "/" + season + "/" + gameType);
+  }
+
+  /**
+   * Gets both teams' totals for a future game's season leaders, from the game's season and game type: a playoff
+   * game's playoffs, or the regular season for any other game. Until both teams have played a game of it, or when
+   * those totals can't be loaded (a season without games yet is a 404), both teams' totals come from the same season's
+   * regular season for a playoff game, or the previous season's otherwise, so both are from the same season. When that
+   * fails too, the game's own totals are kept, or it rejects if there are none.
+   *
+   * @param landing - The future game's landing.
+   */
+  public getSeasonLeaderStats(landing: GameLanding): Promise<SeasonLeaderStats> {
+    const isPlayoffGame = landing.gameType === NhlGameTypeEnum.PLAYOFFS;
+    const loadStats = (season: number, gameType: NhlGameTypeEnum): Promise<SeasonLeaderStats> => Promise.all([
+      this.getClubStats(landing.homeTeam.abbrev, season, gameType),
+      this.getClubStats(landing.awayTeam.abbrev, season, gameType)
+    ]).then(([home, away]) => ({home, away}));
+    const gameTypeStats = loadStats(landing.season, isPlayoffGame ? NhlGameTypeEnum.PLAYOFFS :
+        NhlGameTypeEnum.REGULAR_SEASON).catch((): SeasonLeaderStats => undefined);
+    return gameTypeStats.then(stats => {
+      const bothTeamsPlayed = NhlGameService.getTeamGamesPlayed(stats?.home) > 0 &&
+          NhlGameService.getTeamGamesPlayed(stats?.away) > 0;
+      if (bothTeamsPlayed) {
+        return stats;
+      }
+      // 20262027 - 10001 is 20252026
+      const fallbackSeason = isPlayoffGame ? landing.season : landing.season - 10001;
+      return loadStats(fallbackSeason, NhlGameTypeEnum.REGULAR_SEASON)
+          .catch(error => stats ?? Promise.reject(error));
+    });
+  }
+
+  /**
    * Gets the picks of one draft round, with the list of draft years and that year's rounds. Without a year, gets the
    * latest draft's round 1 (draft/picks/now). The picks have no player IDs; match them to
    * NhlStatsApiService.getDraftStats by overall pick. A year without picks yet rejects (404).
@@ -183,6 +230,14 @@ export class NhlGameService {
         }
       });
     });
+  }
+
+  /**
+   * Returns how many games a team has played in a club-stats response: the most any of its skaters has played, since
+   * the response has no team totals.
+   */
+  private static getTeamGamesPlayed(stats: ClubStats): number {
+    return Math.max(0, ...(stats?.skaters ?? []).map(skater => skater.gamesPlayed ?? 0));
   }
 
   private formatDateStringForNhl(date: Date): string {

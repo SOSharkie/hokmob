@@ -1,0 +1,42 @@
+<div class="rink-card">
+  <div class="rink-card-header">
+    <div class="card-title">
+      <span class="title">{{cardTitle}}</span>
+      <span *ngIf="seasonLabel" class="season-label">{{seasonLabel}}</span>
+    </div>
+    <!-- Switches the rink between the leading scorers and each team's stars -->
+    <button type="button" class="lineup-toggle" [class.showing-stars]="showStarLineup"
+            [attr.aria-pressed]="showStarLineup" [title]="showStarLineup ? 'Show the season leaders' : 'Show the star players'"
+            (click)="toggleStarLineup()">
+      <mat-icon class="toggle-icon">star</mat-icon>
+      <span>Stars</span>
+    </button>
+  </div>
+  <app-rink class="rink">
+    <div class="team-players home-players">
+      <ng-container *ngTemplateOutlet="playerSpots; context: {$implicit: homeSpots}"></ng-container>
+    </div>
+    <div class="team-players away-players">
+      <ng-container *ngTemplateOutlet="playerSpots; context: {$implicit: awaySpots}"></ng-container>
+    </div>
+  </app-rink>
+</div>
+
+<ng-template #playerSpots let-spots>
+  <a *ngFor="let spot of spots; trackBy: trackBySpot" [routerLink]="['/player', spot.player.playerId]"
+     class="top-player" [ngClass]="spot.line" [style.--length.%]="spot.length" [style.--across.%]="spot.across"
+     [attr.aria-label]="spot.player.name + ', ' + spot.player.statLabel">
+    <div class="player-avatar">
+      <div class="player-headshot-container">
+        <img [src]="spot.player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
+      </div>
+      <div *ngIf="spot.player.isGoalie" class="goalie-icon-container">
+        <img class="goalie-icon" src="assets/goalie_mask.png" alt="">
+      </div>
+    </div>
+    <div class="player-name">
+      <span>{{spot.player.name}}</span>
+    </div>
+    <div class="player-stats" [title]="spot.player.statLabel">{{spot.player.statLine}}</div>
+  </a>
+</ng-template>

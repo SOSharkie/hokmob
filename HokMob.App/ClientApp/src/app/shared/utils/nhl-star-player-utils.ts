@@ -104,6 +104,21 @@ export class NhlStarPlayerUtils {
   }
 
   /**
+   * Returns a line of a team's star lineup: its stars at that position who are among the players, the bigger star
+   * first, topped up with the first of the other players when a star is missing (he sat out, or hasn't played).
+   *
+   * @param players - The team's players at that position, in the order to top up the line from.
+   * @param starPlayerIds - The IDs of the team's stars at that position, the bigger star first (getStarForwardIds or
+   * getStarDefenseIds).
+   * @param count - How many players the line holds.
+   */
+  public static pickStarLine<T extends {playerId: number}>(players: T[], starPlayerIds: number[], count: number): T[] {
+    const stars = starPlayerIds.map(playerId => players.find(player => player.playerId === playerId))
+        .filter(star => !!star);
+    return [...stars, ...players.filter(player => !stars.includes(player))].slice(0, count);
+  }
+
+  /**
    * Whether the player is one of his team's star players.
    *
    * @param playerId - The player's ID.
