@@ -1,23 +1,5 @@
-@import "variables";
+@import "../rink/rink-card";
 
-$rink-surface: $black-03;
-// The rating blue the starred player is highlighted in (StatsUtils.hokmobRatingBlue), for the lineup toggle
-$star-blue: #0e87e0;
-$rink-line: $gray-01;
-
-// A 200.13ft rink with 27.88ft corners: 78.74ft wide lying across the card, and 98.42ft wide standing up on phones
-$lying-aspect-ratio: calc(200.13 / 78.74);
-// Standing up, the rink is drawn shorter than the real 200.13 / 98.42 (about 2.03), so the whole card fits on a
-// phone screen: at the 366px a 393px iPhone leaves it, 1.6 makes it 586px tall instead of 744px. The markings are
-// drawn on that shorter rink too (GameTopPlayersComponent.standingRinkLength), so its circles stay circles, and the
-// players follow, since they are placed in percent. Keep it the same as the component's standingAspectRatio.
-$standing-aspect-ratio: 1.6;
-// The 27.88ft corners, in percent of the side they run along. The standing rink's are quarter circles like its
-// markings, and shrink with them (the component's getRoundScale), so 24.73ft of its 98.42ft width and 157.47ft length.
-$corner-along-length: 13.93%;
-$standing-corner-along-length: 15.7%;
-$lying-corner-along-width: 35.41%;
-$standing-corner-along-width: 25.13%;
 // The benches, 39.5ft long, sit 53.9ft from each end
 $bench-start: 26.93%;
 $bench-length: 19.74%;
@@ -29,163 +11,9 @@ $bench-height: 44px;
 $bench-players-height: 78px;
 $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
-.game-top-players-container {
-  background-color: $black-02;
-  border-radius: 25px;
-  color: white;
-  padding: 0 $spacing-x-large $spacing-x-large;
-
-  .game-top-players-header {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 40px;
-  }
-
-  // The lineup toggle sits in the top right corner, so the title stays centered on the card
-  .lineup-toggle {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    gap: $spacing-small;
-    height: 26px;
-    padding: 0 $spacing-large 0 $spacing-medium;
-    border: 1px solid $gray-01;
-    border-radius: 20px;
-    background-color: $black-03;
-    color: $gray-04;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
-
-    &:hover {
-      border-color: $gray-02;
-      color: white;
-    }
-
-    &:focus-visible {
-      border-color: $gray-04;
-    }
-
-    &.showing-stars {
-      border-color: $star-blue;
-      color: white;
-
-      .toggle-icon {
-        color: $star-blue;
-      }
-    }
-
-    .toggle-icon {
-      width: 15px;
-      height: 15px;
-      font-size: 15px;
-      color: $gray-03;
-    }
-  }
-}
-
-// Above the benches, so it covers the part of an open bench's side that runs up behind the boards
-.rink {
-  position: relative;
-  z-index: 1;
-  border: 2px solid $rink-line;
-  background-color: $rink-surface;
-}
-
-.rink-surface {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: inherit;
-}
-
-.rink-markings {
-  position: absolute;
-
-  * {
-    fill: none;
-    stroke: $rink-line;
-    stroke-width: 1px;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .crease {
-    fill: $black-04;
-  }
-
-  .dots circle {
-    fill: $rink-line;
-    stroke: none;
-  }
-
-  .blue-line {
-    stroke-width: 3px;
-  }
-
-  .center-line {
-    stroke-width: 4px;
-  }
-}
-
-// Players stand above the markings, placed by their --length from their own end boards and --across the rink
-.team-players {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.top-player {
-  position: absolute;
-  max-width: 110px;
-  // Centers the headshot on the player's spot
-  transform: translate(-50%, -25px);
-  pointer-events: auto;
-
-  &:hover {
-    opacity: 0.7;
-  }
-}
-
-// A player on the rink or on a bench
+// The rating, goal pucks and hover highlight of a player on the rink or on a bench
 .top-player,
 .bench-player {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-
-  .player-avatar {
-    position: relative;
-    width: 50px;
-    height: 50px;
-  }
-
-  .player-headshot-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    overflow: hidden;
-    background-color: $gray-01;
-
-    .player-headshot {
-      width: 58px;
-      height: 58px;
-      margin-top: 8px;
-    }
-  }
-
   .hokmob-score-container {
     position: absolute;
     top: -5px;
@@ -241,34 +69,6 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   // The player hovered in the goal scorers or the event timeline, in their --highlight-color
   &.highlighted .player-headshot-container {
     box-shadow: 0 0 0 2px var(--highlight-color), 0 0 10px 2px color-mix(in srgb, var(--highlight-color) 60%, transparent);
-  }
-
-  .goalie-icon-container {
-    position: absolute;
-    top: -3px;
-    left: -8px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 1px solid $gray-02;
-    background-color: white;
-
-    .goalie-icon {
-      width: 18px;
-      height: 18px;
-    }
-  }
-
-  .player-name {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-    margin-top: $spacing-small;
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 14px;
-    text-align: center;
   }
 }
 
@@ -342,6 +142,7 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
 // Each player drops onto the bench after the one before when it opens, and they all leave together when it closes
 .bench-player {
+  @include player-avatar;
   flex: 1 1 0;
   min-width: 0;
   padding-top: $spacing-large + 1px;
@@ -426,37 +227,8 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-// Desktop Styling: the rink lies across the card, home on the left and the benches below it. It turns at the phone
-// breakpoint, not the game page's: between the two the page is one column, and the card is wide enough for it.
+// Desktop Styling: the benches below the rink
 @media only screen and (min-width: $mobile-screen-breakpoint) {
-  .rink {
-    aspect-ratio: $lying-aspect-ratio;
-    border-radius: #{$corner-along-length} / #{$lying-corner-along-width};
-  }
-
-  .rink-markings.standing {
-    display: none;
-  }
-
-  .rink-markings {
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .top-player {
-    top: var(--across);
-    width: 16%;
-  }
-
-  .home-players .top-player {
-    left: var(--length);
-  }
-
-  .away-players .top-player {
-    left: calc(100% - var(--length));
-  }
-
   .benches {
     height: $bench-height;
     transition: height $bench-transition;
@@ -507,51 +279,9 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-// Mobile Styling: the rink stands up the card, home at the top
+// Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .game-top-players-container {
-    padding: 0 $spacing-large $spacing-large;
-  }
-
-  .rink {
-    aspect-ratio: calc(1 / #{$standing-aspect-ratio});
-    // Stays phone sized, so it isn't too tall on a wide phone or a small tablet
-    max-width: 400px;
-    margin: 0 auto;
-    border-radius: #{$standing-corner-along-width} / #{$standing-corner-along-length};
-  }
-
-  .rink-markings:not(.standing) {
-    display: none;
-  }
-
-  // Drawn lying down, then stood up: home's end turns to the top
-  .rink-markings {
-    top: 50%;
-    left: 50%;
-    width: calc(100% * #{$standing-aspect-ratio});
-    height: calc(100% / #{$standing-aspect-ratio});
-    transform: translate(-50%, -50%) rotate(90deg);
-  }
-
-  // A smaller card than on the lying rink, so the two teams' forwards don't meet in the middle of a shorter rink
   .top-player {
-    left: var(--across);
-    width: 30%;
-    transform: translate(-50%, -22px);
-
-    .player-avatar,
-    .player-headshot-container {
-      width: 44px;
-      height: 44px;
-    }
-
-    .player-headshot-container .player-headshot {
-      width: 51px;
-      height: 51px;
-      margin-top: 7px;
-    }
-
     .hokmob-score-container {
       left: 28px;
     }
@@ -560,23 +290,6 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       top: 29px;
       left: 30px;
     }
-
-    .goalie-icon-container {
-      left: -7px;
-    }
-
-    .player-name {
-      margin-top: $spacing-x-small;
-      line-height: 13px;
-    }
-  }
-
-  .home-players .top-player {
-    top: var(--length);
-  }
-
-  .away-players .top-player {
-    top: calc(100% - var(--length));
   }
 
   // The coaches only fit beside a rink lying across the card

@@ -729,10 +729,11 @@ export class StatsUtils {
 
   /**
    * Sorts a team's star players ahead of the rest, the bigger star first (NhlStarPlayerUtils). Only used to break a
-   * tie in HokMob ratings, so a star is never shown ahead of a better rated teammate.
+   * tie, in HokMob ratings or in season points, so a star is never shown ahead of a better teammate. Takes any player
+   * with an ID, from a boxscore or from season totals.
    */
-  public static sortByStarPlayer(playerA: GamePlayer, playerB: GamePlayer): number {
-    const rank = (player: GamePlayer) => NhlStarPlayerUtils.getStarRank(player?.playerId) ?? Number.MAX_SAFE_INTEGER;
+  public static sortByStarPlayer(playerA: {playerId: number}, playerB: {playerId: number}): number {
+    const rank = (player: {playerId: number}) => NhlStarPlayerUtils.getStarRank(player?.playerId) ?? Number.MAX_SAFE_INTEGER;
     return rank(playerA) - rank(playerB);
   }
 }

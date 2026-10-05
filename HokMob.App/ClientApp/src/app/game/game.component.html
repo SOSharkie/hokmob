@@ -85,6 +85,14 @@
           (playerClicked)="openPlayerGameDialog($event)"
       ></app-game-top-players>
     </div>
+    <div *ngIf="showSeasonLeaders" class="game-container">
+      <app-game-season-leaders
+          [homeStats]="homeSeasonStats"
+          [awayStats]="awaySeasonStats"
+          [homeTeamId]="landing.homeTeam.id"
+          [awayTeamId]="landing.awayTeam.id"
+      ></app-game-season-leaders>
+    </div>
     <div *ngIf="!futureGame && playByPlay" class="game-container">
       <app-momentum [playByPlay]="playByPlay"></app-momentum>
     </div>

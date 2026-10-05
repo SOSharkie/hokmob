@@ -1,4 +1,5 @@
 import {
+  mockClubStats,
   mockDraftPicks,
   mockDraftStats,
   mockGoalieStatsLeaders,
@@ -226,6 +227,29 @@ describe('nhl-api-mocks', () => {
     it('should return a fresh copy', () => {
       mockDraftStats().players.pop();
       expect(mockDraftStats().players.length).toBe(30);
+    });
+  });
+
+  describe('mockClubStats', () => {
+    it("should return a team's season totals, with the season as a string", () => {
+      const stats = mockClubStats('BOS-20252026-2');
+      expect(stats.season).toBe('20252026');
+      expect(stats.gameType).toBe(2);
+      expect(stats.skaters.length).toBe(32);
+      expect(stats.goalies.length).toBe(3);
+      expect(new Set(stats.skaters.map(skater => skater.positionCode))).toEqual(new Set(['C', 'L', 'R', 'D']));
+    });
+
+    it('should return the playoffs before they start without players', () => {
+      const stats = mockClubStats('BOS-20262027-3');
+      expect(stats.gameType).toBe(3);
+      expect(stats.skaters).toEqual([]);
+      expect(stats.goalies).toEqual([]);
+    });
+
+    it('should return a fresh copy', () => {
+      mockClubStats('UTA-20262027-2').skaters.length = 0;
+      expect(mockClubStats('UTA-20262027-2').skaters.length).toBe(18);
     });
   });
 

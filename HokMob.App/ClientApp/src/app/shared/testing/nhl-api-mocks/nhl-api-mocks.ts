@@ -97,6 +97,14 @@ import {DraftPicksResponse} from "@shared/models/nhl-web-api/draft-picks.model";
 import {DraftStatsResponse} from "@shared/models/nhl-stats-api/draft-stats.model";
 import seasonHistory20252026 from './season-history-20252026-2.json';
 import {SeasonHistory} from "@shared/models/nhl-history/season-history.model";
+import {ClubStats} from "@shared/models/nhl-web-api/club-stats.model";
+import clubStatsBos20252026Regular from './club-stats-bos-20252026-2.json';
+import clubStatsBos20262027Regular from './club-stats-bos-20262027-2.json';
+import clubStatsBos20262027Playoffs from './club-stats-bos-20262027-3.json';
+import clubStatsUta20252026Regular from './club-stats-uta-20252026-2.json';
+import clubStatsUta20262027Regular from './club-stats-uta-20262027-2.json';
+import clubStatsCar20252026Playoffs from './club-stats-car-20252026-3.json';
+import clubStatsVgk20252026Playoffs from './club-stats-vgk-20252026-3.json';
 
 /*
  * Real responses for unit tests, captured on 2026-09-15: api-web.nhle.com responses, the player search
@@ -105,7 +113,7 @@ import {SeasonHistory} from "@shared/models/nhl-history/season-history.model";
  * shape). The draft-picks-* and draft-stats-* responses were captured the same way on 2026-09-17. The JSON files are
  * unchanged responses, except score-2026-03-01 (trimmed to 3 games), score-2026-10-08 and score-2026-09-19 (trimmed to
  * 2 games, the latter captured on 2026-09-18) and the club-schedule-season-* responses (trimmed games, see
- * mockClubScheduleSeason). The
+ * mockClubScheduleSeason). The club-stats-* responses were captured on 2026-10-04 (see mockClubStats). The
  * gamecenter-* responses are unchanged. season-history-20252026-2 isn't a response but the history page's data file,
  * generated for a few games (see mockSeasonHistory). To refresh one, download it again with curl and re-check the values the specs
  * assert.
@@ -499,6 +507,36 @@ const clubScheduleResponses = {
  */
 export function mockClubScheduleSeason(teamAbbrev: MockClubScheduleTeam, season: MockClubScheduleSeasonId): ClubScheduleSeason {
   return copy(clubScheduleResponses[teamAbbrev][season]);
+}
+
+/** Captured club-stats/{abbrev}/{season}/{gameType} responses, as "{abbrev}-{season}-{gameType}". */
+export type MockClubStatsKey = 'BOS-20252026-2' | 'BOS-20262027-2' | 'BOS-20262027-3' | 'UTA-20252026-2' |
+    'UTA-20262027-2' | 'CAR-20252026-3' | 'VGK-20252026-3';
+
+const clubStatsResponses: Record<MockClubStatsKey, unknown> = {
+  'BOS-20252026-2': clubStatsBos20252026Regular,
+  'BOS-20262027-2': clubStatsBos20262027Regular,
+  'BOS-20262027-3': clubStatsBos20262027Playoffs,
+  'UTA-20252026-2': clubStatsUta20252026Regular,
+  'UTA-20262027-2': clubStatsUta20262027Regular,
+  'CAR-20252026-3': clubStatsCar20252026Playoffs,
+  'VGK-20252026-3': clubStatsVgk20252026Playoffs
+};
+
+/**
+ * club-stats/{abbrev}/{season}/{gameType}, captured on 2026-10-04, unchanged:
+ * - BOS and UTA, the teams of the future game 2026020056 (UTA @ BOS), in 2026-27 after 3 regular season games each.
+ *   Mostly ties: BOS forwards JJ Peterka 2-0-2, Elias Lindholm and Fraser Minten 1-1-2 and David Pastrnak 0-2-2 behind
+ *   Mark Kastelic's 3 points, defensemen Nikita Zadorov and Mason Lohrei both 0-2-2; UTA forwards Dylan Guenther 3-2-5
+ *   and Clayton Keller 0-5-5, and goalies Karel Vejmelka (2 starts) and Sebastian Cossa (1 start) with a win each.
+ *   BOS-20262027-3 is the playoffs before they start: no skaters or goalies.
+ * - BOS and UTA in 2025-26, a full regular season. BOS: David Pastrnak's 100 points lead the forwards, Charlie
+ *   McAvoy's 61 the defensemen and Jeremy Swayman's 31 wins the goalies, and Michael DiPietro played 1 game in relief
+ *   (no start, no win). UTA: Clayton Keller's 88 points lead.
+ * - CAR and VGK in the 2025-26 playoffs (the teams of the final, 2025030414): 19 and 22 games.
+ */
+export function mockClubStats(key: MockClubStatsKey): ClubStats {
+  return copy(clubStatsResponses[key]);
 }
 
 // The live derived helpers below edit finished games so a spec can reuse a fixture it already asserts against. Their

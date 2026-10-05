@@ -37,8 +37,10 @@ A request to one of them is a regression.
   - `services/`, `enums/` (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...) and `components/` (scorecard, standings, ...).
   - `utils/`: static helpers, one per concern (`PeriodUtils`, `NhlTeamUtils`, `StatsUtils`, ...). Two aren't obvious
     from the name: `NhlStarPlayerUtils` holds each team's three star forwards and two star defensemen, who fill the
-    game page's top players card in its star lineup and break rating ties in its rating lineup; `PickerMenuUtils`
+    star lineup of the game page's top players and season leaders cards and break their ties; `PickerMenuUtils`
     goes with the `.pill-picker` styles in `styles.scss`, for the draft and playoffs pickers.
+- `ClientApp/src/app/game/rink/`: the rink drawing (`RinkComponent`, which places players with `placeLine`) and
+  `_rink-card.scss`, shared by the top players card and a future game's season leaders card.
 - Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`,
   `draft`, `ratings` (the HokMob rating explorer, which a game's player dialog can open on a player's stat line),
   `history` (season-wide rating charts of a finished season, rated in the browser from a preloaded file), `header`,

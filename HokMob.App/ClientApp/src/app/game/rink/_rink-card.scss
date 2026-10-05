@@ -1,0 +1,210 @@
+// A card with players on a rink (app-rink): the card and its header with the lineup toggle, and the players standing
+// on the rink. Imported by the top players and the season leaders cards, whose templates hold these elements.
+@import "variables";
+
+// The rating blue the starred player is highlighted in (StatsUtils.hokmobRatingBlue), for the lineup toggle
+$star-blue: #0e87e0;
+$rink-line: $gray-01;
+
+.rink-card {
+  background-color: $black-02;
+  border-radius: 25px;
+  color: white;
+  padding: 0 $spacing-x-large $spacing-x-large;
+
+  .rink-card-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+  }
+
+  // The lineup toggle sits in the top right corner, so the title stays centered on the card
+  .lineup-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: $spacing-small;
+    height: 26px;
+    padding: 0 $spacing-large 0 $spacing-medium;
+    border: 1px solid $gray-01;
+    border-radius: 20px;
+    background-color: $black-03;
+    color: $gray-04;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+
+    &:hover {
+      border-color: $gray-02;
+      color: white;
+    }
+
+    &:focus-visible {
+      border-color: $gray-04;
+    }
+
+    &.showing-stars {
+      border-color: $star-blue;
+      color: white;
+
+      .toggle-icon {
+        color: $star-blue;
+      }
+    }
+
+    .toggle-icon {
+      width: 15px;
+      height: 15px;
+      font-size: 15px;
+      color: $gray-03;
+    }
+  }
+}
+
+// A player's headshot with the goalie mask badge, and their name below it, on the rink or elsewhere on the card
+@mixin player-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+
+  .player-avatar {
+    position: relative;
+    width: 50px;
+    height: 50px;
+  }
+
+  .player-headshot-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: $gray-01;
+
+    .player-headshot {
+      width: 58px;
+      height: 58px;
+      margin-top: 8px;
+    }
+  }
+
+  .goalie-icon-container {
+    position: absolute;
+    top: -3px;
+    left: -8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid $gray-02;
+    background-color: white;
+
+    .goalie-icon {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .player-name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-top: $spacing-small;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 14px;
+    text-align: center;
+  }
+}
+
+// Players stand above the markings, placed by their --length from their own end boards and --across the rink
+// (RinkComponent.placeLine)
+.team-players {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.top-player {
+  @include player-avatar;
+  position: absolute;
+  max-width: 110px;
+  // Centers the headshot on the player's spot
+  transform: translate(-50%, -25px);
+  pointer-events: auto;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+// Desktop Styling: the rink lies across the card, home on the left
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .top-player {
+    top: var(--across);
+    width: 16%;
+  }
+
+  .home-players .top-player {
+    left: var(--length);
+  }
+
+  .away-players .top-player {
+    left: calc(100% - var(--length));
+  }
+}
+
+// Mobile Styling: the rink stands up the card, home at the top
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .rink-card {
+    padding: 0 $spacing-large $spacing-large;
+  }
+
+  // A smaller card than on the lying rink, so the two teams' forwards don't meet in the middle of a shorter rink
+  .top-player {
+    left: var(--across);
+    width: 30%;
+    transform: translate(-50%, -22px);
+
+    .player-avatar,
+    .player-headshot-container {
+      width: 44px;
+      height: 44px;
+    }
+
+    .player-headshot-container .player-headshot {
+      width: 51px;
+      height: 51px;
+      margin-top: 7px;
+    }
+
+    .goalie-icon-container {
+      left: -7px;
+    }
+
+    .player-name {
+      margin-top: $spacing-x-small;
+      line-height: 13px;
+    }
+  }
+
+  .home-players .top-player {
+    top: var(--length);
+  }
+
+  .away-players .top-player {
+    top: calc(100% - var(--length));
+  }
+}

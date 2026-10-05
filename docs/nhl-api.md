@@ -34,7 +34,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Page | Requests |
 |---|---|
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
-| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `player/{id}/landing` for the player dialog |
+| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `player/{id}/landing` for the player dialog |
 | Team | `standings/now` (division and conference), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams` |
 | Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
@@ -153,6 +153,31 @@ from their edge. `NhlApiClient` keeps the scoreboard up through it (the reasonin
   intended bound; the client recovers on its next refresh.
 - **Errors are JSON:** `NhlController` never passes an upstream error body through. Any status of 400 or more comes
   back as `{"status": <code>, "error": "The NHL API request failed."}`.
+
+## Season leaders
+
+A future game's page previews each team's key players on the top players card's rink (`GameSeasonLeadersComponent`,
+on the shared `RinkComponent`): the top 3 forwards (`C`, `L`, `R`) and 2 defensemen (`D`) by points, and the top
+goalie by wins, with their season totals. Only shown while `futureGame` is true; live and finished games keep the top
+players card.
+
+- **Source:** `club-stats/{abbrev}/{season}/{gameType}`, one request per team, cached 30 minutes. It has every skater's
+  and goalie's totals for that team only, so a traded player has just his games with it. `season` is a **string**
+  (`"20262027"`), unlike most responses. A game type without games (the playoffs before they start) returns empty
+  `skaters` and `goalies`; a season the team has no games in (a future season, a team that didn't exist yet) is a 404.
+  `club-stats/{abbrev}/now` exists too, but the page asks for the game's own season and game type.
+- **Which totals** (`NhlGameService.getSeasonLeaderStats`): the game's season and game type, so a playoff game shows
+  playoff totals and a preseason game the regular season. Until both teams have played a game of it (no skater with
+  `gamesPlayed`), or when it's a 404, both teams fall back to the same season's regular season (a playoff game) or the
+  previous season's (`season - 10001`). Both teams always come from the same season; the card names it, like
+  "2025-26 Regular Season". If the fallback fails, the game's own totals are kept, and if neither loads the card is
+  hidden.
+- **Ranking:** skaters by points, then goals, then fewer games played, then the bigger star (`NhlStarPlayerUtils`).
+  Goalies by wins, then games started, then save percentage. Players without games are left out, and a short line
+  shows the players there are. The card is hidden when either team has no one.
+- **Stat line:** `GP · G-A-P` for skaters and `W-L-OTL · SV% · GAA` for the goalie. A player links to his player page.
+- **Star lineup:** the toggle swaps the skaters for each team's stars who have played for it, topped up by points
+  (`NhlStarPlayerUtils.pickStarLine`). The goalie stays the wins leader.
 
 ## Season dates and playoff mode
 

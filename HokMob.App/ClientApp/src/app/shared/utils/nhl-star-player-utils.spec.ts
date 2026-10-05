@@ -1,6 +1,6 @@
 import {NhlStarPlayerUtils} from "@shared/utils/nhl-star-player-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
-import {MockGamecenterGameId, mockGameBoxscore} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {MockGamecenterGameId, mockClubStats, mockGameBoxscore} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 import {BoxscoreSkater} from "@shared/models/nhl-web-api/boxscore.model";
 
 describe('NhlStarPlayerUtils', () => {
@@ -94,6 +94,35 @@ describe('NhlStarPlayerUtils', () => {
       for (const goalie of goalies) {
         expect(NhlStarPlayerUtils.isStarPlayer(goalie.playerId)).withContext(goalie.name.default).toBeFalse();
       }
+    });
+  });
+
+  describe('pickStarLine', () => {
+    /** Boston's 2026-27 skaters at one position, most points first, as the season leaders card lists them. */
+    function bostonSkaters(defense: boolean) {
+      return mockClubStats('BOS-20262027-2').skaters
+          .filter(skater => (skater.positionCode === 'D') === defense)
+          .sort((skaterA, skaterB) => skaterB.points - skaterA.points);
+    }
+
+    it("should line up a team's stars, the bigger star first, whatever their place in the list", () => {
+      // Boston (6): David Pastrnak, Morgan Geekie and Pavel Zacha, with 2, 1 and 0 points
+      const forwards = NhlStarPlayerUtils.pickStarLine(bostonSkaters(false), NhlStarPlayerUtils.getStarForwardIds(6), 3);
+      expect(forwards.map(skater => skater.lastName.default)).toEqual(['Pastrnak', 'Geekie', 'Zacha']);
+    });
+
+    it('should top up the line with the first of the others when a star is missing', () => {
+      // Charlie McAvoy hasn't played, so Hampus Lindholm is joined by the next defenseman in the list
+      const defense = NhlStarPlayerUtils.pickStarLine(bostonSkaters(true), NhlStarPlayerUtils.getStarDefenseIds(6), 2);
+      expect(defense.map(skater => skater.lastName.default)).toEqual(['Lindholm', 'Zadorov']);
+    });
+
+    it('should keep the order of the list for a team without stars, and return no more than there are', () => {
+      const skaters = bostonSkaters(true);
+      expect(NhlStarPlayerUtils.pickStarLine(skaters, [], 2)).toEqual(skaters.slice(0, 2));
+      expect(NhlStarPlayerUtils.pickStarLine(skaters.slice(0, 1), NhlStarPlayerUtils.getStarDefenseIds(6), 2))
+          .toEqual(skaters.slice(0, 1));
+      expect(NhlStarPlayerUtils.pickStarLine([], NhlStarPlayerUtils.getStarDefenseIds(6), 2)).toEqual([]);
     });
   });
 

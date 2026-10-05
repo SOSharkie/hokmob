@@ -1,0 +1,48 @@
+@import "../rink/rink-card";
+
+// The title, with the season the totals are from below it
+.rink-card .rink-card-header {
+  height: 48px;
+}
+
+.card-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+
+  .season-label {
+    font-size: 11px;
+    color: $gray-03;
+  }
+}
+
+// A player opens his player page
+a.top-player {
+  color: inherit;
+  text-decoration: none;
+}
+
+// The season totals under the player's name
+.player-stats {
+  margin-top: 1px;
+  font-size: 10px;
+  line-height: 12px;
+  color: $gray-04;
+  text-align: center;
+  white-space: nowrap;
+}
+
+// The stat line makes a player taller than on the top players card, so he moves up from his spot to stay inside the
+// boards: the bottom forwards on the smallest lying rink, and the away goalie on a phone
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .top-player {
+    transform: translate(-50%, -50%);
+  }
+}
+
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .top-player {
+    transform: translate(-50%, -28px);
+  }
+}

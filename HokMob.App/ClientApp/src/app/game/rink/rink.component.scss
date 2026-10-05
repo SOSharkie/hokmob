@@ -1,0 +1,106 @@
+@import "variables";
+
+$rink-surface: $black-03;
+$rink-line: $gray-01;
+
+// A 200.13ft rink with 27.88ft corners: 78.74ft wide lying across the card, and 98.42ft wide standing up on phones
+$lying-aspect-ratio: calc(200.13 / 78.74);
+// Standing up, the rink is drawn shorter than the real 200.13 / 98.42 (about 2.03), so the whole card fits on a
+// phone screen: at the 366px a 393px iPhone leaves it, 1.6 makes it 586px tall instead of 744px. The markings are
+// drawn on that shorter rink too (RinkComponent.standingRinkLength), so its circles stay circles, and the players
+// follow, since they are placed in percent. Keep it the same as the component's standingAspectRatio.
+$standing-aspect-ratio: 1.6;
+// The 27.88ft corners, in percent of the side they run along. The standing rink's are quarter circles like its
+// markings, and shrink with them (the component's getRoundScale), so 24.73ft of its 98.42ft width and 157.47ft length.
+$corner-along-length: 13.93%;
+$standing-corner-along-length: 15.7%;
+$lying-corner-along-width: 35.41%;
+$standing-corner-along-width: 25.13%;
+
+// Above whatever hangs off the boards below it, like the top players card's benches, so it covers the part of an open
+// bench's side that runs up behind them
+:host {
+  display: block;
+  position: relative;
+  z-index: 1;
+  border: 2px solid $rink-line;
+  background-color: $rink-surface;
+}
+
+.rink-surface {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.rink-markings {
+  position: absolute;
+
+  * {
+    fill: none;
+    stroke: $rink-line;
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .crease {
+    fill: $black-04;
+  }
+
+  .dots circle {
+    fill: $rink-line;
+    stroke: none;
+  }
+
+  .blue-line {
+    stroke-width: 3px;
+  }
+
+  .center-line {
+    stroke-width: 4px;
+  }
+}
+
+// Desktop Styling: the rink lies across the card. It turns at the phone breakpoint, not the game page's: between the
+// two the page is one column, and the card is wide enough for it.
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  :host {
+    aspect-ratio: $lying-aspect-ratio;
+    border-radius: #{$corner-along-length} / #{$lying-corner-along-width};
+  }
+
+  .rink-markings.standing {
+    display: none;
+  }
+
+  .rink-markings {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Mobile Styling: the rink stands up the card, home at the top
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  :host {
+    aspect-ratio: calc(1 / #{$standing-aspect-ratio});
+    // Stays phone sized, so it isn't too tall on a wide phone or a small tablet
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: #{$standing-corner-along-width} / #{$standing-corner-along-length};
+  }
+
+  .rink-markings:not(.standing) {
+    display: none;
+  }
+
+  // Drawn lying down, then stood up: home's end turns to the top
+  .rink-markings {
+    top: 50%;
+    left: 50%;
+    width: calc(100% * #{$standing-aspect-ratio});
+    height: calc(100% / #{$standing-aspect-ratio});
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+}
