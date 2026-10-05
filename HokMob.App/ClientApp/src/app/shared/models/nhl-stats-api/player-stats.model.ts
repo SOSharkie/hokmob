@@ -37,11 +37,14 @@ export interface SkaterSeasonStats extends PlayerStatsRow {
   goals: number;
   assists: number;
   points: number;
+  /** Like 1.71052. */
+  pointsPerGame: number;
   plusMinus: number;
   ppGoals: number;
   ppPoints: number;
   shGoals: number;
   shPoints: number;
+  gameWinningGoals: number;
   shots: number;
   /** 0 to 1. */
   shootingPct: number;

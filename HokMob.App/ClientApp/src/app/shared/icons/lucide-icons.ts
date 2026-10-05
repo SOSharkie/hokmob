@@ -41,6 +41,10 @@ export const LUCIDE_ICONS: Record<string, string> = {
     '<path d="M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02"/>'),
   "chart-no-axes-column": lucideSvg(
     '<path d="M5 21v-6"/><path d="M12 21V3"/><path d="M19 21V9"/>'),
+  "chevron-left": lucideSvg(
+    '<path d="m15 18-6-6 6-6"/>'),
+  "chevron-right": lucideSvg(
+    '<path d="m9 18 6-6-6-6"/>'),
   "clipboard-list": lucideSvg(
     '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>' +
     '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>' +

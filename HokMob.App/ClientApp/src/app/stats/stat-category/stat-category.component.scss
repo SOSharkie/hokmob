@@ -1,0 +1,348 @@
+@import "variables";
+
+.stat-category-container {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1000px;
+  margin: $spacing-medium auto 0;
+  padding: 0 $spacing-large;
+  color: white;
+
+  .stat-category-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-large;
+    margin-top: $spacing-large;
+    padding: $spacing-large $spacing-xx-large $spacing-large $spacing-large;
+    border-radius: 25px;
+    background-color: $black-02;
+
+    .stat-category-heading {
+      display: flex;
+      align-items: center;
+      gap: $spacing-medium;
+      min-width: 0;
+    }
+
+    .back-link {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: $gray-04;
+      transition: background-color 0.15s;
+
+      &:hover {
+        background-color: $black-04;
+        color: white;
+      }
+
+      &:focus-visible {
+        outline: 1px solid $gray-04;
+      }
+    }
+
+    .stat-category-titles {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .stat-category-title {
+      margin: 0;
+      font-size: x-large;
+      font-weight: normal;
+    }
+
+    .stat-category-subtitle {
+      margin-top: $spacing-x-small;
+      font-size: small;
+      color: $gray-03;
+    }
+
+    // The pickers are .pill-picker buttons (styles.scss)
+    .stat-category-pickers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $spacing-medium;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+
+    .loading-gif {
+      margin-top: $spacing-xx-large;
+      width: 100px;
+      height: 100px;
+    }
+  }
+
+  .stat-category-message {
+    margin: $spacing-huge;
+    text-align: center;
+    color: $gray-03;
+  }
+
+  // Scrolls sideways rather than overflowing the page, if the columns ever outgrow a narrow screen
+  .stat-category-table-container {
+    margin: $spacing-large 0;
+    border-radius: 25px;
+    overflow-x: auto;
+    background-color: $black-02;
+  }
+
+  .stat-category-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    .stat-category-table-header th {
+      padding: $spacing-large $spacing-medium;
+      color: $gray-03;
+      font-weight: normal;
+      white-space: nowrap;
+    }
+
+    .rank-header {
+      width: 44px;
+      padding-left: $spacing-xx-large !important;
+      text-align: left;
+    }
+
+    .player-header {
+      text-align: left;
+    }
+
+    .stat-header {
+      min-width: 44px;
+      text-align: center;
+    }
+
+    // The category's own stat: a brighter header and a tinted column, and bolder, bigger values
+    .selected-column {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .stat-header.selected-column {
+      color: white;
+      font-weight: 500;
+    }
+
+    // A small arrow beside the sorted column's header: down for most first, up for a goals against average
+    .sort-indicator {
+      display: inline-block;
+      margin-left: $spacing-small;
+      vertical-align: middle;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid currentColor;
+
+      &.ascending {
+        border-top: none;
+        border-bottom: 5px solid currentColor;
+      }
+    }
+
+    .stat-category-row {
+      border-top: 1px solid $black-04;
+      transition: background-color 0.15s;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+      }
+
+      td {
+        padding: $spacing-medium;
+        font-weight: lighter;
+      }
+
+      .rank-cell {
+        padding-left: $spacing-xx-large;
+        color: $gray-03;
+        white-space: nowrap;
+      }
+
+      .player-link {
+        display: flex;
+        align-items: center;
+        gap: $spacing-large;
+        min-width: 0;
+        color: white;
+        text-decoration: none;
+
+        &:hover .player-name {
+          text-decoration: underline;
+        }
+      }
+
+      .player-headshot-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        background-color: $gray-01;
+
+        .player-headshot {
+          width: 46px;
+          height: 46px;
+          margin-top: 6px;
+        }
+      }
+
+      .player-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .player-name {
+        font-weight: normal;
+      }
+
+      .player-team {
+        display: flex;
+        align-items: center;
+        gap: $spacing-small;
+        margin-top: $spacing-x-small;
+
+        .player-team-label {
+          font-size: smaller;
+          color: $gray-03;
+        }
+      }
+
+      .stat-cell {
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .stat-cell.selected-column {
+        font-size: larger;
+        font-weight: 500;
+      }
+
+      // The leader's own stat sits in a pill of their team's color, like on the stats page's card
+      .leader-value {
+        display: inline-block;
+        padding: $spacing-small $spacing-large;
+        border-radius: 15px;
+      }
+    }
+
+    .leader-row {
+      .player-headshot-container {
+        width: 48px;
+        height: 48px;
+
+        .player-headshot {
+          width: 56px;
+          height: 56px;
+          margin-top: 8px;
+        }
+      }
+
+      .player-name {
+        font-size: larger;
+      }
+    }
+  }
+}
+
+// Phone: the less important columns are hidden so the rest fit, and the text and headshots shrink
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .stat-category-container {
+    padding: 0 $spacing-medium;
+
+    .stat-category-header {
+      padding: $spacing-medium $spacing-large $spacing-medium $spacing-small;
+
+      .stat-category-title {
+        font-size: large;
+      }
+    }
+
+    .stat-category-table {
+      font-size: smaller;
+
+      .phone-hidden {
+        display: none;
+      }
+
+      .rank-header {
+        width: 28px;
+        padding-left: $spacing-large !important;
+      }
+
+      .stat-header {
+        min-width: 32px;
+      }
+
+      .stat-category-table-header th {
+        padding: $spacing-medium $spacing-x-small;
+      }
+
+      .stat-category-row {
+        td {
+          padding: $spacing-small $spacing-x-small;
+        }
+
+        .rank-cell {
+          padding-left: $spacing-large;
+        }
+
+        .player-link {
+          gap: $spacing-medium;
+        }
+
+        .player-headshot-container {
+          width: 32px;
+          height: 32px;
+
+          .player-headshot {
+            width: 38px;
+            height: 38px;
+            margin-top: 5px;
+          }
+        }
+
+        // Too narrow for one line, so a long name wraps instead of being cut off
+        .player-name {
+          overflow-wrap: anywhere;
+        }
+
+        .leader-value {
+          padding: $spacing-x-small $spacing-medium;
+        }
+      }
+
+      .leader-row {
+        .player-headshot-container {
+          width: 38px;
+          height: 38px;
+
+          .player-headshot {
+            width: 46px;
+            height: 46px;
+            margin-top: 6px;
+          }
+        }
+
+        .player-name {
+          font-size: medium;
+        }
+      }
+    }
+  }
+}

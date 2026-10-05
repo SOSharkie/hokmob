@@ -8,7 +8,9 @@
   background-color: $black-02;
   border-radius: 25px;
 
+  // A link to the stat's top 25 table. The chevron sits beside the centered title rather than shifting it.
   .stat-title {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -16,6 +18,29 @@
     height: 40px;
     color: white;
     margin-bottom: $spacing-medium;
+    border-radius: 15px;
+    text-decoration: none;
+    transition: background-color 0.15s;
+
+    .stat-title-chevron {
+      position: absolute;
+      right: $spacing-large;
+      width: 20px;
+      height: 20px;
+      color: $gray-03;
+    }
+
+    &:hover {
+      background-color: $black-04;
+
+      .stat-title-chevron {
+        color: white;
+      }
+    }
+
+    &:focus-visible {
+      outline: 1px solid $gray-04;
+    }
   }
 
   .stat-players {
