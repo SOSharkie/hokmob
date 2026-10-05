@@ -5,7 +5,7 @@ import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/ro
 import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
-import { LeaderboardEntry } from '@app/stats/stat-leaderboard/stat-leaderboard.component';
+import { LeaderboardEntry } from '@shared/utils/stat-category-utils';
 import {
   mockGoalieStatsLeaders,
   mockHitsAndShotsLeaders,
@@ -92,12 +92,15 @@ describe('StatsComponent', () => {
     await settle();
   }
 
-  /** The leaderboard components, read through the inputs bound on their elements. */
-  function boards(): {statTitle: string, entries: LeaderboardEntry[], format: string}[] {
+  /** A leaderboard component, read through the inputs bound on its element. */
+  type BoardElement = {categoryId: string, statTitle: string, entries: LeaderboardEntry[], format: string};
+
+  /** The leaderboard components. */
+  function boards(): BoardElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('app-stat-leaderboard'));
   }
 
-  function board(statTitle: string): {statTitle: string, entries: LeaderboardEntry[], format: string} {
+  function board(statTitle: string): BoardElement {
     return boards().find(leaderboard => leaderboard.statTitle === statTitle);
   }
 
@@ -127,6 +130,16 @@ describe('StatsComponent', () => {
     expect(board('Save Percentage').format).toBe('savePctg');
     expect(board('Goals Against Average').format).toBe('gaa');
     expect(board('Time On Ice Per Game').format).toBe('toi');
+  });
+
+  it('should give every leaderboard the route id of its top 25 table', async () => {
+    await open('R');
+    await flushStandings();
+    await flushLeaders();
+
+    expect(boards().map(leaderboard => leaderboard.categoryId)).toEqual([
+      'points', 'goals', 'assists', 'save-percentage', 'goals-against-average', 'wins', 'shots', 'hits', 'time-on-ice'
+    ]);
   });
 
   it('should convert web API leaders with their own headshot and team', async () => {

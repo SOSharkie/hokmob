@@ -58,6 +58,20 @@ describe('AppComponent', () => {
     expect(history.classList).toContain('selected');
   });
 
+  it('should select Stats on the stats page, with a game type, and on a category table', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const stats = fixture.nativeElement.querySelector('#stats-item') as HTMLElement;
+    for (const url of ['/stats', '/stats?gameType=P', '/stats/points', '/stats/save-percentage?gameType=R']) {
+      fixture.componentInstance.menuUrl = url;
+      fixture.detectChanges();
+      expect(stats.classList).withContext(url).toContain('selected');
+    }
+
+    fixture.componentInstance.menuUrl = '/standings';
+    fixture.detectChanges();
+    expect(stats.classList).not.toContain('selected');
+  });
+
   it('should hide the mobile menu while the page scrolls down, and bring it back on the way up', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();

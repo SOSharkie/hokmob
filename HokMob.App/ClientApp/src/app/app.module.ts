@@ -33,6 +33,7 @@ import { StatsComponent } from './stats/stats.component';
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {NhlLeadersService} from "@shared/services/nhl-leaders.service";
 import { StatLeaderboardComponent } from '@app/stats/stat-leaderboard/stat-leaderboard.component';
+import { StatCategoryComponent } from '@app/stats/stat-category/stat-category.component';
 import { PlayoffSummaryComponent } from './home/playoff-summary/playoff-summary.component';
 import { PlayerComponent } from './player/player.component';
 import { MomentumComponent } from './game/momentum/momentum.component';
@@ -93,6 +94,7 @@ import {SeasonHistoryService} from "@shared/services/season-history.service";
     PlayoffSeriesDialogComponent,
     StatsComponent,
     StatLeaderboardComponent,
+    StatCategoryComponent,
     PlayoffSummaryComponent,
     PlayerComponent,
     MomentumComponent,

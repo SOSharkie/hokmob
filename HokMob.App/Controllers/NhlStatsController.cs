@@ -169,6 +169,46 @@ namespace HokMob.App.Controllers
         }
 
         /// <summary>
+        /// Returns the season stats of some players, as { players } in no particular order: the stats page's top 25 of a
+        /// category, whose order comes from the leaders. A skater's rows include the realtime stats (hits, blocks,
+        /// takeaways and giveaways), which are left out when that call fails. A player traded during the season has one
+        /// row, with every team of the season ("CGY,VAN").
+        /// </summary>
+        /// <param name="season">The season ID, like 20252026.</param>
+        /// <param name="gameType">2 for the regular season, 3 for the playoffs.</param>
+        /// <param name="position">"skater" or "goalie".</param>
+        /// <param name="ids">The player IDs, comma separated, at most 25 of them.</param>
+        [HttpGet("season-players")]
+        public async Task<IActionResult> GetSeasonPlayerStats(int season, int gameType, string? position, string? ids,
+            CancellationToken cancellationToken)
+        {
+            var playerIds = ParsePlayerIds(ids);
+            if (!IsValidSeason(season) || !IsValidGameType(gameType) || (position != "skater" && position != "goalie")
+                || playerIds == null)
+            {
+                return BadRequest();
+            }
+            var isGoalie = position == "goalie";
+
+            var parameters = GetSeasonPlayerParameters(season, gameType, playerIds);
+            var summaryTask = _nhlStatsApiClient.GetReportAsync(isGoalie ? "goalie/summary" : "skater/summary",
+                parameters, cancellationToken);
+            var realtimeTask = isGoalie
+                ? Task.FromResult<List<JsonObject>?>(null)
+                : _nhlStatsApiClient.GetReportAsync("skater/realtime", parameters, cancellationToken);
+            await Task.WhenAll(summaryTask, realtimeTask);
+
+            var players = summaryTask.Result;
+            if (players == null)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway);
+            }
+            Merge(players, realtimeTask.Result, "playerId", SkaterRealtimeFields);
+
+            return new JsonResult(new JsonObject {["players"] = ToJsonArray(players)});
+        }
+
+        /// <summary>
         /// Returns every team's season stats (power play, penalty kill, goals and shots per game, faceoffs) as
         /// { teams }. All teams come back in one response, so a team page works out league ranks itself and every team
         /// page shares the same cached response.
@@ -363,6 +403,47 @@ namespace HokMob.App.Controllers
                 new KeyValuePair<string, string>("sort", "[{\"property\":\"" + field + "\",\"direction\":\"DESC\"}]"),
                 new KeyValuePair<string, string>("cayenneExp", $"seasonId={season} and gameTypeId={gameType}")
             };
+        }
+
+        /// <summary>
+        /// The query for some players' rows of one season and game type.
+        /// </summary>
+        private static KeyValuePair<string, string>[] GetSeasonPlayerParameters(int season, int gameType,
+            List<long> playerIds)
+        {
+            return new[]
+            {
+                new KeyValuePair<string, string>("isAggregate", "false"),
+                new KeyValuePair<string, string>("isGame", "false"),
+                new KeyValuePair<string, string>("limit", "-1"),
+                new KeyValuePair<string, string>("cayenneExp",
+                    $"seasonId={season} and gameTypeId={gameType} and playerId in ({string.Join(",", playerIds)})")
+            };
+        }
+
+        /// <summary>
+        /// Reads a comma separated list of player IDs, like "8478402,8476453", without duplicates. Null when it's
+        /// missing or empty, has more than MaxLeaderLimit IDs, or an ID isn't a positive number.
+        /// </summary>
+        private static List<long>? ParsePlayerIds(string? ids)
+        {
+            if (string.IsNullOrWhiteSpace(ids))
+            {
+                return null;
+            }
+            var playerIds = new List<long>();
+            foreach (var part in ids.Split(','))
+            {
+                if (!long.TryParse(part.Trim(), out var playerId) || playerId <= 0)
+                {
+                    return null;
+                }
+                if (!playerIds.Contains(playerId))
+                {
+                    playerIds.Add(playerId);
+                }
+            }
+            return playerIds.Count <= MaxLeaderLimit ? playerIds : null;
         }
 
         /// <summary>

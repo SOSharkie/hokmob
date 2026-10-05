@@ -1,13 +1,17 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
+import { By, DomSanitizer } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material/icon';
+import { registerLucideIcons } from '@shared/icons/lucide-icons';
 import { RouterLink } from '@angular/router';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { NhlTeamUtils } from '@shared/utils/nhl-team-utils';
 import { mockGoalieStatsLeaders, mockSkaterStatsLeaders } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import { StatsLeader } from '@shared/models/nhl-web-api/stats-leaders.model';
 
-import { LeaderboardEntry, LeaderboardFormat, StatLeaderboardComponent } from './stat-leaderboard.component';
+import { LeaderboardEntry, StatFormat } from '@shared/utils/stat-category-utils';
+
+import { StatLeaderboardComponent } from './stat-leaderboard.component';
 
 describe('StatLeaderboardComponent', () => {
   let component: StatLeaderboardComponent;
@@ -21,6 +25,7 @@ describe('StatLeaderboardComponent', () => {
     })
     .compileComponents();
 
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     fixture = TestBed.createComponent(StatLeaderboardComponent);
     component = fixture.componentInstance;
   });
@@ -40,7 +45,9 @@ describe('StatLeaderboardComponent', () => {
     }));
   }
 
-  function show(entries: LeaderboardEntry[], format: LeaderboardFormat = 'number', statTitle = 'Points'): void {
+  function show(entries: LeaderboardEntry[], format: StatFormat = 'number', statTitle = 'Points',
+                categoryId = 'points'): void {
+    fixture.componentRef.setInput('categoryId', categoryId);
     fixture.componentRef.setInput('statTitle', statTitle);
     fixture.componentRef.setInput('entries', entries);
     fixture.componentRef.setInput('format', format);
@@ -70,6 +77,23 @@ describe('StatLeaderboardComponent', () => {
     expect(text('.stat-leader .stat-container')).toBe('138');
     expect(fixture.nativeElement.querySelectorAll('.stat-player').length).toBe(5);
     expect(values()).toEqual(['138', '130', '127', '115', '103']);
+  });
+
+  it('should link the title to the category top 25 table, keeping the game type', () => {
+    show(entriesOf(mockGoalieStatsLeaders().savePctg), 'savePctg', 'Save Percentage', 'save-percentage');
+
+    const routerLink = fixture.debugElement.query(By.css('.stat-title')).injector.get(RouterLink);
+    expect(routerLink.urlTree.toString()).toBe('/stats/save-percentage');
+    expect(routerLink.queryParamsHandling).toBe('preserve');
+    expect(fixture.nativeElement.querySelector('.stat-title').getAttribute('aria-label'))
+        .toBe('Save Percentage, top 25');
+  });
+
+  it('should link the title of an empty leaderboard too', () => {
+    show([], 'number', 'Wins', 'wins');
+
+    const routerLink = fixture.debugElement.query(By.css('.stat-title')).injector.get(RouterLink);
+    expect(routerLink.urlTree.toString()).toBe('/stats/wins');
   });
 
   it('should link every player to their page and show their headshot and logo', () => {

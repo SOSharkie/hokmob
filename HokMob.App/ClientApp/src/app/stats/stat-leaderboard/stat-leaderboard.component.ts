@@ -2,29 +2,7 @@ import {Component, Input, OnChanges} from '@angular/core';
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
-import {StatsUtils} from "@shared/utils/stats-utils";
-import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
-import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe";
-
-/**
- * How a leaderboard's values are shown: whole numbers, a save percentage (".921"), a goals against average ("2.02")
- * or a time on ice in seconds ("27:44").
- */
-export type LeaderboardFormat = "number" | "savePctg" | "gaa" | "toi";
-
-/**
- * One leader of a leaderboard, built by the stats page from either source. The team name, logo and color come from
- * the team ID, so both sources only need the team the player leads for.
- */
-export interface LeaderboardEntry {
-  playerId: number;
-  /** The full name, like "Connor McDavid". */
-  name: string;
-  /** The NHL team ID, or undefined for an abbreviation NhlTeamUtils doesn't know. */
-  teamId: number;
-  headshot: string;
-  value: number;
-}
+import {LeaderboardEntry, StatCategoryUtils, StatFormat} from "@shared/utils/stat-category-utils";
 
 /**
  * A leaderboard entry with everything the template shows, worked out once per change.
@@ -43,7 +21,8 @@ export interface LeaderboardRow {
 
 /**
  * One stat's top 5 players, the leader first. An empty leaderboard (a playoff category before the playoffs start, or
- * a request that failed) shows that there are no stats yet.
+ * a request that failed) shows that there are no stats yet. The title links to the stat's top 25 table, keeping the
+ * page's game type.
  */
 @Component({
   selector: 'app-stat-leaderboard',
@@ -64,19 +43,19 @@ export class StatLeaderboardComponent implements OnChanges {
   @Input()
   public statTitle: string;
 
+  /** The category's id, like "points", which its top 25 table is routed by. */
+  @Input()
+  public categoryId: string;
+
   @Input()
   public entries: LeaderboardEntry[];
 
   @Input()
-  public format: LeaderboardFormat = "number";
+  public format: StatFormat = "number";
 
   public rows: LeaderboardRow[] = [];
 
   private static readonly leaderCount = 5;
-
-  private static readonly savePercentagePipe = new SavePercentagePipe();
-
-  private static readonly goalsAgainstAveragePipe = new GoalsAgainstAveragePipe();
 
   /** The leader, or undefined for an empty leaderboard. */
   public get statLeader(): LeaderboardRow {
@@ -105,27 +84,7 @@ export class StatLeaderboardComponent implements OnChanges {
       teamName: NhlTeamUtils.getTeam(entry.teamId).name,
       teamId: entry.teamId,
       teamColor: NhlTeamColorUtils.getTeamPrimaryColor(entry.teamId),
-      value: this.formatValue(entry.value)
+      value: StatCategoryUtils.formatValue(entry.value, this.format)
     };
-  }
-
-  /**
-   * Formats a value for the board's stat. Save percentages and goals against averages use the same pipes as the rest
-   * of the site, and a time on ice comes in seconds (1664.2568 for 27:44).
-   */
-  private formatValue(value: number): string {
-    if (value == null) {
-      return "-";
-    }
-    switch (this.format) {
-      case "savePctg":
-        return StatLeaderboardComponent.savePercentagePipe.transform(value);
-      case "gaa":
-        return StatLeaderboardComponent.goalsAgainstAveragePipe.transform(value);
-      case "toi":
-        return StatsUtils.formatSeconds(value);
-      default:
-        return String(value);
-    }
   }
 }

@@ -4,20 +4,19 @@ import {NhlLeadersService} from "@shared/services/nhl-leaders.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
-import {GoalieStatsLeaders, SkaterStatsLeaders, StatsLeader} from "@shared/models/nhl-web-api/stats-leaders.model";
+import {GoalieStatsLeaders, SkaterStatsLeaders} from "@shared/models/nhl-web-api/stats-leaders.model";
 import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
-import {SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
-import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
-import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
-import {LeaderboardEntry, LeaderboardFormat} from "@app/stats/stat-leaderboard/stat-leaderboard.component";
+import {LeaderboardEntry, StatCategoryUtils, StatFormat} from "@shared/utils/stat-category-utils";
 
 /**
  * One leaderboard of the stats page.
  */
 export interface Leaderboard {
+  /** The category's id, like "points", which its top 25 table is routed by. */
+  categoryId: string;
   title: string;
   entries: LeaderboardEntry[];
-  format: LeaderboardFormat;
+  format: StatFormat;
 }
 
 /**
@@ -51,9 +50,9 @@ export class StatsComponent implements OnInit {
   /** Whether the season is in playoff mode, which makes the playoffs the default game type. */
   private isPlayoffMode: boolean = false;
 
-  private readonly skaterCategories = ["points", "goals", "assists", "toi"];
+  private readonly skaterCategories = StatCategoryUtils.getLeaderCategories("skaterLeaders");
 
-  private readonly goalieCategories = ["savePctg", "goalsAgainstAverage", "wins"];
+  private readonly goalieCategories = StatCategoryUtils.getLeaderCategories("goalieLeaders");
 
   private readonly leaderCount = 5;
 
@@ -162,49 +161,18 @@ export class StatsComponent implements OnInit {
     });
   }
 
+  /**
+   * Builds a leaderboard per category, in the stats page's order, from what each source returned (null when it
+   * failed).
+   */
   private buildLeaderboards(skaters: SkaterStatsLeaders, goalies: GoalieStatsLeaders,
                             hitsAndShots: HitsAndShotsLeaders): Leaderboard[] {
-    return [
-      {title: "Points", entries: this.toEntries(skaters?.points), format: "number"},
-      {title: "Goals", entries: this.toEntries(skaters?.goals), format: "number"},
-      {title: "Assists", entries: this.toEntries(skaters?.assists), format: "number"},
-      {title: "Save Percentage", entries: this.toEntries(goalies?.savePctg), format: "savePctg"},
-      {title: "Goals Against Average", entries: this.toEntries(goalies?.goalsAgainstAverage), format: "gaa"},
-      {title: "Wins", entries: this.toEntries(goalies?.wins), format: "number"},
-      {title: "Shots", entries: this.toSkaterEntries(hitsAndShots?.shots, "shots"), format: "number"},
-      {title: "Hits", entries: this.toSkaterEntries(hitsAndShots?.hits, "hits"), format: "number"},
-      {title: "Time On Ice Per Game", entries: this.toEntries(skaters?.toi), format: "toi"}
-    ];
-  }
-
-  /**
-   * Converts NHL web API leaders, which bring their own headshot and a team abbreviation.
-   */
-  private toEntries(leaders: StatsLeader[]): LeaderboardEntry[] {
-    return (leaders ?? []).map(leader => ({
-      playerId: leader.id,
-      name: (leader.firstName?.default ?? "") + " " + (leader.lastName?.default ?? ""),
-      teamId: NhlTeamUtils.getTeamIdByAbbrev(leader.teamAbbrev),
-      headshot: leader.headshot,
-      value: leader.value
+    return StatCategoryUtils.categories.map(category => ({
+      categoryId: category.id,
+      title: category.title,
+      entries: StatCategoryUtils.getEntries(category, skaters, goalies, hitsAndShots, this.season),
+      format: category.format
     }));
-  }
-
-  /**
-   * Converts stats API rows, which have no headshot and list every team of the season ("CGY,VAN"). The headshot is
-   * built from the player's last team of that season.
-   */
-  private toSkaterEntries(rows: SkaterSeasonStats[], field: "hits" | "shots"): LeaderboardEntry[] {
-    return (rows ?? []).map(row => {
-      const teamAbbrev = row.teamAbbrevs?.split(",").pop()?.trim();
-      return {
-        playerId: row.playerId,
-        name: row.skaterFullName,
-        teamId: NhlTeamUtils.getTeamIdByAbbrev(teamAbbrev),
-        headshot: NhlPlayerHeadshotUtils.getHeadshotUrl(row.seasonId ?? this.season, teamAbbrev, row.playerId),
-        value: row[field]
-      };
-    });
   }
 
   /**

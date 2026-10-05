@@ -22,6 +22,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Player season cards, career table, recent games | Stats API | The landing's `seasonTotals` mixes every league, splits a traded season into one row per team and has no hits; the api-web game log has no hits, blocks, faceoffs or saves by strength, so no HokMob rating |
 | Leaderboards: points, goals, assists, TOI, SV%, GAA, wins | api-web `skater-stats-leaders`, `goalie-stats-leaders` | Headshots, logos and the NHL's own qualification rules |
 | Leaderboards: hits, shots | Stats API | api-web has no such categories (`categories=hits` returns 400) |
+| A leaderboard's top 25 table: the related columns | Stats API, for the 25 leaders' IDs | The leaders only carry their own `value`; the order still comes from the leaderboard's source, so it matches the card |
 | Team season stats (PP%, PK%, goals and shots per game) | Stats API `team/summary` | All 32 teams in one call, so league ranks come for free |
 | Standings, schedules, team form, next game, live games | api-web | The stats API has no schedules, and whether it has rows during a live game is unverified |
 | Playoff bracket and series | api-web `playoff-bracket`, `playoff-series/*` | Not in the stats API |
@@ -38,6 +39,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Team | `standings/now` (division and conference), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams` |
 | Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
+| Stats category (`/stats/{category}`, a card's top 25) | `standings/now`, the card's leaders with `limit=25` and only its category, then `/api/nhl-stats/season-players?season=&gameType=&position=skater` or `goalie` `&ids=` (the 25 IDs) for the other columns, `/api/nhl-stats/seasons`. The categories and their columns are in `StatCategoryUtils` |
 | Playoffs | `playoff-bracket/{year}`, `schedule/playoff-series/{season}/{letter}` for the series dialog, `/api/nhl-stats/seasons` |
 | Standings | `standings/now` |
 | Draft | `draft/picks/{year}/{round}` (or `draft/picks/now`), `/api/nhl-stats/draft?year=&round=` — see [`draft-page.md`](draft-page.md) |
@@ -94,10 +96,12 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
 - **No preseason rows at all** (see the open items).
 - **Aggregate leaderboards:** any report sorted by one of its fields, e.g. `skater/realtime` by `hits` with
   `cayenneExp=seasonId=20252026 and gameTypeId=2`.
+- **Some players' season rows:** `playerId in (...)` with the season and game type, e.g. a top 25's rows in one call
+  per report (`/api/nhl-stats/season-players` takes at most 25 IDs). Rows come back in no particular order.
 
 | Report | Fields used |
 |---|---|
-| `skater/summary` | `skaterFullName`, `positionCode`, `teamAbbrevs` / `teamAbbrev`, `gamesPlayed`, `goals`, `assists`, `points`, `plusMinus`, `ppGoals`, `ppPoints`, `shots`, `shootingPct`, `penaltyMinutes`, `faceoffWinPct` (`null` without faceoffs), `timeOnIcePerGame` |
+| `skater/summary` | `skaterFullName`, `positionCode`, `teamAbbrevs` / `teamAbbrev`, `gamesPlayed`, `goals`, `assists`, `points`, `pointsPerGame`, `plusMinus`, `ppGoals`, `ppPoints`, `gameWinningGoals`, `shots`, `shootingPct` (`null` without shots), `penaltyMinutes`, `faceoffWinPct` (`null` without faceoffs), `timeOnIcePerGame` |
 | `skater/realtime` | `hits`, `blockedShots`, `takeaways`, `giveaways`, `missedShots` |
 | `skater/faceoffwins` | `totalFaceoffWins`, `totalFaceoffLosses` (and by zone and strength) |
 | `skater/scoringpergame` | `totalPrimaryAssists`, `totalSecondaryAssists` (the boxscore and `skater/summary` only have the total) |

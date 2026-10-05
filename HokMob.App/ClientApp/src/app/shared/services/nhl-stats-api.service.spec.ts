@@ -6,10 +6,13 @@ import {
   mockHitsAndShotsLeaders,
   mockPlayerStats,
   mockSeasonDates,
+  mockSeasonPlayersGoalieSavePctg,
+  mockSeasonPlayersSkaterPoints,
   mockTeamStats
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {
   GoalieGameStats,
+  GoalieSeasonStats,
   SkaterGameStats,
   SkaterSeasonStats
 } from '@shared/models/nhl-stats-api/player-stats.model';
@@ -122,6 +125,54 @@ describe('NhlStatsApiService', () => {
       const leaders = service.getHitsAndShotsLeaders(20252026, 2);
       const rejection = expectAsync(leaders).toBeRejectedWith(jasmine.objectContaining({status: 502}));
       httpMock.expectOne('/api/nhl-stats/leaders?season=20252026&gameType=2&limit=5')
+          .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getSeasonPlayerStats', () => {
+    const seasonPlayersUrl = '/api/nhl-stats/season-players?season=20252026&gameType=2&position=';
+
+    it('should resolve the real season rows of some skaters, with their realtime stats', async () => {
+      const players = service.getSeasonPlayerStats(20252026, 2, false, [8478402, 8476453]);
+      httpMock.expectOne(seasonPlayersUrl + 'skater&ids=8478402,8476453').flush(mockSeasonPlayersSkaterPoints());
+
+      const rows = await players as SkaterSeasonStats[];
+      expect(rows.length).toBe(25);
+      const mcDavid = rows.find(row => row.skaterFullName === 'Connor McDavid');
+      expect(mcDavid.points).toBe(138);
+      expect(mcDavid.pointsPerGame).toBe(1.68292);
+      expect(mcDavid.hits).toBe(40);
+      expect(rows.find(row => row.skaterFullName === 'Artemi Panarin').teamAbbrevs).toBe('NYR,LAK');
+    });
+
+    it('should ask for goalies by position', async () => {
+      const players = service.getSeasonPlayerStats('20252026', 2, true, [8475809]);
+      httpMock.expectOne(seasonPlayersUrl + 'goalie&ids=8475809').flush(mockSeasonPlayersGoalieSavePctg());
+
+      const wedgewood = (await players as GoalieSeasonStats[]).find(row => row.lastName === 'Wedgewood');
+      expect(wedgewood.wins).toBe(31);
+      expect(wedgewood.shutouts).toBe(4);
+    });
+
+    it('should resolve an empty list without a request for no players', async () => {
+      expect(await service.getSeasonPlayerStats(20252026, 2, false, [])).toEqual([]);
+      expect(await service.getSeasonPlayerStats(20252026, 2, false, null)).toEqual([]);
+      httpMock.expectNone(() => true);
+    });
+
+    it('should resolve an empty list for an empty response', async () => {
+      const players = service.getSeasonPlayerStats(20262027, 3, false, [8478402]);
+      httpMock.expectOne('/api/nhl-stats/season-players?season=20262027&gameType=3&position=skater&ids=8478402')
+          .flush({});
+      expect(await players).toEqual([]);
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const players = service.getSeasonPlayerStats(20252026, 2, false, [8478402]);
+      const rejection = expectAsync(players).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne(seasonPlayersUrl + 'skater&ids=8478402')
           .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();

@@ -32,6 +32,11 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.menuUrl === '/' || this.menuUrl.startsWith('/?date=')
   }
 
+  /** Whether the stats page or one of its category tables is open, with or without a game type. */
+  public get isStatsSelected(): boolean {
+    return this.menuUrl === '/stats' || this.menuUrl.startsWith('/stats?') || this.menuUrl.startsWith('/stats/');
+  }
+
   /**
    *
    * @param router - The angular router.

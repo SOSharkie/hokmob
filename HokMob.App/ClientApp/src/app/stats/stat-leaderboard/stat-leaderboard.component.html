@@ -1,7 +1,9 @@
 <div class="stat-leaderboard-container">
-  <div class="stat-title">
+  <a class="stat-title" [routerLink]="['/stats', categoryId]" queryParamsHandling="preserve"
+     [attr.aria-label]="statTitle + ', top 25'">
     <span>{{statTitle}}</span>
-  </div>
+    <mat-icon class="stat-title-chevron" svgIcon="lucide:chevron-right" aria-hidden="true"></mat-icon>
+  </a>
   <div class="stat-players">
     <div *ngIf="statLeader" class="stat-leader stat-player" [routerLink]="['/player', statLeader.playerId]">
       <div class="player-container">

@@ -12,7 +12,7 @@
       <mat-icon svgIcon="lucide:list-ordered"></mat-icon>
       <span>Standings</span>
     </div>
-    <div id="stats-item" class="menu-item" [ngClass]="{selected : menuUrl === '/stats'}" [routerLink]="['/stats']">
+    <div id="stats-item" class="menu-item" [ngClass]="{selected : isStatsSelected}" [routerLink]="['/stats']">
       <mat-icon svgIcon="lucide:chart-no-axes-column"></mat-icon>
       <span>Stats</span>
     </div>
