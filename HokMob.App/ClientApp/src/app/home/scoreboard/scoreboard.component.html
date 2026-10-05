@@ -20,7 +20,10 @@
       [game]="game"
     ></app-scorecard>
   </div>
-  <div *ngIf="currentDayGames && currentDayGames.length === 0" class="no-games-container" >
+  <div *ngIf="isLoading" class="loading-container">
+    <app-loading-spinner [size]="40" class="loading-spinner"></app-loading-spinner>
+  </div>
+  <div *ngIf="!isLoading && currentDayGames && currentDayGames.length === 0" class="no-games-container">
     <span>No Games</span>
   </div>
 </div>

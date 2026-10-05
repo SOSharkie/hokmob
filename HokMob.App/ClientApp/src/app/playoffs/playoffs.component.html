@@ -16,7 +16,7 @@
     </mat-menu>
   </div>
   <div *ngIf="isLoading" class="loading-container">
-    <img src="assets/loading.gif" alt="" class="loading-gif">
+    <app-loading-spinner class="loading-spinner"></app-loading-spinner>
   </div>
   <div *ngIf="hasError" class="playoffs-message">
     <span>The playoff bracket couldn't be loaded</span>

@@ -61,6 +61,12 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
   public currentDayGames: ScoreGame[] = [];
 
   /**
+   * Whether the selected day's games are still loading, including the wait for a failed load's retry, so the
+   * scoreboard shows the loading spinner instead of "No Games".
+   */
+  public isLoading: boolean = true;
+
+  /**
    * The ID of the timer which runs a function to GET the latest NHL games.
    */
   private nhlGameUpdateTimerId: number;
@@ -163,12 +169,15 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /**
-   * Loads the selected day's games, refreshing them while the day is today.
+   * Loads the selected day's games, refreshing them while the day is today. The previous day's games are cleared,
+   * so the spinner shows instead of them while the new day loads.
    */
   private showSelectedDay(): void {
     this.hasLoaded = true;
     this.updateDisplayDayLabel();
     this.stopPendingRetry();
+    this.currentDayGames = [];
+    this.isLoading = true;
     this.retrieveNhlGames();
     this.stopContinuousNhlGameUpdates();
     if (this.displayDayLabel === "Today") {
@@ -188,6 +197,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
     this.nhlGameService.getNhlGames(day).then(games => {
       if (day === this.selectedDay) {
         this.currentDayGames = this.orderGames(games);
+        this.isLoading = false;
       }
     }).catch(() => {
       // The service logs the error. Show no games rather than another day's games
@@ -196,10 +206,13 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
       }
       this.currentDayGames = [];
       if (allowRetry && !this.nhlGameUpdateTimerId) {
+        // Keeps the spinner up through the retry, so a brief hiccup doesn't flash "No Games"
         this.nhlGameRetryTimerId = setTimeout(() => {
           this.nhlGameRetryTimerId = null;
           this.retrieveNhlGames(false);
         }, this.nhlGameRetryTime);
+      } else {
+        this.isLoading = false;
       }
     });
   }
@@ -214,6 +227,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
       this.nhlGameService.getNhlGames(day).then(games => {
         if (day === this.selectedDay) {
           this.applyRefreshedGames(this.orderGames(games));
+          this.isLoading = false;
         }
       }).catch(() => {
         // The service logs the error. Keep the shown games until the next refresh

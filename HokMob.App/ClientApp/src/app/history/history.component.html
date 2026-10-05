@@ -18,7 +18,7 @@
     </mat-menu>
   </div>
   <div *ngIf="isLoading" class="loading-container">
-    <img src="assets/loading.gif" alt="" class="loading-gif">
+    <app-loading-spinner class="loading-spinner"></app-loading-spinner>
   </div>
   <div *ngIf="hasError" class="history-message">
     <span>The season couldn't be loaded</span>

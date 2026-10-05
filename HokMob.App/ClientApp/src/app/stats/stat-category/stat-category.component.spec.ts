@@ -125,17 +125,17 @@ describe('StatCategoryComponent', () => {
 
   it('should show a spinner until the table loads', async () => {
     await open('points', 'R');
-    expect(fixture.nativeElement.querySelector('.loading-gif')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).toBeTruthy();
 
     await flushStandings();
     httpMock.expectOne(skaterLeadersUrl + '2?limit=25&categories=points').flush(mockSkaterPointsLeaders25());
     await settle();
-    expect(fixture.nativeElement.querySelector('.loading-gif')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).toBeTruthy();
     expect(rows().length).toBe(0);
 
     httpMock.expectOne(seasonPlayersUrl + '2&position=skater&ids=' + pointsIds).flush(mockSeasonPlayersSkaterPoints());
     await settle();
-    expect(fixture.nativeElement.querySelector('.loading-gif')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).toBeNull();
     expect(rows().length).toBe(25);
   });
 
@@ -295,7 +295,7 @@ describe('StatCategoryComponent', () => {
 
     expect(message()).toBe('The stats couldn\'t be loaded');
     expect(rows().length).toBe(0);
-    expect(fixture.nativeElement.querySelector('.loading-gif')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).toBeNull();
   });
 
   it('should say the stats couldn\'t be loaded when the standings fail', async () => {
