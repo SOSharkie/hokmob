@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {TeamSeasonStats, TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
-import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {GoalieSeasonStats, PlayerStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {SeasonPlayersResponse} from "@shared/models/nhl-stats-api/season-players.model";
 import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {CurrentSeason, SeasonDates, SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
@@ -19,6 +20,8 @@ export class NhlStatsApiService {
   private readonly nhlPlayerStatsUrl = "/api/nhl-stats/player/";
 
   private readonly nhlLeadersUrl = "/api/nhl-stats/leaders";
+
+  private readonly nhlSeasonPlayersUrl = "/api/nhl-stats/season-players";
 
   private readonly nhlSeasonsUrl = "/api/nhl-stats/seasons";
 
@@ -78,6 +81,36 @@ export class NhlStatsApiService {
       return this.http.get<HitsAndShotsLeaders>(url).subscribe({
         next: (response) => {
           resolve({hits: response?.hits ?? [], shots: response?.shots ?? []});
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+   * Gets the season stats of some players, like the stats page's top 25 of a category, for the columns their
+   * leaderboard has no values for. The rows come in no particular order, and a player without games that season has
+   * none. No player IDs resolves an empty list without a request.
+   *
+   * @param season - The season ID, like 20252026.
+   * @param gameType - 2 for the regular season, 3 for the playoffs.
+   * @param isGoalie - Whether the players are goalies, which decides the reports the backend reads.
+   * @param playerIds - The player IDs, at most 25 of them.
+   */
+  public getSeasonPlayerStats(season: number | string, gameType: number, isGoalie: boolean,
+                              playerIds: number[]): Promise<SkaterSeasonStats[] | GoalieSeasonStats[]> {
+    if (!playerIds?.length) {
+      return Promise.resolve([]);
+    }
+    const url = this.nhlSeasonPlayersUrl + "?season=" + season + "&gameType=" + gameType + "&position=" +
+        (isGoalie ? "goalie" : "skater") + "&ids=" + playerIds.join(",");
+    return new Promise((resolve, reject) => {
+      return this.http.get<SeasonPlayersResponse>(url).subscribe({
+        next: (response) => {
+          resolve(response?.players ?? []);
         },
         error: (error) => {
           console.error(error);

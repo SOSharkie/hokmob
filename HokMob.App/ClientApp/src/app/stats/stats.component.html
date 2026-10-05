@@ -13,6 +13,7 @@
   </div>
   <div *ngIf="!isLoading" class="leaderboards-container">
     <app-stat-leaderboard *ngFor="let leaderboard of leaderboards"
+        [categoryId]="leaderboard.categoryId"
         [statTitle]="leaderboard.title"
         [entries]="leaderboard.entries"
         [format]="leaderboard.format"

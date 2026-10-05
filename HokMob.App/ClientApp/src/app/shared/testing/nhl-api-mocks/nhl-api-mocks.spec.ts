@@ -4,6 +4,10 @@ import {
   mockDraftStats,
   mockGoalieStatsLeaders,
   mockHitsAndShotsLeaders,
+  mockGoalieSavePctgLeaders25,
+  mockSeasonPlayersGoalieSavePctg,
+  mockSeasonPlayersSkaterPoints,
+  mockSkaterPointsLeaders25,
   mockPlayerLanding,
   mockPlayerSearchResults,
   mockPlayerStats,
@@ -13,7 +17,12 @@ import {
   mockSeasonHistory,
   mockTeamStats
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
-import {GoalieGameStats, SkaterGameStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {
+  GoalieGameStats,
+  GoalieSeasonStats,
+  SkaterGameStats,
+  SkaterSeasonStats
+} from "@shared/models/nhl-stats-api/player-stats.model";
 
 /**
  * The fixtures are real responses, and the specs of every phase assert values that are in them. These tests check
@@ -151,6 +160,46 @@ describe('nhl-api-mocks', () => {
       expect(leaders.hits[0].hits).toBe(413);
       expect(leaders.shots[0].skaterFullName).toBe('Nathan MacKinnon');
       expect(leaders.shots[0].shots).toBe(350);
+    });
+  });
+
+  describe('25 leader responses', () => {
+    it('should return the top 25 in points, with McDavid first and ties at 100', () => {
+      const points = mockSkaterPointsLeaders25().points;
+      expect(points.length).toBe(25);
+      expect(points[0].lastName.default).toBe('McDavid');
+      expect(points[0].value).toBe(138);
+      expect(points.filter(leader => leader.value === 100).map(leader => leader.lastName.default))
+          .toEqual(['Necas', 'Pastrnak']);
+    });
+
+    it('should return the top 25 in save percentage, from Wedgewood to Wolf', () => {
+      const savePctg = mockGoalieSavePctgLeaders25().savePctg;
+      expect(savePctg.length).toBe(25);
+      expect(savePctg[0].lastName.default).toBe('Wedgewood');
+      expect(savePctg[24].lastName.default).toBe('Wolf');
+    });
+  });
+
+  describe('season-players responses', () => {
+    it('should return the season rows of the top 25 in points, with the realtime stats', () => {
+      const players = mockSeasonPlayersSkaterPoints().players as SkaterSeasonStats[];
+      expect(players.length).toBe(25);
+      expect(new Set(players.map(row => row.playerId)))
+          .toEqual(new Set(mockSkaterPointsLeaders25().points.map(leader => leader.id)));
+      const mcDavid = players.find(row => row.skaterFullName === 'Connor McDavid');
+      expect(mcDavid.gamesPlayed).toBe(82);
+      expect(mcDavid.plusMinus).toBe(17);
+      expect(mcDavid.hits).toBe(40);
+      expect(players.find(row => row.skaterFullName === 'Artemi Panarin').teamAbbrevs).toBe('NYR,LAK');
+    });
+
+    it('should return the season rows of the top 25 in save percentage', () => {
+      const players = mockSeasonPlayersGoalieSavePctg().players as GoalieSeasonStats[];
+      expect(players.length).toBe(25);
+      const wedgewood = players.find(row => row.goalieFullName === 'Scott Wedgewood');
+      expect(wedgewood.wins).toBe(31);
+      expect(wedgewood.shotsAgainst).toBe(1093);
     });
   });
 

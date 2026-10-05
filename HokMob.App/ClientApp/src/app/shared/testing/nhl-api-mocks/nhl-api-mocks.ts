@@ -67,6 +67,10 @@ import skaterLeaders20252026Regular from './skater-stats-leaders-20252026-2.json
 import skaterLeaders20252026Playoffs from './skater-stats-leaders-20252026-3.json';
 import goalieLeaders20252026Regular from './goalie-stats-leaders-20252026-2.json';
 import goalieLeaders20252026Playoffs from './goalie-stats-leaders-20252026-3.json';
+import skaterPointsLeaders25 from './skater-stats-leaders-20252026-2-points-25.json';
+import goalieSavePctgLeaders25 from './goalie-stats-leaders-20252026-2-savePctg-25.json';
+import seasonPlayersSkaterPoints from './season-players-20252026-2-skater-points.json';
+import seasonPlayersGoalieSavePctg from './season-players-20252026-2-goalie-savePctg.json';
 import playoffBracket2023 from './playoff-bracket-2023.json';
 import playoffBracket2021 from './playoff-bracket-2021.json';
 import playoffBracket2020 from './playoff-bracket-2020.json';
@@ -87,6 +91,7 @@ import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
 import {SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.model";
+import {SeasonPlayersResponse} from "@shared/models/nhl-stats-api/season-players.model";
 import draftPicksNow from './draft-picks-now-2026-09-17.json';
 import draftPicks2006 from './draft-picks-2006-1.json';
 import draftPicks2015 from './draft-picks-2015-1.json';
@@ -115,7 +120,9 @@ import clubStatsVgk20252026Playoffs from './club-stats-vgk-20252026-3.json';
  * 2 games, the latter captured on 2026-09-18) and the club-schedule-season-* responses (trimmed games, see
  * mockClubScheduleSeason). The club-stats-* responses were captured on 2026-10-04 (see mockClubStats). The
  * gamecenter-* responses are unchanged. season-history-20252026-2 isn't a response but the history page's data file,
- * generated for a few games (see mockSeasonHistory). To refresh one, download it again with curl and re-check the values the specs
+ * generated for a few games (see mockSeasonHistory). The 25 leader responses (*-points-25, *-savePctg-25) and the
+ * season-players-* responses were captured on 2026-10-02; season-players-* were merged from the stats API's
+ * skater/summary and skater/realtime (or goalie/summary) the way the backend merges them. To refresh one, download it again with curl and re-check the values the specs
  * assert.
  *
  * Every function returns a fresh deep copy, so tests can change the data. "derived" helpers turn real data into states
@@ -385,6 +392,43 @@ export function mockSkaterStatsLeaders(gameType: 2 | 3 = 2): SkaterStatsLeaders 
  */
 export function mockGoalieStatsLeaders(gameType: 2 | 3 = 2): GoalieStatsLeaders {
   return copy(gameType === 2 ? goalieLeaders20252026Regular : goalieLeaders20252026Playoffs);
+}
+
+/**
+ * skater-stats-leaders/20252026/2?categories=points&limit=25: the regular season's top 25 in points, from Connor McDavid
+ * (EDM, 138) to Sebastian Aho (CAR, 80). It has ties: Martin Necas and David Pastrnak at 100 (7th), Cole Caufield, Jake
+ * Guentzel and Clayton Keller at 88 (15th), Matt Boldy and Alex DeBrincat at 85 (19th), and Tage Thompson and Zach
+ * Werenski at 81 (23rd).
+ */
+export function mockSkaterPointsLeaders25(): SkaterStatsLeaders {
+  return copy(skaterPointsLeaders25);
+}
+
+/**
+ * goalie-stats-leaders/20252026/2?categories=savePctg&limit=25: the regular season's top 25 in save percentage (0 to 1),
+ * from Scott Wedgewood (COL, 0.921317) to Dustin Wolf (CGY, 0.89923).
+ */
+export function mockGoalieSavePctgLeaders25(): GoalieStatsLeaders {
+  return copy(goalieSavePctgLeaders25);
+}
+
+/**
+ * /api/nhl-stats/season-players?season=20252026&gameType=2&position=skater&ids=..., for the 25 players of
+ * mockSkaterPointsLeaders25, in the stats API's order (not by points). The rows have the realtime stats: Connor
+ * McDavid has 82 games, 48 goals, 90 assists, +17, 1.68292 points per game and 40 hits. Artemi Panarin's row is
+ * "NYR,LAK".
+ */
+export function mockSeasonPlayersSkaterPoints(): SeasonPlayersResponse {
+  return copy(seasonPlayersSkaterPoints);
+}
+
+/**
+ * /api/nhl-stats/season-players?season=20252026&gameType=2&position=goalie&ids=..., for the 25 goalies of
+ * mockGoalieSavePctgLeaders25. Scott Wedgewood has 45 games, 43 starts, 31 wins, a 2.02427 goals against average and 4
+ * shutouts.
+ */
+export function mockSeasonPlayersGoalieSavePctg(): SeasonPlayersResponse {
+  return copy(seasonPlayersGoalieSavePctg);
 }
 
 /**
