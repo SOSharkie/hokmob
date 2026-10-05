@@ -33,7 +33,7 @@
     </div>
   </div>
   <div *ngIf="isLoading" class="loading-container">
-    <img src="assets/loading.gif" alt="" class="loading-gif">
+    <app-loading-spinner class="loading-spinner"></app-loading-spinner>
   </div>
   <div *ngIf="!isLoading && hasError" class="stat-category-message">
     <span>The stats couldn't be loaded</span>

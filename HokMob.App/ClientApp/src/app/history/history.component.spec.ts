@@ -46,11 +46,11 @@ describe('HistoryComponent', () => {
   }
 
   it('should load the latest season and show a loading image until it\'s rated', async () => {
-    expect(element('.loading-gif')).not.toBeNull();
+    expect(element('app-loading-spinner')).not.toBeNull();
     expect(element('app-rating-distribution')).toBeNull();
 
     await respond(mockSeasonHistory());
-    expect(element('.loading-gif')).toBeNull();
+    expect(element('app-loading-spinner')).toBeNull();
     expect(component.ratedSeason.ratedGames.length).toBe(267);
   });
 
@@ -73,7 +73,7 @@ describe('HistoryComponent', () => {
   it('should show an empty state instead of the charts when the season can\'t be loaded', async () => {
     await respond('Not found', {status: 404, statusText: 'Not Found'});
     expect(element('.history-message').textContent.trim()).toBe('The season couldn\'t be loaded');
-    expect(element('.loading-gif')).toBeNull();
+    expect(element('app-loading-spinner')).toBeNull();
     expect(element('app-rating-distribution')).toBeNull();
     expect(element('app-best-games')).toBeNull();
   });

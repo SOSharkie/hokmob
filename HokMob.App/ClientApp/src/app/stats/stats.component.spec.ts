@@ -107,14 +107,14 @@ describe('StatsComponent', () => {
   it('should show a spinner until the leaders load', async () => {
     await open('R');
     expect(component.isLoading).toBeTrue();
-    expect(fixture.nativeElement.querySelector('.loading-gif')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).toBeTruthy();
     expect(boards().length).toBe(0);
 
     await flushStandings();
     await flushLeaders();
 
     expect(component.isLoading).toBeFalse();
-    expect(fixture.nativeElement.querySelector('.loading-gif')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).toBeNull();
   });
 
   it('should show the nine real leaderboards of the standings season', async () => {

@@ -73,6 +73,10 @@ describe('ScoreboardComponent', () => {
     return fixture.nativeElement.querySelectorAll('app-scorecard').length;
   }
 
+  function isSpinnerShown(): boolean {
+    return !!fixture.nativeElement.querySelector('app-loading-spinner');
+  }
+
   /** Narrows or widens the window past the phone breakpoint, as a real window resize does. */
   function resizeTo(phone: boolean): void {
     isPhoneWidth = phone;
@@ -88,6 +92,38 @@ describe('ScoreboardComponent', () => {
     expect(component.currentDayGames.map(game => game.id)).toEqual([2025020947, 2025020950, 2025020952]);
     expect(scorecardCount()).toBe(3);
     expect(text()).not.toContain('No Games');
+    expect(isSpinnerShown()).toBeFalse();
+  });
+
+  it("should show the loading spinner instead of No Games while today's games load", async () => {
+    openDay(dayjs().format('YYYYMMDD'));
+    const request = httpMock.expectOne('/api/nhl/score/' + dayjs().format('YYYY-MM-DD'));
+    expect(isSpinnerShown()).toBeTrue();
+    expect(text()).not.toContain('No Games');
+
+    request.flush(scoreResponse([derivedLiveGame()]));
+    await settle();
+    expect(isSpinnerShown()).toBeFalse();
+    expect(scorecardCount()).toBe(1);
+  });
+
+  it("should hide the previous day's games while the next day loads", async () => {
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    await settle();
+    expect(scorecardCount()).toBe(3);
+
+    component.shiftDateRight();
+    fixture.detectChanges();
+    const nextDay = httpMock.expectOne('/api/nhl/score/2026-03-02');
+    expect(scorecardCount()).toBe(0);
+    expect(isSpinnerShown()).toBeTrue();
+    expect(text()).not.toContain('No Games');
+
+    nextDay.flush(scoreResponse([]));
+    await settle();
+    expect(isSpinnerShown()).toBeFalse();
+    expect(text()).toContain('No Games');
   });
 
   it('should show live games first, keeping the API order for the rest', async () => {
@@ -139,15 +175,17 @@ describe('ScoreboardComponent', () => {
     await settle();
     expect(scorecardCount()).toBe(0);
     expect(text()).toContain('No Games');
+    expect(isSpinnerShown()).toBeFalse();
   });
 
-  it('should show No Games when the request fails', async () => {
-    openDay('20260301');
-    httpMock.expectOne('/api/nhl/score/2026-03-01')
+  it("should show No Games when today's request fails", async () => {
+    openDay(dayjs().format('YYYYMMDD'));
+    httpMock.expectOne('/api/nhl/score/' + dayjs().format('YYYY-MM-DD'))
         .flush('Service unavailable', {status: 503, statusText: 'Service Unavailable'});
     await settle();
     expect(component.currentDayGames).toEqual([]);
     expect(text()).toContain('No Games');
+    expect(isSpinnerShown()).toBeFalse();
   });
 
   it('should retry once when a day other than today fails to load', fakeAsync(() => {
@@ -156,7 +194,9 @@ describe('ScoreboardComponent', () => {
         .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
     flushMicrotasks();
     fixture.detectChanges();
-    expect(text()).toContain('No Games');
+    // The spinner stays up through the retry, so a brief hiccup doesn't flash No Games
+    expect(isSpinnerShown()).toBeTrue();
+    expect(text()).not.toContain('No Games');
 
     tick(3000);
     httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
@@ -187,6 +227,7 @@ describe('ScoreboardComponent', () => {
     httpMock.expectNone('/api/nhl/score/2026-03-01');
     expect(component.currentDayGames).toEqual([]);
     expect(text()).toContain('No Games');
+    expect(isSpinnerShown()).toBeFalse();
 
     fixture.destroy();
   }));

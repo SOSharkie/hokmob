@@ -56,10 +56,8 @@ $history-columns-breakpoint: $tiny-display-breakpoint;
   display: flex;
   justify-content: center;
 
-  .loading-gif {
+  .loading-spinner {
     margin-top: $spacing-xx-large;
-    width: 100px;
-    height: 100px;
   }
 }
 
