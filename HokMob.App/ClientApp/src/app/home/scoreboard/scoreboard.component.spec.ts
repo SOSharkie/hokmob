@@ -9,6 +9,9 @@ import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import {
   derivedLiveGame, mockFutureGame, mockLiveScoreGame, mockOvertimeFinal, mockScoreResponse, mockShootoutFinal
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { registerLucideIcons } from '@shared/icons/lucide-icons';
 
 import { ScoreboardComponent } from './scoreboard.component';
 
@@ -39,6 +42,7 @@ describe('ScoreboardComponent', () => {
     // fixture games are from 20262027, so nothing here is ever actually cached long-term.
     spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason').and.resolveTo({season: 20262027, isPlayoffMode: false});
 
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     fixture = TestBed.createComponent(ScoreboardComponent);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
@@ -287,6 +291,62 @@ describe('ScoreboardComponent', () => {
     expect(component.currentDayGames).toEqual([]);
   });
 
+  /** The classes of the card, which set how the next games come in. */
+  function containerClasses(): DOMTokenList {
+    return fixture.nativeElement.querySelector('.scores-container').classList;
+  }
+
+  it('should bring the next day in from the right and the previous day in from the left', async () => {
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    await settle();
+    expect(containerClasses()).toContain('enter-fade');
+
+    fixture.nativeElement.querySelector('.day-shift.right').click();
+    httpMock.expectOne('/api/nhl/score/2026-03-02').flush(mockScoreResponse());
+    await settle();
+    expect(containerClasses()).toContain('enter-next');
+    expect(containerClasses()).not.toContain('enter-fade');
+
+    fixture.nativeElement.querySelector('.day-shift.left').click();
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    await settle();
+    expect(containerClasses()).toContain('enter-previous');
+    expect(scorecardCount()).toBe(3);
+  });
+
+  it('should fade in a day picked from the calendar or given by the page', async () => {
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    component.shiftDateRight();
+    httpMock.expectOne('/api/nhl/score/2026-03-02').flush(scoreResponse([]));
+    await settle();
+
+    component.onDateSelect({value: new Date(2026, 2, 10)});
+    httpMock.expectOne('/api/nhl/score/2026-03-10').flush(scoreResponse([]));
+    await settle();
+    expect(containerClasses()).toContain('enter-fade');
+
+    component.shiftDateLeft();
+    httpMock.expectOne('/api/nhl/score/2026-03-09').flush(scoreResponse([]));
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    await settle();
+    expect(containerClasses()).toContain('enter-fade');
+  });
+
+  it('should label the day arrows as buttons', async () => {
+    openDay('20260301');
+    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    await settle();
+
+    const arrows = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.day-shift'));
+    expect(arrows.map(arrow => arrow.tagName)).toEqual(['BUTTON', 'BUTTON']);
+    expect(arrows.map(arrow => arrow.getAttribute('aria-label'))).toEqual(['Previous day', 'Next day']);
+    expect(fixture.nativeElement.querySelector('.date-select-container').getAttribute('aria-label'))
+        .toBe('Pick a day, Sunday, March 1');
+  });
+
   it('should show the day the page gives when it changes, like with the browser back button', async () => {
     const emittedDays: Date[] = [];
     component.selectedDayChange.subscribe(day => emittedDays.push(day));
@@ -382,6 +442,8 @@ describe('ScoreboardComponent', () => {
     httpMock.expectOne(todayUrl).flush(scoreResponse([derivedLiveGame()]));
     flushMicrotasks();
     expect(component.currentDayGames.length).toBe(1);
+    // As if today had been reached with the next day arrow
+    component.dayTransition = 'next';
 
     tick(10000);
     httpMock.expectOne(todayUrl).flush(scoreResponse([derivedLiveGame(), mockOvertimeFinal()]));
@@ -391,6 +453,8 @@ describe('ScoreboardComponent', () => {
     expect(component.currentDayGames.map(game => game.id))
         .toEqual([derivedLiveGame().id, mockOvertimeFinal().id]);
     expect(scorecardCount()).toBe(2);
+    // The same day, so the new list fades in instead of sliding in like another day
+    expect(containerClasses()).toContain('enter-fade');
 
     fixture.destroy();
   }));

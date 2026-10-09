@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 // Card styled like Fotmob's "Followed teams" sidebar: a bold title, then full-width rows with an icon and a label.
 .nav-menu-card {
@@ -27,12 +28,33 @@
     justify-content: flex-start;
     align-items: center;
     text-decoration: none;
+    cursor: pointer;
+    @include pressable(background-color);
+    @include focus-ring(-2px);
 
     .nav-menu-icon {
+      flex: none;
       width: 20px;
       height: 20px;
       font-size: 20px;
       color: $gray-04;
+      transition: color 150ms ease-out;
+    }
+
+    @include hover {
+      background-color: $black-03;
+
+      .nav-menu-icon {
+        color: white;
+      }
+    }
+
+    &:active {
+      background-color: $press-highlight;
+
+      .nav-menu-icon {
+        color: white;
+      }
     }
 
     .nav-menu-text {
@@ -42,15 +64,6 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-  }
-
-  .nav-menu-item:hover {
-    background-color: $black-03;
-    cursor: pointer;
-
-    .nav-menu-icon {
-      color: white;
     }
   }
 }

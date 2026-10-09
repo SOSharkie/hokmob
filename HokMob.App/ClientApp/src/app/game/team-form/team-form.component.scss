@@ -10,6 +10,8 @@
     justify-content: center;
     align-items: center;
     height: 40px;
+    font-size: 17px;
+    font-weight: 500;
   }
 
   // Each team's games fill a column, row by row, so a row that grows (a wrapped name like "Golden Knights") grows the
@@ -35,7 +37,7 @@
       grid-row: 1;
       text-align: center;
       padding: $spacing-large;
-      color: $gray-01;
+      color: $gray-03;
     }
   }
 }

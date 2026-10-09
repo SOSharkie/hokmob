@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import {NavMenuItemModel} from "@shared/models/nav-menu-item.model";
-import {ActivatedRoute, Router} from "@angular/router";
 import {LUCIDE_ICON_NAMESPACE} from "@shared/icons/lucide-icons";
 
 @Component({
@@ -10,50 +9,21 @@ import {LUCIDE_ICON_NAMESPACE} from "@shared/icons/lucide-icons";
 })
 export class NavigationMenuComponent {
 
+  /** Real links, so they work from the keyboard and can be opened in a new tab. */
   public navMenuItems: NavMenuItemModel[] = [
-    // {name: "Playoffs", iconName: "ballot"},
-    {name: "Standings", iconName: "list-ordered"},
-    {name: "Stats", iconName: "chart-no-axes-column"},
-    {name: "History", iconName: "history"},
-    {name: "Draft", iconName: "clipboard-list"},
-    {name: "News", iconName: "newspaper"},
-    {name: "Teams", iconName: "shield"}
+    // {name: "Playoffs", iconName: "ballot", route: "/playoffs"},
+    {name: "Standings", iconName: "list-ordered", route: "/standings"},
+    {name: "Stats", iconName: "chart-no-axes-column", route: "/stats"},
+    {name: "History", iconName: "history", route: "/history"},
+    {name: "Draft", iconName: "clipboard-list", route: "/draft"},
+    {name: "News", iconName: "newspaper", url: "https://www.reddit.com/r/hockey/"},
+    {name: "Teams", iconName: "shield", route: "/standings"}
   ];
-
-  constructor(private route: ActivatedRoute,
-              private router: Router) {
-  }
 
   /**
    * The registered name of a menu item's icon, for `<mat-icon [svgIcon]>`.
    */
   public getSvgIcon(menuItem: NavMenuItemModel): string {
     return `${LUCIDE_ICON_NAMESPACE}:${menuItem.iconName}`;
-  }
-
-  public onClickMenuItem(menuItem: NavMenuItemModel) {
-    switch (menuItem.name) {
-      case "Playoffs":
-        this.router.navigate(['playoffs']);
-        break;
-      case "Stats":
-        this.router.navigate(['stats']);
-        break;
-      case "History":
-        this.router.navigate(['history']);
-        break;
-      case "Draft":
-        this.router.navigate(['draft']);
-        break;
-      case "Standings":
-        this.router.navigate(['standings']);
-        break;
-      case "Teams":
-        this.router.navigate(['standings']);
-        break;
-      case "News":
-        window.location.href = 'https://www.reddit.com/r/hockey/';
-        break;
-    }
   }
 }

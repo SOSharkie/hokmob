@@ -114,6 +114,17 @@ describe('StatLeaderboardComponent', () => {
     expect(text('.leader-team-label')).toBe('Colorado Avalanche');
     expect(fixture.nativeElement.querySelector('.stat-leader .stat-container').style.backgroundColor)
         .toBe('rgb(111, 38, 61)');
+    expect(fixture.nativeElement.querySelector('.stat-leader .stat-container').style.color).toBe('rgb(255, 255, 255)');
+  });
+
+  it('should put dark text on a light team color, so the leader stat stays readable', () => {
+    show(entriesOf(mockSkaterStatsLeaders(3).points));
+
+    // Mitch Marner leads the playoffs with Vegas, whose gold #B4975A is too light for white text
+    expect(text('.leader-team-label')).toBe('Vegas Golden Knights');
+    const value: HTMLElement = fixture.nativeElement.querySelector('.stat-leader .stat-container');
+    expect(value.style.backgroundColor).toBe('rgb(180, 151, 90)');
+    expect(value.style.color).toBe('rgb(27, 27, 27)');
   });
 
   it('should format a save percentage, a goals against average and a time on ice', () => {

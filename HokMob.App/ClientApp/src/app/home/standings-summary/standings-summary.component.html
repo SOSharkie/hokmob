@@ -1,7 +1,8 @@
 <div class="standings-summary-container">
-  <div class="standings-title" [routerLink]="['/standings']">
+  <a class="standings-title" [routerLink]="['/standings']">
     <span>NHL Standings</span>
-  </div>
+    <mat-icon class="title-chevron" svgIcon="lucide:chevron-right" aria-hidden="true"></mat-icon>
+  </a>
   <div *ngIf="standings" class="mini-standings">
     <app-standings
         [standings]="standings"

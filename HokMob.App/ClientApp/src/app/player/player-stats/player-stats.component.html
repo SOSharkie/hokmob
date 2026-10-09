@@ -39,11 +39,11 @@
   <div *ngIf="isGoalie" class="stats-grid goalie-stats">
     <div class="stats-item">
       <span class="item-title">Save %</span>
-      <span class="item-value" [ngStyle]="{'background-color':  teamColor}">{{goalieStats.savePct | savePercentage}}</span>
+      <span class="item-value" [ngStyle]="{'background-color': teamColor, 'color': teamTextColor}">{{goalieStats.savePct | savePercentage}}</span>
     </div>
     <div class="stats-item">
       <span class="item-title">GAA</span>
-      <span class="item-value" [ngStyle]="{'background-color':  teamColor}">{{goalieStats.goalsAgainstAverage | goalsAgainstAverage}}</span>
+      <span class="item-value" [ngStyle]="{'background-color': teamColor, 'color': teamTextColor}">{{goalieStats.goalsAgainstAverage | goalsAgainstAverage}}</span>
     </div>
     <div class="stats-item">
       <span class="item-title">Shutouts</span>

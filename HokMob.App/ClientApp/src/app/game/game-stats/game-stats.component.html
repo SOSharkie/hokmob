@@ -25,11 +25,13 @@
     </div>
     <div class="team-stats-container">
       <div *ngFor="let row of statRows" class="team-stats-row">
-        <span class="home team-stat" [ngStyle]="{'background-color': row.homeBetter ? homeColor : ''}">
+        <span class="home team-stat"
+              [ngStyle]="{'background-color': row.homeBetter ? homeColor : '', 'color': row.homeBetter ? homeTextColor : ''}">
           {{row.homeValue}}
         </span>
         <span class="stats-label">{{row.label}}</span>
-        <span class="away team-stat" [ngStyle]="{'background-color': row.awayBetter ? awayColor : ''}">
+        <span class="away team-stat"
+              [ngStyle]="{'background-color': row.awayBetter ? awayColor : '', 'color': row.awayBetter ? awayTextColor : ''}">
           {{row.awayValue}}
         </span>
       </div>

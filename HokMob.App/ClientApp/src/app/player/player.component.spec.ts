@@ -4,7 +4,9 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
-import { By } from '@angular/platform-browser';
+import { By, DomSanitizer } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material/icon';
+import { registerLucideIcons } from '@shared/icons/lucide-icons';
 import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { SkaterSeasonStats } from '@shared/models/nhl-stats-api/player-stats.model';
@@ -35,6 +37,7 @@ describe('PlayerComponent', () => {
     .compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     spyOn(console, 'error');
   });
 
@@ -79,6 +82,8 @@ describe('PlayerComponent', () => {
 
     expect(text('.player-name')).toBe('Ivan Barbashev');
     expect(text('.player-team-label')).toBe('Vegas Golden Knights');
+    // A real link to the team's page
+    expect(child('a.player-team').getAttribute('href')).toBe('/team/54');
     expect(component.teamColor).toBe('#B4975A');
     expect(child('.player-headshot').getAttribute('src'))
         .toBe('https://assets.nhle.com/mugs/nhl/20262027/VGK/8477964.png');
@@ -169,7 +174,10 @@ describe('PlayerComponent', () => {
     open(8477964);
     await flushPlayerPage(8477964);
     expect(text('.games-back-button .games-label')).toBe('Team');
-    component.backToPrevious();
+    // Both copies, the phone one in the team color stripe too, are buttons
+    expect(Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.games-back-button, .games-back-button-mobile'))
+        .map(button => button.tagName)).toEqual(['BUTTON', 'BUTTON']);
+    child('.games-back-button').click();
     expect(back).toHaveBeenCalled();
   });
 

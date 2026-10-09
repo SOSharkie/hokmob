@@ -30,6 +30,9 @@
     <h2 class="about-section-title">What you'll find</h2>
     <div class="feature-grid">
       <div *ngFor="let feature of features" class="feature-card">
+        <span class="feature-icon" aria-hidden="true">
+          <mat-icon [svgIcon]="'lucide:' + feature.iconName"></mat-icon>
+        </span>
         <span class="feature-title">{{feature.title}}</span>
         <span class="feature-description">{{feature.description}}</span>
       </div>

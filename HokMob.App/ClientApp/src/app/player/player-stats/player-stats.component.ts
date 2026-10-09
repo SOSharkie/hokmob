@@ -1,5 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {GoalieSeasonStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 
 /**
  * One season's stats card, from the stats API row of that season (/api/nhl-stats/player/{id}). A season with two
@@ -23,6 +24,11 @@ export class PlayerStatsComponent {
 
   @Input()
   public isGoalie: boolean;
+
+  /** The text color on teamColor, for the goalie's save percentage and GAA: white, or near-black on a light color. */
+  public get teamTextColor(): string {
+    return NhlTeamColorUtils.getTextColorOn(this.teamColor);
+  }
 
   /** The row as a skater's, for the skater grid. */
   public get skaterStats(): SkaterSeasonStats {

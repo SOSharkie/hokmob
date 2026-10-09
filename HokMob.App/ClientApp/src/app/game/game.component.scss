@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 $central-info-width: 130px;
 
@@ -6,6 +7,24 @@ $central-info-width: 130px;
   display: flex;
   justify-content: center;
   flex-direction: row;
+}
+
+// The back button, in the card's header or above the error when the game fails to load
+.games-back-button {
+  @include back-button;
+  display: flex;
+  align-items: center;
+  color: white;
+
+  .back-icon {
+    height: 25px;
+    width: 25px;
+
+    .mat-icon {
+      width: 18px;
+      height: 18px;
+    }
+  }
 }
 
 .main-game {
@@ -20,13 +39,18 @@ $central-info-width: 130px;
     transform: translateY(0) !important;
   }
 
+  // A translucent bar the page scrolls under, so it reads as a layer above the page rather than a strip cut out of it.
+  // It drops in and slides back out the same way, quickly and without overshoot, and a scroll that reverses mid-slide
+  // turns it around from where it is
   .dropdown-header {
     position: fixed;
     top: 0;
     left: 0;
     z-index: 10;
     width: 100%;
-    background-color: $black-02;
+    background-color: rgba(27, 27, 27, 0.8);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
     display: flex;
     justify-content: center;
     opacity: 1;
@@ -34,8 +58,8 @@ $central-info-width: 130px;
     transform: translateY(calc(-100% - 20px));
     // Its own compositing layer, so it stays put while the page scrolls under it
     will-change: transform;
-    transition: transform 1s;
-    box-shadow: 0 4px 15px 0 $black-01;
+    transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.6);
   }
 
   .game-header {
@@ -56,40 +80,37 @@ $central-info-width: 130px;
       border-top-right-radius: 25px;
 
       .games-back-button {
-        display: flex;
         justify-content: center;
-        align-items: center;
         width: 100px;
         margin-left: $spacing-medium;
         font-size: 16px;
         font-weight: 500;
 
         .back-icon {
-          border-radius: 50%;
-          background-color: $gray-02;
-          height: 25px;
-          width: 25px;
           margin-right: $spacing-large;
         }
       }
 
-      .games-back-button:hover {
-        cursor: pointer;
-
-        .back-icon {
-          background-color: white;
-          color: $black-01;
-        }
-
-        .games-label {
-          text-decoration: underline;
-        }
-      }
-
+      // A link to the league's standings or playoffs: the label underlines on hover, and the link dims while pressed
       .league-info-container {
         display: flex;
         justify-content: center;
         align-items: center;
+        border-radius: 8px;
+        color: white;
+        text-decoration: none;
+        @include pressable(opacity);
+        @include focus-ring;
+
+        @include hover {
+          .league-info-label {
+            text-decoration: underline;
+          }
+        }
+
+        &:active {
+          opacity: 0.6;
+        }
 
         .nhl-logo {
           width: 30px;
@@ -99,14 +120,6 @@ $central-info-width: 130px;
         .league-info-label {
           font-size: 16px;
           font-weight: 400;
-        }
-      }
-
-      .league-info-container:hover {
-        cursor: pointer;
-
-        .league-info-label {
-          text-decoration: underline;
         }
       }
 
@@ -129,17 +142,23 @@ $central-info-width: 130px;
         line-height: 20px;
         text-decoration: none;
         white-space: nowrap;
-        transition: background-color 0.15s;
+        @include pressable(background-color, transform);
+        @include focus-ring;
 
         .watch-icon {
           width: 20px;
           height: 20px;
           font-size: 20px;
         }
-      }
 
-      .watch-button:hover {
-        background-color: #dcdcdc;
+        @include hover {
+          background-color: #dcdcdc;
+        }
+
+        &:active {
+          background-color: #c8c8c8;
+          transform: scale(0.97);
+        }
       }
     }
 
@@ -189,24 +208,12 @@ $central-info-width: 130px;
     font-size: large;
 
     .games-back-button {
-      display: flex;
-      align-items: center;
-
       .back-icon {
-        border-radius: 50%;
-        background-color: $gray-02;
-        color: white;
-        height: 25px;
-        width: 25px;
         margin-right: $spacing-medium;
       }
-    }
-
-    .games-back-button:hover {
-      cursor: pointer;
 
       .games-label {
-        text-decoration: underline;
+        color: $gray-04;
       }
     }
   }
@@ -221,6 +228,35 @@ $central-info-width: 130px;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+// Reduced motion: the header fades in and out in place instead of sliding. Hidden, it fades out first and only then
+// moves off screen
+@media (prefers-reduced-motion: reduce) {
+  .main-game {
+    .dropdown-header {
+      opacity: 0;
+      transition: opacity 200ms ease-out, transform 0s 200ms;
+    }
+
+    .dropdown-header.header-show {
+      opacity: 1;
+      transition: opacity 200ms ease-out, transform 0s;
+    }
+
+    .game-header .league-info .watch-button:active {
+      transform: none;
+    }
+  }
+}
+
+// Reduced transparency, or a browser without the blur: a solid bar
+@media (prefers-reduced-transparency: reduce) {
+  .main-game .dropdown-header {
+    background-color: $black-02;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 .dialog-backdrop {

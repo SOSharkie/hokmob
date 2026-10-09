@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 // app-team-logo sizes the logo itself (see logoSize / logoMaxWidth on the component). This is the slot it is centred
 // in: a fixed width whatever the logo's shape, so the team names all start in the same place
@@ -19,6 +20,16 @@ $logo-box-width: 60px;
   width: 100%;
   background-color: $black-02;
   color: white;
+  cursor: pointer;
+  @include pressable(background-color);
+
+  @include hover {
+    background-color: $black-03;
+  }
+
+  &:active {
+    background-color: $press-highlight;
+  }
 
   .central-info {
     display: flex;
@@ -113,13 +124,9 @@ $logo-box-width: 60px;
   }
 }
 
-.scorecard-container:hover {
-  background-color: $black-03;
-  cursor: pointer;
-}
-
-.scorecard-container:focus {
-  outline: none;
+// A ring for keyboard focus only, inset so the next card doesn't cover it
+.scorecard-container {
+  @include focus-ring(-2px);
 }
 
 .smaller-scorecard {

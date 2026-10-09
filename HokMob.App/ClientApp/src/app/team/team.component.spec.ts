@@ -3,6 +3,9 @@ import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@an
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material/icon';
+import { registerLucideIcons } from '@shared/icons/lucide-icons';
 import { BehaviorSubject } from 'rxjs';
 import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
@@ -39,6 +42,7 @@ describe('TeamComponent', () => {
     .compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     // NhlGameService classifies each fetched day for its cache against the current season; the next game update
     // always fetches today, which is never cached, so the value here doesn't otherwise affect these tests.
     spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason').and.resolveTo({season: 20252026, isPlayoffMode: false});
@@ -242,7 +246,9 @@ describe('TeamComponent', () => {
     const back = spyOn(TestBed.inject(Location), 'back');
     open('999');
     expect(text('.games-label')).toBe('Game');
-    component.backToPrevious();
+    const backButton: HTMLElement = fixture.nativeElement.querySelector('.games-back-button');
+    expect(backButton.tagName).toBe('BUTTON');
+    backButton.click();
     expect(back).toHaveBeenCalled();
   });
 

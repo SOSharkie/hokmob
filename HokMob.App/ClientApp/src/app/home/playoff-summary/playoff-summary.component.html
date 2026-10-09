@@ -1,7 +1,8 @@
 <div class="playoff-summary-container">
-  <div class="playoffs-title" [routerLink]="['/playoffs']">
+  <a class="playoffs-title" [routerLink]="['/playoffs']">
     <span>{{playoffsTitle}}</span>
-  </div>
+    <mat-icon class="title-chevron" svgIcon="lucide:chevron-right" aria-hidden="true"></mat-icon>
+  </a>
   <div class="series-summaries-container">
     <div *ngFor="let series of currentSeries" class="series-summary">
       <app-playoff-series

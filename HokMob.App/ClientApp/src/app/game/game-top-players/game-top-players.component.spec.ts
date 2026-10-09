@@ -232,6 +232,20 @@ describe('GameTopPlayersComponent', () => {
     expect(clickedIds).toEqual([8476460, 8476412]);
   });
 
+  it('should open a player on the rink from the keyboard too', () => {
+    const clickedIds: number[] = [];
+    component.playerClicked.subscribe(playerId => clickedIds.push(playerId));
+    show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
+    const scheifele = card('home', 'Mark Scheifele');
+    expect(scheifele.getAttribute('role')).toBe('button');
+    expect(scheifele.getAttribute('tabindex')).toBe('0');
+    expect(scheifele.getAttribute('aria-label')).toContain('Mark Scheifele, rating ');
+
+    scheifele.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+    card('away', 'Jordan Binnington').dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
+    expect(clickedIds).toEqual([8476460, 8476412]);
+  });
+
   it('should draw the rink with no players and no star without player stats', () => {
     show(undefined, []);
     expect(fixture.nativeElement.querySelector('.rink')).not.toBeNull();
@@ -369,11 +383,15 @@ describe('GameTopPlayersComponent', () => {
       expect(benchToggle().title).toBe('Show the bench players');
       expect(bench('home').querySelector('.bench-players').getAttribute('aria-hidden')).toBe('true');
 
+      // Folded away, the bench players are out of the tab order
+      expect(benchPlayers('home').map(player => player.getAttribute('tabindex'))).toEqual(['-1', '-1', '-1', '-1']);
+
       clickToggle();
       expect(isOpen()).toBeTrue();
       expect(benchToggle().getAttribute('aria-expanded')).toBe('true');
       expect(benchToggle().title).toBe('Hide the bench players');
       expect(bench('away').querySelector('.bench-players').getAttribute('aria-hidden')).toBe('false');
+      expect(benchPlayers('home').map(player => player.getAttribute('tabindex'))).toEqual(['0', '0', '0', '0']);
 
       clickToggle();
       expect(isOpen()).toBeFalse();

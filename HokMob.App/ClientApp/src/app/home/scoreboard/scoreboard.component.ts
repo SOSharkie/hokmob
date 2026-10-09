@@ -67,6 +67,12 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
   public isLoading: boolean = true;
 
   /**
+   * How the next games to show come in: from the side the user moved toward ("next" from the right, "previous" from
+   * the left), or with a plain fade for a day that wasn't reached with the arrows.
+   */
+  public dayTransition: 'next' | 'previous' | 'fade' = 'fade';
+
+  /**
    * The ID of the timer which runs a function to GET the latest NHL games.
    */
   private nhlGameUpdateTimerId: number;
@@ -100,6 +106,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
       const day = dayjs(this.selectedDayString, "YYYYMMDD");
       if (day.isValid() && !(this.hasLoaded && day.isSame(this.selectedDay, 'day'))) {
         this.selectedDay = day.toDate();
+        this.dayTransition = 'fade';
         this.showSelectedDay();
       }
     }
@@ -141,6 +148,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
    */
   public onDateSelect($event: any): void {
     this.selectedDay = dayjs($event.value).toDate();
+    this.dayTransition = 'fade';
     this.handleDateChange();
   }
 
@@ -149,6 +157,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
    */
   public shiftDateLeft(): void {
     this.selectedDay = dayjs(this.selectedDay).subtract(1, 'day').toDate();
+    this.dayTransition = 'previous';
     this.handleDateChange();
   }
 
@@ -157,6 +166,7 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
    */
   public shiftDateRight(): void {
     this.selectedDay = dayjs(this.selectedDay).add(1, 'day').toDate();
+    this.dayTransition = 'next';
     this.handleDateChange();
   }
 
@@ -244,6 +254,8 @@ export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
    */
   private applyRefreshedGames(games: ScoreGame[]): void {
     if (!this.isSameGameList(games)) {
+      // The same day, so the new list fades in rather than sliding in like another day
+      this.dayTransition = 'fade';
       this.currentDayGames = games;
       return;
     }

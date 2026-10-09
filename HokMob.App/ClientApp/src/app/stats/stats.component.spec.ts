@@ -202,6 +202,43 @@ describe('StatsComponent', () => {
     expect(board('Points').entries[0].name).toBe('Mitch Marner');
   });
 
+  it('should keep the leaderboards, dimmed, while another game type loads', async () => {
+    await open('R');
+    await flushStandings();
+    await flushLeaders();
+
+    switchGameType(true);
+    const container: HTMLElement = fixture.nativeElement.querySelector('.leaderboards-container');
+    expect(boards().length).toBe(9);
+    expect(board('Points').entries[0].name).toBe('Connor McDavid');
+    expect(container.classList).toContain('reloading');
+    expect(container.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelector('app-loading-spinner')).toBeNull();
+
+    await flushLeaders(3);
+    expect(board('Points').entries[0].name).toBe('Mitch Marner');
+    expect(container.classList).not.toContain('reloading');
+  });
+
+  it('should let the game type be switched again right away, while the first switch loads', async () => {
+    currentSeason.and.resolveTo({season: 20252026, isPlayoffMode: true});
+    await open('R');
+    await flushStandings();
+    await flushLeaders();
+
+    const [playoffs, regularSeason] = Array.from<HTMLButtonElement>(
+        fixture.nativeElement.querySelectorAll('.stat-filter-button'));
+    playoffs.click();
+    regularSeason.click();
+    fixture.detectChanges();
+
+    expect(navigate.calls.allArgs().map(args => args[1].queryParams))
+        .toEqual([{gameType: 'P'}, {gameType: 'R'}]);
+    expect(component.playoffsSelected).toBeFalse();
+    expect(regularSeason.getAttribute('aria-pressed')).toBe('true');
+    expect(playoffs.getAttribute('aria-pressed')).toBe('false');
+  });
+
   it('should ignore the leaders of the game type left behind', async () => {
     await open('R');
     await flushStandings();

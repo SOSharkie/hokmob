@@ -1,20 +1,20 @@
 <div *ngIf="player" class="player-container">
   <div class="player-header">
     <div class="back-container">
-      <div class="games-back-button" (click)="backToPrevious()">
-        <div class="back-icon">
-          <mat-icon fontIcon="chevron_left"></mat-icon>
-        </div>
+      <button type="button" class="games-back-button" (click)="backToPrevious()">
+        <span class="back-icon" aria-hidden="true">
+          <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
+        </span>
         <span class="games-label">{{backButtonLabel}}</span>
-      </div>
+      </button>
     </div>
     <div class="team-color-container">
-      <div class="games-back-button-mobile" (click)="backToPrevious()">
-        <div class="back-icon">
-          <mat-icon fontIcon="chevron_left"></mat-icon>
-        </div>
+      <button type="button" class="games-back-button-mobile" (click)="backToPrevious()">
+        <span class="back-icon" aria-hidden="true">
+          <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
+        </span>
         <span class="games-label">{{backButtonLabel}}</span>
-      </div>
+      </button>
       <div class="team-line-1" [ngStyle]="{'border-bottom-color': teamColor}"></div>
       <div class="team-line-2" [ngStyle]="{'border-bottom-color': teamColor}"></div>
     </div>
@@ -23,11 +23,11 @@
     </div>
     <div class="player-info">
       <span class="player-name">{{playerName}}</span>
-      <div *ngIf="player.currentTeamId" class="player-team" [routerLink]="['/team', player.currentTeamId]">
+      <a *ngIf="player.currentTeamId" class="player-team" [routerLink]="['/team', player.currentTeamId]">
         <app-team-logo class="player-team-logo" [teamId]="player.currentTeamId" [size]="logoSize"
                        [width]="logoMaxWidth"></app-team-logo>
         <span class="player-team-label">{{teamName}}</span>
-      </div>
+      </a>
     </div>
   </div>
   <div class="player-cards">

@@ -1,4 +1,21 @@
 @import "variables";
+@import "interaction";
+
+// A player's name in an event: a button that opens the player or their goal, and underlines on hover
+@mixin event-player-button {
+  @include button-reset;
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+  @include focus-ring(1px);
+
+  @include hover {
+    text-decoration: underline;
+  }
+
+  &:active {
+    opacity: 0.6;
+  }
+}
 
 .mini-event-container {
   margin: $spacing-medium;
@@ -39,22 +56,20 @@
       margin-right: $spacing-small;
 
       .event-main-label {
+        @include event-player-button;
         color: white;
         margin-bottom: $spacing-small;
-      }
-
-      .event-main-label:hover {
-        cursor: pointer;
-        text-decoration: underline;
       }
 
       .event-secondary-label {
         color: $gray-03;
       }
 
-      .assist-name:hover {
-        cursor: pointer;
-        text-decoration: underline;
+      // Inline, so a long list of assists wraps like text
+      .assist-name {
+        @include event-player-button;
+        display: inline;
+        color: $gray-03;
       }
     }
   }
@@ -94,13 +109,9 @@
       margin-right: $spacing-small;
 
       .event-main-label {
+        @include event-player-button;
         color: white;
         margin-bottom: $spacing-small;
-      }
-
-      .event-main-label:hover {
-        cursor: pointer;
-        text-decoration: underline;
       }
 
       .event-secondary-label {

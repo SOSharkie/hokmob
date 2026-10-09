@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 .cdk-overlay-pane {
   // svh, not vh, so iOS Safari's toolbars don't push the dialog off the bottom of the screen
@@ -32,6 +33,8 @@
     background-color: $black-03;
     color: $gray-04;
     cursor: pointer;
+    @include pressable(background-color, color, transform);
+    @include focus-ring;
 
     .mat-icon {
       width: 18px;
@@ -39,9 +42,15 @@
       font-size: 18px;
     }
 
-    &:hover {
+    @include hover {
       background-color: $gray-01;
       color: white;
+    }
+
+    &:active {
+      background-color: $gray-01;
+      color: white;
+      transform: scale($press-scale);
     }
   }
 
@@ -62,12 +71,29 @@
     border-top: 2px solid $gray-01;
     min-height: 20px;
 
+    // Opens the player's page. Dims on hover and while pressed
     .profile-container {
+      @include button-reset;
       display: flex;
       align-items: center;
       height: 30px;
       width: fit-content;
+      border-radius: 15px;
       color: white;
+      @include pressable(color);
+      @include focus-ring;
+
+      .profile-headshot {
+        transition: opacity 150ms ease-out;
+      }
+
+      &:active {
+        color: $gray-03;
+
+        .profile-headshot {
+          opacity: 0.5;
+        }
+      }
 
       .profile-headshot {
         width: 30px;
@@ -83,30 +109,45 @@
       }
     }
 
-    .profile-container:hover {
-      cursor: pointer;
-      color: $gray-04 !important;
+    .profile-container {
+      @include hover {
+        color: $gray-04;
 
-      // Dims the headshot as much as the label, which fades from white to $gray-04 over the footer's $black-03.
-      // The person icon follows the label's color on its own.
-      .profile-headshot {
-        opacity: 0.6;
+        // Dims the headshot as much as the label, which fades from white to $gray-04 over the footer's $black-03.
+        // The person icon follows the label's color on its own.
+        .profile-headshot {
+          opacity: 0.6;
+        }
       }
     }
 
-    .profile-container:focus {
-      outline: none;
-    }
-
+    // A tap target at least 44px wide and tall around the label
     .done-button {
+      @include button-reset;
+      min-width: 44px;
+      min-height: 44px;
+      margin: -#{$spacing-large} 0;
+      padding: 0 $spacing-large;
+      border-radius: 22px;
       color: $green-01;
-      margin-right: $spacing-large;
-    }
+      font-weight: 500;
+      @include pressable(color, background-color);
+      @include focus-ring(-2px);
 
-    .done-button:hover {
-      color: $green-03;
-      cursor: pointer;
+      @include hover {
+        color: $green-03;
+      }
+
+      &:active {
+        background-color: $gray-01;
+      }
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-game-dialog-container > .dialog-ratings-button:active {
+    transform: none;
   }
 }
 

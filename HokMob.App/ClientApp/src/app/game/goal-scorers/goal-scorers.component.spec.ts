@@ -118,4 +118,17 @@ describe('GoalScorersComponent', () => {
     expect(hovered).toEqual([{playerId: 8483445, goalIndex: 0}, {playerId: 8483445, goalIndex: 1}]);
     expect(scoring[2].goals[0].goalsToDate).not.toBe(2);
   });
+
+  it('should make each scorer a button, which highlights the player on keyboard focus like a hover', () => {
+    const hovered: PlayerHighlight[] = [];
+    component.playerHovered.subscribe(highlight => hovered.push(highlight));
+    show(mockGameLanding(2025030414).summary.scoring);
+    const scorers = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.scorer-label'));
+    expect(scorers.every(scorer => scorer.tagName === 'BUTTON')).toBeTrue();
+
+    const staal = scorers.find(scorer => scorer.textContent.includes('Staal'));
+    staal.dispatchEvent(new FocusEvent('focus'));
+    staal.dispatchEvent(new FocusEvent('blur'));
+    expect(hovered).toEqual([{playerId: 8473533, goalIndex: 0}, null]);
+  });
 });

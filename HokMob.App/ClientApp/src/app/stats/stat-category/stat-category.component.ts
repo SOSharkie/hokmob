@@ -32,6 +32,8 @@ export interface StatCategoryRow {
   /** Like "EDM", or "-" for an unknown team. */
   teamAbbrev: string;
   teamColor: string;
+  /** The text color on teamColor: white, or near-black on a light team color. */
+  teamTextColor: string;
   /** The values of the category's columns, in order, like ["82", "48", "90", "+28", "1.68", "138"]. */
   values: string[];
 }
@@ -293,6 +295,7 @@ export class StatCategoryComponent implements OnInit, OnDestroy {
         teamId: entry.teamId,
         teamAbbrev: team.triCode,
         teamColor: NhlTeamColorUtils.getTeamPrimaryColor(entry.teamId),
+        teamTextColor: NhlTeamColorUtils.getTeamTextColor(entry.teamId),
         values: StatCategoryUtils.getTableColumns(category).map(column => StatCategoryUtils.formatValue(
             column.field === category.field ? entry.value : seasonRow?.[column.field], column.format))
       };

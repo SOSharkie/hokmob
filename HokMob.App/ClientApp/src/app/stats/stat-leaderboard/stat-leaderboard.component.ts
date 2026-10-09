@@ -15,6 +15,8 @@ export interface LeaderboardRow {
   /** The NHL team ID, or undefined for an abbreviation NhlTeamUtils doesn't know. */
   teamId: number;
   teamColor: string;
+  /** The text color on teamColor: white, or near-black on a light team color. */
+  teamTextColor: string;
   /** The value as shown, like "138", ".921", "2.02" or "27:44". */
   value: string;
 }
@@ -84,6 +86,7 @@ export class StatLeaderboardComponent implements OnChanges {
       teamName: NhlTeamUtils.getTeam(entry.teamId).name,
       teamId: entry.teamId,
       teamColor: NhlTeamColorUtils.getTeamPrimaryColor(entry.teamId),
+      teamTextColor: NhlTeamColorUtils.getTeamTextColor(entry.teamId),
       value: StatCategoryUtils.formatValue(entry.value, this.format)
     };
   }

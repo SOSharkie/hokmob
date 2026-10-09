@@ -1,6 +1,9 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { LUCIDE_ICONS, registerLucideIcons } from '@shared/icons/lucide-icons';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
 
 import { AboutComponent } from './about.component';
 
@@ -16,6 +19,7 @@ describe('AboutComponent', () => {
     })
     .compileComponents();
 
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     fixture = TestBed.createComponent(AboutComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -35,6 +39,15 @@ describe('AboutComponent', () => {
     const cards = fixture.nativeElement.querySelectorAll('.feature-card');
     expect(cards.length).toBe(component.features.length);
     expect(text('.feature-card .feature-title')).toBe('Live scores');
+  });
+
+  it('should show each feature with the icon the menus use for its page', () => {
+    const icons = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.feature-card .feature-icon mat-icon'));
+    expect(icons.length).toBe(component.features.length);
+    expect(component.features.find(feature => feature.title === 'Live scores').iconName).toBe('calendar-days');
+    for (const feature of component.features) {
+      expect(LUCIDE_ICONS[feature.iconName]).withContext(feature.title).toBeDefined();
+    }
   });
 
   it('should link the contact email', () => {

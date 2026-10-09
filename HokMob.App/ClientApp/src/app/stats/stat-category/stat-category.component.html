@@ -79,7 +79,7 @@
           <td *ngFor="let column of columns; let i = index" class="stat-cell"
               [class.selected-column]="column.isSelected" [class.phone-hidden]="column.isPhoneHidden">
             <span *ngIf="column.isSelected && isFirst; else plainValue" class="leader-value"
-                  [ngStyle]="{'background-color': row.teamColor}">{{row.values[i]}}</span>
+                  [ngStyle]="{'background-color': row.teamColor, 'color': row.teamTextColor}">{{row.values[i]}}</span>
             <ng-template #plainValue><span>{{row.values[i]}}</span></ng-template>
           </td>
         </tr>

@@ -4,6 +4,9 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { NhlStandingsTypeEnum } from '@shared/enums/nhl-standings-type.enum';
 import { mockStandingsResponse } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { registerLucideIcons } from '@shared/icons/lucide-icons';
 
 import { StandingsSummaryComponent } from './standings-summary.component';
 
@@ -20,6 +23,7 @@ describe('StandingsSummaryComponent', () => {
     })
     .compileComponents();
 
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     fixture = TestBed.createComponent(StandingsSummaryComponent);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);

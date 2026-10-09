@@ -156,8 +156,12 @@ describe('RecentPlayerGamesComponent', () => {
     const games = mockPlayerStats(8477964).recentGames as SkaterGameStats[];
     show(games, false);
     expect(component.rows[0].gameId).toBe(2025030416);
-    const routerLink = fixture.debugElement.query(By.directive(RouterLink)).injector.get(RouterLink);
-    expect(routerLink.urlTree.toString()).toBe('/game/2025030416');
+    const link = fixture.debugElement.query(By.directive(RouterLink));
+    // The whole row, so it highlights and takes a click anywhere on it
+    expect(link.nativeElement.tagName).toBe('TR');
+    expect(link.nativeElement.classList).toContain('player-game-row');
+    expect(link.injector.get(RouterLink).urlTree.toString()).toBe('/game/2025030416');
+    expect(fixture.debugElement.queryAll(By.directive(RouterLink)).length).toBe(component.rows.length);
   });
 
   it('should show the score with the away team of the player first', () => {
