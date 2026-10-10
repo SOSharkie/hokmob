@@ -209,7 +209,7 @@ Missed and blocked shots aren't plotted. `ShotMapUtils.getShots` reads them.
   and `eventOwnerTeamId` is still the shooting team.
 - **The team map** puts home's shots at the left end and away's at the right (standing up on phones, home's at the
   top). It lines the shots up with the drawn rink's goal lines and faceoff dots, since the rink is drawn 200.13ft long
-  (`ShotMapComponent.getRinkPosition`). It starts on the last shot, the arrows step through the shots in play order,
+  (`ShotMapComponent.getRinkPosition`). It starts on the last shot, a shot clicked on the rink shows its details,
   and a goal with a posted clip opens the goal highlight dialog.
 
 ## Season dates and playoff mode

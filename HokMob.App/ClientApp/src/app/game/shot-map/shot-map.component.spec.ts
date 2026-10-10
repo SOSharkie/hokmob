@@ -1,13 +1,11 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DomSanitizer } from '@angular/platform-browser';
-import { MatIconRegistry } from '@angular/material/icon';
-import { registerLucideIcons } from '@shared/icons/lucide-icons';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayByPlay } from '@shared/models/nhl-web-api/play-by-play.model';
 import { GameLandingScoringPeriod } from '@shared/models/nhl-web-api/gamecenter-landing.model';
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
+import { ShotMapUtils } from '@shared/utils/shot-map-utils';
 import { mockGameLanding, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { ShotMapComponent } from './shot-map.component';
@@ -24,7 +22,6 @@ describe('ShotMapComponent', () => {
     })
     .compileComponents();
 
-    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     fixture = TestBed.createComponent(ShotMapComponent);
     component = fixture.componentInstance;
   });
@@ -105,30 +102,21 @@ describe('ShotMapComponent', () => {
     expect(element('.watch-goal-button')).toBeNull();
   });
 
-  it('should step through the shots in play order, and stop at either end', () => {
-    show();
-    const next = () => element('.step-button[aria-label="Next shot"]') as HTMLButtonElement;
-    const previous = () => element('.step-button[aria-label="Previous shot"]') as HTMLButtonElement;
-    expect(next().disabled).toBeTrue();
-    expect(previous().disabled).toBeFalse();
-
-    click('.step-button[aria-label="Previous shot"]');
-    expect(component.selectedShot.eventId).toBe(component.markers[47].shot.eventId);
-    expect(next().disabled).toBeFalse();
-
-    component.selectShot(component.markers[0]);
-    fixture.detectChanges();
-    expect(previous().disabled).toBeTrue();
-    component.stepShot(-1);
-    expect(component.selectedShot.eventId).toBe(component.markers[0].shot.eventId);
-  });
-
-  it('should select a shot clicked on the rink', () => {
+  it('should select a shot clicked on the rink, and show its details', () => {
     show();
     elements('.shot-marker')[0].click();
     fixture.detectChanges();
     expect(component.selectedShot.eventId).toBe(component.markers[0].shot.eventId);
     expect(elements('.shot-marker')[0].classList).toContain('selected');
+    expect(elements('.shot-marker')[0].getAttribute('aria-pressed')).toBe('true');
+    expect(elements('.shot-marker.selected').length).toBe(1);
+    expect(text('.shot-time')).toBe(ShotMapUtils.getTimeLabel(component.markers[0].shot));
+  });
+
+  it('should show the time in the row with the shot type, result and goalie', () => {
+    show();
+    expect(elements('.shot-facts dt').map(label => label.textContent.trim()))
+        .toEqual(['Time', 'Shot type', 'Result', 'Goalie']);
   });
 
   it('should show only the goals with the goals toggle, selecting the last one', () => {
@@ -142,8 +130,10 @@ describe('ShotMapComponent', () => {
     expect(text('.shot-result')).toBe('Goal');
     expect(text('.shot-goalie')).toBe('Empty net');
 
-    click('.step-button[aria-label="Previous shot"]');
+    elements('.shot-marker')[6].click();
+    fixture.detectChanges();
     expect(text('.shooter-name')).toBe('Jordan Staal');
+    expect(text('.shot-time')).toBe('3rd 6:32');
     expect(text('.shot-goalie')).toBe('Carter Hart');
 
     click('.goals-toggle');

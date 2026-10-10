@@ -8,30 +8,21 @@
     </button>
   </div>
   <div *ngIf="selectedShot" class="shot-details">
-    <div class="shot-details-top">
-      <button type="button" class="shooter" (click)="clickShooter()" [attr.aria-label]="'Open ' + shooterName + '\'s game stats'">
-        <span class="shooter-avatar">
-          <span class="shooter-headshot-container">
-            <img class="shooter-headshot" [src]="shooterHeadshot" (error)="showBlankHeadshot($event)" alt="">
-          </span>
-          <app-team-logo *ngIf="shooterTeamLogo" class="shooter-team-logo" [src]="shooterTeamLogo"
-                         [size]="logoSize"></app-team-logo>
+    <button type="button" class="shooter" (click)="clickShooter()" [attr.aria-label]="'Open ' + shooterName + '\'s game stats'">
+      <span class="shooter-avatar">
+        <span class="shooter-headshot-container">
+          <img class="shooter-headshot" [src]="shooterHeadshot" (error)="showBlankHeadshot($event)" alt="">
         </span>
-        <span class="shooter-name">{{shooterName}}</span>
-      </button>
-      <div class="shot-stepper">
-        <button type="button" class="step-button" aria-label="Previous shot" [disabled]="!hasPreviousShot"
-                (click)="stepShot(-1)">
-          <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
-        </button>
-        <span class="shot-time" aria-live="polite">{{timeLabel}}</span>
-        <button type="button" class="step-button" aria-label="Next shot" [disabled]="!hasNextShot"
-                (click)="stepShot(1)">
-          <mat-icon svgIcon="lucide:chevron-right"></mat-icon>
-        </button>
-      </div>
-    </div>
+        <app-team-logo *ngIf="shooterTeamLogo" class="shooter-team-logo" [src]="shooterTeamLogo"
+                       [size]="logoSize"></app-team-logo>
+      </span>
+      <span class="shooter-name">{{shooterName}}</span>
+    </button>
     <dl class="shot-facts">
+      <div class="shot-fact">
+        <dt>Time</dt>
+        <dd class="shot-time">{{timeLabel}}</dd>
+      </div>
       <div class="shot-fact">
         <dt>Shot type</dt>
         <dd class="shot-type">{{shotTypeLabel}}</dd>
@@ -62,7 +53,8 @@
       <button *ngFor="let marker of shownMarkers; trackBy: trackByShot" type="button" class="shot-marker"
               [class.goal]="marker.shot.isGoal" [class.selected]="marker === selectedMarker"
               [style.left.%]="marker.along" [style.top.%]="marker.across" [style.--team-color]="marker.color"
-              tabindex="-1" [attr.aria-label]="getMarkerLabel(marker)" (click)="selectShot(marker)">
+              [attr.aria-label]="getMarkerLabel(marker)" [attr.aria-pressed]="marker === selectedMarker"
+              (click)="selectShot(marker)">
         <img *ngIf="marker.shot.isGoal" class="puck-icon" src="assets/puck.png" alt="">
       </button>
     </div>

@@ -25,25 +25,21 @@ $standing-aspect-ratio: 1.6;
   }
 }
 
-// The selected shot: the shooter and the time with the arrows on one row, and its facts below
+// The selected shot: the shooter, and its facts beside them, or below when they don't fit beside (on phones)
 .shot-details {
   display: flex;
-  flex-direction: column;
-  gap: $spacing-large;
-  margin: $spacing-medium 0 $spacing-x-large;
-}
-
-.shot-details-top {
-  display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: $spacing-large;
+  gap: $spacing-large $spacing-xx-large;
+  margin: $spacing-medium 0 $spacing-x-large;
 }
 
 // Opens the shooter's game stats. Dims on hover and while pressed
 .shooter {
   @include button-reset;
   display: flex;
+  max-width: 100%;
   align-items: center;
   gap: $spacing-large;
   min-width: 0;
@@ -76,10 +72,11 @@ $standing-aspect-ratio: 1.6;
   overflow: hidden;
   background-color: $gray-01;
 
+  // Headshots leave room above the head, so the image starts at the top of the circle to center the face in it
   .shooter-headshot {
     width: 51px;
     height: 51px;
-    margin-top: 7px;
+    margin-top: 1px;
   }
 }
 
@@ -97,59 +94,12 @@ $standing-aspect-ratio: 1.6;
   text-overflow: ellipsis;
 }
 
-.shot-stepper {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: $spacing-medium;
-
-  .shot-time {
-    min-width: 64px;
-    font-size: 15px;
-    font-weight: 600;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .step-button {
-    @include button-reset;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: $gray-01;
-    color: white;
-    @include pressable(background-color, transform);
-    @include focus-ring;
-
-    .mat-icon {
-      width: 18px;
-      height: 18px;
-    }
-
-    @include hover {
-      background-color: $gray-02;
-    }
-
-    &:active {
-      transform: scale($press-scale);
-    }
-
-    &:disabled {
-      opacity: 0.35;
-      cursor: default;
-      background-color: $gray-01;
-      transform: none;
-    }
-  }
-}
-
+// The time, shot type and result take the room they need, and the goalie's name the rest
 .shot-facts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: $spacing-large;
+  grid-template-columns: auto auto auto minmax(0, auto);
+  min-width: 0;
+  gap: $spacing-large $spacing-xx-large;
   margin: 0;
 
   .shot-fact {
@@ -170,11 +120,15 @@ $standing-aspect-ratio: 1.6;
     text-overflow: ellipsis;
   }
 
+  .shot-time {
+    font-variant-numeric: tabular-nums;
+  }
+
   .shot-result {
     display: flex;
     align-items: center;
     gap: $spacing-small;
-    // As tall as the watch button, so the rink doesn't move when stepping between goals and saves
+    // As tall as the watch button, so the rink doesn't move when switching between goals and saves
     height: 20px;
 
     &.goal {
@@ -252,6 +206,7 @@ $standing-aspect-ratio: 1.6;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: transform 150ms ease-out;
+  @include focus-ring;
 
   // A bigger tap target than the dot
   &::after {

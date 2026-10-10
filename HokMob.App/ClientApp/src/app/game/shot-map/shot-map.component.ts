@@ -23,8 +23,8 @@ export interface ShotMarker {
 
 /**
  * The game's shots on goal and goals on a rink, home's shots at the left end and away's at the right (standing up on
- * phones, home's at the top). A selected shot's shooter, time, shot type, result and goalie show above the rink, with
- * arrows that step through the shots in play order, and a goal with a posted clip can open its highlight.
+ * phones, home's at the top). A shot clicked on the rink (the last one to start with) shows its shooter, time, shot
+ * type, result and goalie above the rink, and a goal with a posted clip can open its highlight.
  */
 @Component({
   selector: 'app-shot-map',
@@ -130,16 +130,6 @@ export class ShotMapComponent implements OnChanges {
     return this.selectedMarker?.shot;
   }
 
-  public get hasPreviousShot(): boolean {
-    return this.shownMarkers.indexOf(this.selectedMarker) > 0;
-  }
-
-  public get hasNextShot(): boolean {
-    const shown = this.shownMarkers;
-    const index = shown.indexOf(this.selectedMarker);
-    return index >= 0 && index < shown.length - 1;
-  }
-
   /**
    * The line from the selected shot to the net it was shot at, in percent of the lying rink.
    */
@@ -213,17 +203,6 @@ export class ShotMapComponent implements OnChanges {
 
   public selectShot(marker: ShotMarker): void {
     this.selectedEventId = marker?.shot?.eventId;
-  }
-
-  /**
-   * Selects the shot before (-1) or after (1) the selected one, in play order.
-   */
-  public stepShot(step: number): void {
-    const shown = this.shownMarkers;
-    const marker = shown[shown.indexOf(this.selectedMarker) + step];
-    if (marker) {
-      this.selectShot(marker);
-    }
   }
 
   public clickShooter(): void {
