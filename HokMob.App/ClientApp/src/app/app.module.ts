@@ -63,6 +63,8 @@ import { StandingsSummaryComponent } from './home/standings-summary/standings-su
 import { GameTopPlayersComponent } from './game/game-top-players/game-top-players.component';
 import { GameSeasonLeadersComponent } from './game/game-season-leaders/game-season-leaders.component';
 import { RinkComponent } from './game/rink/rink.component';
+import { ShotMapComponent } from './game/shot-map/shot-map.component';
+import { PlayerShotMapComponent } from './game/player-shot-map/player-shot-map.component';
 import { MiniEventTimelineComponent } from './game/mini-event-timeline/mini-event-timeline.component';
 import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-event.component';
 import { PlayerCareerComponent } from './player/player-career/player-career.component';
@@ -125,6 +127,8 @@ import {SeasonHistoryService} from "@shared/services/season-history.service";
     GameTopPlayersComponent,
     GameSeasonLeadersComponent,
     RinkComponent,
+    ShotMapComponent,
+    PlayerShotMapComponent,
     MiniEventTimelineComponent,
     MiniEventComponent,
     PlayerCareerComponent,

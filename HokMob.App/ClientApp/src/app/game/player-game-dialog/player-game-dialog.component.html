@@ -6,7 +6,10 @@
   <button type="button" class="dialog-close-button" aria-label="Close" (click)="closeDialog()">
     <mat-icon fontIcon="close"></mat-icon>
   </button>
-  <app-player-game-stats [player]="player"></app-player-game-stats>
+  <div class="player-dialog-body" [class.with-shot-map]="playerShots.length > 0">
+    <app-player-game-stats [player]="player"></app-player-game-stats>
+    <app-player-shot-map *ngIf="playerShots.length > 0" [shots]="playerShots" [isGoalie]="isGoalie"></app-player-shot-map>
+  </div>
   <footer class="player-footer-container">
     <button type="button" class="profile-container" (click)="clickPlayerProfile()">
       <img *ngIf="profileHeadshot; else profileIcon" [src]="profileHeadshot" (error)="headshotFailed = true" alt=""

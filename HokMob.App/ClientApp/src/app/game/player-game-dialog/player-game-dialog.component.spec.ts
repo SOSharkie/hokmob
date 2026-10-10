@@ -6,6 +6,8 @@ import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GamePlayer } from '@shared/models/nhl-web-api/boxscore.model';
 import { StatsUtils } from '@shared/utils/stats-utils';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
+import { ShotMapUtils } from '@shared/utils/shot-map-utils';
+import { GameShot } from '@shared/models/game-shot.model';
 import { mockGameBoxscore, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { PlayerGameDialogComponent } from './player-game-dialog.component';
@@ -30,8 +32,11 @@ describe('PlayerGameDialogComponent', () => {
         .find(player => player.playerId === playerId);
   }
 
-  function open(player: GamePlayer): void {
-    TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {player}});
+  /** The shots of 2025021057, as the game page passes them. */
+  const gameShots = () => ShotMapUtils.getShots(mockGamePlayByPlay(2025021057));
+
+  function open(player: GamePlayer, shots?: GameShot[]): void {
+    TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {player, shots}});
     fixture = TestBed.createComponent(PlayerGameDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -118,6 +123,33 @@ describe('PlayerGameDialogComponent', () => {
     const params = new URL(windowOpen.calls.mostRecent().args[0] as string, window.location.origin).searchParams;
     expect(params.get('subject')).toBe('goalie');
     expect(params.has('evenStrengthShots')).toBeTrue();
+  });
+
+  it("should show a skater's shot map with his own shots, beside the stats", () => {
+    open(gamePlayer(8476460), gameShots());
+    const shotMap = fixture.nativeElement.querySelector('app-player-shot-map');
+    expect(shotMap.shots.length).toBe(gamePlayer(8476460).skaterStats.sog);
+    expect(shotMap.shots.every((shot: GameShot) => shot.shooterId === 8476460)).toBeTrue();
+    expect(shotMap.isGoalie).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.player-dialog-body').classList).toContain('with-shot-map');
+  });
+
+  it('should show a goalie the shots he faced', () => {
+    open(gamePlayer(8477480), gameShots());
+    const shotMap = fixture.nativeElement.querySelector('app-player-shot-map');
+    expect(shotMap.shots.length).toBe(gamePlayer(8477480).goalieStats.shotsAgainst);
+    expect(shotMap.isGoalie).toBeTrue();
+  });
+
+  it('should not show a shot map for a player without shots', () => {
+    open(gamePlayer(8474679), gameShots());
+    expect(fixture.nativeElement.querySelector('app-player-shot-map')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.player-dialog-body').classList).not.toContain('with-shot-map');
+  });
+
+  it('should not show a shot map without the game shots', () => {
+    open(gamePlayer(8476460));
+    expect(fixture.nativeElement.querySelector('app-player-shot-map')).toBeNull();
   });
 
   it('should pass no player to the shared component without one', () => {

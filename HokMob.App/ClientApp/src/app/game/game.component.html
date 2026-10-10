@@ -96,6 +96,16 @@
     <div *ngIf="!futureGame && playByPlay" class="game-container">
       <app-momentum [playByPlay]="playByPlay"></app-momentum>
     </div>
+    <div *ngIf="showShotMap" class="game-container">
+      <app-shot-map
+          [playByPlay]="playByPlay"
+          [scoring]="scoringPeriods"
+          [homeTeamLogo]="homeTeamLogo"
+          [awayTeamLogo]="awayTeamLogo"
+          (playerClicked)="openPlayerGameDialog($event)"
+          (goalClicked)="openGoalOrPlayerDialog($event)"
+      ></app-shot-map>
+    </div>
     <div *ngIf="showGameStats" class="game-container">
       <app-game-stats
           [teamGameStats]="rightRail.teamGameStats"

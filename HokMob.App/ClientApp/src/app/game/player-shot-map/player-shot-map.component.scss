@@ -1,0 +1,165 @@
+@import "variables";
+@import "interaction";
+
+$rink-line: $gray-01;
+
+:host {
+  display: block;
+}
+
+// Lined up with the player game stats beside or above it (player-game-stats.component.scss)
+.player-shot-map {
+  display: flex;
+  flex-direction: column;
+  margin: 0 $spacing-large $spacing-large;
+  padding: 0 $spacing-x-large $spacing-x-large;
+  color: white;
+}
+
+.shot-map-label {
+  font-size: large;
+}
+
+.shot-stats {
+  margin: 0;
+
+  .shot-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: $spacing-x-large;
+  }
+
+  dt {
+    color: $gray-03;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+// The attacked half, net at the bottom, drawn in feet (PlayerShotMapComponent)
+.half-rink {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  margin: $spacing-x-large auto 0;
+  overflow: visible;
+
+  .boards {
+    fill: $black-03;
+    stroke: $rink-line;
+    stroke-width: 2px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .markings * {
+    fill: none;
+    stroke: $rink-line;
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .markings {
+    .blue-line {
+      stroke-width: 3px;
+    }
+
+    .center-line {
+      stroke-width: 4px;
+    }
+
+    .crease {
+      fill: $black-04;
+    }
+
+    .net {
+      fill: $gray-02;
+      stroke: none;
+    }
+
+    .dot {
+      fill: $rink-line;
+      stroke: none;
+    }
+  }
+
+  .shot-line {
+    stroke: var(--team-color);
+    stroke-width: 1.5px;
+    stroke-opacity: 0.6;
+    vector-effect: non-scaling-stroke;
+
+    &.selected {
+      stroke: white;
+      stroke-width: 2px;
+      stroke-opacity: 1;
+    }
+  }
+
+  .shot-marker circle {
+    fill: var(--team-color);
+    stroke: rgba(255, 255, 255, 0.75);
+    stroke-width: 1.5px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .shot-marker.goal circle {
+    fill: white;
+    stroke: var(--team-color);
+    stroke-width: 2px;
+  }
+
+  .shot-marker.selected circle {
+    stroke: white;
+    stroke-width: 3px;
+  }
+}
+
+// One chip per shot, in play order. A selected chip fills with the team color and highlights its shot on the rink.
+.shot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $spacing-medium;
+  margin-top: $spacing-x-large;
+}
+
+.shot-chip {
+  @include button-reset;
+  display: flex;
+  align-items: center;
+  gap: $spacing-small;
+  height: 26px;
+  padding: 0 $spacing-large;
+  border: 1px solid var(--team-color);
+  border-radius: 13px;
+  background-color: $black-03;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  @include pressable(background-color);
+  @include focus-ring;
+
+  // The black puck on a light disc, like the goals on the rink
+  .puck-icon {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    padding: 2px;
+    border-radius: 50%;
+    background-color: white;
+  }
+
+  @include hover {
+    background-color: $gray-01;
+  }
+
+  &.selected {
+    background-color: var(--team-color);
+    color: var(--team-text-color);
+  }
+}

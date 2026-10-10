@@ -179,9 +179,38 @@ players card.
 - **Ranking:** skaters by points, then goals, then fewer games played, then the bigger star (`NhlStarPlayerUtils`).
   Goalies by wins, then games started, then save percentage. Players without games are left out, and a short line
   shows the players there are. The card is hidden when either team has no one.
-- **Stat line:** `GP · G-A-P` for skaters and `W-L-OTL · SV% · GAA` for the goalie. A player links to his player page.
+- **Stat line:** `GP Â· G-A-P` for skaters and `W-L-OTL Â· SV% Â· GAA` for the goalie. A player links to his player page.
 - **Star lineup:** the toggle swaps the skaters for each team's stars who have played for it, topped up by points
   (`NhlStarPlayerUtils.pickStarLine`). The goalie stays the wins leader.
+
+## Shot maps
+
+A live or finished game's shot map card (`ShotMapComponent`, on the shared `RinkComponent`) and the player game dialog's
+shot map (`PlayerShotMapComponent`) plot the shots on goal and goals of the play-by-play, which the page already loads.
+Missed and blocked shots aren't plotted. `ShotMapUtils.getShots` reads them.
+
+- **Coordinates:** `details.xCoord` / `yCoord` in feet from center ice: x from -100 to 100 along the rink (goal lines at
+  Â±89), y from -42.5 to 42.5 across it. The teams switch ends each period, and `homeTeamDefendingSide` (`"left"` is
+  negative x) says which end the home team defends. `getShots` turns every shot so the shooter attacks the net at
+  x = 89, turning a shot towards the left end half a turn (both x and y negated) so it keeps its side of the net.
+  Without `homeTeamDefendingSide` it goes by the half the shot came from.
+- **Shooter and goalie:** a `shot-on-goal` has `shootingPlayerId`, a `goal` has `scoringPlayerId`; both have
+  `goalieInNetId`, which is missing for an empty net goal. `eventOwnerTeamId` is the shooting team. In the fixture games
+  each team's count matches the boxscore's `sog`, and a goalie's shots faced match his `shotsAgainst`.
+- **Where the shots come from:** a few each game are from the neutral zone or the shooter's own half (an empty net goal
+  from the defensive zone, even one at x = -98). The team map shows them where they are. The player map draws the
+  offensive zone, or down to the center line when a shot came from the neutral zone, and pins a shot from the
+  shooter's own half to its top edge.
+- **What's missing:** there's no location on the net for a shot on goal (FotMob's goal mouth view), only a missed
+  shot's `reason` (`wide-left`, `above-crossbar`, `hit-right-post`, ...). `shotType` is `wrist`, `snap`, `slap`,
+  `backhand`, `tip-in`, `deflected`, `wrap-around`, `bat` or `poke` (`ShotMapUtils.getShotTypeLabel`). The shootout
+  (period type `SO`) is left out.
+- **Blocked shots,** if they're ever plotted: their coordinates are where the shot was blocked, not where it was taken,
+  and `eventOwnerTeamId` is still the shooting team.
+- **The team map** puts home's shots at the left end and away's at the right (standing up on phones, home's at the
+  top). It lines the shots up with the drawn rink's goal lines and faceoff dots, since the rink is drawn 200.13ft long
+  (`ShotMapComponent.getRinkPosition`). It starts on the last shot, the arrows step through the shots in play order,
+  and a goal with a posted clip opens the goal highlight dialog.
 
 ## Season dates and playoff mode
 

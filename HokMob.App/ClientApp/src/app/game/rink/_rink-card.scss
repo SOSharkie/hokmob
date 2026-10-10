@@ -3,77 +3,7 @@
 @import "variables";
 @import "interaction";
 
-// The rating blue the starred player is highlighted in (StatsUtils.hokmobRatingBlue), for the lineup toggle
-$star-blue: #0e87e0;
-$rink-line: $gray-01;
-
-.rink-card {
-  background-color: $black-02;
-  border-radius: 25px;
-  color: white;
-  padding: 0 $spacing-x-large $spacing-x-large;
-
-  .rink-card-header {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 40px;
-    // The same title type as the other cards
-    font-size: 17px;
-    font-weight: 500;
-  }
-
-  // The lineup toggle sits in the top right corner, so the title stays centered on the card
-  .lineup-toggle {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    gap: $spacing-small;
-    height: 26px;
-    padding: 0 $spacing-large 0 $spacing-medium;
-    border: 1px solid $gray-01;
-    border-radius: 20px;
-    background-color: $black-03;
-    color: $gray-04;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s, background-color 0.15s;
-    @include focus-ring;
-
-    @include hover {
-      border-color: $gray-02;
-      color: white;
-    }
-
-    &:active {
-      background-color: $gray-01;
-    }
-
-    &.showing-stars {
-      border-color: $star-blue;
-      color: white;
-
-      .toggle-icon {
-        color: $star-blue;
-      }
-    }
-
-    .toggle-icon {
-      width: 15px;
-      height: 15px;
-      font-size: 15px;
-      color: $gray-03;
-    }
-  }
-}
+@import "rink-card-base";
 
 // A player's headshot with the goalie mask badge, and their name below it, on the rink or elsewhere on the card
 @mixin player-avatar {
