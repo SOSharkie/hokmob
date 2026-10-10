@@ -1,4 +1,16 @@
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import {PlayByPlay, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {GameLandingScoringPeriod} from "@shared/models/nhl-web-api/gamecenter-landing.model";
 import {GameShot} from "@shared/models/game-shot.model";
@@ -31,7 +43,7 @@ export interface ShotMarker {
   templateUrl: './shot-map.component.html',
   styleUrls: ['./shot-map.component.scss']
 })
-export class ShotMapComponent implements OnChanges {
+export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   /**
    * Where the goal lines and the faceoff dots are on the drawn rink, so a shot lines up with the markings: the goal
@@ -79,11 +91,30 @@ export class ShotMapComponent implements OnChanges {
    */
   public selectedEventId: number;
 
+  /**
+   * Whether the shot details show the goalie. They stay on one row beside the shooter, so the goalie is left out when
+   * it would squeeze the shooter's name (fitShotDetails).
+   */
+  public showGoalie = true;
+
+  @ViewChild("shotDetails")
+  public shotDetails: ElementRef<HTMLElement>;
+
+  private refitFrameId: number;
+
+  /** Refits the shot details when the card changes width, with the window or the page's layout. */
+  private resizeObserver: ResizeObserver;
+
+  private cardWidth: number;
+
   private rosterSpots = new Map<number, RosterSpot>();
 
   private homeTeamId: number;
 
   private awayTeamId: number;
+
+  constructor(private changeDetector: ChangeDetectorRef,
+              private host: ElementRef<HTMLElement>) {}
 
   public ngOnChanges(changes: SimpleChanges): void {
     this.homeTeamId = this.playByPlay?.homeTeam?.id;
@@ -96,6 +127,41 @@ export class ShotMapComponent implements OnChanges {
       ...ShotMapComponent.getRinkPosition(shot),
       color: shot.isHomeTeam ? homeColor : awayColor
     }));
+    // A refresh can change the selected shot, once the view shows it
+    this.scheduleFit();
+  }
+
+  public ngAfterViewInit(): void {
+    this.fitShotDetails();
+    this.resizeObserver = new ResizeObserver(entries => {
+      const width = entries[0]?.contentRect.width;
+      if (width !== this.cardWidth) {
+        this.cardWidth = width;
+        this.fitShotDetails();
+      }
+    });
+    this.resizeObserver.observe(this.host.nativeElement);
+  }
+
+  public ngOnDestroy(): void {
+    cancelAnimationFrame(this.refitFrameId);
+    this.resizeObserver?.disconnect();
+  }
+
+  /**
+   * Shows the goalie in the shot details, and leaves it out when the shooter's name no longer fits beside the facts
+   * or the row overflows the card. Runs when the view is built, when the card changes width and whenever the selected
+   * shot changes, since the names' lengths change with it.
+   */
+  public fitShotDetails(): void {
+    this.showGoalie = true;
+    this.changeDetector.detectChanges();
+    const details = this.shotDetails?.nativeElement;
+    const name = details?.querySelector(".shooter-name");
+    if (details && (details.scrollWidth > details.clientWidth || name?.scrollWidth > name?.clientWidth)) {
+      this.showGoalie = false;
+      this.changeDetector.detectChanges();
+    }
   }
 
   /**
@@ -199,10 +265,12 @@ export class ShotMapComponent implements OnChanges {
 
   public toggleGoalsOnly(): void {
     this.showGoalsOnly = !this.showGoalsOnly;
+    this.fitShotDetails();
   }
 
   public selectShot(marker: ShotMarker): void {
     this.selectedEventId = marker?.shot?.eventId;
+    this.fitShotDetails();
   }
 
   public clickShooter(): void {
@@ -228,6 +296,11 @@ export class ShotMapComponent implements OnChanges {
 
   public showBlankHeadshot(event: Event): void {
     NhlPlayerHeadshotUtils.showBlankHeadshot(event);
+  }
+
+  private scheduleFit(): void {
+    cancelAnimationFrame(this.refitFrameId);
+    this.refitFrameId = requestAnimationFrame(() => this.fitShotDetails());
   }
 
   public trackByShot(index: number, marker: ShotMarker): number {

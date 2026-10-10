@@ -1,5 +1,10 @@
 @import "../rink/rink-card-base";
 
+// A block, so the component's resize observer sees the card's width
+:host {
+  display: block;
+}
+
 // The lying rink is 200.13ft long and 78.74ft wide, the standing one 1.6 times as long as wide (RinkComponent)
 $standing-aspect-ratio: 1.6;
 
@@ -25,13 +30,13 @@ $standing-aspect-ratio: 1.6;
   }
 }
 
-// The selected shot: the shooter, and its facts beside them, or below when they don't fit beside (on phones)
+// The selected shot: the shooter, and its facts beside them on the same row. The facts keep their width and the
+// shooter's name gives way, after the goalie is left out (ShotMapComponent.fitShotDetails).
 .shot-details {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: $spacing-large $spacing-xx-large;
+  gap: $spacing-xx-large;
   margin: $spacing-medium 0 $spacing-x-large;
 }
 
@@ -39,7 +44,7 @@ $standing-aspect-ratio: 1.6;
 .shooter {
   @include button-reset;
   display: flex;
-  max-width: 100%;
+  flex: 0 1 auto;
   align-items: center;
   gap: $spacing-large;
   min-width: 0;
@@ -94,12 +99,13 @@ $standing-aspect-ratio: 1.6;
   text-overflow: ellipsis;
 }
 
-// The time, shot type and result take the room they need, and the goalie's name the rest
+// One column per fact, each as wide as it needs
 .shot-facts {
   display: grid;
-  grid-template-columns: auto auto auto minmax(0, auto);
-  min-width: 0;
-  gap: $spacing-large $spacing-xx-large;
+  flex: none;
+  grid-auto-flow: column;
+  grid-auto-columns: auto;
+  gap: $spacing-xx-large;
   margin: 0;
 
   .shot-fact {
@@ -263,6 +269,12 @@ $standing-aspect-ratio: 1.6;
 // Mobile Styling: the rink stands up, home at the top, so the shots stand up with its markings (rink.component.scss).
 // The pucks turn back so they stay upright.
 @media only screen and (max-width: $mobile-screen-breakpoint) {
+  // Tighter gaps leave the shooter's name more room beside the facts
+  .shot-details,
+  .shot-facts {
+    gap: $spacing-large;
+  }
+
   .shot-layer {
     inset: auto;
     top: 50%;

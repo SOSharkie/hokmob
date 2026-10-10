@@ -113,10 +113,52 @@ describe('ShotMapComponent', () => {
     expect(text('.shot-time')).toBe(ShotMapUtils.getTimeLabel(component.markers[0].shot));
   });
 
-  it('should show the time in the row with the shot type, result and goalie', () => {
-    show();
-    expect(elements('.shot-facts dt').map(label => label.textContent.trim()))
-        .toEqual(['Time', 'Shot type', 'Result', 'Goalie']);
+  describe('shot details row', () => {
+    const facts = () => elements('.shot-facts dt').map(label => label.textContent.trim());
+    const nextFrames = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    function showAtWidth(width: number): void {
+      fixture.nativeElement.style.width = width + 'px';
+      show();
+    }
+
+    it('should show the time, shot type, result and goalie beside the shooter on a wide card', () => {
+      showAtWidth(900);
+      expect(facts()).toEqual(['Time', 'Shot type', 'Result', 'Goalie']);
+      expect(component.showGoalie).toBeTrue();
+      const shooter = element('.shooter').getBoundingClientRect();
+      expect(element('.shot-facts').getBoundingClientRect().top).toBeLessThan(shooter.bottom);
+    });
+
+    it('should leave out the goalie on a narrow card instead of wrapping', () => {
+      showAtWidth(420);
+      expect(facts()).toEqual(['Time', 'Shot type', 'Result']);
+      const details = element('.shot-details');
+      expect(details.scrollWidth).toBeLessThanOrEqual(details.clientWidth);
+      const shooter = element('.shooter').getBoundingClientRect();
+      expect(element('.shot-facts').getBoundingClientRect().top).toBeLessThan(shooter.bottom);
+    });
+
+    it('should bring the goalie back or leave it out when the card changes width', async () => {
+      showAtWidth(900);
+      await nextFrames();
+      fixture.nativeElement.style.width = '420px';
+      await nextFrames();
+      expect(facts()).toEqual(['Time', 'Shot type', 'Result']);
+
+      fixture.nativeElement.style.width = '900px';
+      await nextFrames();
+      expect(facts()).toEqual(['Time', 'Shot type', 'Result', 'Goalie']);
+    });
+
+    it('should refit when another shot is selected', () => {
+      showAtWidth(900);
+      const fit = spyOn(component, 'fitShotDetails').and.callThrough();
+      elements('.shot-marker')[0].click();
+      expect(fit).toHaveBeenCalled();
+      click('.goals-toggle');
+      expect(fit).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('should show only the goals with the goals toggle, selecting the last one', () => {

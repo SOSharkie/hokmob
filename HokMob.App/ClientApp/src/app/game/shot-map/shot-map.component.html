@@ -7,7 +7,7 @@
       <span>Goals</span>
     </button>
   </div>
-  <div *ngIf="selectedShot" class="shot-details">
+  <div *ngIf="selectedShot" #shotDetails class="shot-details">
     <button type="button" class="shooter" (click)="clickShooter()" [attr.aria-label]="'Open ' + shooterName + '\'s game stats'">
       <span class="shooter-avatar">
         <span class="shooter-headshot-container">
@@ -37,7 +37,7 @@
           </button>
         </dd>
       </div>
-      <div class="shot-fact">
+      <div *ngIf="showGoalie" class="shot-fact">
         <dt>Goalie</dt>
         <dd class="shot-goalie">{{goalieLabel}}</dd>
       </div>
