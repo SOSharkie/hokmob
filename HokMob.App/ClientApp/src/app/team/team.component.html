@@ -1,12 +1,12 @@
 <div class="team-container">
   <div class="team-header">
     <div class="back-container">
-      <div class="games-back-button" (click)="backToPrevious()">
-        <div class="back-icon">
-          <mat-icon fontIcon="chevron_left"></mat-icon>
-        </div>
+      <button type="button" class="games-back-button" (click)="backToPrevious()">
+        <span class="back-icon" aria-hidden="true">
+          <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
+        </span>
         <span class="games-label">{{backButtonLabel}}</span>
-      </div>
+      </button>
     </div>
     <div *ngIf="team" class="team-logo-container">
       <app-team-logo class="team-logo" [teamId]="teamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>

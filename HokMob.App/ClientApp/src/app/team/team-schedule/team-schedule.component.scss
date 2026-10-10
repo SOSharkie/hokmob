@@ -11,11 +11,13 @@
     justify-content: center;
     align-items: center;
     height: 40px;
+    font-size: 17px;
+    font-weight: 500;
   }
 
-
+  // The same dividers as the home page's scoreboard
   .future-game-container {
-    border-bottom: 1px solid $gray-01;
+    border-bottom: 1px solid $black-03;
   }
 
   .last-scorecard {
@@ -25,6 +27,6 @@
   .no-games {
     text-align: center;
     padding: $spacing-large;
-    color: $gray-01;
+    color: $gray-03;
   }
 }

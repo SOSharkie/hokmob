@@ -126,6 +126,23 @@ describe('MiniEventComponent', () => {
     expect(hovered).toEqual([{playerId: 8473533, goalIndex: 1}, null, {playerId: 8477940}, null]);
   });
 
+  it('should make the scorer and assists buttons, which highlight the player on keyboard focus', () => {
+    const hovered: PlayerHighlight[] = [];
+    component.playerHovered.subscribe(highlight => hovered.push(highlight));
+    // Staal's second goal of the game, from Ehlers
+    show(2025030414, 212);
+    fixture.componentRef.setInput('goalIndex', 1);
+    fixture.detectChanges();
+    const mainLabel: HTMLElement = fixture.nativeElement.querySelector('.event-main-label');
+    const assist: HTMLElement = fixture.nativeElement.querySelector('.assist-name');
+    expect([mainLabel.tagName, assist.tagName]).toEqual(['BUTTON', 'BUTTON']);
+
+    mainLabel.dispatchEvent(new FocusEvent('focus'));
+    mainLabel.dispatchEvent(new FocusEvent('blur'));
+    assist.dispatchEvent(new FocusEvent('focus'));
+    expect(hovered).toEqual([{playerId: 8473533, goalIndex: 1}, null, {playerId: 8477940}]);
+  });
+
   it('should emit a penalized player without a goal index on hover', () => {
     const hovered: PlayerHighlight[] = [];
     component.playerHovered.subscribe(highlight => hovered.push(highlight));

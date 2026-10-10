@@ -99,6 +99,24 @@ describe('GameStatsComponent', () => {
     expect(component.homeColor).toBe(NhlTeamColorUtils.getTeamPrimaryColor(52));
   });
 
+  it("should keep a highlighted stat readable on the team's color", () => {
+    // Winnipeg hosts St. Louis: both blue, so the Blues get the light secondary color, too light for white text
+    show(mockGameRightRail(2025021057).teamGameStats);
+    expect(component.awayColor).toBe('#FFFFFFB1');
+    expect(component.awayTextColor).toBe('#1B1B1B');
+    expect(component.homeTextColor).toBe('#FFFFFF');
+
+    // The Blues led no stat there, so take the Carolina game's stats, where the away team led four, as if Carolina
+    // had visited New Jersey: both red, so Carolina gets the light color too
+    show(mockGameRightRail(2025030414).teamGameStats, 1, 12);
+    expect(highlighted('away')).toEqual(['Faceoff %', 'Power Plays', 'Blocks', 'Takeaways']);
+
+    const highlightedAway = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.away.team-stat'))
+        .filter(stat => stat.style.backgroundColor);
+    expect(highlightedAway.length).toBeGreaterThan(0);
+    expect(highlightedAway.every(stat => stat.style.color === 'rgb(27, 27, 27)')).toBeTrue();
+  });
+
   it('should update the stats and chart when new stats arrive', () => {
     show(mockGameRightRail(2025021057).teamGameStats);
     const updated = mockGameRightRail(2025020952).teamGameStats;

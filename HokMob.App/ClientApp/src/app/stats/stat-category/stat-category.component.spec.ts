@@ -187,6 +187,8 @@ describe('StatCategoryComponent', () => {
     const probe = document.createElement('span');
     probe.style.backgroundColor = edmontonColor;
     expect(leaderValues[0].style.backgroundColor).toBe(probe.style.backgroundColor);
+    // Edmonton's blue keeps white text
+    expect(leaderValues[0].style.color).toBe('rgb(255, 255, 255)');
     expect(rows()[0].classList).toContain('leader-row');
     expect(rows()[1].classList).not.toContain('leader-row');
   });

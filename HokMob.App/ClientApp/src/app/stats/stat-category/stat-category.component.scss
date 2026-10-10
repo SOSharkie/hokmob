@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 .stat-category-container {
   display: flex;
@@ -37,15 +38,18 @@
       height: 36px;
       border-radius: 50%;
       color: $gray-04;
-      transition: background-color 0.15s;
+      @include pressable(background-color, color, transform);
+      @include focus-ring;
 
-      &:hover {
+      @include hover {
         background-color: $black-04;
         color: white;
       }
 
-      &:focus-visible {
-        outline: 1px solid $gray-04;
+      &:active {
+        background-color: $press-highlight;
+        color: white;
+        transform: scale($press-scale);
       }
     }
 
@@ -59,6 +63,7 @@
       margin: 0;
       font-size: x-large;
       font-weight: normal;
+      letter-spacing: -0.01em;
     }
 
     .stat-category-subtitle {
@@ -75,9 +80,11 @@
     }
   }
 
+  // Waits a moment before fading in, so a quick load doesn't flash the spinner
   .loading-container {
     display: flex;
     justify-content: center;
+    animation: stat-category-spinner-in 200ms ease-out 150ms both;
 
     .loading-spinner {
       margin-top: $spacing-xx-large;
@@ -173,11 +180,20 @@
         align-items: center;
         gap: $spacing-large;
         min-width: 0;
+        border-radius: 8px;
         color: white;
         text-decoration: none;
+        @include pressable(opacity);
+        @include focus-ring;
 
-        &:hover .player-name {
-          text-decoration: underline;
+        @include hover {
+          .player-name {
+            text-decoration: underline;
+          }
+        }
+
+        &:active {
+          opacity: 0.6;
         }
       }
 
@@ -255,6 +271,18 @@
         font-size: larger;
       }
     }
+  }
+}
+
+@keyframes stat-category-spinner-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-category-container .stat-category-header .back-link:active {
+    transform: none;
   }
 }
 

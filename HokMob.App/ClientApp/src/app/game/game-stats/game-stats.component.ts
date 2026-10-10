@@ -81,6 +81,16 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
     return NhlTeamColorUtils.getTeamSecondaryColor(this.homeTeamId, this.awayTeamId);
   }
 
+  /** The text color on homeColor: white, or near-black on a light team color. */
+  public get homeTextColor(): string {
+    return NhlTeamColorUtils.getTextColorOn(this.homeColor);
+  }
+
+  /** The text color on awayColor, which is a light gray when both teams are blue or both are red. */
+  public get awayTextColor(): string {
+    return NhlTeamColorUtils.getTextColorOn(this.awayColor);
+  }
+
   public ngOnChanges(changes: SimpleChanges): void {
     this.buildStats();
     this.updateChart();

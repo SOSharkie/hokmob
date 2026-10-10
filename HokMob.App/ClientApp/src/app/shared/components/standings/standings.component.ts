@@ -50,6 +50,11 @@ export class StandingsComponent implements OnChanges {
     return "";
   }
 
+  /** The text color on the selected team's points pill: white, or near-black on a light team color. */
+  public get selectedTeamTextColor(): string {
+    return this.selectedTeamId ? NhlTeamColorUtils.getTeamTextColor(this.selectedTeamId) : "";
+  }
+
   public ngOnChanges(changes: SimpleChanges) {
     if (changes['standings'] && this.standings && this.standings[0]) {
       this.teamIds = this.standings.map(group =>

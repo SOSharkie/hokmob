@@ -49,6 +49,8 @@ describe('PlayerGameDialogComponent', () => {
     const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     spyOn(window, 'scrollTo');
 
+    expect(fixture.nativeElement.querySelector('.profile-container').tagName).toBe('BUTTON');
+    expect(fixture.nativeElement.querySelector('.done-button').tagName).toBe('BUTTON');
     fixture.nativeElement.querySelector('.profile-container').click();
     expect(close).toHaveBeenCalled();
     tick(100);

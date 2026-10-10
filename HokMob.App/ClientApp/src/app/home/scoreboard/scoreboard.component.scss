@@ -1,10 +1,18 @@
 @import "variables";
+@import "interaction";
+
+// A new day's games come in from the side the user moved toward, like turning a page. Critically damped (no
+// overshoot), since a click carries no momentum
+$day-enter-distance: 24px;
+$day-enter-easing: cubic-bezier(0.22, 1, 0.36, 1);
 
 .scores-container {
   // Keeps the last child's bottom margin inside the card, so it doesn't add to the gap below it
   display: flow-root;
   background-color: $black-02;
   border-radius: 25px;
+  // Clips the games while they slide in
+  overflow: hidden;
 
   .day-select-container {
     display: flex;
@@ -25,6 +33,8 @@
 
         .selected-day {
           font-size: x-large;
+          font-weight: 400;
+          letter-spacing: -0.01em;
           // The label gets the one line between the day arrows, so it shrinks with the card instead of wrapping
           white-space: nowrap;
         }
@@ -39,22 +49,53 @@
         }
       }
 
-      .date-select-container:hover {
-        color: $gray-04;
+      .date-select-container {
+        align-items: center;
+        border-radius: 8px;
         cursor: pointer;
+        @include pressable(color, opacity);
+        @include focus-ring(4px);
+
+        @include hover {
+          color: $gray-04;
+        }
+
+        &:active {
+          opacity: 0.6;
+        }
       }
     }
 
+    // A round button, pressed in while held
     .day-shift {
-      padding: 3px 4px 1px 3px;
-      background-color: $gray-02;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: none;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: none;
       border-radius: 50%;
-    }
-
-    .day-shift:hover {
-      background-color: white;
-      color: $black-01;
+      background-color: $gray-02;
+      color: white;
       cursor: pointer;
+      @include pressable(background-color, color, transform);
+      @include focus-ring;
+
+      .mat-icon {
+        width: 20px;
+        height: 20px;
+      }
+
+      @include hover {
+        background-color: white;
+        color: $black-01;
+      }
+
+      &:active {
+        transform: scale($press-scale);
+      }
     }
 
     .day-shift.left {
@@ -68,9 +109,19 @@
 
   .games-container {
     border-top: 1px solid $black-03;
+    animation: scoreboard-enter-fade 200ms ease-out both;
+  }
+
+  &.enter-next .games-container {
+    animation: scoreboard-enter-next 350ms $day-enter-easing both;
+  }
+
+  &.enter-previous .games-container {
+    animation: scoreboard-enter-previous 350ms $day-enter-easing both;
   }
 
   .no-games-container {
+    animation: scoreboard-enter-fade 200ms ease-out both;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -79,16 +130,52 @@
     border-top: 1px solid $black-03;
   }
 
+  // Waits a moment before fading in, so a quick load (a cached day) doesn't flash the spinner
   .loading-container {
     display: flex;
     justify-content: center;
     padding: $spacing-large 0;
     border-top: 1px solid $black-03;
+    animation: scoreboard-enter-fade 200ms ease-out 150ms both;
   }
 
   .last-scorecard .scorecard-container {
     border-bottom-left-radius: 25px;
     border-bottom-right-radius: 25px;
+  }
+}
+
+@keyframes scoreboard-enter-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes scoreboard-enter-next {
+  from {
+    opacity: 0;
+    transform: translateX($day-enter-distance);
+  }
+}
+
+@keyframes scoreboard-enter-previous {
+  from {
+    opacity: 0;
+    transform: translateX(-$day-enter-distance);
+  }
+}
+
+// Reduced motion: every day fades in, and the arrows don't shrink when pressed
+@media (prefers-reduced-motion: reduce) {
+  .scores-container {
+    &.enter-next .games-container,
+    &.enter-previous .games-container {
+      animation: scoreboard-enter-fade 200ms ease-out both;
+    }
+
+    .day-select-container .day-shift:active {
+      transform: none;
+    }
   }
 }
 
@@ -153,10 +240,11 @@
     width: 100%;
   }
 
-  // A smaller label and tighter margins, so the longest label, "Wednesday, Sep 30", fits the narrowest phone
+  // A smaller label and tighter margins, so the longest label, "Wednesday, Sep 30", fits the narrowest phone between
+  // the 36px day buttons
   .scores-container .day-select-container {
     .date-container {
-      margin-left: $spacing-large;
+      margin-left: $spacing-small;
 
       .date-select-container .selected-day {
         font-size: 20px;

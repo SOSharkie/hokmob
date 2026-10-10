@@ -1,0 +1,136 @@
+@import "variables";
+
+// Interaction states for rows and buttons (home, about). Press feedback shows the instant the pointer goes down, and
+// fades back out on release, so a tap always gets a response.
+
+// The background of a row while it's pressed: a step brighter than its hover ($black-03)
+$press-highlight: #333333;
+
+// How far a small button shrinks while it's pressed
+$press-scale: 0.92;
+
+// Hover styles, only for pointers that hover. On a phone a tap would otherwise leave them stuck on.
+@mixin hover {
+  @media (hover: hover) {
+    &:hover {
+      @content;
+    }
+  }
+}
+
+// Fades the given properties back after a hover or press, but applies a press instantly. Replaces the browser's own
+// gray tap flash on phones, since the element shows its own press.
+@mixin pressable($properties...) {
+  -webkit-tap-highlight-color: transparent;
+  transition-property: $properties;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+
+  &:active {
+    transition-duration: 0s;
+  }
+}
+
+// A green ring for keyboard focus only
+@mixin focus-ring($offset: 2px) {
+  &:focus-visible {
+    outline: 2px solid $green-01;
+    outline-offset: $offset;
+  }
+}
+
+// Strips a <button>'s own look, for one that looks like a link or an icon
+@mixin button-reset {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+// The back button of the player and team pages: a round chevron and the previous page's name. The circle fills on
+// hover and shrinks while pressed.
+@mixin back-button {
+  @include button-reset;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 8px;
+  @include focus-ring;
+
+  .back-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: none;
+    border-radius: 50%;
+    background-color: $gray-02;
+    transition: background-color 150ms ease-out, color 150ms ease-out, transform 150ms ease-out;
+  }
+
+  @include hover {
+    .back-icon {
+      background-color: white;
+      color: $black-01;
+    }
+
+    .games-label {
+      text-decoration: underline;
+    }
+  }
+
+  &:active .back-icon {
+    transform: scale($press-scale);
+    transition-duration: 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active .back-icon {
+      transform: none;
+    }
+  }
+}
+
+// A card's title that links to its full page (home's standings and playoffs cards). A chevron marks it as a link, and
+// nudges toward the page on hover.
+@mixin card-title-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: $spacing-small;
+  height: 50px;
+  // The card's top corners, so the press highlight stays inside the card
+  border-radius: 25px 25px 0 0;
+  color: white;
+  font-size: 17px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  @include pressable(background-color);
+  @include focus-ring(-2px);
+
+  .title-chevron {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: $gray-04;
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms ease-out;
+  }
+
+  @include hover {
+    .title-chevron {
+      color: white;
+      transform: translateX(2px);
+    }
+  }
+
+  &:active {
+    background-color: $black-03;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .title-chevron {
+      transform: none !important;
+    }
+  }
+}

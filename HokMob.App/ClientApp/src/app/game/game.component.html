@@ -12,26 +12,26 @@
       ></app-game-header>
     </div>
     <div *ngIf="loadFailed" class="game-load-error">
-      <div class="games-back-button" (click)="backToPrevious()">
-        <div class="back-icon">
-          <mat-icon fontIcon="chevron_left"></mat-icon>
-        </div>
+      <button type="button" class="games-back-button" (click)="backToPrevious()">
+        <span class="back-icon" aria-hidden="true">
+          <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
+        </span>
         <span class="games-label">{{backButtonLabel}}</span>
-      </div>
+      </button>
       <span class="game-load-error-message">This game couldn't be loaded.</span>
     </div>
     <div class="game-header" *ngIf="landing">
       <div class="league-info">
-        <div class="games-back-button" (click)="backToPrevious()">
-          <div class="back-icon">
-            <mat-icon fontIcon="chevron_left"></mat-icon>
-          </div>
+        <button type="button" class="games-back-button" (click)="backToPrevious()">
+          <span class="back-icon" aria-hidden="true">
+            <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
+          </span>
           <span class="games-label">{{backButtonLabel}}</span>
-        </div>
-        <div class="league-info-container" [routerLink]="[leagueRouterLink]">
-          <img class="nhl-logo" src="assets/nhl_logo.png">
+        </button>
+        <a class="league-info-container" [routerLink]="[leagueRouterLink]" [attr.aria-label]="gameInfoLabel">
+          <img class="nhl-logo" src="assets/nhl_logo.png" alt="">
           <span class="league-info-label">{{gameInfoLabel}}</span>
-        </div>
+        </a>
         <button *ngIf="showHighlightsDialog" type="button" class="watch-button" (click)="openHighlightsDialog()">
           <mat-icon class="watch-icon" [fontIcon]="watchIcon"></mat-icon>
           <span class="watch-link">{{watchLabel}}</span>

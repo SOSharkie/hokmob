@@ -1,7 +1,16 @@
-<div class="nav-menu-card">
-  <h2 class="nav-menu-title">Explore</h2>
-  <a *ngFor="let menuItem of navMenuItems" class="nav-menu-item" (click)="onClickMenuItem(menuItem)">
-    <mat-icon class="nav-menu-icon" [svgIcon]="getSvgIcon(menuItem)"></mat-icon>
-    <span class="nav-menu-text">{{menuItem.name}}</span>
-  </a>
-</div>
+<nav class="nav-menu-card" aria-labelledby="nav-menu-title">
+  <h2 id="nav-menu-title" class="nav-menu-title">Explore</h2>
+  <ng-container *ngFor="let menuItem of navMenuItems">
+    <a *ngIf="menuItem.route" class="nav-menu-item" [routerLink]="menuItem.route">
+      <ng-container *ngTemplateOutlet="itemContent; context: {$implicit: menuItem}"></ng-container>
+    </a>
+    <a *ngIf="menuItem.url" class="nav-menu-item" [href]="menuItem.url">
+      <ng-container *ngTemplateOutlet="itemContent; context: {$implicit: menuItem}"></ng-container>
+    </a>
+  </ng-container>
+</nav>
+
+<ng-template #itemContent let-menuItem>
+  <mat-icon class="nav-menu-icon" [svgIcon]="getSvgIcon(menuItem)"></mat-icon>
+  <span class="nav-menu-text">{{menuItem.name}}</span>
+</ng-template>

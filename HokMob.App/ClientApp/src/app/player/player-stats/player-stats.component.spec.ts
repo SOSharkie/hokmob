@@ -121,4 +121,15 @@ describe('PlayerStatsComponent', () => {
       ['OT Losses', '11']
     ]);
   });
+
+  it("should put the goalie's save percentage and GAA in readable text on the team color", () => {
+    const season = mockPlayerStats(8476945).regularSeasons[0] as GoalieSeasonStats;
+    show(season, true, '2025-2026 NHL Regular Season Stats');
+
+    // The card is shown in Vegas gold (#B4975A), too light for white text
+    const pills = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.goalie-stats .item-value'))
+        .filter(value => value.style.backgroundColor);
+    expect(pills.map(pill => pill.textContent.trim())).toEqual(['.895', '2.86']);
+    expect(pills.map(pill => pill.style.color)).toEqual(['rgb(27, 27, 27)', 'rgb(27, 27, 27)']);
+  });
 });

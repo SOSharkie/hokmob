@@ -44,7 +44,8 @@
         <td *ngIf="!miniStandings" class="gd-cell stat-cell"><span>{{team.goalDifferential}}</span></td>
         <td *ngIf="showFormAndNext" class="form-cell stat-cell"><span>{{team.streakCount}}{{team.streakCode}}</span></td>
         <td class="points-cell stat-cell">
-          <span class="points-value" [ngStyle]="{'background-color': teamIds[i][j] === selectedTeamId ? selectedTeamColor : ''}">
+          <span class="points-value" [ngStyle]="{'background-color': teamIds[i][j] === selectedTeamId ? selectedTeamColor : '',
+                                                 'color': teamIds[i][j] === selectedTeamId ? selectedTeamTextColor : ''}">
             {{team.points}}
           </span>
         </td>

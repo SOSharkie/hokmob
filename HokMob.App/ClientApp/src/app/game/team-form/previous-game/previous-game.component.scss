@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 // Fills its cell, so the game page's paired rows keep their separators level when one of them has a wrapped name
 :host {
@@ -13,8 +14,13 @@
   // The logos and the score line up along the top, so a name that wraps only grows the row downwards
   align-items: flex-start;
   min-height: 45px;
-  border-bottom: 1px solid $gray-01;
+  border-bottom: 1px solid $black-03;
   margin: $spacing-medium;
+  // Rounded, so the hover highlight sits inside the card as a soft block between the dividers
+  border-radius: 10px;
+  cursor: pointer;
+  @include pressable(background-color);
+  @include focus-ring(-2px);
   // The score's margins scale with the row's width (cqi), and narrow rows stack the logos, see the container query below
   container: previous-game / inline-size;
   padding-bottom: $spacing-large;
@@ -99,9 +105,14 @@
   }
 }
 
-.previous-game-container:hover {
-  cursor: pointer;
-  opacity: 0.7;
+.previous-game-container {
+  @include hover {
+    background-color: $black-03;
+  }
+
+  &:active {
+    background-color: $press-highlight;
+  }
 }
 
 .last-previous-game {

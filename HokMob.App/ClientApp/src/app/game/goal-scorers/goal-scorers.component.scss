@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 $central-info-width: 130px;
 
@@ -41,9 +42,21 @@ $central-info-width: 130px;
         width: 47%;
       }
 
-      .scorer-label:hover {
-        text-decoration: underline;
-        cursor: pointer;
+      // A scorer opens their goal, and underlines on hover. Inline, so the names still wrap like the text around them
+      .scorer-label {
+        @include button-reset;
+        display: inline;
+        border-radius: 4px;
+        -webkit-tap-highlight-color: transparent;
+        @include focus-ring(1px);
+
+        @include hover {
+          text-decoration: underline;
+        }
+
+        &:active {
+          color: white;
+        }
       }
 
       .period-label {

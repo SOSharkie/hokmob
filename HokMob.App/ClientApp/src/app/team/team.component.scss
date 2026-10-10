@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 // The same gap around the page, between the header and the columns, between the columns and between the cards, so the
 // spacing stays even at every width
@@ -28,32 +29,18 @@
       height: 100%;
 
       .games-back-button {
+        @include back-button;
         display: flex;
         justify-content: center;
         align-items: center;
         color: white;
 
         .back-icon {
-          border-radius: 50%;
-          background-color: $gray-02;
           margin-top: $spacing-x-large;
         }
 
         .games-label {
           margin-top: $spacing-x-large;
-        }
-      }
-
-      .games-back-button:hover {
-        cursor: pointer;
-
-        .back-icon {
-          background-color: white;
-          color: $black-01;
-        }
-
-        .games-label {
-          text-decoration: underline;
         }
       }
     }
@@ -71,6 +58,8 @@
 
       .team-name {
         color: white;
+        font-weight: 400;
+        letter-spacing: -0.01em;
       }
 
       .team-division {
@@ -118,6 +107,11 @@
           height: 25px;
           width: 25px;
           margin-right: $spacing-large;
+
+          .mat-icon {
+            width: 18px;
+            height: 18px;
+          }
         }
       }
     }
@@ -171,8 +165,9 @@
           width: 20px;
           margin-right: $spacing-large;
 
-          .material-icons {
-            font-size: 20px;
+          .mat-icon {
+            width: 15px;
+            height: 15px;
           }
         }
       }

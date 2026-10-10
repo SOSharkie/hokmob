@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 $central-info-width: 205px;
 
@@ -15,6 +16,8 @@ $central-info-width: 205px;
     justify-content: center;
     align-items: center;
     height: 35px;
+    font-size: 17px;
+    font-weight: 500;
   }
 
   .score-container {
@@ -133,9 +136,19 @@ $central-info-width: 205px;
     }
   }
 
-  .score-container:hover {
+  // Links to the game, and highlights on hover and press like the home page's scorecards
+  .score-container {
     cursor: pointer;
-    opacity: 0.7;
+    @include pressable(background-color);
+    @include focus-ring(-2px);
+
+    @include hover {
+      background-color: $black-03;
+    }
+
+    &:active {
+      background-color: $press-highlight;
+    }
   }
 
   // Desktop Styling

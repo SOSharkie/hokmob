@@ -141,8 +141,8 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 // Each player drops onto the bench after the one before when it opens, and they all leave together when it closes
+// (The avatar comes from the rink card, see _rink-card.scss)
 .bench-player {
-  @include player-avatar;
   flex: 1 1 0;
   min-width: 0;
   padding-top: $spacing-large + 1px;
@@ -150,8 +150,10 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(-10px);
   transition: opacity 0.15s ease-in, transform 0.15s ease-in;
 
-  &:hover > * {
-    opacity: 0.7;
+  @include hover {
+    > * {
+      opacity: 0.7;
+    }
   }
 
   .player-avatar,
@@ -215,6 +217,10 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     color: white;
   }
 
+  &:active {
+    background-color: $gray-01;
+  }
+
   .toggle-icon {
     width: 20px;
     height: 20px;
@@ -224,6 +230,13 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
   &[aria-expanded="true"] .toggle-icon {
     transform: rotate(180deg);
+  }
+}
+
+// Reduced motion: the benches open and close at once, without sliding out or dropping their players in
+@media (prefers-reduced-motion: reduce) {
+  .benches, .benches *, .bench-toggle .toggle-icon {
+    transition: none !important;
   }
 }
 

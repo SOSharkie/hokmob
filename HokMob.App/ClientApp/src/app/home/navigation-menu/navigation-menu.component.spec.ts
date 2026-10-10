@@ -1,8 +1,9 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { LUCIDE_ICONS } from '@shared/icons/lucide-icons';
+import { LUCIDE_ICONS, registerLucideIcons } from '@shared/icons/lucide-icons';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
 
 import { NavigationMenuComponent } from './navigation-menu.component';
 
@@ -18,6 +19,7 @@ describe('NavigationMenuComponent', () => {
     })
     .compileComponents();
 
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     fixture = TestBed.createComponent(NavigationMenuComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -27,27 +29,34 @@ describe('NavigationMenuComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show a Draft menu item that navigates to the draft page', () => {
-    const router = TestBed.inject(Router);
-    const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
-    const draftItem = component.navMenuItems.find(item => item.name === 'Draft');
-    const menuTexts = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.nav-menu-text'))
-      .map(el => el.textContent.trim());
+  /** The menu's links, by their text. */
+  function menuLinks(): Map<string, HTMLAnchorElement> {
+    const links = Array.from<HTMLAnchorElement>(fixture.nativeElement.querySelectorAll('a.nav-menu-item'));
+    return new Map(links.map(link => [link.querySelector('.nav-menu-text').textContent.trim(), link]));
+  }
 
-    expect(menuTexts).toContain('Draft');
-    component.onClickMenuItem(draftItem);
-    expect(navigateSpy).toHaveBeenCalledWith(['draft']);
+  it('should link the Draft menu item to the draft page', () => {
+    expect(menuLinks().get('Draft').getAttribute('href')).toBe('/draft');
   });
 
-  it('should show a History menu item under Stats that navigates to the history page', () => {
-    const router = TestBed.inject(Router);
-    const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
-    const menuTexts = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.nav-menu-text'))
-      .map(el => el.textContent.trim());
+  it('should show a History menu item under Stats that links to the history page', () => {
+    const names = Array.from(menuLinks().keys());
 
-    expect(menuTexts.indexOf('History')).toBe(menuTexts.indexOf('Stats') + 1);
-    component.onClickMenuItem(component.navMenuItems.find(item => item.name === 'History'));
-    expect(navigateSpy).toHaveBeenCalledWith(['history']);
+    expect(names.indexOf('History')).toBe(names.indexOf('Stats') + 1);
+    expect(menuLinks().get('History').getAttribute('href')).toBe('/history');
+  });
+
+  it('should render every menu item as a link with an href, so it can be reached from the keyboard', () => {
+    const links = menuLinks();
+
+    expect(links.size).toBe(component.navMenuItems.length);
+    expect(links.get('Standings').getAttribute('href')).toBe('/standings');
+    expect(links.get('Stats').getAttribute('href')).toBe('/stats');
+    expect(links.get('Teams').getAttribute('href')).toBe('/standings');
+  });
+
+  it('should link News to the external page', () => {
+    expect(menuLinks().get('News').getAttribute('href')).toBe('https://www.reddit.com/r/hockey/');
   });
 
   it('should use a bundled Lucide icon for every menu item', () => {

@@ -1,12 +1,14 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
-import { By } from '@angular/platform-browser';
+import { By, DomSanitizer } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayoffCarousel } from '@shared/models/nhl-web-api/playoffs.model';
 import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 import { mockPlayoffBracket, mockPlayoffCarousel } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { MatIconRegistry } from '@angular/material/icon';
+import { registerLucideIcons } from '@shared/icons/lucide-icons';
 
 import { PlayoffSummaryComponent } from './playoff-summary.component';
 
@@ -27,6 +29,7 @@ describe('PlayoffSummaryComponent', () => {
     currentSeason = spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason')
         .and.resolveTo({season: 20252026, isPlayoffMode: true});
     spyOn(console, 'error');
+    registerLucideIcons(TestBed.inject(MatIconRegistry), TestBed.inject(DomSanitizer));
     fixture = TestBed.createComponent(PlayoffSummaryComponent);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);

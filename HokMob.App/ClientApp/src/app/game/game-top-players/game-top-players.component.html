@@ -49,6 +49,9 @@
 <ng-template #benchPlayers let-players>
   <div class="bench-players" [attr.aria-hidden]="!showBenchPlayers">
     <div *ngFor="let player of players; let index = index; trackBy: trackByPlayer" (click)="clickPlayer(player)"
+         role="button" [attr.tabindex]="showBenchPlayers ? 0 : -1"
+         [attr.aria-label]="player.name + ', rating ' + player.hokmobRating"
+         (keydown.enter)="clickPlayer(player)" (keydown.space)="$event.preventDefault(); clickPlayer(player)"
          class="bench-player" [class.highlighted]="isHighlighted(player)" [style.--index]="index"
          [style.--highlight-color]="isHighlighted(player) ? getHighlightColor(player) : null">
       <ng-container *ngTemplateOutlet="playerAvatar; context: {$implicit: player}"></ng-container>
@@ -61,6 +64,8 @@
 
 <ng-template #playerSpots let-spots>
   <div *ngFor="let spot of spots; trackBy: trackBySpot" (click)="clickPlayer(spot.player)" class="top-player"
+       role="button" tabindex="0" [attr.aria-label]="spot.player.name + ', rating ' + spot.player.hokmobRating"
+       (keydown.enter)="clickPlayer(spot.player)" (keydown.space)="$event.preventDefault(); clickPlayer(spot.player)"
        [ngClass]="spot.line" [class.highlighted]="isHighlighted(spot.player)"
        [style.--highlight-color]="isHighlighted(spot.player) ? getHighlightColor(spot.player) : null" [style.--length.%]="spot.length" [style.--across.%]="spot.across">
     <ng-container *ngTemplateOutlet="playerAvatar; context: {$implicit: spot.player}"></ng-container>

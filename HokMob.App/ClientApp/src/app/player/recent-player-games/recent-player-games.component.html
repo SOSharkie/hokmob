@@ -18,9 +18,10 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let row of rows, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
+      <tr *ngFor="let row of rows, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}"
+          [routerLink]="['/game', row.gameId]">
         <td class="date-cell"><span>{{row.date}}</span></td>
-        <td [routerLink]="['/game', row.gameId]">
+        <td>
           <div class="opponent-cell">
             <div class="logo-container">
               <img class="opponent-logo" [src]="row.opponentLogo" alt="">
@@ -55,9 +56,10 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let row of rows, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}">
+    <tr *ngFor="let row of rows, let isLast = last" class="player-game-row" [ngClass]="{'last-row': isLast}"
+        [routerLink]="['/game', row.gameId]">
       <td class="date-cell"><span>{{row.date}}</span></td>
-      <td [routerLink]="['/game', row.gameId]">
+      <td>
         <div class="opponent-cell">
           <div class="logo-container">
             <img class="opponent-logo" [src]="row.opponentLogo" alt="">

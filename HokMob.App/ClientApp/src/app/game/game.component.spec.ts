@@ -160,6 +160,9 @@ describe('GameComponent', () => {
     expect(text('.games-label')).toBe('Games');
     expect(text('.game-load-error')).toBeUndefined();
     expect(component.leagueRouterLink).toBe('/standings');
+    // Real links and buttons, so they work from the keyboard
+    expect(element('a.league-info-container').getAttribute('href')).toBe('/standings');
+    expect(element('.league-info .games-back-button').tagName).toBe('BUTTON');
 
     const headers = fixture.nativeElement.querySelectorAll('app-game-header');
     expect(headers.length).toBe(2);
@@ -961,6 +964,7 @@ describe('GameComponent', () => {
     await settle();
 
     expect(text('.game-load-error .games-label')).toBe('Games');
+    expect(fixture.nativeElement.querySelector('.game-load-error .games-back-button').tagName).toBe('BUTTON');
     fixture.nativeElement.querySelector('.game-load-error .games-back-button').click();
     expect(back).toHaveBeenCalled();
   });

@@ -164,6 +164,14 @@ describe('StandingsComponent', () => {
     expect(rows()[0].classList).toContain('selected-row');
     expect(rows()[1].classList).not.toContain('selected-row');
     expect(component.selectedTeamColor).toBe(NhlTeamColorUtils.getTeamPrimaryColor(21));
+    // Colorado's burgundy keeps white text
+    expect(rows()[0].querySelector<HTMLElement>('.points-value').style.color).toBe('rgb(255, 255, 255)');
+  });
+
+  it("should put dark text on a light team's points", () => {
+    render([leagueGroup()], {selectedTeamId: 55});
+    // The Kraken's ice blue is too light for white text
+    expect(component.selectedTeamTextColor).toBe('#1B1B1B');
   });
 
   it('should render nothing for empty standings', () => {

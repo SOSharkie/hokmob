@@ -1,17 +1,16 @@
 <div class="stats-container">
-  <div *ngIf="showFilters" class="stat-filters-container">
-    <div (click)="updateGameType(true)"
-         class="stat-filter-button"
-         [ngClass]="{'selected-filter': playoffsSelected}">
+  <div *ngIf="showFilters" class="stat-filters-container" role="group" aria-label="Game type">
+    <button type="button" class="stat-filter-button" [class.selected-filter]="playoffsSelected"
+            [attr.aria-pressed]="playoffsSelected" (click)="updateGameType(true)">
       Playoffs
-    </div>
-    <div (click)="updateGameType(false)"
-         class="stat-filter-button"
-         [ngClass]="{'selected-filter': !playoffsSelected}">
+    </button>
+    <button type="button" class="stat-filter-button" [class.selected-filter]="!playoffsSelected"
+            [attr.aria-pressed]="!playoffsSelected" (click)="updateGameType(false)">
       Regular Season
-    </div>
+    </button>
   </div>
-  <div *ngIf="!isLoading" class="leaderboards-container">
+  <div *ngIf="leaderboards.length" class="leaderboards-container" [class.reloading]="isLoading"
+       [attr.aria-busy]="isLoading">
     <app-stat-leaderboard *ngFor="let leaderboard of leaderboards"
         [categoryId]="leaderboard.categoryId"
         [statTitle]="leaderboard.title"
@@ -19,7 +18,7 @@
         [format]="leaderboard.format"
     ></app-stat-leaderboard>
   </div>
-  <div *ngIf="isLoading" class="loading-container">
+  <div *ngIf="isLoading && !leaderboards.length" class="loading-container">
     <app-loading-spinner class="loading-spinner"></app-loading-spinner>
   </div>
 </div>

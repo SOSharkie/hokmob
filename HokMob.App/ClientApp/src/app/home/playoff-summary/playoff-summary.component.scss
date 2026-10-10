@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 .playoff-summary-container {
   // Keeps the last child's bottom margin inside the card, so it doesn't add to the gap below it
@@ -7,18 +8,8 @@
   border-radius: 25px;
 
   .playoffs-title {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50px;
-    color: white;
-    font-size: large;
+    @include card-title-link;
     border-bottom: 1px solid $black-03;
-  }
-
-  .playoffs-title:hover {
-    cursor: pointer;
-    text-decoration: underline;
   }
 
   .series-summaries-container {

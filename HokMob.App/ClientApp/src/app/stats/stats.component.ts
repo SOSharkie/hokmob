@@ -37,8 +37,10 @@ export class StatsComponent implements OnInit {
 
   public playoffsSelected: boolean = false;
 
-  public filtersEnabled: boolean = true;
-
+  /**
+   * Whether the leaderboards are loading. On a game type switch the previous leaderboards stay, dimmed, until the new
+   * ones replace them, so the page doesn't collapse to a spinner and back.
+   */
   public isLoading: boolean = false;
 
   /** The season the leaderboards are for, from the standings. Undefined until they load. */
@@ -98,13 +100,13 @@ export class StatsComponent implements OnInit {
 
   /**
    * Switches between the regular season and the playoffs. The game type is a query parameter, so the leaders are
-   * loaded by the query parameter subscription rather than here.
+   * loaded by the query parameter subscription rather than here. The filters always respond, even mid-load: the
+   * response of a game type the user left is ignored (see retrieveLeaders).
    */
   public updateGameType(isPlayoffs: boolean): void {
-    if (this.filtersEnabled && (isPlayoffs !== this.playoffsSelected)) {
+    if (isPlayoffs !== this.playoffsSelected) {
       this.playoffsSelected = isPlayoffs;
       this.isLoading = true;
-      this.disableFiltersForTwoSeconds();
       const gameTypeParam = this.playoffsSelected ? "P" : "R";
       this.router.navigate([],
           {
@@ -181,12 +183,5 @@ export class StatsComponent implements OnInit {
   private showEmptyLeaderboards(): void {
     this.leaderboards = this.buildLeaderboards(null, null, null);
     this.isLoading = false;
-  }
-
-  private disableFiltersForTwoSeconds(): void {
-    this.filtersEnabled = false;
-    setTimeout(() => {
-      this.filtersEnabled = true;
-    }, 2000);
   }
 }

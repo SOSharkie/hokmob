@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 $central-info-width: 130px;
 
@@ -69,6 +70,18 @@ $central-info-width: 130px;
     color: $gray-04;
   }
 
+  // Each team links to its page: the name underlines on hover, and the team dims while pressed
+  .home-team-header, .away-team-header {
+    border-radius: 8px;
+    cursor: pointer;
+    @include pressable(opacity);
+    @include focus-ring(-2px);
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
+
   .home-team-header {
     display: flex;
     justify-content: flex-end;
@@ -83,9 +96,10 @@ $central-info-width: 130px;
       text-align: center;
     }
 
-    .home-team-banner:hover {
-      text-decoration: underline;
-      cursor: pointer;
+    @include hover {
+      .home-team-banner {
+        text-decoration: underline;
+      }
     }
 
     .home-team-logo {
@@ -114,9 +128,10 @@ $central-info-width: 130px;
       text-align: center;
     }
 
-    .away-team-banner:hover {
-      text-decoration: underline;
-      cursor: pointer;
+    @include hover {
+      .away-team-banner {
+        text-decoration: underline;
+      }
     }
 
     .away-team-logo {
@@ -132,8 +147,10 @@ $central-info-width: 130px;
   }
 }
 
+// In the drop-down header, the header's translucent bar shows through
 .dropdown-score-container {
   border-bottom: none !important;
+  background-color: transparent;
 }
 
 // Desktop Styling

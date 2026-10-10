@@ -1,9 +1,12 @@
 @import "variables";
+@import "interaction";
 
 .player-recent-games-container {
   color: white;
   background-color: $black-02;
   border-radius: 25px;
+  // Keeps the last row's highlight inside the card's corners
+  overflow: hidden;
 
   .recent-games-header {
     height: 25px;
@@ -12,7 +15,8 @@
     padding-top: $spacing-large;
     padding-bottom: $spacing-small;
     padding-left: $spacing-xx-large;
-    font-size: larger;
+    font-size: 17px;
+    font-weight: 500;
   }
 
   .recent-games-table {
@@ -29,8 +33,20 @@
       }
     }
 
+    // Each row links to its game, and highlights on hover and press like the home page's scorecards
     .player-game-row {
       border-bottom: 1px solid $black-04;
+      cursor: pointer;
+      @include pressable(background-color);
+      @include focus-ring(-2px);
+
+      @include hover {
+        background-color: $black-03;
+      }
+
+      &:active {
+        background-color: $press-highlight;
+      }
 
       td {
         font-weight: lighter;
@@ -67,19 +83,6 @@
         .game-score {
           color: $gray-03;
           margin-left: $spacing-large;
-        }
-      }
-
-      .opponent-cell:hover {
-        cursor: pointer;
-        color: $gray-02;
-
-        .opponent-logo {
-          opacity: 0.5;
-        }
-
-        .game-score {
-          color: $gray-02;
         }
       }
 

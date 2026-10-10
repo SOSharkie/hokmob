@@ -1,19 +1,23 @@
-<div class="scores-container">
+<div class="scores-container" [ngClass]="'enter-' + dayTransition">
   <div class="day-select-container">
-    <div class="day-shift left" (click)="shiftDateLeft()">
-      <mat-icon fontIcon="chevron_left"></mat-icon>
-    </div>
+    <button type="button" class="day-shift left" aria-label="Previous day" (click)="shiftDateLeft()">
+      <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
+    </button>
     <div class="date-container">
-      <div class="date-select-container" (click)="onClickDate()">
+      <div class="date-select-container" role="button" tabindex="0" aria-haspopup="dialog"
+           [attr.aria-label]="'Pick a day, ' + displayDayLabel"
+           (click)="onClickDate()" (keydown.enter)="onClickDate()"
+           (keydown.space)="$event.preventDefault(); onClickDate()">
         <span class="selected-day">{{displayDayLabel}}</span>
-        <input matInput [(ngModel)]="selectedDay" (dateChange)="onDateSelect($event)" [matDatepicker]="datePicker" class="date-input">
+        <input matInput [(ngModel)]="selectedDay" (dateChange)="onDateSelect($event)" [matDatepicker]="datePicker"
+               class="date-input" tabindex="-1" aria-hidden="true">
         <mat-icon fontIcon="arrow_drop_down" class="dropdown-arrow"></mat-icon>
       </div>
       <mat-datepicker #datePicker></mat-datepicker>
     </div>
-    <div class="day-shift right" (click)="shiftDateRight()">
-      <mat-icon fontIcon="chevron_right"></mat-icon>
-    </div>
+    <button type="button" class="day-shift right" aria-label="Next day" (click)="shiftDateRight()">
+      <mat-icon svgIcon="lucide:chevron-right"></mat-icon>
+    </button>
   </div>
   <div *ngFor="let game of currentDayGames; let last = last" class="games-container" [ngClass]="{'last-scorecard': last}">
     <app-scorecard

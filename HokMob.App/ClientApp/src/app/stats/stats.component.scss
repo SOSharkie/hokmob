@@ -1,4 +1,5 @@
 @import "variables";
+@import "interaction";
 
 .stats-container {
   display: flex;
@@ -18,17 +19,27 @@
     border-radius: 25px;
 
     .stat-filter-button {
-      font-size: large;
-      color: white;
-      background-color: $black-04;
       margin-left: $spacing-x-large;
       padding: $spacing-x-large;
+      border: none;
       border-radius: 25px;
-    }
-
-    .stat-filter-button:hover {
+      background-color: $black-04;
+      color: white;
+      font-family: inherit;
+      font-size: large;
+      font-weight: inherit;
+      line-height: normal;
       cursor: pointer;
-      background-color: $gray-01;
+      @include pressable(background-color, color, transform);
+      @include focus-ring;
+
+      @include hover {
+        background-color: $gray-01;
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
     }
 
     .selected-filter {
@@ -46,16 +57,38 @@
     app-stat-leaderboard {
       margin: $spacing-large;
     }
+
+    // Dims while another game type loads, after a moment so a quick load doesn't flicker, and comes straight back
+    transition: opacity 150ms ease-out;
+
+    &.reloading {
+      opacity: 0.4;
+      transition-delay: 150ms;
+    }
   }
 
+  // Waits a moment before fading in, so a quick load doesn't flash the spinner
   .loading-container {
     display: flex;
     justify-content: center;
     max-width: 1400px;
+    animation: stats-spinner-in 200ms ease-out 150ms both;
 
     .loading-spinner {
       margin-top: $spacing-xx-large;
     }
+  }
+}
+
+@keyframes stats-spinner-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stats-container .stat-filters-container .stat-filter-button:active {
+    transform: none;
   }
 }
 
