@@ -1,0 +1,72 @@
+<div class="rink-card shot-map-card">
+  <div class="rink-card-header">
+    <span>Shot Map</span>
+    <button type="button" class="goals-toggle" [class.showing-goals]="showGoalsOnly" [attr.aria-pressed]="showGoalsOnly"
+            [title]="showGoalsOnly ? 'Show every shot on goal' : 'Show only the goals'" (click)="toggleGoalsOnly()">
+      <img class="toggle-icon" src="assets/puck.png" alt="">
+      <span>Goals</span>
+    </button>
+  </div>
+  <div *ngIf="selectedShot" #shotDetails class="shot-details">
+    <button type="button" class="shooter" (click)="clickShooter()" [attr.aria-label]="'Open ' + shooterName + '\'s game stats'">
+      <span class="shooter-avatar">
+        <span class="shooter-headshot-container">
+          <img class="shooter-headshot" [src]="shooterHeadshot" (error)="showBlankHeadshot($event)" alt="">
+        </span>
+        <app-team-logo *ngIf="shooterTeamLogo" class="shooter-team-logo" [src]="shooterTeamLogo"
+                       [size]="logoSize"></app-team-logo>
+      </span>
+      <span class="shooter-name">{{shooterName}}</span>
+    </button>
+    <dl class="shot-facts">
+      <div class="shot-fact">
+        <dt>Time</dt>
+        <dd class="shot-time">{{timeLabel}}</dd>
+      </div>
+      <div class="shot-fact">
+        <dt>Shot type</dt>
+        <dd class="shot-type">{{shotTypeLabel}}</dd>
+      </div>
+      <div class="shot-fact">
+        <dt>Result</dt>
+        <dd class="shot-result" [class.goal]="selectedShot.isGoal">
+          <span>{{resultLabel}}</span>
+          <button *ngIf="selectedGoalHasClip" type="button" class="watch-goal-button" title="Watch the goal"
+                  aria-label="Watch the goal" (click)="clickWatchGoal()">
+            <mat-icon fontIcon="smart_display"></mat-icon>
+          </button>
+        </dd>
+      </div>
+      <div *ngIf="showGoalie" class="shot-fact">
+        <dt>Goalie</dt>
+        <dd class="shot-goalie">{{goalieLabel}}</dd>
+      </div>
+    </dl>
+  </div>
+  <app-rink class="rink">
+    <!-- Laid out on the lying rink, and stood up with the markings on phones -->
+    <div class="shot-layer">
+      <svg *ngIf="selectedShotLine as line" class="shot-line-layer" viewBox="0 0 100 100" preserveAspectRatio="none"
+           aria-hidden="true">
+        <line class="shot-line" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2"/>
+      </svg>
+      <button *ngFor="let marker of shownMarkers; trackBy: trackByShot" type="button" class="shot-marker"
+              [class.goal]="marker.shot.isGoal" [class.selected]="marker === selectedMarker"
+              [style.left.%]="marker.along" [style.top.%]="marker.across" [style.--team-color]="marker.color"
+              [attr.aria-label]="getMarkerLabel(marker)" [attr.aria-pressed]="marker === selectedMarker"
+              (click)="selectShot(marker)">
+        <img *ngIf="marker.shot.isGoal" class="puck-icon" src="assets/puck.png" alt="">
+      </button>
+    </div>
+  </app-rink>
+  <div class="team-shots">
+    <div class="team-shot-count home-shot-count">
+      <app-team-logo *ngIf="homeTeamLogo" [src]="homeTeamLogo" [size]="logoSize"></app-team-logo>
+      <span>{{homeShotsLabel}}</span>
+    </div>
+    <div class="team-shot-count away-shot-count">
+      <span>{{awayShotsLabel}}</span>
+      <app-team-logo *ngIf="awayTeamLogo" [src]="awayTeamLogo" [size]="logoSize"></app-team-logo>
+    </div>
+  </div>
+</div>

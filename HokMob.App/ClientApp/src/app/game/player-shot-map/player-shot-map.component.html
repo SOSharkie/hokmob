@@ -1,0 +1,53 @@
+<div class="player-shot-map">
+  <div class="shot-map-label">
+    <span>Shot Map</span>
+  </div>
+  <dl class="shot-stats">
+    <div class="shot-stat">
+      <dt>{{isGoalie ? 'Shots faced' : 'Shots on goal'}}</dt>
+      <dd class="shot-count">{{markers.length}}</dd>
+    </div>
+    <div class="shot-stat">
+      <dt>{{isGoalie ? 'Goals against' : 'Goals'}}</dt>
+      <dd class="goal-count">{{goals}}</dd>
+    </div>
+    <div class="shot-stat">
+      <dt>{{isGoalie ? 'Save %' : 'Shooting %'}}</dt>
+      <dd class="shot-accuracy">{{accuracyLabel}}</dd>
+    </div>
+  </dl>
+  <svg class="half-rink" [attr.viewBox]="viewBox" role="img"
+       [attr.aria-label]="(isGoalie ? 'Shots faced: ' : 'Shots on goal: ') + markers.length + ', goals: ' + goals">
+    <path class="boards" [attr.d]="boardsPath"/>
+    <g class="markings">
+      <line *ngIf="topX < 0" class="center-line" x1="0" [attr.y1]="-topX" x2="85" [attr.y2]="-topX"/>
+      <line class="blue-line" x1="0" [attr.y1]="blueLineY" x2="85" [attr.y2]="blueLineY"/>
+      <line class="goal-line" [attr.x1]="goalLine.x1" [attr.y1]="goalLine.y" [attr.x2]="goalLine.x2" [attr.y2]="goalLine.y"/>
+      <path class="crease" [attr.d]="creasePath"/>
+      <rect class="net" [attr.x]="netX - 3" [attr.y]="netY" width="6" height="3.33" rx="1"/>
+      <circle *ngFor="let x of dotXs" class="faceoff-circle" [attr.cx]="x" [attr.cy]="faceoffCircleY" r="15"/>
+      <circle *ngFor="let x of dotXs" class="dot" [attr.cx]="x" [attr.cy]="faceoffCircleY" r="1"/>
+      <ng-container *ngIf="showsNeutralZone">
+        <circle *ngFor="let x of dotXs" class="dot" [attr.cx]="x" [attr.cy]="neutralDotY" r="1"/>
+      </ng-container>
+    </g>
+    <g class="shot-lines">
+      <line *ngFor="let marker of markers; trackBy: trackByShot" class="shot-line" [class.selected]="isSelected(marker)"
+            [attr.x1]="marker.x" [attr.y1]="marker.y" [attr.x2]="netX" [attr.y2]="netY" [style.--team-color]="marker.color"/>
+    </g>
+    <g *ngFor="let marker of markers; trackBy: trackByShot" class="shot-marker" [class.goal]="marker.shot.isGoal"
+       [class.selected]="isSelected(marker)" [style.--team-color]="marker.color">
+      <circle [attr.cx]="marker.x" [attr.cy]="marker.y" [attr.r]="marker.shot.isGoal ? 2.6 : 1.9"/>
+      <image *ngIf="marker.shot.isGoal" href="assets/puck.png" [attr.x]="marker.x - 1.6" [attr.y]="marker.y - 1.6"
+             width="3.2" height="3.2"/>
+    </g>
+  </svg>
+  <div class="shot-chips">
+    <button *ngFor="let marker of markers; trackBy: trackByShot" type="button" class="shot-chip"
+            [class.goal]="marker.shot.isGoal" [class.selected]="isSelected(marker)" [attr.aria-pressed]="isSelected(marker)"
+            [style.--team-color]="marker.color" [style.--team-text-color]="marker.textColor" (click)="toggleShot(marker)">
+      <span>{{marker.timeLabel}}</span>
+      <img *ngIf="marker.shot.isGoal" class="puck-icon" src="assets/puck.png" alt="goal">
+    </button>
+  </div>
+</div>

@@ -291,7 +291,7 @@ describe('GameComponent', () => {
     await settle();
     fixture.debugElement.query(By.css('app-goal-scorers')).triggerEventHandler('scorerClicked', {playerId: 8476460, eventId: 141});
     expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
-      data: {player: jasmine.objectContaining({playerId: 8476460, name: 'Mark Scheifele'})}
+      data: {player: jasmine.objectContaining({playerId: 8476460, name: 'Mark Scheifele'}), shots: component.shots}
     }));
   });
 
@@ -398,8 +398,37 @@ describe('GameComponent', () => {
     fixture.debugElement.query(By.css('app-game-top-players')).triggerEventHandler('playerClicked', 8476412);
     expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
       panelClass: 'mobile-dialog-panel',
-      data: {player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.8})}
+      data: {
+        player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.8}),
+        shots: component.shots
+      }
     }));
+    expect(component.shots.length).toBe(47);
+  });
+
+  it('should show the shot map, and open the dialogs of its shooters and goals', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    open('2025021057');
+    flushBundle('2025021057', mockGameBundle(2025021057));
+    await settle();
+    flushScore('2026-03-15', mockRegularSeasonScoreResponse());
+    await settle();
+    const shotMap = element('app-shot-map');
+    expect(shotMap.playByPlay.id).toBe(2025021057);
+    expect(shotMap.scoring.map(period => period.goals.length)).toEqual([2, 0, 3]);
+    expect(shotMap.homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
+    expect(shotMap.awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
+    // Right below the momentum chart
+    expect(element('app-momentum').parentElement.nextElementSibling.querySelector('app-shot-map')).toBe(shotMap);
+
+    const shotMapDebug = fixture.debugElement.query(By.css('app-shot-map'));
+    shotMapDebug.triggerEventHandler('playerClicked', 8476460);
+    expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
+      data: {player: jasmine.objectContaining({name: 'Mark Scheifele'}), shots: component.shots}
+    }));
+    const goal = mockGameLanding(2025021057).summary.scoring[0].goals[0];
+    shotMapDebug.triggerEventHandler('goalClicked', {playerId: goal.playerId, eventId: goal.eventId});
+    expect(openDialog).toHaveBeenCalledWith(GoalHighlightDialogComponent, jasmine.anything());
   });
 
   it('should not open the player dialog for a player without game stats', async () => {
@@ -531,6 +560,7 @@ describe('GameComponent', () => {
     expect(component.boxscore).toBeUndefined();
     expect(text('.game-load-error')).toBeUndefined();
     expect(element('app-momentum')).toBeNull();
+    expect(element('app-shot-map')).toBeNull();
     expect(element('app-mini-event-timeline')).toBeNull();
     expect(element('app-game-top-players')).toBeNull();
     expect(element('app-game-stats')).toBeNull();
@@ -566,6 +596,7 @@ describe('GameComponent', () => {
     expect(element('app-game-top-players')).toBeNull();
     expect(element('app-game-stats')).toBeNull();
     expect(element('app-momentum')).toBeNull();
+    expect(element('app-shot-map')).toBeNull();
     expect(element('app-mini-event-timeline')).toBeNull();
     // Both team form requests failed
     expect(element('app-team-form')).toBeNull();

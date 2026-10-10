@@ -1,0 +1,297 @@
+@import "../rink/rink-card-base";
+
+// A block, so the component's resize observer sees the card's width
+:host {
+  display: block;
+}
+
+// The lying rink is 200.13ft long and 78.74ft wide, the standing one 1.6 times as long as wide (RinkComponent)
+$standing-aspect-ratio: 1.6;
+
+.rink-card .rink-card-header .goals-toggle {
+  @include header-toggle;
+
+  // The black puck on a light disc, like the goals on the rink
+  .toggle-icon {
+    box-sizing: border-box;
+    padding: 2px;
+    border-radius: 50%;
+    background-color: $gray-03;
+    object-fit: contain;
+  }
+
+  &.showing-goals {
+    border-color: $green-01;
+    color: white;
+
+    .toggle-icon {
+      background-color: white;
+    }
+  }
+}
+
+// The selected shot: the shooter, and its facts beside them on the same row. The facts keep their width and the
+// shooter's name gives way, after the goalie is left out (ShotMapComponent.fitShotDetails).
+.shot-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-xx-large;
+  margin: $spacing-medium 0 $spacing-x-large;
+}
+
+// Opens the shooter's game stats. Dims on hover and while pressed
+.shooter {
+  @include button-reset;
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: $spacing-large;
+  min-width: 0;
+  border-radius: 8px;
+  @include pressable(opacity);
+  @include focus-ring;
+
+  @include hover {
+    opacity: 0.7;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
+}
+
+.shooter-avatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+}
+
+.shooter-headshot-container {
+  display: flex;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: $gray-01;
+
+  // Headshots leave room above the head, so the image starts at the top of the circle to center the face in it
+  .shooter-headshot {
+    width: 51px;
+    height: 51px;
+    margin-top: 1px;
+  }
+}
+
+.shooter-team-logo {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+}
+
+.shooter-name {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// One column per fact, each as wide as it needs
+.shot-facts {
+  display: grid;
+  flex: none;
+  grid-auto-flow: column;
+  grid-auto-columns: auto;
+  gap: $spacing-xx-large;
+  margin: 0;
+
+  .shot-fact {
+    min-width: 0;
+  }
+
+  dt {
+    color: $gray-03;
+    font-size: 12px;
+  }
+
+  dd {
+    margin: $spacing-x-small 0 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .shot-time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .shot-result {
+    display: flex;
+    align-items: center;
+    gap: $spacing-small;
+    // As tall as the watch button, so the rink doesn't move when switching between goals and saves
+    height: 20px;
+
+    &.goal {
+      color: $green-01;
+    }
+  }
+}
+
+// Opens a goal's highlight, beside its result. A bigger tap target than the icon.
+.watch-goal-button {
+  @include button-reset;
+  position: relative;
+  display: flex;
+  color: $green-01;
+  border-radius: 4px;
+  @include pressable(opacity);
+  @include focus-ring;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
+
+  .mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+
+  @include hover {
+    opacity: 0.7;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
+}
+
+// The shots, placed in percent of the lying rink (ShotMapComponent.getRinkPosition)
+.shot-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.shot-line-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+
+  .shot-line {
+    stroke: white;
+    stroke-width: 2px;
+    stroke-opacity: 0.85;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.shot-marker {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background-color: var(--team-color);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 150ms ease-out;
+  @include focus-ring;
+
+  // A bigger tap target than the dot
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+  }
+
+  @include hover {
+    transform: translate(-50%, -50%) scale(1.25);
+  }
+
+  &.goal {
+    z-index: 1;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--team-color);
+    background-color: white;
+
+    .puck-icon {
+      width: 11px;
+      height: 11px;
+    }
+  }
+
+  &.selected {
+    z-index: 2;
+    box-shadow: 0 0 0 2px $black-03, 0 0 0 4px white;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shot-marker {
+    transition: none;
+  }
+}
+
+.team-shots {
+  display: flex;
+  justify-content: space-between;
+  gap: $spacing-large;
+  margin-top: $spacing-large;
+  color: $gray-04;
+  font-size: 13px;
+
+  .team-shot-count {
+    display: flex;
+    align-items: center;
+    gap: $spacing-medium;
+  }
+}
+
+// Mobile Styling: the rink stands up, home at the top, so the shots stand up with its markings (rink.component.scss).
+// The pucks turn back so they stay upright.
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  // Tighter gaps leave the shooter's name more room beside the facts
+  .shot-details,
+  .shot-facts {
+    gap: $spacing-large;
+  }
+
+  .shot-layer {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: calc(100% * #{$standing-aspect-ratio});
+    height: calc(100% / #{$standing-aspect-ratio});
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  .shot-marker .puck-icon {
+    transform: rotate(-90deg);
+  }
+
+  // The rink stays phone sized (rink.component.scss), so the counts sit at its top and bottom ends instead
+  .team-shots {
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-small;
+  }
+}
