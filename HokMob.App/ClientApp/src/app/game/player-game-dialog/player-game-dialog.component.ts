@@ -5,6 +5,7 @@ import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {RatingStatLineUtils} from "@app/ratings/rating-stat-line";
 import {GameShot} from "@shared/models/game-shot.model";
 import {ShotMapUtils} from "@shared/utils/shot-map-utils";
+import {NstPlayerGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 
 /**
  * Data of the player game dialog: a player's stats in the game, from the game page's boxscore, and the game's shots
@@ -12,6 +13,8 @@ import {ShotMapUtils} from "@shared/utils/shot-map-utils";
  */
 export interface PlayerGameDialogData {
   player: GamePlayer;
+  /** The skater's expected goals and Corsi from Natural Stat Trick, for a finished game NST has stats for. */
+  advancedStats?: NstPlayerGameStats;
   shots?: GameShot[];
 }
 
@@ -24,6 +27,8 @@ export interface PlayerGameDialogData {
 export class PlayerGameDialogComponent implements OnInit {
 
   public player: GamePlayer;
+
+  public advancedStats: NstPlayerGameStats;
 
   /**
    * A skater's shots on goal and goals, or the shots a goalie faced. The shot map only shows with at least one.
@@ -52,6 +57,7 @@ export class PlayerGameDialogComponent implements OnInit {
 
   public ngOnInit(): void {
     this.player = this.data?.player;
+    this.advancedStats = this.data?.advancedStats;
     this.playerShots = ShotMapUtils.getPlayerShots(this.data?.shots, this.player?.playerId, this.isGoalie);
   }
 

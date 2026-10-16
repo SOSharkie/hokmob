@@ -6,7 +6,10 @@ app and proxies the NHL API. `HokMob.App/ClientApp/` is the Angular 15 frontend 
 ## NHL APIs
 
 Data comes from api-web (`api-web.nhle.com/v1`), the stats API (`api.nhle.com/stats/rest/en`) and the player search
-(`search.d3.nhle.com`), all through the backend.
+(`search.d3.nhle.com`), all through the backend. A finished game's expected goals and Corsi come from Natural Stat Trick
+(`data.naturalstattrick.com`). Its access key must never be committed, and its usage tokens are limited (about 180
+pages an hour): don't loop requests to it, and save a page to your scratch directory when working on the parser. See
+"Natural Stat Trick" in `docs/nhl-api.md`.
 
 **Read [`docs/nhl-api.md`](docs/nhl-api.md) before working on a page.** It covers which API serves what, what each
 page loads, the response conventions, the stats API query syntax and fields, the caching rules, and what a live
@@ -31,9 +34,13 @@ A request to one of them is a regression.
 - `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/season-players`,
   `/teams`, `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
   into one response.
+- `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, read by
+  `NaturalStatTrickGameParser` from NST's HTML game page. `NaturalStatTrickClient` caches it and stays under the token
+  limits.
 - `ClientApp/src/app/shared/`:
   - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the
     `/api/nhl-stats/*` responses. `models/nhl-history/`: the history page's season files and rated games.
+    `models/natural-stat-trick/`: the `/api/nst/*` responses.
   - `services/`, `enums/` (`NhlGameStateEnum`, `NhlGameTypeEnum`, ...) and `components/` (scorecard, standings, ...).
   - `utils/`: static helpers, one per concern (`PeriodUtils`, `NhlTeamUtils`, `StatsUtils`, ...). Two aren't obvious
     from the name: `NhlStarPlayerUtils` holds each team's three star forwards and two star defensemen, who fill the

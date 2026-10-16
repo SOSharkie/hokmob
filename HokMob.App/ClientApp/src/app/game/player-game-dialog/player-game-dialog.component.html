@@ -7,7 +7,7 @@
     <mat-icon fontIcon="close"></mat-icon>
   </button>
   <div class="player-dialog-body" [class.with-shot-map]="playerShots.length > 0">
-    <app-player-game-stats [player]="player"></app-player-game-stats>
+    <app-player-game-stats [player]="player" [advancedStats]="advancedStats"></app-player-game-stats>
     <app-player-shot-map *ngIf="playerShots.length > 0" [shots]="playerShots" [isGoalie]="isGoalie"></app-player-shot-map>
   </div>
   <footer class="player-footer-container">

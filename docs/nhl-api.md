@@ -1,13 +1,15 @@
 # NHL APIs
 
-Everything on the site comes from two public NHL APIs plus the player search host. All three are called through the
-backend, so Angular only ever uses relative `/api/...` URLs.
+Everything on the site comes from two public NHL APIs plus the player search host, and a finished game's expected
+goals and Corsi from Natural Stat Trick. All of them are called through the backend, so Angular only ever uses relative
+`/api/...` URLs.
 
 | API | Host | Proxy | Used for |
 |---|---|---|---|
 | api-web | `api-web.nhle.com/v1` | `/api/nhl/<path>` | live, game, team, schedule, standings, playoff, draft and leader data |
 | Stats API | `api.nhle.com/stats/rest/en` | `/api/nhl-stats/*` | per-season and per-game player stats, team season stats, hits and shots leaders, season dates, draft career stats |
 | Player search | `search.d3.nhle.com` | `/api/nhl-search/player` | header search |
+| Natural Stat Trick | `data.naturalstattrick.com` | `/api/nst/game/{gameId}` | a finished game's expected goals (xG) and Corsi, for teams and skaters (see [Natural Stat Trick](#natural-stat-trick)) |
 
 Reference: [Zmalski/NHL-API-Reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md). It documents
 api-web well. For the stats API it lists endpoints and query parameters but not the report names, the `cayenneExp`
@@ -29,13 +31,14 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Season dates (current season, playoff mode) | Stats API `season` and `game` | Every season, not just the current one |
 | Team IDs, names, logos, colors | `NhlTeamUtils` and the logo and color utils | The stats API's `team` report has no logos or colors, and its `triCode` isn't unique (`UTA` is both Utah Hockey Club 59 and Utah Mammoth 68) |
 | Player search | `search.d3.nhle.com` | Active filter, current team and up to 20 results; the stats API's `players` has none of that |
+| Expected goals (xG), Corsi | Natural Stat Trick | Neither NHL API has them per game, and neither has xG |
 
 ## What each page loads
 
 | Page | Requests |
 |---|---|
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
-| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `player/{id}/landing` for the player dialog |
+| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a finished game's xG and Corsi (the game stats card and the player dialog) |
 | Team | `standings/now` (division and conference), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams` |
 | Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
@@ -142,6 +145,9 @@ minutes, and today, live games and unsettled days are always refetched.
 
 `NhlStatsApiClient` and `NhlSearchApiClient` cache each upstream URL for 5 minutes. A stats endpoint that can't reach
 upstream returns 502 rather than a partial answer.
+
+`NaturalStatTrickClient` keeps a game NST marks final with a 24-hour sliding expiration, and anything else (a game
+in progress, or no stats yet) for 10 minutes. See [Natural Stat Trick](#natural-stat-trick) for why.
 
 ### Surviving an api-web outage
 
@@ -322,6 +328,57 @@ final with `npm run capture-live-fixtures -- --watch` from `HokMob.App/ClientApp
 - **A goal's `highlightClip` is added within minutes**, picked up by the page's normal refresh.
 - **`score` lags the landing at a period change** by a few seconds (the landing was in the 2nd while `score` still
   showed the 1st intermission), so don't assert that the two agree.
+
+## Natural Stat Trick
+
+A finished game's all situations expected goals (xG) and Corsi come from
+[Natural Stat Trick](https://www.naturalstattrick.com) (NST), through `/api/nst/game/{gameId}`
+(`NaturalStatTrickController`, `NaturalStatTrickClient`, `NaturalStatTrickGameParser`). The game page loads it once
+the game is final and shows it in the game stats card (each team's xG and Corsi %, crediting NST with a link to its
+game page) and the player dialog (a skater's own xG and his on-ice Corsi %). The goal highlight dialog's compact bar
+leaves them out.
+
+**Access.** `data.naturalstattrick.com` is NST's mirror for bots. It isn't an API: it serves the same HTML pages as
+`www.naturalstattrick.com` (a game page is about 5 MB), so the backend parses them. Every request needs the access key,
+sent as the `nst-key` header. The key is the `NaturalStatTrick:Key` setting and must never be committed (the repo is
+public, and NST asks that keys aren't exposed). Locally it's in user secrets
+(`dotnet user-secrets set "NaturalStatTrick:Key" "<key>"` from `HokMob.App`); on Azure it's the
+`NaturalStatTrick__Key` application setting. Without it the endpoint answers 503, and the game page shows its stats
+without xG and Corsi.
+
+**Limits.** Each page costs 10 of each of two token pools: 800 burst tokens refilled every 5 minutes, and 150 standard
+tokens added every 5 minutes up to 1800. That's about 80 pages per 5 minutes and 180 per hour. Each response reports
+what's left in its `tokens-remaining` and `burst-remaining` headers. Going over the limits can get the key blocked,
+so the client:
+
+- caches each game (24 hours sliding once NST marks it final, else 10 minutes),
+- shares one request among concurrent visitors of the same game,
+- pauses all requests for 5 minutes once either pool drops below 100 tokens, or when NST answers 401, 403 or 429, and
+  answers 503 meanwhile (cached games are still served),
+- only accepts regular season and playoff game IDs from 2007-08 on.
+
+**The page.** `game.php?season=20262027&game=20010` for game 2026020010: the game ID without the season's first
+year. The stats are tables found by ID, with the home team first:
+
+| Table | What | Columns used |
+|---|---|---|
+| `tbtsall` | Each team, all situations: a line per period, then the total (the last line is used) | `CF`, `CA`, `xGF`, `xGA` |
+| `tb{TEAM}oiall` | A team's skaters on-ice, all situations | `Player`, `Position`, `TOI` (minutes, like `20.2`), `CF`, `CA`, `xGF`, `xGA` |
+| `tb{TEAM}stall` | A team's skaters' individual stats, all situations | `Player`, `ixG`, `iCF` |
+
+The page also has `ev`, `5v5`, `sva` (score and venue adjusted 5v5), `pp` and `pk` versions of each table.
+`{TEAM}` is NST's code without dots: `TB`, `LA`, `NJ`, `SJ`. Goalies aren't in these tables. A cell of `-` (a
+percentage without attempts) reads as null.
+
+The tables only have player names. The NHL player ID comes from the skater shot charts: each skater's picker label is
+CSS keyed by team and sweater number (`input.sDET55:checked ~ul li #sDETlb:after { content:"Keegan Kolesar"; }`), and
+his shot chart `<div class=DET55 ...>` has an image named after his NHL ID
+(`/shotcharts/players/games/20262027/8478434-20110-eventmap-all.png`). Every skater of the games checked (2026020010,
+2025030414 and 2026020110) matched. A name that can't be matched gets a null `playerId`, so he has no xG in the
+player dialog.
+
+A game NST has no stats for has no `tbtsall` table, and the endpoint answers 404. NST tracks games live, so a game
+that just ended may still have partial numbers: the heading's `<h2>` says "Final" once NST has it all (`isFinal`).
 
 ## Open items
 

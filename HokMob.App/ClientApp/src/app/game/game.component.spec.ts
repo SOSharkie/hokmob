@@ -16,7 +16,7 @@ import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
 import { ScrollDirectionService } from '@shared/services/scroll-direction.service';
 import { MatDialog } from '@angular/material/dialog';
-import { PlayerGameDialogComponent } from '@app/game/player-game-dialog/player-game-dialog.component';
+import { PlayerGameDialogComponent, PlayerGameDialogData } from '@app/game/player-game-dialog/player-game-dialog.component';
 import { HighlightsDialogComponent } from '@app/game/highlights-dialog/highlights-dialog.component';
 import { GoalHighlightDialogComponent } from '@app/game/goal-highlight-dialog/goal-highlight-dialog.component';
 import {
@@ -26,6 +26,7 @@ import {
   mockClubStats,
   mockGameBundle,
   mockGameLanding,
+  mockNstGameStats,
   mockPlayoffScoreResponse,
   mockRegularSeasonScoreResponse,
   mockScoreResponse
@@ -63,6 +64,9 @@ describe('GameComponent', () => {
 
   afterEach(() => {
     fixture.destroy();
+    // Every finished game asks Natural Stat Trick for its expected goals and Corsi. Specs that don't check them leave
+    // the request unanswered.
+    httpMock.match(request => request.url.startsWith('/api/nst/'));
     httpMock.verify();
   });
 
@@ -112,6 +116,19 @@ describe('GameComponent', () => {
       request.flush(response);
     } else {
       request.flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    }
+  }
+
+  /**
+   * Answers the Natural Stat Trick request of a finished game with its captured stats, or with the error status (404
+   * when NST has none yet).
+   */
+  function flushAdvancedStats(gameId: string, errorStatus?: number): void {
+    const request = httpMock.expectOne(`/api/nst/game/${gameId}`);
+    if (errorStatus) {
+      request.flush('Error', {status: errorStatus, statusText: 'Error'});
+    } else {
+      request.flush(mockNstGameStats(Number(gameId) as 2026020010 | 2025030414));
     }
   }
 
@@ -291,7 +308,11 @@ describe('GameComponent', () => {
     await settle();
     fixture.debugElement.query(By.css('app-goal-scorers')).triggerEventHandler('scorerClicked', {playerId: 8476460, eventId: 141});
     expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
-      data: {player: jasmine.objectContaining({playerId: 8476460, name: 'Mark Scheifele'}), shots: component.shots}
+      data: {
+        player: jasmine.objectContaining({playerId: 8476460, name: 'Mark Scheifele'}),
+        advancedStats: undefined,
+        shots: component.shots
+      }
     }));
   });
 
@@ -400,6 +421,7 @@ describe('GameComponent', () => {
       panelClass: 'mobile-dialog-panel',
       data: {
         player: jasmine.objectContaining({name: 'Jordan Binnington', teamId: 19, hokmobRating: 4.8}),
+        advancedStats: undefined,
         shots: component.shots
       }
     }));
@@ -424,11 +446,63 @@ describe('GameComponent', () => {
     const shotMapDebug = fixture.debugElement.query(By.css('app-shot-map'));
     shotMapDebug.triggerEventHandler('playerClicked', 8476460);
     expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
-      data: {player: jasmine.objectContaining({name: 'Mark Scheifele'}), shots: component.shots}
+      data: {player: jasmine.objectContaining({name: 'Mark Scheifele'}), advancedStats: undefined, shots: component.shots}
     }));
     const goal = mockGameLanding(2025021057).summary.scoring[0].goals[0];
     shotMapDebug.triggerEventHandler('goalClicked', {playerId: goal.playerId, eventId: goal.eventId});
     expect(openDialog).toHaveBeenCalledWith(GoalHighlightDialogComponent, jasmine.anything());
+  });
+
+  it('should pass the expected goals and Corsi of a real finished game to the game stats and player dialog', async () => {
+    const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+    open('2026020010');
+    flushBundle('2026020010', mockGameBundle(2026020010));
+    await settle();
+    flushScore('2026-10-01');
+    flushAdvancedStats('2026020010');
+    await settle();
+
+    const advancedStats = element('app-game-stats').advancedStats;
+    expect(advancedStats.homeTeam.name).toBe('Rangers');
+    expect(advancedStats.homeTeam.expectedGoalsFor).toBe(4.85);
+    expect(advancedStats.awayTeam.corsiFor).toBe(63);
+
+    // Marcus Pettersson (NYR)
+    fixture.debugElement.query(By.css('app-game-top-players')).triggerEventHandler('playerClicked', 8477969);
+    expect(openDialog).toHaveBeenCalledWith(PlayerGameDialogComponent, jasmine.objectContaining({
+      data: {
+        player: jasmine.objectContaining({name: 'Marcus Pettersson'}),
+        advancedStats: jasmine.objectContaining({playerId: 8477969, individualExpectedGoals: 0.66, corsiFor: 16}),
+        shots: component.shots
+      }
+    }));
+
+    // A goalie has none: Igor Shesterkin
+    openDialog.calls.reset();
+    component.openPlayerGameDialog(8478048);
+    expect(openDialog.calls.mostRecent().args[1].data).toEqual({
+      player: jasmine.objectContaining({name: 'Igor Shesterkin'}),
+      advancedStats: undefined,
+      shots: component.shots
+    });
+  });
+
+  [404, 503].forEach(errorStatus => {
+    it(`should show the game stats and player dialog without expected goals when NST answers ${errorStatus}`, async () => {
+      const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
+      open('2026020010');
+      flushBundle('2026020010', mockGameBundle(2026020010));
+      await settle();
+      flushScore('2026-10-01');
+      flushAdvancedStats('2026020010', errorStatus);
+      await settle();
+
+      expect(component.advancedStats).toBeUndefined();
+      expect(element('app-game-stats')).not.toBeNull();
+      expect(element('app-game-stats').advancedStats).toBeUndefined();
+      component.openPlayerGameDialog(8477969);
+      expect((openDialog.calls.mostRecent().args[1].data as PlayerGameDialogData).advancedStats).toBeUndefined();
+    });
   });
 
   it('should not open the player dialog for a player without game stats', async () => {
@@ -452,6 +526,8 @@ describe('GameComponent', () => {
     expect(text('.game-venue-container')).toContain('Honda Center');
     expect(component.seriesStatus).toBeUndefined();
     expect(component.highlightsPath).toBe('/video/cgy-at-ana-recap-6390250506112');
+    flushAdvancedStats('2025020952', 404);
+    settleFakeAsync();
     tick(30000);
     httpMock.expectNone(() => true);
   }));
@@ -584,8 +660,9 @@ describe('GameComponent', () => {
     flushClubSchedule('UTA', 20262027);
     await settle();
     expect(text('.info-label')).toBe('NESN');
-    // No score request for a future regular season game
+    // No score or Natural Stat Trick request for a future regular season game
     httpMock.expectNone(request => request.url.startsWith('/api/nhl/score/'));
+    httpMock.expectNone(request => request.url.startsWith('/api/nst/'));
     expect(text('.watch-link')).toBe('Where to Watch');
     expect(element('.watch-button').getAttribute('href')).toBe('https://www.nhl.com/gamecenter/2026020056');
     expect(element('.watch-button').getAttribute('target')).toBe('_blank');
@@ -849,6 +926,8 @@ describe('GameComponent', () => {
     flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     settleFakeAsync();
     expect(text('.watch-link')).toBe('Highlights');
+    // And so are the expected goals and Corsi, which weren't asked for while it was live
+    httpMock.expectOne('/api/nst/game/2025021057');
 
     tick(30000);
     httpMock.expectNone('/api/nhl/gamecenter/2025021057/landing');

@@ -4,7 +4,7 @@ import { Chart } from 'chart.js';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { TeamGameStat } from '@shared/models/nhl-web-api/right-rail.model';
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
-import { mockGameRightRail } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockGameRightRail, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { GameStatsComponent } from './game-stats.component';
 
@@ -141,6 +141,64 @@ describe('GameStatsComponent', () => {
     show(stats);
     expect(rows()[3]).toEqual(['-', 'Hits', '-']);
     expect(highlighted('home')).not.toContain('Hits');
+  });
+
+  it("should show Natural Stat Trick's expected goals and Corsi first, and credit it", () => {
+    // TBL (14) @ NYR (3)
+    fixture.componentRef.setInput('advancedStats', mockNstGameStats(2026020010));
+    show(mockGameRightRail(2026020010).teamGameStats, 3, 14);
+    expect(rows().slice(0, 3)).toEqual([
+      ['4.85', 'Expected Goals', '3.66'],
+      ['45.2%', 'Corsi %', '54.8%'],
+      ['61.4%', 'Faceoff %', '38.6%']
+    ]);
+    // They take the place of blocks and takeaways, so the card keeps six rows
+    expect(rows().map(row => row[1])).toEqual(
+        ['Expected Goals', 'Corsi %', 'Faceoff %', 'Power Plays', 'Penalty Minutes', 'Hits']);
+    // The Rangers had more xG, the Lightning more shot attempts
+    expect(highlighted('home')).toContain('Expected Goals');
+    expect(highlighted('away')).toContain('Corsi %');
+    // Their label and both values explain them, and that they're all strengths
+    const rowElements = fixture.nativeElement.querySelectorAll('.team-stats-row');
+    for (const row of [rowElements[0], rowElements[1]]) {
+      const titles = ['.home', '.stats-label', '.away'].map(selector => row.querySelector(selector).getAttribute('title'));
+      expect(new Set(titles).size).toBe(1);
+      expect(titles[0]).toContain('All strengths');
+    }
+    expect(rowElements[0].querySelector('.stats-label').getAttribute('title')).toContain('xG');
+    expect(rowElements[1].querySelector('.stats-label').getAttribute('title')).toContain('shot attempts');
+    // The right-rail stats have none
+    expect(rowElements[2].querySelector('.stats-label').getAttribute('title')).toBeNull();
+    expect(rowElements[2].querySelector('.home').getAttribute('title')).toBeNull();
+    const source = fixture.nativeElement.querySelector('.stats-source');
+    expect(source.getAttribute('href')).toBe('https://www.naturalstattrick.com/game.php?season=20262027&game=20010');
+    expect(source.getAttribute('target')).toBe('_blank');
+  });
+
+  it('should highlight neither team on a Corsi tie', () => {
+    // CAR @ VGK, 52 shot attempts each
+    fixture.componentRef.setInput('advancedStats', mockNstGameStats(2025030414));
+    show(mockGameRightRail(2025030414).teamGameStats, 54, 12);
+    expect(rows()[1]).toEqual(['50.0%', 'Corsi %', '50.0%']);
+    expect(highlighted('home')).not.toContain('Corsi %');
+    expect(highlighted('away')).not.toContain('Corsi %');
+    expect(highlighted('away')).toContain('Expected Goals');
+  });
+
+  it('should show blocks and takeaways without expected goals, and dashes for missing expected goals numbers', () => {
+    show(mockGameRightRail(2025021057).teamGameStats);
+    expect(rows().map(row => row[1])).toEqual(
+        ['Faceoff %', 'Power Plays', 'Penalty Minutes', 'Hits', 'Blocks', 'Takeaways']);
+    expect(fixture.nativeElement.querySelector('.stats-source')).toBeNull();
+
+    const stats = mockNstGameStats(2026020010);
+    stats.homeTeam.expectedGoalsFor = null;
+    stats.awayTeam.corsiAgainst = null;
+    fixture.componentRef.setInput('advancedStats', stats);
+    fixture.detectChanges();
+    expect(rows().slice(0, 2)).toEqual([['-', 'Expected Goals', '3.66'], ['45.2%', 'Corsi %', '-']]);
+    expect(highlighted('home')).not.toContain('Expected Goals');
+    expect(highlighted('away')).not.toContain('Expected Goals');
   });
 
   it('should destroy the chart with the component', () => {

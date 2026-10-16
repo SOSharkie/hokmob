@@ -87,6 +87,18 @@ npm run test:ci
 That runs the [Karma](https://karma-runner.github.io) suite once in headless Chrome; `npm test` watches instead. The
 same tests, a production build and a backend build run on every pull request and have to pass before merging.
 
+## Natural Stat Trick key
+
+A finished game's expected goals and Corsi come from Natural Stat Trick, which needs an access key. Never commit it.
+For local runs, set it in user secrets from `HokMob.App`:
+
+```
+dotnet user-secrets set "NaturalStatTrick:Key" "<key>"
+```
+
+On Azure, add it as the `NaturalStatTrick__Key` application setting. Without a key the game page still works, just
+without those stats. See "Natural Stat Trick" in [`docs/nhl-api.md`](docs/nhl-api.md).
+
 ## Build
 
 Run `dotnet publish -c Release` from `HokMob.App` to build the backend and a production Angular bundle (output in

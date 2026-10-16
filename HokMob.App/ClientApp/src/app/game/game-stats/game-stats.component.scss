@@ -95,6 +95,17 @@
           min-width: 140px;
         }
       }
+
+      .stats-source {
+        align-self: center;
+        color: $gray-03;
+        font-size: 12px;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
   }
 }
