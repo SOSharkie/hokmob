@@ -73,6 +73,7 @@ import { RatingDistributionComponent } from './history/rating-distribution/ratin
 import { AverageRatingLeadersComponent } from './history/average-rating-leaders/average-rating-leaders.component';
 import { BestGamesComponent } from './history/best-games/best-games.component';
 import {SeasonHistoryService} from "@shared/services/season-history.service";
+import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
 
 @NgModule({
   declarations: [
@@ -154,7 +155,8 @@ import {SeasonHistoryService} from "@shared/services/season-history.service";
     NhlLeadersService,
     RouterExtensionService,
     NhlSearchService,
-    SeasonHistoryService
+    SeasonHistoryService,
+    NaturalStatTrickService
   ],
   bootstrap: [AppComponent]
 })

@@ -29,12 +29,14 @@
               [ngStyle]="{'background-color': row.homeBetter ? homeColor : '', 'color': row.homeBetter ? homeTextColor : ''}">
           {{row.homeValue}}
         </span>
-        <span class="stats-label">{{row.label}}</span>
+        <span class="stats-label" [attr.title]="row.description ?? null">{{row.label}}</span>
         <span class="away team-stat"
               [ngStyle]="{'background-color': row.awayBetter ? awayColor : '', 'color': row.awayBetter ? awayTextColor : ''}">
           {{row.awayValue}}
         </span>
       </div>
+      <a *ngIf="advancedStatsSourceUrl" class="stats-source" [href]="advancedStatsSourceUrl" target="_blank"
+         rel="noopener">Expected goals and Corsi from Natural Stat Trick</a>
     </div>
   </div>
 </div>

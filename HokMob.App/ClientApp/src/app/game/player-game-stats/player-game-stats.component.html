@@ -54,6 +54,14 @@
         <span class="game-stat-label">Shots</span>
         <span class="game-stat-value">{{skaterStats.sog}}</span>
       </div>
+      <div *ngIf="showAdvancedStats" class="game-stat-item expected-goals-stat">
+        <span class="game-stat-label" title="How many goals his shots were worth, by their quality (xG)">Expected Goals</span>
+        <span class="game-stat-value">{{individualExpectedGoals}}</span>
+      </div>
+      <div *ngIf="showAdvancedStats" class="game-stat-item corsi-stat">
+        <span class="game-stat-label" title="His team's share of all shot attempts while he was on the ice">Corsi %</span>
+        <span class="game-stat-value">{{onIceCorsiPercentage}}</span>
+      </div>
       <div class="game-stat-item">
         <span class="game-stat-label">Hits</span>
         <span class="game-stat-value">{{skaterStats.hits}}</span>

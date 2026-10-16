@@ -6,7 +6,8 @@ import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GamePlayer } from '@shared/models/nhl-web-api/boxscore.model';
 import { StatsUtils } from '@shared/utils/stats-utils';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
-import { mockGameBoxscore, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockGameBoxscore, mockGamePlayByPlay, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { NstPlayerGameStats } from '@shared/models/natural-stat-trick/nst-game-stats.model';
 
 import { PlayerGameDialogComponent } from './player-game-dialog.component';
 
@@ -30,8 +31,8 @@ describe('PlayerGameDialogComponent', () => {
         .find(player => player.playerId === playerId);
   }
 
-  function open(player: GamePlayer): void {
-    TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {player}});
+  function open(player: GamePlayer, advancedStats?: NstPlayerGameStats): void {
+    TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {player, advancedStats}});
     fixture = TestBed.createComponent(PlayerGameDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -41,6 +42,14 @@ describe('PlayerGameDialogComponent', () => {
     const player = gamePlayer(8476460);
     open(player);
     expect(fixture.nativeElement.querySelector('app-player-game-stats').player).toBe(player);
+    expect(fixture.nativeElement.querySelector('app-player-game-stats').advancedStats).toBeUndefined();
+  });
+
+  it("should pass the player's expected goals and Corsi to the player game stats", () => {
+    // Marcus Pettersson of game 2026020010, with a player of another game: the dialog passes them as given
+    const advancedStats = mockNstGameStats(2026020010).homeTeam.players.find(item => item.playerId === 8477969);
+    open(gamePlayer(8476460), advancedStats);
+    expect(fixture.nativeElement.querySelector('app-player-game-stats').advancedStats).toBe(advancedStats);
   });
 
   it('should close and open the player profile', fakeAsync(() => {

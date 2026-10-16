@@ -18,6 +18,8 @@ import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {BoxscoreGoalie, BoxscoreSkater, GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
+import {NstPlayerGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
+import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 /**
  * A player's bio and game stats, shown at the top of the player game dialog and the goal highlight dialog.
@@ -43,6 +45,13 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
    */
   @Input()
   public compact: boolean = false;
+
+  /**
+   * The skater's expected goals and Corsi from Natural Stat Trick, shown when given (a finished game NST has stats
+   * for) and the stats aren't compact.
+   */
+  @Input()
+  public advancedStats: NstPlayerGameStats;
 
   @ViewChild("statsContainer")
   public statsContainer: ElementRef<HTMLElement>;
@@ -82,6 +91,23 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
 
   public get goalieAssists(): number {
     return this.player?.goalieRatingContext?.assists ?? 0;
+  }
+
+  /**
+   * Whether to show the expected goals and Corsi: a skater with Natural Stat Trick stats, outside the compact bar.
+   */
+  public get showAdvancedStats(): boolean {
+    return !this.compact && !!this.skaterStats && !!this.advancedStats;
+  }
+
+  /** The xG of the skater's own shots, like "0.66". */
+  public get individualExpectedGoals(): string {
+    return NstStatsUtils.formatExpectedGoals(this.advancedStats?.individualExpectedGoals);
+  }
+
+  /** The team's share of the shot attempts while the skater was on the ice, like "40.0%". */
+  public get onIceCorsiPercentage(): string {
+    return NstStatsUtils.getCorsiPercentage(this.advancedStats?.corsiFor, this.advancedStats?.corsiAgainst);
   }
 
   public get isGoalie(): boolean {

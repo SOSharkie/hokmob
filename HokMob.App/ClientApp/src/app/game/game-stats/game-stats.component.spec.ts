@@ -4,7 +4,7 @@ import { Chart } from 'chart.js';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { TeamGameStat } from '@shared/models/nhl-web-api/right-rail.model';
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
-import { mockGameRightRail } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockGameRightRail, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { GameStatsComponent } from './game-stats.component';
 
@@ -141,6 +141,51 @@ describe('GameStatsComponent', () => {
     show(stats);
     expect(rows()[3]).toEqual(['-', 'Hits', '-']);
     expect(highlighted('home')).not.toContain('Hits');
+  });
+
+  it("should show Natural Stat Trick's expected goals and Corsi first, and credit it", () => {
+    // TBL (14) @ NYR (3)
+    fixture.componentRef.setInput('advancedStats', mockNstGameStats(2026020010));
+    show(mockGameRightRail(2026020010).teamGameStats, 3, 14);
+    expect(rows().slice(0, 3)).toEqual([
+      ['4.85', 'Expected Goals', '3.66'],
+      ['45.2%', 'Corsi %', '54.8%'],
+      ['61.4%', 'Faceoff %', '38.6%']
+    ]);
+    // The Rangers had more xG, the Lightning more shot attempts
+    expect(highlighted('home')).toContain('Expected Goals');
+    expect(highlighted('away')).toContain('Corsi %');
+    const labels = fixture.nativeElement.querySelectorAll('.stats-label');
+    expect(labels[0].getAttribute('title')).toContain('xG');
+    expect(labels[2].getAttribute('title')).toBeNull();
+    const source = fixture.nativeElement.querySelector('.stats-source');
+    expect(source.getAttribute('href')).toBe('https://www.naturalstattrick.com/game.php?season=20262027&game=20010');
+    expect(source.getAttribute('target')).toBe('_blank');
+  });
+
+  it('should highlight neither team on a Corsi tie', () => {
+    // CAR @ VGK, 52 shot attempts each
+    fixture.componentRef.setInput('advancedStats', mockNstGameStats(2025030414));
+    show(mockGameRightRail(2025030414).teamGameStats, 54, 12);
+    expect(rows()[1]).toEqual(['50.0%', 'Corsi %', '50.0%']);
+    expect(highlighted('home')).not.toContain('Corsi %');
+    expect(highlighted('away')).not.toContain('Corsi %');
+    expect(highlighted('away')).toContain('Expected Goals');
+  });
+
+  it('should leave out the expected goals rows and credit without them, and show dashes for missing numbers', () => {
+    show(mockGameRightRail(2025021057).teamGameStats);
+    expect(rows().length).toBe(6);
+    expect(fixture.nativeElement.querySelector('.stats-source')).toBeNull();
+
+    const stats = mockNstGameStats(2026020010);
+    stats.homeTeam.expectedGoalsFor = null;
+    stats.awayTeam.corsiAgainst = null;
+    fixture.componentRef.setInput('advancedStats', stats);
+    fixture.detectChanges();
+    expect(rows().slice(0, 2)).toEqual([['-', 'Expected Goals', '3.66'], ['45.2%', 'Corsi %', '-']]);
+    expect(highlighted('home')).not.toContain('Expected Goals');
+    expect(highlighted('away')).not.toContain('Expected Goals');
   });
 
   it('should destroy the chart with the component', () => {
