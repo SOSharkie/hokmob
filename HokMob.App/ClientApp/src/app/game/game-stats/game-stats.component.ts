@@ -79,9 +79,7 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
     {label: "Faceoff %", category: "faceoffWinningPctg", format: value => (Number(value) * 100).toFixed(1) + "%"},
     {label: "Power Plays", category: "powerPlay", compareCategory: "powerPlayPctg"},
     {label: "Penalty Minutes", category: "pim", lowerIsBetter: true},
-    {label: "Hits", category: "hits"},
-    {label: "Blocks", category: "blockedShots"},
-    {label: "Takeaways", category: "takeaways"}
+    {label: "Hits", category: "hits"}
   ];
 
   public get homeColor(): string {
