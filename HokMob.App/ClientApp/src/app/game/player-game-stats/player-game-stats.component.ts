@@ -100,6 +100,14 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
     return !this.compact && !!this.skaterStats && !!this.advancedStats;
   }
 
+  /** The expected goals tooltip, on its label and value. */
+  public readonly expectedGoalsDescription = "How many goals his shots were worth, by their quality (xG). " +
+      "All strengths: even strength, power plays and penalty kills.";
+
+  /** The Corsi tooltip, on its label and value. */
+  public readonly corsiDescription = "His team's share of all shot attempts while he was on the ice. " +
+      "All strengths: even strength, power plays and penalty kills.";
+
   /** The xG of the skater's own shots, like "0.66". */
   public get individualExpectedGoals(): string {
     return NstStatsUtils.formatExpectedGoals(this.advancedStats?.individualExpectedGoals);

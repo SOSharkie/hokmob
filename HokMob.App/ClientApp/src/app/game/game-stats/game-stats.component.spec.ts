@@ -71,20 +71,22 @@ describe('GameStatsComponent', () => {
       ['66.0%', 'Faceoff %', '34.0%'],
       ['0/3', 'Power Plays', '0/1'],
       ['2', 'Penalty Minutes', '6'],
-      ['26', 'Hits', '13']
+      ['26', 'Hits', '13'],
+      ['15', 'Blocks', '6'],
+      ['4', 'Takeaways', '3']
     ]);
   });
 
   it('should highlight the better team, with fewer penalty minutes and a better power play percentage', () => {
     show(mockGameRightRail(2025021057).teamGameStats);
     // Both power plays are 0%, so neither is highlighted
-    expect(highlighted('home')).toEqual(['Faceoff %', 'Penalty Minutes', 'Hits']);
+    expect(highlighted('home')).toEqual(['Faceoff %', 'Penalty Minutes', 'Hits', 'Blocks', 'Takeaways']);
     expect(highlighted('away')).toEqual([]);
 
-    // CAR (away) had the better power play (1/3), both teams had 8 penalty minutes
+    // CAR (away) had the better power play (1/3) and more takeaways, both teams had 8 penalty minutes
     show(mockGameRightRail(2025030414).teamGameStats, 54, 12);
     expect(rows()[1]).toEqual(['0/3', 'Power Plays', '1/3']);
-    expect(highlighted('away')).toEqual(['Faceoff %', 'Power Plays']);
+    expect(highlighted('away')).toEqual(['Faceoff %', 'Power Plays', 'Blocks', 'Takeaways']);
     expect(highlighted('home')).toEqual(['Hits']);
   });
 
@@ -104,10 +106,10 @@ describe('GameStatsComponent', () => {
     expect(component.awayTextColor).toBe('#1B1B1B');
     expect(component.homeTextColor).toBe('#FFFFFF');
 
-    // The Blues led no stat there, so take the Carolina game's stats, where the away team led two, as if Carolina
+    // The Blues led no stat there, so take the Carolina game's stats, where the away team led four, as if Carolina
     // had visited New Jersey: both red, so Carolina gets the light color too
     show(mockGameRightRail(2025030414).teamGameStats, 1, 12);
-    expect(highlighted('away')).toEqual(['Faceoff %', 'Power Plays']);
+    expect(highlighted('away')).toEqual(['Faceoff %', 'Power Plays', 'Blocks', 'Takeaways']);
 
     const highlightedAway = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.away.team-stat'))
         .filter(stat => stat.style.backgroundColor);
@@ -127,7 +129,7 @@ describe('GameStatsComponent', () => {
   it('should show dashes and no highlights without team stats', () => {
     show(undefined);
     expect(shotLabels()).toEqual(['0', '0']);
-    expect(rows().length).toBe(4);
+    expect(rows().length).toBe(6);
     rows().forEach(row => expect([row[0], row[2]]).toEqual(['-', '-']));
     expect(highlighted('home')).toEqual([]);
     expect(highlighted('away')).toEqual([]);
@@ -150,12 +152,24 @@ describe('GameStatsComponent', () => {
       ['45.2%', 'Corsi %', '54.8%'],
       ['61.4%', 'Faceoff %', '38.6%']
     ]);
+    // They take the place of blocks and takeaways, so the card keeps six rows
+    expect(rows().map(row => row[1])).toEqual(
+        ['Expected Goals', 'Corsi %', 'Faceoff %', 'Power Plays', 'Penalty Minutes', 'Hits']);
     // The Rangers had more xG, the Lightning more shot attempts
     expect(highlighted('home')).toContain('Expected Goals');
     expect(highlighted('away')).toContain('Corsi %');
-    const labels = fixture.nativeElement.querySelectorAll('.stats-label');
-    expect(labels[0].getAttribute('title')).toContain('xG');
-    expect(labels[2].getAttribute('title')).toBeNull();
+    // Their label and both values explain them, and that they're all strengths
+    const rowElements = fixture.nativeElement.querySelectorAll('.team-stats-row');
+    for (const row of [rowElements[0], rowElements[1]]) {
+      const titles = ['.home', '.stats-label', '.away'].map(selector => row.querySelector(selector).getAttribute('title'));
+      expect(new Set(titles).size).toBe(1);
+      expect(titles[0]).toContain('All strengths');
+    }
+    expect(rowElements[0].querySelector('.stats-label').getAttribute('title')).toContain('xG');
+    expect(rowElements[1].querySelector('.stats-label').getAttribute('title')).toContain('shot attempts');
+    // The right-rail stats have none
+    expect(rowElements[2].querySelector('.stats-label').getAttribute('title')).toBeNull();
+    expect(rowElements[2].querySelector('.home').getAttribute('title')).toBeNull();
     const source = fixture.nativeElement.querySelector('.stats-source');
     expect(source.getAttribute('href')).toBe('https://www.naturalstattrick.com/game.php?season=20262027&game=20010');
     expect(source.getAttribute('target')).toBe('_blank');
@@ -171,9 +185,10 @@ describe('GameStatsComponent', () => {
     expect(highlighted('away')).toContain('Expected Goals');
   });
 
-  it('should leave out the expected goals rows and credit without them, and show dashes for missing numbers', () => {
+  it('should show blocks and takeaways without expected goals, and dashes for missing expected goals numbers', () => {
     show(mockGameRightRail(2025021057).teamGameStats);
-    expect(rows().length).toBe(4);
+    expect(rows().map(row => row[1])).toEqual(
+        ['Faceoff %', 'Power Plays', 'Penalty Minutes', 'Hits', 'Blocks', 'Takeaways']);
     expect(fixture.nativeElement.querySelector('.stats-source')).toBeNull();
 
     const stats = mockNstGameStats(2026020010);

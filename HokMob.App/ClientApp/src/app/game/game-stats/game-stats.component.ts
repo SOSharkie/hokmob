@@ -11,7 +11,7 @@ Chart.register(...registerables);
  */
 export interface GameStatRow {
   label: string;
-  /** What the stat means, shown on hovering the label. */
+  /** What the stat means, shown on hovering the label or either value. */
   description?: string;
   homeValue: string;
   awayValue: string;
@@ -82,6 +82,15 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
     {label: "Hits", category: "hits"}
   ];
 
+  /**
+   * The rows added at the bottom in place of the expected goals and Corsi when Natural Stat Trick has none, so the
+   * stats stay as tall as the shots chart.
+   */
+  private readonly rowDefinitionsWithoutAdvancedStats: GameStatRowDefinition[] = [
+    {label: "Blocks", category: "blockedShots"},
+    {label: "Takeaways", category: "takeaways"}
+  ];
+
   public get homeColor(): string {
     return NhlTeamColorUtils.getTeamPrimaryColor(this.homeTeamId);
   }
@@ -146,14 +155,17 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Builds the shots and the stats rows, with the expected goals and Corsi first when they're loaded. Missing stats
-   * show "-" and aren't highlighted.
+   * Builds the shots and the stats rows, with the expected goals and Corsi first when they're loaded, or blocks and
+   * takeaways last when they aren't. Missing stats show "-" and aren't highlighted.
    */
   private buildStats(): void {
     const stats = new Map((this.teamGameStats ?? []).map(stat => [stat.category, stat] as [string, TeamGameStat]));
     this.homeShots = Number(stats.get("sog")?.homeValue ?? 0) || 0;
     this.awayShots = Number(stats.get("sog")?.awayValue ?? 0) || 0;
-    this.statRows = [...this.buildAdvancedStatRows(), ...this.rowDefinitions.map(definition => {
+    const advancedRows = this.buildAdvancedStatRows();
+    const definitions = advancedRows.length > 0 ? this.rowDefinitions :
+        [...this.rowDefinitions, ...this.rowDefinitionsWithoutAdvancedStats];
+    this.statRows = [...advancedRows, ...definitions.map(definition => {
       const stat = stats.get(definition.category);
       const compared = stats.get(definition.compareCategory ?? definition.category);
       const home = GameStatsComponent.toNumber(compared?.homeValue);
@@ -191,10 +203,12 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
       };
     };
     return [
-      row("Expected Goals", "How many goals the team's shots were worth, by their quality (xG)",
+      row("Expected Goals", "How many goals the team's shots were worth, by their quality (xG). All strengths: " +
+          "even strength, power plays and penalty kills.",
           NstStatsUtils.formatExpectedGoals(home.expectedGoalsFor),
           NstStatsUtils.formatExpectedGoals(away.expectedGoalsFor), home.expectedGoalsFor, away.expectedGoalsFor),
-      row("Corsi %", "The team's share of all shot attempts: on goal, missed and blocked",
+      row("Corsi %", "The team's share of all shot attempts: on goal, missed and blocked. All strengths: even " +
+          "strength, power plays and penalty kills.",
           NstStatsUtils.getCorsiPercentage(home.corsiFor, home.corsiAgainst),
           NstStatsUtils.getCorsiPercentage(away.corsiFor, away.corsiAgainst), home.corsiFor, away.corsiFor)
     ];

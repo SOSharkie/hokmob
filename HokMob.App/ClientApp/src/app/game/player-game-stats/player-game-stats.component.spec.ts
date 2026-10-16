@@ -338,8 +338,13 @@ describe('PlayerGameStatsComponent', () => {
       const shown = stats();
       const shots = labels().indexOf('Shots');
       expect(shown.slice(shots + 1, shots + 3)).toEqual([['Expected Goals', '0.66'], ['Corsi %', '40.0%']]);
-      expect(fixture.nativeElement.querySelector('.corsi-stat .game-stat-label').getAttribute('title'))
-          .toContain('on the ice');
+      // The tooltip covers both the label and the value, and says they're all strengths
+      const expectedGoalsTitle = fixture.nativeElement.querySelector('.expected-goals-stat').getAttribute('title');
+      const corsiTitle = fixture.nativeElement.querySelector('.corsi-stat').getAttribute('title');
+      expect(expectedGoalsTitle).toContain('xG');
+      expect(expectedGoalsTitle).toContain('All strengths');
+      expect(corsiTitle).toContain('on the ice');
+      expect(corsiTitle).toContain('All strengths');
     });
 
     it('should leave them out of the compact bar', () => {
