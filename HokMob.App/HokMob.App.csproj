@@ -8,6 +8,8 @@
     <SpaProxyServerUrl>https://localhost:44424</SpaProxyServerUrl>
     <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Local secrets, like the Natural Stat Trick key (see "Natural Stat Trick" in docs/nhl-api.md) -->
+    <UserSecretsId>e810cda8-861d-42d8-a74b-8fe5f0c575b9</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

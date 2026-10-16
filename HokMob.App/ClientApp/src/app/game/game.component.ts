@@ -37,6 +37,9 @@ import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.mode
 import {ScrollDirectionService} from "@shared/services/scroll-direction.service";
 import {Subject, takeUntil} from "rxjs";
 import {ClubStats} from "@shared/models/nhl-web-api/club-stats.model";
+import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
+import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
+import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 @Component({
   selector: 'app-game',
@@ -115,6 +118,12 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public homeSeasonStats: ClubStats;
 
   public awaySeasonStats: ClubStats;
+
+  /**
+   * Both teams' and each skater's expected goals and Corsi from Natural Stat Trick. Only loaded for finished games, and
+   * undefined until NST has them.
+   */
+  public advancedStats: NstGameStats;
 
   private intermissionSecondsRemaining: number;
 
@@ -263,6 +272,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
               private route: ActivatedRoute,
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
+              private naturalStatTrickService: NaturalStatTrickService,
               private scrollDirectionService: ScrollDirectionService) {
   }
 
@@ -339,7 +349,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!player) {
       return;
     }
-    const data: PlayerGameDialogData = {player};
+    const data: PlayerGameDialogData = {player, advancedStats: NstStatsUtils.findPlayer(this.advancedStats, playerId)};
     this.seriesDialog.open(PlayerGameDialogComponent, {
       maxWidth: "85vw",
       backdropClass: "dialog-backdrop",
@@ -400,6 +410,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadScoreGame();
       this.loadTeamForm();
       this.loadSeasonLeaders();
+      this.loadAdvancedStats();
       if (!this.completedGame && (this.liveGame || this.gameDay === "Today")) {
         this.startContinuousNhlGameUpdates();
       }
@@ -425,6 +436,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.awayTeamFormGames = [];
     this.homeSeasonStats = undefined;
     this.awaySeasonStats = undefined;
+    this.advancedStats = undefined;
     this.homeTeamLogo = undefined;
     this.awayTeamLogo = undefined;
     this.isIntermission = false;
@@ -511,6 +523,24 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Loads the expected goals and Corsi of a finished game from Natural Stat Trick, once. If NST doesn't have them yet
+   * (a game that just ended) or they fail to load, the game stats and player dialog show without them.
+   */
+  private loadAdvancedStats(): void {
+    if (!this.completedGame) {
+      return;
+    }
+    const gameId = this.gameId;
+    this.naturalStatTrickService.getGameStats(gameId).then(stats => {
+      if (gameId === this.gameId) {
+        this.advancedStats = stats;
+      }
+    }).catch(() => {
+      // Already logged by the service
+    });
+  }
+
+  /**
    * Refreshes the game every 10 seconds. Stops once the game is over, after reloading the series status and
    * highlights. A failed refresh keeps the data already shown.
    */
@@ -525,6 +555,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.completedGame) {
           this.stopContinuousNhlGameUpdates();
           this.loadScoreGame();
+          this.loadAdvancedStats();
         }
       }).catch(() => {
         // Already logged by the service

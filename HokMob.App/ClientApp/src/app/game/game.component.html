@@ -99,6 +99,7 @@
     <div *ngIf="showGameStats" class="game-container">
       <app-game-stats
           [teamGameStats]="rightRail.teamGameStats"
+          [advancedStats]="advancedStats"
           [homeTeamId]="landing.homeTeam.id"
           [awayTeamId]="landing.awayTeam.id"
           [homeTeamLogo]="homeTeamLogo"

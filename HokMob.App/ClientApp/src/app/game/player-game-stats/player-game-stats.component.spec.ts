@@ -10,8 +10,10 @@ import {
   mockGameBoxscore,
   mockGameLanding,
   mockGamePlayByPlay,
+  mockNstGameStats,
   mockPlayerLanding
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { NstStatsUtils } from '@shared/utils/nst-stats-utils';
 
 import { PlayerGameStatsComponent } from './player-game-stats.component';
 
@@ -315,6 +317,55 @@ describe('PlayerGameStatsComponent', () => {
     component.fitCompactStats();
     expect(component.droppedCompactStats).toBe(0);
     expect(labels().slice(-3)).toEqual(['Penalty Minutes', 'Takeaways', 'Giveaways']);
+  });
+
+  describe('expected goals and Corsi', () => {
+    /** A player of 2026020010 (TBL @ NYR) with his Natural Stat Trick stats, as the player dialog passes them. */
+    function showWithAdvancedStats(playerId: number, compact = false): void {
+      const rosterSpots = PlayByPlayUtils.getRosterSpotMap(mockGamePlayByPlay(2026020010));
+      const player = [true, false]
+          .flatMap(isHome => StatsUtils.getGamePlayers(mockGameBoxscore(2026020010), isHome, rosterSpots))
+          .find(item => item.playerId === playerId);
+      fixture.componentRef.setInput('compact', compact);
+      fixture.componentRef.setInput('advancedStats', NstStatsUtils.findPlayer(mockNstGameStats(2026020010), playerId));
+      show(player);
+      httpMock.expectOne(`/api/nhl/player/${playerId}/landing`);
+    }
+
+    it("should show a real skater's individual xG and on-ice Corsi after his shots", () => {
+      // Marcus Pettersson: 0.66 xG, on the ice for 16 shot attempts for and 24 against
+      showWithAdvancedStats(8477969);
+      const shown = stats();
+      const shots = labels().indexOf('Shots');
+      expect(shown.slice(shots + 1, shots + 3)).toEqual([['Expected Goals', '0.66'], ['Corsi %', '40.0%']]);
+      // The tooltip covers both the label and the value, and says they're all strengths
+      const expectedGoalsTitle = fixture.nativeElement.querySelector('.expected-goals-stat').getAttribute('title');
+      const corsiTitle = fixture.nativeElement.querySelector('.corsi-stat').getAttribute('title');
+      expect(expectedGoalsTitle).toContain('xG');
+      expect(expectedGoalsTitle).toContain('All strengths');
+      expect(corsiTitle).toContain('on the ice');
+      expect(corsiTitle).toContain('All strengths');
+    });
+
+    it('should leave them out of the compact bar', () => {
+      showWithAdvancedStats(8477969, true);
+      expect(labels()).not.toContain('Expected Goals');
+      expect(labels()).not.toContain('Corsi %');
+    });
+
+    it('should leave them out for a goalie, who has none', () => {
+      // Igor Shesterkin
+      showWithAdvancedStats(8478048);
+      expect(labels()).toContain('Save %');
+      expect(labels()).not.toContain('Expected Goals');
+    });
+
+    it('should leave them out without them', () => {
+      show(gamePlayer(8476460));
+      httpMock.expectOne('/api/nhl/player/8476460/landing');
+      expect(labels()).not.toContain('Expected Goals');
+      expect(labels()).not.toContain('Corsi %');
+    });
   });
 
   it('should not load anything without a player', () => {

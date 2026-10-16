@@ -110,6 +110,9 @@ import clubStatsUta20252026Regular from './club-stats-uta-20252026-2.json';
 import clubStatsUta20262027Regular from './club-stats-uta-20262027-2.json';
 import clubStatsCar20252026Playoffs from './club-stats-car-20252026-3.json';
 import clubStatsVgk20252026Playoffs from './club-stats-vgk-20252026-3.json';
+import nstGame2026020010 from './nst-game-2026020010.json';
+import nstGame2025030414 from './nst-game-2025030414.json';
+import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 
 /*
  * Real responses for unit tests, captured on 2026-09-15: api-web.nhle.com responses, the player search
@@ -122,7 +125,9 @@ import clubStatsVgk20252026Playoffs from './club-stats-vgk-20252026-3.json';
  * gamecenter-* responses are unchanged. season-history-20252026-2 isn't a response but the history page's data file,
  * generated for a few games (see mockSeasonHistory). The 25 leader responses (*-points-25, *-savePctg-25) and the
  * season-players-* responses were captured on 2026-10-02; season-players-* were merged from the stats API's
- * skater/summary and skater/realtime (or goalie/summary) the way the backend merges them. To refresh one, download it again with curl and re-check the values the specs
+ * skater/summary and skater/realtime (or goalie/summary) the way the backend merges them. The nst-game-* responses are
+ * the backend's /api/nst/game/{id}, read from Natural Stat Trick's game pages and captured from a running app on
+ * 2026-10-16 (see mockNstGameStats). To refresh one, download it again with curl and re-check the values the specs
  * assert.
  *
  * Every function returns a fresh deep copy, so tests can change the data. "derived" helpers turn real data into states
@@ -677,4 +682,18 @@ export function derivedSeriesInProgress(): {series: PlayoffCarouselSeries, sched
   delete nextGame.gameOutcome;
   delete nextGame.seriesStatus;
   return {series, schedule};
+}
+
+/** Games with a captured /api/nst/game/{id} response, matching the gamecenter-* responses of the same game. */
+export type MockNstGameId = 2026020010 | 2025030414;
+
+/**
+ * /api/nst/game/{id}: Natural Stat Trick's all situations Corsi and xG, 18 skaters a team, all with NHL player IDs.
+ * - 2026020010: TBL @ NYR. Rangers out-attempted 52-63 (45.2% Corsi) but ahead on xG, 4.85-3.66. Highest individual
+ *   xG: Marcus Pettersson (8477969, 0.66, on ice for 16-24 Corsi) and Pontus Holmberg (8480995, 0.91, 14-14).
+ * - 2025030414: CAR @ VGK, Stanley Cup Final game 4. Corsi tied 52-52, xG 2.49 (VGK) to 3.03 (CAR). Mark Stone
+ *   (8475913) had 0.6 xG and 25-18 Corsi.
+ */
+export function mockNstGameStats(gameId: MockNstGameId): NstGameStats {
+  return copy(gameId === 2026020010 ? nstGame2026020010 : nstGame2025030414);
 }

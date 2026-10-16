@@ -3,12 +3,15 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Router} from "@angular/router";
 import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {RatingStatLineUtils} from "@app/ratings/rating-stat-line";
+import {NstPlayerGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 
 /**
  * Data of the player game dialog: a player's stats in the game, from the game page's boxscore.
  */
 export interface PlayerGameDialogData {
   player: GamePlayer;
+  /** The skater's expected goals and Corsi from Natural Stat Trick, for a finished game NST has stats for. */
+  advancedStats?: NstPlayerGameStats;
 }
 
 @Component({
@@ -20,6 +23,8 @@ export interface PlayerGameDialogData {
 export class PlayerGameDialogComponent implements OnInit {
 
   public player: GamePlayer;
+
+  public advancedStats: NstPlayerGameStats;
 
   /**
    * Whether the player's headshot failed to load, so the profile button falls back to the person icon.
@@ -39,6 +44,7 @@ export class PlayerGameDialogComponent implements OnInit {
 
   public ngOnInit(): void {
     this.player = this.data?.player;
+    this.advancedStats = this.data?.advancedStats;
   }
 
   public clickPlayerProfile(): void {

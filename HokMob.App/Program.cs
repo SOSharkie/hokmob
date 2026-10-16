@@ -34,6 +34,16 @@ builder.Services.AddHttpClient<NhlSearchApiClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(10);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("HokMob/1.0");
 });
+// A game page is about 5 MB of HTML, so it's asked for compressed and given longer than the NHL APIs.
+builder.Services.AddHttpClient<NaturalStatTrickClient>(client =>
+{
+    client.BaseAddress = new Uri(NaturalStatTrickClient.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("HokMob/1.0");
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    AutomaticDecompression = System.Net.DecompressionMethods.All
+});
 
 var app = builder.Build();
 
