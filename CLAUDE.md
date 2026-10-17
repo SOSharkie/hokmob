@@ -34,8 +34,8 @@ A request to one of them is a regression.
 - `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/season-players`,
   `/teams`, `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
   into one response.
-- `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, read by
-  `NaturalStatTrickGameParser` from NST's HTML game page. `NaturalStatTrickClient` caches it and stays under the token
+- `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, and each
+  shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page. `NaturalStatTrickClient` caches it and stays under the token
   limits.
 - `ClientApp/src/app/shared/`:
   - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the
@@ -48,7 +48,9 @@ A request to one of them is a regression.
     goes with the `.pill-picker` styles in `styles.scss`, for the draft, playoffs and stats category pickers.
     `StatCategoryUtils` defines the stats page's categories and the columns of their top 25 tables.
 - `ClientApp/src/app/game/rink/`: the rink drawing (`RinkComponent`, which places players with `placeLine`) and
-  `_rink-card.scss`, shared by the top players card and a future game's season leaders card.
+  `_rink-card.scss`, shared by the top players card and a future game's season leaders card. Its card and header
+  toggle are in `_rink-card-base.scss`, which the shot map card imports. The player game dialog's shot map
+  (`player-shot-map`) draws its own half rink. See "Shot maps" in `docs/nhl-api.md`.
 - Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`
   (the leaderboards, and each category's top 25 table at `/stats/{category}`),
   `draft`, `ratings` (the HokMob rating explorer, which a game's player dialog can open on a player's stat line),

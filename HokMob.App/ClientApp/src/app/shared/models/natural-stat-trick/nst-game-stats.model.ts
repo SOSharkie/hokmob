@@ -8,6 +8,26 @@ export interface NstGameStats {
   isFinal: boolean;
   homeTeam: NstTeamGameStats;
   awayTeam: NstTeamGameStats;
+  /** Every skater's goals, shots on goal and missed shots, with each one's xG. */
+  shots?: NstShot[];
+}
+
+/**
+ * A skater's unblocked shot attempt, from the tooltip on his NST individual event map. The shootout isn't included,
+ * and neither are goalies' shots. ShotMapUtils.getShots matches it to its play-by-play shot.
+ */
+export interface NstShot {
+  /** The shooter's NHL player ID. */
+  playerId: number;
+  /** The period number: 4 for the first overtime. */
+  period: number;
+  /** The time elapsed in the period, like "7:05". */
+  time: string;
+  type: "goal" | "shot" | "miss";
+  /** How far from the net it was taken, in feet. */
+  distance: number;
+  /** NST's xG for the shot, to two decimals. */
+  expectedGoals: number;
 }
 
 /**

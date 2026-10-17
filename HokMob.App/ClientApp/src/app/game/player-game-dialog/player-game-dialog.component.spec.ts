@@ -6,10 +6,11 @@ import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GamePlayer } from '@shared/models/nhl-web-api/boxscore.model';
 import { StatsUtils } from '@shared/utils/stats-utils';
 import { PlayByPlayUtils } from '@shared/utils/play-by-play-utils';
+import { ShotMapUtils } from '@shared/utils/shot-map-utils';
+import { GameShot } from '@shared/models/game-shot.model';
 import { mockGameBoxscore, mockGamePlayByPlay, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
-import { NstPlayerGameStats } from '@shared/models/natural-stat-trick/nst-game-stats.model';
 
-import { PlayerGameDialogComponent } from './player-game-dialog.component';
+import { PlayerGameDialogComponent, PlayerGameDialogData } from './player-game-dialog.component';
 
 describe('PlayerGameDialogComponent', () => {
   let component: PlayerGameDialogComponent;
@@ -31,8 +32,12 @@ describe('PlayerGameDialogComponent', () => {
         .find(player => player.playerId === playerId);
   }
 
-  function open(player: GamePlayer, advancedStats?: NstPlayerGameStats): void {
-    TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {player, advancedStats}});
+  /** The shots of 2025021057, as the game page passes them. */
+  const gameShots = () => ShotMapUtils.getShots(mockGamePlayByPlay(2025021057));
+
+  /** Opens the dialog on the player, with the game page's other data for it (advanced stats, shots). */
+  function open(player: GamePlayer, data: Partial<PlayerGameDialogData> = {}): void {
+    TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {player, ...data}});
     fixture = TestBed.createComponent(PlayerGameDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -48,7 +53,7 @@ describe('PlayerGameDialogComponent', () => {
   it("should pass the player's expected goals and Corsi to the player game stats", () => {
     // Marcus Pettersson of game 2026020010, with a player of another game: the dialog passes them as given
     const advancedStats = mockNstGameStats(2026020010).homeTeam.players.find(item => item.playerId === 8477969);
-    open(gamePlayer(8476460), advancedStats);
+    open(gamePlayer(8476460), {advancedStats});
     expect(fixture.nativeElement.querySelector('app-player-game-stats').advancedStats).toBe(advancedStats);
   });
 
@@ -127,6 +132,33 @@ describe('PlayerGameDialogComponent', () => {
     const params = new URL(windowOpen.calls.mostRecent().args[0] as string, window.location.origin).searchParams;
     expect(params.get('subject')).toBe('goalie');
     expect(params.has('evenStrengthShots')).toBeTrue();
+  });
+
+  it("should show a skater's shot map with his own shots, beside the stats", () => {
+    open(gamePlayer(8476460), {shots: gameShots()});
+    const shotMap = fixture.nativeElement.querySelector('app-player-shot-map');
+    expect(shotMap.shots.length).toBe(gamePlayer(8476460).skaterStats.sog);
+    expect(shotMap.shots.every((shot: GameShot) => shot.shooterId === 8476460)).toBeTrue();
+    expect(shotMap.isGoalie).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.player-dialog-body').classList).toContain('with-shot-map');
+  });
+
+  it('should show a goalie the shots he faced', () => {
+    open(gamePlayer(8477480), {shots: gameShots()});
+    const shotMap = fixture.nativeElement.querySelector('app-player-shot-map');
+    expect(shotMap.shots.length).toBe(gamePlayer(8477480).goalieStats.shotsAgainst);
+    expect(shotMap.isGoalie).toBeTrue();
+  });
+
+  it('should not show a shot map for a player without shots', () => {
+    open(gamePlayer(8474679), {shots: gameShots()});
+    expect(fixture.nativeElement.querySelector('app-player-shot-map')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.player-dialog-body').classList).not.toContain('with-shot-map');
+  });
+
+  it('should not show a shot map without the game shots', () => {
+    open(gamePlayer(8476460));
+    expect(fixture.nativeElement.querySelector('app-player-shot-map')).toBeNull();
   });
 
   it('should pass no player to the shared component without one', () => {

@@ -127,8 +127,8 @@ import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.mod
  * season-players-* responses were captured on 2026-10-02; season-players-* were merged from the stats API's
  * skater/summary and skater/realtime (or goalie/summary) the way the backend merges them. The nst-game-* responses are
  * the backend's /api/nst/game/{id}, read from Natural Stat Trick's game pages and captured from a running app on
- * 2026-10-16 (see mockNstGameStats). To refresh one, download it again with curl and re-check the values the specs
- * assert.
+ * 2026-10-16 (see mockNstGameStats); their shots were added on 2026-10-17 by running the backend's parser on the same
+ * pages. To refresh one, download it again with curl and re-check the values the specs assert.
  *
  * Every function returns a fresh deep copy, so tests can change the data. "derived" helpers turn real data into states
  * that couldn't be captured (live games, postponed games, series in progress). Keep those changes minimal.
@@ -693,6 +693,11 @@ export type MockNstGameId = 2026020010 | 2025030414;
  *   xG: Marcus Pettersson (8477969, 0.66, on ice for 16-24 Corsi) and Pontus Holmberg (8480995, 0.91, 14-14).
  * - 2025030414: CAR @ VGK, Stanley Cup Final game 4. Corsi tied 52-52, xG 2.49 (VGK) to 3.03 (CAR). Mark Stone
  *   (8475913) had 0.6 xG and 25-18 Corsi.
+ *
+ * Their shots (each skater's goals, shots on goal and missed shots with their xG) match the gamecenter-* play-by-play:
+ * all 76 of 2025030414's, and 74 of 2026020010's 76, which leaves out Jake Guentzel's shot from behind the net
+ * (17:34 of the 1st) and Igor Shesterkin's empty net goal (a goalie has no event map). 2026020010 has two shots by
+ * Pontus Holmberg at 2:05 of the 2nd, 5ft and 6ft out, both 0.3 xG.
  */
 export function mockNstGameStats(gameId: MockNstGameId): NstGameStats {
   return copy(gameId === 2026020010 ? nstGame2026020010 : nstGame2025030414);

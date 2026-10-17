@@ -145,16 +145,36 @@
   }
 }
 
+// With a shot map, the dialog scrolls as a whole instead of the stats scrolling in their own box
+.player-dialog-body.with-shot-map .player-game-stats-container {
+  max-height: none;
+  overflow: visible;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .player-game-dialog-container > .dialog-ratings-button:active {
     transform: none;
   }
 }
 
-// Desktop Styling
+// Desktop Styling: the shot map beside the stats, below the close button
 @media only screen and (min-width: $game-mobile-screen-breakpoint) {
   .player-game-dialog-container {
     min-width: 350px;
+  }
+
+  .player-dialog-body.with-shot-map {
+    display: flex;
+
+    app-player-game-stats {
+      width: 350px;
+    }
+
+    app-player-shot-map {
+      width: 360px;
+      padding-top: 48px;
+      border-left: 1px solid $black-01;
+    }
   }
 }
 

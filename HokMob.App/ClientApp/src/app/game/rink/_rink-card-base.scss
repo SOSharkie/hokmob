@@ -1,0 +1,82 @@
+// A card around a rink (app-rink) and its header, with a pill toggle in the header's corner. Imported by _rink-card.scss
+// for the cards with players on the rink, and by the shot map card.
+@import "variables";
+@import "interaction";
+
+// The rating blue the starred player is highlighted in (StatsUtils.hokmobRatingBlue), for the lineup toggle
+$star-blue: #0e87e0;
+$rink-line: $gray-01;
+
+// A pill toggle in the top right corner of a card's header, so the title stays centered on the card: the top players'
+// lineup toggle and the shot map's goals toggle. Its icon is a .toggle-icon.
+@mixin header-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: $spacing-small;
+  height: 26px;
+  padding: 0 $spacing-large 0 $spacing-medium;
+  border: 1px solid $gray-01;
+  border-radius: 20px;
+  background-color: $black-03;
+  color: $gray-04;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+  @include focus-ring;
+
+  @include hover {
+    border-color: $gray-02;
+    color: white;
+  }
+
+  &:active {
+    background-color: $gray-01;
+  }
+
+  .toggle-icon {
+    width: 15px;
+    height: 15px;
+    font-size: 15px;
+    color: $gray-03;
+  }
+}
+
+.rink-card {
+  background-color: $black-02;
+  border-radius: 25px;
+  color: white;
+  padding: 0 $spacing-x-large $spacing-x-large;
+
+  .rink-card-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    // The same title type as the other cards
+    font-size: 17px;
+    font-weight: 500;
+  }
+
+  // The lineup toggle sits in the top right corner, so the title stays centered on the card
+  .lineup-toggle {
+    @include header-toggle;
+
+    &.showing-stars {
+      border-color: $star-blue;
+      color: white;
+
+      .toggle-icon {
+        color: $star-blue;
+      }
+    }
+  }
+}
