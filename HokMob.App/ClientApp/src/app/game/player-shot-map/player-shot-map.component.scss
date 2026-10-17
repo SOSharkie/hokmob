@@ -154,6 +154,11 @@ $rink-line: $gray-01;
     background-color: white;
   }
 
+  .chip-xg {
+    color: $gray-03;
+    font-weight: 400;
+  }
+
   @include hover {
     background-color: $gray-01;
   }
@@ -161,5 +166,10 @@ $rink-line: $gray-01;
   &.selected {
     background-color: var(--team-color);
     color: var(--team-text-color);
+
+    .chip-xg {
+      color: inherit;
+      opacity: 0.8;
+    }
   }
 }

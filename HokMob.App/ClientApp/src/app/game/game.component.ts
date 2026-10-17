@@ -83,7 +83,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public awayPlayers: GamePlayer[] = [];
 
   /**
-   * The game's shots on goal and goals from the play-by-play, for the shot map and the player dialog's shot map.
+   * The game's shots on goal and goals from the play-by-play, for the shot map and the player dialog's shot map. Built
+   * again once Natural Stat Trick's stats load, which give each shot its xG.
    */
   public shots: GameShot[] = [];
 
@@ -471,7 +472,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.playByPlay = bundle.playByPlay ?? this.playByPlay;
     this.boxscore = bundle.boxscore ?? this.boxscore;
     this.rightRail = bundle.rightRail ?? this.rightRail;
-    this.shots = ShotMapUtils.getShots(this.playByPlay);
+    this.shots = ShotMapUtils.getShots(this.playByPlay, this.advancedStats?.shots);
     const rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
     const faceoffCounts = this.playByPlay ? PlayByPlayUtils.getFaceoffCounts(this.playByPlay) : undefined;
     const penaltiesDrawnCounts = this.playByPlay ? PlayByPlayUtils.getPenaltiesDrawnCounts(this.playByPlay) : undefined;
@@ -554,6 +555,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.naturalStatTrickService.getGameStats(gameId).then(stats => {
       if (gameId === this.gameId) {
         this.advancedStats = stats;
+        this.shots = ShotMapUtils.getShots(this.playByPlay, stats?.shots);
       }
     }).catch(() => {
       // Already logged by the service

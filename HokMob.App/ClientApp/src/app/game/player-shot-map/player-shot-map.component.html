@@ -47,6 +47,9 @@
             [class.goal]="marker.shot.isGoal" [class.selected]="isSelected(marker)" [attr.aria-pressed]="isSelected(marker)"
             [style.--team-color]="marker.color" [style.--team-text-color]="marker.textColor" (click)="toggleShot(marker)">
       <span>{{marker.timeLabel}}</span>
+      <span *ngIf="marker.expectedGoalsLabel" class="chip-xg" title="Expected goals, from Natural Stat Trick">
+        {{marker.expectedGoalsLabel}} xG
+      </span>
       <img *ngIf="marker.shot.isGoal" class="puck-icon" src="assets/puck.png" alt="goal">
     </button>
   </div>

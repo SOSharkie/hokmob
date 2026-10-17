@@ -23,7 +23,7 @@
         <dt>Time</dt>
         <dd class="shot-time">{{timeLabel}}</dd>
       </div>
-      <div class="shot-fact">
+      <div *ngIf="isFactShown('shotType')" class="shot-fact">
         <dt>Shot type</dt>
         <dd class="shot-type">{{shotTypeLabel}}</dd>
       </div>
@@ -37,7 +37,11 @@
           </button>
         </dd>
       </div>
-      <div *ngIf="showGoalie" class="shot-fact">
+      <div *ngIf="hasExpectedGoals" class="shot-fact">
+        <dt title="Expected goals: how likely the shot was to score, from Natural Stat Trick">xG</dt>
+        <dd class="shot-xg">{{expectedGoalsLabel}}</dd>
+      </div>
+      <div *ngIf="isFactShown('goalie')" class="shot-fact">
         <dt>Goalie</dt>
         <dd class="shot-goalie">{{goalieLabel}}</dd>
       </div>
@@ -69,4 +73,6 @@
       <app-team-logo *ngIf="awayTeamLogo" [src]="awayTeamLogo" [size]="logoSize"></app-team-logo>
     </div>
   </div>
+  <a *ngIf="expectedGoalsSourceUrl" class="shots-source" [href]="expectedGoalsSourceUrl" target="_blank"
+     rel="noopener">Expected goals from Natural Stat Trick</a>
 </div>

@@ -2,7 +2,7 @@ import { ShotMapUtils } from './shot-map-utils';
 import { GameShot } from '@shared/models/game-shot.model';
 import { PlayByPlay } from '@shared/models/nhl-web-api/play-by-play.model';
 import { NhlPeriodTypeEnum } from '@shared/enums/nhl-period-type.enum';
-import { mockGameBoxscore, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockGameBoxscore, mockGamePlayByPlay, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 describe('ShotMapUtils', () => {
 
@@ -92,6 +92,67 @@ describe('ShotMapUtils', () => {
       expect(ShotMapUtils.getShots(mockGamePlayByPlay(2026020056))).toEqual([]);
       expect(ShotMapUtils.getShots(undefined)).toEqual([]);
       expect(ShotMapUtils.getShots({plays: undefined} as PlayByPlay)).toEqual([]);
+    });
+  });
+
+  describe('getShots with Natural Stat Trick xG', () => {
+    const nstShots = (gameId: 2025030414 | 2026020010) => mockNstGameStats(gameId).shots;
+    /** TBL @ NYR, where NST leaves out a shot from behind the net and a goalie's goal. */
+    const rangers = () => mockGamePlayByPlay(2026020010);
+
+    it("should give every shot of the final its xG", () => {
+      const shots = ShotMapUtils.getShots(final(), nstShots(2025030414));
+      expect(shots.length).toBe(49);
+      expect(shots.every(item => item.expectedGoals != null)).toBeTrue();
+      // Stankoven's goal at 1:06 of the 1st, and Theodore's shot from 101ft at the end
+      expect(shot(shots, 69).expectedGoals).toBe(0.09);
+      expect(shots[shots.length - 1].expectedGoals).toBe(0);
+    });
+
+    it("should match each shot by its shooter, period, time and type, leaving NST's missed shots out", () => {
+      const staalShots = ShotMapUtils.getPlayerShots(ShotMapUtils.getShots(final(), nstShots(2025030414)), 8473533, false);
+      // His miss at 10:21 of the 2nd (0.08) isn't on the map
+      expect(staalShots.map(item => item.expectedGoals)).toEqual([0.05, 0.33, 0.11, 0.06]);
+    });
+
+    it("should add up to NST's xG of the goals and shots on goal", () => {
+      const total = ShotMapUtils.getShots(final(), nstShots(2025030414))
+          .reduce((sum, item) => sum + item.expectedGoals, 0);
+      const nstTotal = nstShots(2025030414).filter(item => item.type !== 'miss')
+          .reduce((sum, item) => sum + item.expectedGoals, 0);
+      expect(total).toBeCloseTo(nstTotal, 6);
+    });
+
+    it("should leave the xG out of a shot NST doesn't list", () => {
+      const shots = ShotMapUtils.getShots(rangers(), nstShots(2026020010));
+      // Guentzel's shot from behind the net, and Shesterkin's empty net goal
+      expect(shot(shots, 334).expectedGoals).toBeUndefined();
+      expect(shot(shots, 1036).expectedGoals).toBeUndefined();
+      expect(shots.filter(item => item.expectedGoals == null).length).toBe(2);
+    });
+
+    it("should pair a shooter's shots in the same second nearest to the net first", () => {
+      // Holmberg's two shots at 2:05 of the 2nd: 452 from 5ft, 207 from about 6ft. NST lists both at 0.3 xG.
+      const holmberg = nstShots(2026020010).filter(item => item.playerId === 8480995 && item.time === '2:05');
+      expect(holmberg.map(item => item.distance)).toEqual([5, 6]);
+      holmberg[0].expectedGoals = 0.4;
+      holmberg[1].expectedGoals = 0.2;
+      const others = nstShots(2026020010).filter(item => !(item.playerId === 8480995 && item.time === '2:05'));
+      const shots = ShotMapUtils.getShots(rangers(), [holmberg[1], ...others, holmberg[0]]);
+      expect(shot(shots, 452).expectedGoals).toBe(0.4);
+      expect(shot(shots, 207).expectedGoals).toBe(0.2);
+    });
+
+    it('should not take the xG of a different type of shot at the same time', () => {
+      const stankovenGoal = nstShots(2025030414).find(item => item.playerId === 8482702 && item.time === '1:06');
+      const shots = ShotMapUtils.getShots(final(), [{...stankovenGoal, type: 'shot'}]);
+      expect(shot(shots, 69).expectedGoals).toBeUndefined();
+    });
+
+    it('should leave every xG out without NST shots', () => {
+      [undefined, null, []].forEach(missing => {
+        expect(ShotMapUtils.getShots(final(), missing).some(item => item.expectedGoals != null)).toBeFalse();
+      });
     });
   });
 

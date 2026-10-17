@@ -4,7 +4,7 @@ import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameShot } from '@shared/models/game-shot.model';
 import { ShotMapUtils } from '@shared/utils/shot-map-utils';
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
-import { mockGameBoxscore, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockGameBoxscore, mockGamePlayByPlay, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { PlayerShotMapComponent } from './player-shot-map.component';
 
@@ -69,6 +69,14 @@ describe('PlayerShotMapComponent', () => {
     expect(goal.x).toBe(42.5 - 8);
     expect(component.netY).toBe(89 - component.topX);
     expect(component.rinkHeight).toBe(100 - component.topX);
+  });
+
+  it("should add each shot's xG from Natural Stat Trick to its chip", () => {
+    const shots = ShotMapUtils.getPlayerShots(
+        ShotMapUtils.getShots(mockGamePlayByPlay(2025030414), mockNstGameStats(2025030414).shots), staalId, false);
+    show(shots);
+    expect(elements('.shot-chip').map(chip => chip.textContent.replace(/\s+/g, ' ').trim()))
+        .toEqual(['1st 7:05 0.05 xG', '1st 12:48 0.33 xG', '2nd 10:28 0.11 xG', '3rd 6:32 0.06 xG']);
   });
 
   it('should label a chip per shot, and highlight the shot of a selected chip', () => {

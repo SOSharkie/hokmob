@@ -21,6 +21,8 @@ import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {NhlVideoUtils} from "@shared/utils/nhl-video-utils";
+import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
+import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 import {RinkComponent} from "@app/game/rink/rink.component";
 
 /**
@@ -64,6 +66,13 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input()
   public scoring: GameLandingScoringPeriod[];
 
+  /**
+   * The finished game's stats from Natural Stat Trick, whose shots give each shot its xG. Undefined until they load,
+   * and for a game NST has no stats for.
+   */
+  @Input()
+  public advancedStats: NstGameStats;
+
   @Input()
   public homeTeamLogo: string;
 
@@ -92,10 +101,15 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   public selectedEventId: number;
 
   /**
-   * Whether the shot details show the goalie. They stay on one row beside the shooter, so the goalie is left out when
-   * it would squeeze the shooter's name (fitShotDetails).
+   * The shot details' facts that are left out when they would squeeze the shooter's name, first to last. The details
+   * stay on one row beside the shooter (fitShotDetails).
    */
-  public showGoalie = true;
+  private static readonly factDropOrder: string[] = ["goalie", "shotType"];
+
+  /**
+   * How many of factDropOrder the shot details are leaving out.
+   */
+  public droppedFacts: number = 0;
 
   @ViewChild("shotDetails")
   public shotDetails: ElementRef<HTMLElement>;
@@ -122,7 +136,7 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
     const homeColor = NhlTeamColorUtils.getTeamPrimaryColor(this.homeTeamId);
     const awayColor = NhlTeamColorUtils.getTeamSecondaryColor(this.homeTeamId, this.awayTeamId);
-    this.markers = ShotMapUtils.getShots(this.playByPlay).map(shot => ({
+    this.markers = ShotMapUtils.getShots(this.playByPlay, this.advancedStats?.shots).map(shot => ({
       shot,
       ...ShotMapComponent.getRinkPosition(shot),
       color: shot.isHomeTeam ? homeColor : awayColor
@@ -149,19 +163,28 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Shows the goalie in the shot details, and leaves it out when the shooter's name no longer fits beside the facts
-   * or the row overflows the card. Runs when the view is built, when the card changes width and whenever the selected
-   * shot changes, since the names' lengths change with it.
+   * Shows every fact in the shot details, then leaves out the goalie, then the shot type, until the shooter's name fits
+   * beside them and the row fits the card. If it still doesn't, the name is cut short. Runs when the view is built,
+   * when the card changes width and whenever the selected shot changes, since the names' lengths change with it.
    */
   public fitShotDetails(): void {
-    this.showGoalie = true;
-    this.changeDetector.detectChanges();
-    const details = this.shotDetails?.nativeElement;
-    const name = details?.querySelector(".shooter-name");
-    if (details && (details.scrollWidth > details.clientWidth || name?.scrollWidth > name?.clientWidth)) {
-      this.showGoalie = false;
+    for (let dropped = 0; dropped <= ShotMapComponent.factDropOrder.length; dropped++) {
+      this.droppedFacts = dropped;
       this.changeDetector.detectChanges();
+      const details = this.shotDetails?.nativeElement;
+      const name = details?.querySelector(".shooter-name");
+      if (!details || (details.scrollWidth <= details.clientWidth && name?.scrollWidth <= name?.clientWidth)) {
+        return;
+      }
     }
+  }
+
+  /**
+   * Whether the shot details show a fact of factDropOrder. Every other fact is always shown.
+   */
+  public isFactShown(fact: string): boolean {
+    const dropIndex = ShotMapComponent.factDropOrder.indexOf(fact);
+    return dropIndex < 0 || dropIndex >= this.droppedFacts;
   }
 
   /**
@@ -243,6 +266,27 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   /**
    * The goalie the shot was on, or "Empty net".
    */
+  /**
+   * Whether the shots have Natural Stat Trick's xG, so the details show it and the card credits NST.
+   */
+  public get hasExpectedGoals(): boolean {
+    return this.markers.some(marker => marker.shot.expectedGoals != null);
+  }
+
+  /**
+   * The selected shot's xG, like "0.30", or "-" for a shot NST doesn't list.
+   */
+  public get expectedGoalsLabel(): string {
+    return NstStatsUtils.formatExpectedGoals(this.selectedShot?.expectedGoals);
+  }
+
+  /**
+   * NST's game page, credited for the xG.
+   */
+  public get expectedGoalsSourceUrl(): string {
+    return this.hasExpectedGoals ? NstStatsUtils.getGamePageUrl(this.advancedStats?.gameId) : "";
+  }
+
   public get goalieLabel(): string {
     const goalieId = this.selectedShot?.goalieId;
     if (goalieId == null) {

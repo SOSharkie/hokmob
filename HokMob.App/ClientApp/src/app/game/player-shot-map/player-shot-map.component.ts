@@ -3,6 +3,7 @@ import {GameShot} from "@shared/models/game-shot.model";
 import {ShotMapUtils} from "@shared/utils/shot-map-utils";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
+import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 /**
  * A shot on the half rink, in feet from its top left corner.
@@ -15,12 +16,14 @@ export interface PlayerShotMarker {
   /** The text color on the team color, for a selected chip. */
   textColor: string;
   timeLabel: string;
+  /** The shot's xG from Natural Stat Trick, like "0.30", or undefined without one. */
+  expectedGoalsLabel: string;
 }
 
 /**
  * A player's shots in the player game dialog: a skater's shots on goal and goals, or the shots a goalie faced, on the
- * attacked half of the rink with the net at the bottom, each with a line to the net. A chip per shot below the rink
- * highlights it.
+ * attacked half of the rink with the net at the bottom, each with a line to the net. A chip per shot below the rink,
+ * with its xG from Natural Stat Trick when the game has it, highlights it.
  */
 @Component({
   selector: 'app-player-shot-map',
@@ -77,7 +80,8 @@ export class PlayerShotMapComponent implements OnChanges {
       y: this.toRinkY(Math.max(shot.x, this.topX)),
       color: NhlTeamColorUtils.getTeamPrimaryColor(shot.teamId),
       textColor: NhlTeamColorUtils.getTeamTextColor(shot.teamId),
-      timeLabel: ShotMapUtils.getTimeLabel(shot)
+      timeLabel: ShotMapUtils.getTimeLabel(shot),
+      expectedGoalsLabel: shot.expectedGoals == null ? undefined : NstStatsUtils.formatExpectedGoals(shot.expectedGoals)
     }));
     if (!this.markers.some(marker => marker.shot.eventId === this.selectedEventId)) {
       this.selectedEventId = undefined;

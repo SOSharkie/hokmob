@@ -34,8 +34,8 @@ A request to one of them is a regression.
 - `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/season-players`,
   `/teams`, `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
   into one response.
-- `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, read by
-  `NaturalStatTrickGameParser` from NST's HTML game page. `NaturalStatTrickClient` caches it and stays under the token
+- `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, and each
+  shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page. `NaturalStatTrickClient` caches it and stays under the token
   limits.
 - `ClientApp/src/app/shared/`:
   - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the

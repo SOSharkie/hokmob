@@ -6,7 +6,7 @@ import { GameLandingScoringPeriod } from '@shared/models/nhl-web-api/gamecenter-
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { ShotMapUtils } from '@shared/utils/shot-map-utils';
-import { mockGameLanding, mockGamePlayByPlay } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockGameLanding, mockGamePlayByPlay, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { ShotMapComponent } from './shot-map.component';
 
@@ -113,6 +113,81 @@ describe('ShotMapComponent', () => {
     expect(text('.shot-time')).toBe(ShotMapUtils.getTimeLabel(component.markers[0].shot));
   });
 
+  describe("Natural Stat Trick's xG", () => {
+    const facts = () => elements('.shot-facts dt').map(label => label.textContent.trim());
+
+    /** Shows a game on a wide card, with NST's stats when given. */
+    function showWithStats(gameId: 2025030414 | 2026020010, withStats: boolean = true): void {
+      fixture.nativeElement.style.width = '1000px';
+      fixture.componentRef.setInput('advancedStats', withStats ? mockNstGameStats(gameId) : undefined);
+      show(mockGamePlayByPlay(gameId), mockGameLanding(gameId).summary.scoring);
+    }
+
+    it("should show the selected shot's xG between its result and the goalie", () => {
+      showWithStats(2025030414);
+      expect(facts()).toEqual(['Time', 'Shot type', 'Result', 'xG', 'Goalie']);
+      // Theodore's shot from 101ft at the end of the game
+      expect(text('.shot-xg')).toBe('0.00');
+      component.selectShot(component.markers.find(marker => marker.shot.eventId === 69));
+      fixture.detectChanges();
+      expect(text('.shooter-name')).toBe('Logan Stankoven');
+      expect(text('.shot-xg')).toBe('0.09');
+    });
+
+    it('should credit Natural Stat Trick with a link to its game page', () => {
+      showWithStats(2025030414);
+      const link = element('.shots-source') as HTMLAnchorElement;
+      expect(link.textContent.trim()).toBe('Expected goals from Natural Stat Trick');
+      expect(link.getAttribute('href')).toBe('https://www.naturalstattrick.com/game.php?season=20252026&game=30414');
+      expect(link.getAttribute('target')).toBe('_blank');
+    });
+
+    it("should show \"-\" for a shot NST doesn't list", () => {
+      showWithStats(2026020010);
+      // Guentzel's shot from behind the net
+      component.selectShot(component.markers.find(marker => marker.shot.eventId === 334));
+      fixture.detectChanges();
+      expect(text('.shooter-name')).toBe('Jake Guentzel');
+      expect(text('.shot-xg')).toBe('-');
+    });
+
+    it('should show no xG or credit without NST stats, or when they have no shots', () => {
+      showWithStats(2025030414, false);
+      expect(facts()).toEqual(['Time', 'Shot type', 'Result', 'Goalie']);
+      expect(element('.shots-source')).toBeNull();
+
+      const stats = mockNstGameStats(2025030414);
+      delete stats.shots;
+      fixture.componentRef.setInput('advancedStats', stats);
+      fixture.detectChanges();
+      expect(element('.shot-xg')).toBeNull();
+      expect(element('.shots-source')).toBeNull();
+    });
+
+    it('should add the xG once the stats load', () => {
+      showWithStats(2025030414, false);
+      fixture.componentRef.setInput('advancedStats', mockNstGameStats(2025030414));
+      fixture.detectChanges();
+      expect(text('.shot-xg')).toBe('0.00');
+    });
+
+    it('should leave out the goalie, then the shot type, but keep the xG on a narrow card', () => {
+      showWithStats(2025030414);
+      fixture.nativeElement.style.width = '420px';
+      component.fitShotDetails();
+      expect(facts()).not.toContain('Goalie');
+      expect(facts()).toEqual(jasmine.arrayContaining(['Time', 'Result', 'xG']));
+      const details = element('.shot-details');
+      expect(details.scrollWidth).toBeLessThanOrEqual(details.clientWidth);
+
+      // Too narrow for both: the shot type goes as well
+      fixture.nativeElement.style.width = '300px';
+      component.fitShotDetails();
+      expect(facts()).toEqual(['Time', 'Result', 'xG']);
+      expect(component.droppedFacts).toBe(2);
+    });
+  });
+
   describe('shot details row', () => {
     const facts = () => elements('.shot-facts dt').map(label => label.textContent.trim());
     const nextFrames = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -125,14 +200,15 @@ describe('ShotMapComponent', () => {
     it('should show the time, shot type, result and goalie beside the shooter on a wide card', () => {
       showAtWidth(900);
       expect(facts()).toEqual(['Time', 'Shot type', 'Result', 'Goalie']);
-      expect(component.showGoalie).toBeTrue();
+      expect(component.droppedFacts).toBe(0);
       const shooter = element('.shooter').getBoundingClientRect();
       expect(element('.shot-facts').getBoundingClientRect().top).toBeLessThan(shooter.bottom);
     });
 
     it('should leave out the goalie on a narrow card instead of wrapping', () => {
       showAtWidth(420);
-      expect(facts()).toEqual(['Time', 'Shot type', 'Result']);
+      expect(facts()).not.toContain('Goalie');
+      expect(facts()).toEqual(jasmine.arrayContaining(['Time', 'Result']));
       const details = element('.shot-details');
       expect(details.scrollWidth).toBeLessThanOrEqual(details.clientWidth);
       const shooter = element('.shooter').getBoundingClientRect();
@@ -144,7 +220,7 @@ describe('ShotMapComponent', () => {
       await nextFrames();
       fixture.nativeElement.style.width = '420px';
       await nextFrames();
-      expect(facts()).toEqual(['Time', 'Shot type', 'Result']);
+      expect(facts()).not.toContain('Goalie');
 
       fixture.nativeElement.style.width = '900px';
       await nextFrames();

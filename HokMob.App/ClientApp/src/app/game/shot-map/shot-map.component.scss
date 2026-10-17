@@ -31,7 +31,7 @@ $standing-aspect-ratio: 1.6;
 }
 
 // The selected shot: the shooter, and its facts beside them on the same row. The facts keep their width and the
-// shooter's name gives way, after the goalie is left out (ShotMapComponent.fitShotDetails).
+// shooter's name gives way, after the goalie and then the shot type are left out (ShotMapComponent.fitShotDetails).
 .shot-details {
   display: flex;
   justify-content: space-between;
@@ -248,6 +248,20 @@ $standing-aspect-ratio: 1.6;
 @media (prefers-reduced-motion: reduce) {
   .shot-marker {
     transition: none;
+  }
+}
+
+// Credits Natural Stat Trick for the xG, like the game stats card
+.shots-source {
+  display: block;
+  margin-top: $spacing-large;
+  color: $gray-03;
+  font-size: 12px;
+  text-align: center;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
   }
 }
 

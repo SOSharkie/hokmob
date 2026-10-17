@@ -1,5 +1,6 @@
 import {Play, PlayByPlay} from "@shared/models/nhl-web-api/play-by-play.model";
 import {GameShot} from "@shared/models/game-shot.model";
+import {NstShot} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {NhlPlayTypeEnum} from "@shared/enums/nhl-play-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
@@ -25,13 +26,14 @@ export class ShotMapUtils {
    * Returns the game's shots on goal and goals, in play order, turned so every shooter attacks the net at x = 89. The
    * teams switch ends each period (homeTeamDefendingSide), and a shot taken towards the left end (negative x) is
    * turned half a turn, so it keeps its side of the net. The shootout, and plays without a shooter or coordinates, are
-   * left out.
+   * left out. Each shot gets its xG from Natural Stat Trick's shots, when they're given (addExpectedGoals).
    *
    * @param playByPlay - The game's play-by-play.
+   * @param nstShots - NST's shots of the game (NstGameStats.shots), for each shot's xG.
    */
-  public static getShots(playByPlay: PlayByPlay): GameShot[] {
+  public static getShots(playByPlay: PlayByPlay, nstShots?: NstShot[]): GameShot[] {
     const homeTeamId = playByPlay?.homeTeam?.id;
-    return (playByPlay?.plays ?? [])
+    const shots: GameShot[] = (playByPlay?.plays ?? [])
         .filter(play => ShotMapUtils.isShot(play))
         .sort((playA, playB) => playA.sortOrder - playB.sortOrder)
         .map(play => {
@@ -54,6 +56,38 @@ export class ShotMapUtils {
             y: details.yCoord * turn || 0
           };
         });
+    ShotMapUtils.addExpectedGoals(shots, nstShots);
+    return shots;
+  }
+
+  /**
+   * Gives each shot the xG of its Natural Stat Trick shot: the one by the same shooter, of the same type (goal or shot
+   * on goal), at the same period and time. A shooter's shots in the same second are paired up nearest to the net
+   * first, by NST's distance and the shot's own. A shot NST doesn't list keeps no xG: in 13 games checked that was only
+   * goalies' shots and one from behind the net.
+   */
+  private static addExpectedGoals(shots: GameShot[], nstShots: NstShot[]): void {
+    const nstShotsByKey = new Map<string, NstShot[]>();
+    (nstShots ?? []).filter(nstShot => nstShot?.type !== "miss").forEach(nstShot => {
+      const key = [nstShot.playerId, nstShot.period, nstShot.time, nstShot.type === "goal"].join("|");
+      nstShotsByKey.set(key, [...(nstShotsByKey.get(key) ?? []), nstShot]);
+    });
+    if (nstShotsByKey.size === 0) {
+      return;
+    }
+    const shotsByKey = new Map<string, GameShot[]>();
+    shots.forEach(shot => {
+      const time = PeriodUtils.formatTimeRemaining(shot.timeInPeriod);
+      const key = [shot.shooterId, shot.periodDescriptor?.number, time, shot.isGoal].join("|");
+      shotsByKey.set(key, [...(shotsByKey.get(key) ?? []), shot]);
+    });
+    const distance = (shot: GameShot) => Math.hypot(89 - shot.x, shot.y);
+    shotsByKey.forEach((keyShots, key) => {
+      const keyNstShots = [...(nstShotsByKey.get(key) ?? [])].sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
+      [...keyShots].sort((a, b) => distance(a) - distance(b)).forEach((shot, index) => {
+        shot.expectedGoals = keyNstShots[index]?.expectedGoals ?? undefined;
+      });
+    });
   }
 
   /**

@@ -217,6 +217,9 @@ Missed and blocked shots aren't plotted. `ShotMapUtils.getShots` reads them.
   top). It lines the shots up with the drawn rink's goal lines and faceoff dots, since the rink is drawn 200.13ft long
   (`ShotMapComponent.getRinkPosition`). It starts on the last shot, a shot clicked on the rink shows its details,
   and a goal with a posted clip opens the goal highlight dialog.
+- **xG:** once a finished game's Natural Stat Trick stats load, each shot gets NST's xG (see
+  [Shot xG](#shot-xg)): the team map shows it in the shot's details and credits NST below the rink, and the player
+  map adds it to each shot's chip. A shot NST doesn't list shows "-".
 
 ## Season dates and playoff mode
 
@@ -335,8 +338,8 @@ A finished game's all situations expected goals (xG) and Corsi come from
 [Natural Stat Trick](https://www.naturalstattrick.com) (NST), through `/api/nst/game/{gameId}`
 (`NaturalStatTrickController`, `NaturalStatTrickClient`, `NaturalStatTrickGameParser`). The game page loads it once
 the game is final and shows it in the game stats card (each team's xG and Corsi %, crediting NST with a link to its
-game page) and the player dialog (a skater's own xG and his on-ice Corsi %). The goal highlight dialog's compact bar
-leaves them out.
+game page) and the player dialog (a skater's own xG and his on-ice Corsi %), and each shot's xG on the shot maps. The
+goal highlight dialog's compact bar leaves them out.
 
 **Access.** `data.naturalstattrick.com` is NST's mirror for bots. It isn't an API: it serves the same HTML pages as
 `www.naturalstattrick.com` (a game page is about 5 MB), so the backend parses them. Every request needs the access key,
@@ -379,6 +382,31 @@ player dialog.
 
 A game NST has no stats for has no `tbtsall` table, and the endpoint answers 404. NST tracks games live, so a game
 that just ended may still have partial numbers: the heading's `<h2>` says "Final" once NST has it all (`isFinal`).
+
+### Shot xG
+
+Each skater's individual event maps (one per situation: `all`, `ev`, `5v5`, `5v4`, `4v5`) are images, but every event
+on them has a tooltip in the page, after the map's image (`.../games/20252026/8475188-30414-eventmap-all.png`, named
+after the skater's NHL ID) and before the next map's:
+
+```html
+<div class=popup style="left: 79.7%; top: 38.6%;"><span class=popupr><span>Shot&nbsp;-&nbsp;Snap,&nbsp;26&nbsp;ft<br>0.11&nbsp;xG<br>19:22&nbsp;Per.&nbsp;1<br>5&nbsp;on&nbsp;4</span></span></div>
+```
+
+The parser reads the `all` maps' `Goal`, `Shot` (on goal) and `Miss` tooltips into the response's `shots`: shooter,
+period, time elapsed, type, distance in feet and xG (to two decimals). A goal adds an "Assisted by" line, and a type
+can carry "Rebound" or the miss's reason ("Miss - Rebound, Slap, Wide Right, 33 ft"). Blocked shots (`Shot blocked`)
+have no xG, and hits, giveaways and takeaways have tooltips too. A regular season or preseason game's shootout
+attempts are listed as period 5 at 0:00, with xG, but they aren't in NST's team totals, so the parser drops them; a
+playoff game's period 5 is its second overtime.
+
+`ShotMapUtils.getShots` matches each play-by-play goal and shot on goal to NST's by shooter, period, time and type, and
+pairs a shooter's shots in the same second by distance. Checked on 13 games (2026-10-17) with 13 different home teams,
+including 3 overtime and 2 shootout games, and `S.J`, `L.A` and `T.B`: all 1086 of NST's shots matched one of the
+1089 unblocked shots outside the shootouts. The 3 left were 2 goalies' shots (an empty net goal and an empty net miss:
+goalies have no event map) and a shot from 9ft behind the net. Each team's shots added up to its NST xG within
+rounding, except the two teams whose goalie shot: NST's team totals count his shot (about 0.8 xG each). Two shooters
+had two shots in the same second, paired by distance.
 
 ## Open items
 

@@ -453,6 +453,34 @@ describe('GameComponent', () => {
     expect(openDialog).toHaveBeenCalledWith(GoalHighlightDialogComponent, jasmine.anything());
   });
 
+  it("should give the shots Natural Stat Trick's xG once its stats load, for the shot map and player dialog", async () => {
+    open('2026020010');
+    flushBundle('2026020010', mockGameBundle(2026020010));
+    await settle();
+    expect(component.shots.length).toBe(50);
+    expect(component.shots.some(shot => shot.expectedGoals != null)).toBeFalse();
+    expect(element('app-shot-map').advancedStats).toBeUndefined();
+
+    flushScore('2026-10-01');
+    flushAdvancedStats('2026020010');
+    await settle();
+    expect(element('app-shot-map').advancedStats.gameId).toBe(2026020010);
+    // Every shot but Guentzel's from behind the net and Shesterkin's empty net goal
+    expect(component.shots.filter(shot => shot.expectedGoals != null).length).toBe(48);
+  });
+
+  it('should keep the shots without xG when Natural Stat Trick fails', async () => {
+    open('2026020010');
+    flushBundle('2026020010', mockGameBundle(2026020010));
+    await settle();
+    flushScore('2026-10-01');
+    flushAdvancedStats('2026020010', 503);
+    await settle();
+    expect(component.shots.length).toBe(50);
+    expect(component.shots.some(shot => shot.expectedGoals != null)).toBeFalse();
+    expect(element('app-shot-map')).not.toBeNull();
+  });
+
   it('should pass the expected goals and Corsi of a real finished game to the game stats and player dialog', async () => {
     const openDialog = spyOn(TestBed.inject(MatDialog), 'open');
     open('2026020010');

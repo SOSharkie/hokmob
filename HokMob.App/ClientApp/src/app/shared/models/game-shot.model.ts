@@ -25,4 +25,9 @@ export interface GameShot {
    */
   x: number;
   y: number;
+  /**
+   * Natural Stat Trick's xG for the shot, or undefined without NST's stats for the game, or for a shot NST doesn't list
+   * (a goalie's, or one from behind the net).
+   */
+  expectedGoals?: number;
 }
