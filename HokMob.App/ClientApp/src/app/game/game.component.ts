@@ -19,6 +19,8 @@ import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
+import {ShotMapUtils} from "@shared/utils/shot-map-utils";
+import {GameShot} from "@shared/models/game-shot.model";
 import {
   PlayerGameDialogComponent,
   PlayerGameDialogData
@@ -79,6 +81,12 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public homePlayers: GamePlayer[] = [];
 
   public awayPlayers: GamePlayer[] = [];
+
+  /**
+   * The game's shots on goal and goals from the play-by-play, for the shot map and the player dialog's shot map. Built
+   * again once Natural Stat Trick's stats load, which give each shot its xG.
+   */
+  public shots: GameShot[] = [];
 
   /**
    * The player hovered in the goal scorers or an event timeline, highlighted in the top players.
@@ -260,6 +268,13 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.rightRail?.gameInfo?.awayTeam?.headCoach?.default;
   }
 
+  /**
+   * Whether the shot map shows: a game that has started, with a shot on goal.
+   */
+  public get showShotMap(): boolean {
+    return !this.futureGame && this.shots.length > 0;
+  }
+
   public get showGameStats(): boolean {
     return !this.futureGame && this.rightRail?.teamGameStats?.length > 0;
   }
@@ -349,7 +364,11 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!player) {
       return;
     }
-    const data: PlayerGameDialogData = {player, advancedStats: NstStatsUtils.findPlayer(this.advancedStats, playerId)};
+    const data: PlayerGameDialogData = {
+      player,
+      advancedStats: NstStatsUtils.findPlayer(this.advancedStats, playerId),
+      shots: this.shots
+    };
     this.seriesDialog.open(PlayerGameDialogComponent, {
       maxWidth: "85vw",
       backdropClass: "dialog-backdrop",
@@ -431,6 +450,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.highlightVideos = [];
     this.homePlayers = [];
     this.awayPlayers = [];
+    this.shots = [];
     this.highlightedPlayer = null;
     this.homeTeamFormGames = [];
     this.awayTeamFormGames = [];
@@ -452,6 +472,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.playByPlay = bundle.playByPlay ?? this.playByPlay;
     this.boxscore = bundle.boxscore ?? this.boxscore;
     this.rightRail = bundle.rightRail ?? this.rightRail;
+    this.shots = ShotMapUtils.getShots(this.playByPlay, this.advancedStats?.shots);
     const rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
     const faceoffCounts = this.playByPlay ? PlayByPlayUtils.getFaceoffCounts(this.playByPlay) : undefined;
     const penaltiesDrawnCounts = this.playByPlay ? PlayByPlayUtils.getPenaltiesDrawnCounts(this.playByPlay) : undefined;
@@ -534,6 +555,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.naturalStatTrickService.getGameStats(gameId).then(stats => {
       if (gameId === this.gameId) {
         this.advancedStats = stats;
+        this.shots = ShotMapUtils.getShots(this.playByPlay, stats?.shots);
       }
     }).catch(() => {
       // Already logged by the service

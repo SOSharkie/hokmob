@@ -8,7 +8,9 @@ namespace HokMob.App.Services
     /// A game's all situations Corsi and expected goals (xG) from Natural Stat Trick, for both teams and each skater.
     /// </summary>
     /// <param name="IsFinal">Whether NST marks the game final. A game in progress has partial numbers.</param>
-    public record NstGameStats(long GameId, bool IsFinal, NstTeamGameStats HomeTeam, NstTeamGameStats AwayTeam);
+    /// <param name="Shots">Every skater's goals, shots on goal and missed shots, with each one's xG.</param>
+    public record NstGameStats(long GameId, bool IsFinal, NstTeamGameStats HomeTeam, NstTeamGameStats AwayTeam,
+        List<NstShot> Shots);
 
     /// <param name="Name">NST's team name, like "Red Wings".</param>
     public record NstTeamGameStats(string Name, int? CorsiFor, int? CorsiAgainst, double? ExpectedGoalsFor,
@@ -23,6 +25,17 @@ namespace HokMob.App.Services
     public record NstPlayerGameStats(long? PlayerId, string Name, string Position, double? TimeOnIce, int? CorsiFor,
         int? CorsiAgainst, double? ExpectedGoalsFor, double? ExpectedGoalsAgainst, double? IndividualExpectedGoals,
         int? IndividualCorsiFor);
+
+    /// <summary>
+    /// A skater's unblocked shot attempt, from the tooltip on his all situations individual event map.
+    /// </summary>
+    /// <param name="PlayerId">The shooter's NHL player ID.</param>
+    /// <param name="Period">The period number: 4 for the first overtime.</param>
+    /// <param name="Time">The time elapsed in the period, like "7:05", as on the NHL play-by-play.</param>
+    /// <param name="Type">"goal", "shot" (on goal) or "miss".</param>
+    /// <param name="Distance">How far from the net it was taken, in feet.</param>
+    /// <param name="ExpectedGoals">NST's xG for the shot, to two decimals.</param>
+    public record NstShot(long PlayerId, int Period, string Time, string Type, int? Distance, double? ExpectedGoals);
 
     /// <summary>
     /// Reads a game page of Natural Stat Trick (game.php), which is HTML meant for people: data.naturalstattrick.com
@@ -60,6 +73,36 @@ namespace HokMob.App.Services
             RegexOptions.Compiled);
 
         /// <summary>
+        /// A skater's individual event map, whose image is named after his NHL player ID and the situation it shows:
+        /// background-image: url(/shotcharts/players/games/20252026/8475188-30414-eventmap-all.png)
+        /// </summary>
+        private static readonly Regex EventMapRegex = new(
+            @"url\(/shotcharts/players/games/\d+/(\d+)-\d+-eventmap-([a-z0-9]+)\.png\)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// An event's tooltip on an event map, its lines separated by &lt;br&gt;:
+        /// &lt;div class=popup style="..."&gt;&lt;span class=popupr&gt;&lt;span&gt;Shot&amp;nbsp;-&amp;nbsp;Wrist,&amp;nbsp;26&amp;nbsp;ft&lt;br&gt;0.11&amp;nbsp;xG&lt;br&gt;19:22&amp;nbsp;Per.&amp;nbsp;1&lt;br&gt;5&amp;nbsp;on&amp;nbsp;4&lt;/span&gt;...
+        /// </summary>
+        private static readonly Regex PopupRegex = new(
+            @"<div class=popup [^>]*><span class=popup[lr]><span>([\s\S]*?)</span></span></div>", RegexOptions.Compiled);
+
+        private static readonly Regex ShotTimeRegex = new(@"^(\d+:\d\d) Per\. (\d+)$", RegexOptions.Compiled);
+
+        private static readonly Regex ShotExpectedGoalsRegex = new(@"^([\d.]+) xG$", RegexOptions.Compiled);
+
+        private static readonly Regex ShotDistanceRegex = new(@"(\d+) ft$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// The shot types kept, by the tooltip's text before " - ". A blocked shot ("Shot blocked") has no xG.
+        /// </summary>
+        private static readonly Dictionary<string, string> ShotTypes = new()
+        {
+            ["Goal"] = "goal",
+            ["Shot"] = "shot",
+            ["Miss"] = "miss"
+        };
+
+        /// <summary>
         /// Reads the game's stats, or returns null when the page has no stats tables (a game NST hasn't started
         /// tracking, or a page for a game that doesn't exist).
         /// </summary>
@@ -84,7 +127,54 @@ namespace HokMob.App.Services
                 ToDouble(FinalLine(GetCell(header, teamRows[index], "xGA"))),
                 ReadPlayers(html, teamCodes[index - 1], playerIds));
 
-            return new NstGameStats(gameId, isFinal, ReadTeam(1), ReadTeam(2));
+            return new NstGameStats(gameId, isFinal, ReadTeam(1), ReadTeam(2), ReadShots(gameId, html));
+        }
+
+        /// <summary>
+        /// Reads every skater's goals, shots on goal and missed shots from the tooltips on his all situations
+        /// individual event map: "Shot - Rebound, Wrist, 39 ft", "0.04 xG", "1:37 Per. 3", "5 on 5" (a goal adds an
+        /// "Assisted by" line). A map's tooltips run until the next map. Goalies have no event map, so their shots
+        /// aren't listed, and neither is a tooltip without a time. A regular season or preseason game's shootout
+        /// attempts are listed as period 5 at 0:00; they're left out, as NST's team totals leave them out. A playoff
+        /// game's period 5 is its second overtime.
+        /// </summary>
+        private static List<NstShot> ReadShots(long gameId, string html)
+        {
+            var isPlayoffs = gameId / 10_000 % 100 == 3;
+            var maps = EventMapRegex.Matches(html).ToList();
+            var shots = new List<NstShot>();
+            for (var index = 0; index < maps.Count; index++)
+            {
+                if (maps[index].Groups[2].Value != "all")
+                {
+                    continue;
+                }
+                var start = maps[index].Index;
+                var end = index + 1 < maps.Count ? maps[index + 1].Index : html.Length;
+                var playerId = long.Parse(maps[index].Groups[1].Value);
+                foreach (Match popup in PopupRegex.Matches(html[start..end]))
+                {
+                    var lines = LineBreakRegex.Split(popup.Groups[1].Value).Select(CleanText).ToList();
+                    var kind = lines[0].Split(" - ")[0];
+                    var time = lines.Select(line => ShotTimeRegex.Match(line)).FirstOrDefault(match => match.Success);
+                    if (!ShotTypes.TryGetValue(kind, out var type) || time == null)
+                    {
+                        continue;
+                    }
+                    var period = int.Parse(time.Groups[2].Value);
+                    if (!isPlayoffs && period > 4)
+                    {
+                        continue;
+                    }
+                    var distance = ShotDistanceRegex.Match(lines[0]);
+                    var expectedGoals = lines.Select(line => ShotExpectedGoalsRegex.Match(line))
+                        .FirstOrDefault(match => match.Success);
+                    shots.Add(new NstShot(playerId, period, time.Groups[1].Value, type,
+                        distance.Success ? int.Parse(distance.Groups[1].Value) : null,
+                        expectedGoals == null ? null : ToDouble(expectedGoals.Groups[1].Value)));
+                }
+            }
+            return shots;
         }
 
         /// <summary>

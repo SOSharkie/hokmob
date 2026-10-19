@@ -106,7 +106,19 @@
           [awayTeamLogo]="awayTeamLogo"
       ></app-game-stats>
     </div>
-    <!-- Without the side column the event timeline goes below the stats, second to last before the team form -->
+    <div *ngIf="showShotMap" class="game-container">
+      <app-shot-map
+          [playByPlay]="playByPlay"
+          [scoring]="scoringPeriods"
+          [advancedStats]="advancedStats"
+          [homeTeamLogo]="homeTeamLogo"
+          [awayTeamLogo]="awayTeamLogo"
+          (playerClicked)="openPlayerGameDialog($event)"
+          (goalClicked)="openGoalOrPlayerDialog($event)"
+      ></app-shot-map>
+    </div>
+    <!-- Without the side column the event timeline goes below the stats and shot map, second to last before the team
+         form -->
     <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
       <app-mini-event-timeline
           [playByPlay]="playByPlay"
