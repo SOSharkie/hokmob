@@ -440,8 +440,8 @@ describe('GameComponent', () => {
     expect(shotMap.scoring.map(period => period.goals.length)).toEqual([2, 0, 3]);
     expect(shotMap.homeTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(52));
     expect(shotMap.awayTeamLogo).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(19));
-    // Right below the momentum chart
-    expect(element('app-momentum').parentElement.nextElementSibling.querySelector('app-shot-map')).toBe(shotMap);
+    // Right below the game stats
+    expect(element('app-game-stats').parentElement.nextElementSibling.querySelector('app-shot-map')).toBe(shotMap);
 
     const shotMapDebug = fixture.debugElement.query(By.css('app-shot-map'));
     shotMapDebug.triggerEventHandler('playerClicked', 8476460);

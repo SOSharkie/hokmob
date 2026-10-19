@@ -96,6 +96,16 @@
     <div *ngIf="!futureGame && playByPlay" class="game-container">
       <app-momentum [playByPlay]="playByPlay"></app-momentum>
     </div>
+    <div *ngIf="showGameStats" class="game-container">
+      <app-game-stats
+          [teamGameStats]="rightRail.teamGameStats"
+          [advancedStats]="advancedStats"
+          [homeTeamId]="landing.homeTeam.id"
+          [awayTeamId]="landing.awayTeam.id"
+          [homeTeamLogo]="homeTeamLogo"
+          [awayTeamLogo]="awayTeamLogo"
+      ></app-game-stats>
+    </div>
     <div *ngIf="showShotMap" class="game-container">
       <app-shot-map
           [playByPlay]="playByPlay"
@@ -107,17 +117,8 @@
           (goalClicked)="openGoalOrPlayerDialog($event)"
       ></app-shot-map>
     </div>
-    <div *ngIf="showGameStats" class="game-container">
-      <app-game-stats
-          [teamGameStats]="rightRail.teamGameStats"
-          [advancedStats]="advancedStats"
-          [homeTeamId]="landing.homeTeam.id"
-          [awayTeamId]="landing.awayTeam.id"
-          [homeTeamLogo]="homeTeamLogo"
-          [awayTeamLogo]="awayTeamLogo"
-      ></app-game-stats>
-    </div>
-    <!-- Without the side column the event timeline goes below the stats, second to last before the team form -->
+    <!-- Without the side column the event timeline goes below the stats and shot map, second to last before the team
+         form -->
     <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
       <app-mini-event-timeline
           [playByPlay]="playByPlay"
