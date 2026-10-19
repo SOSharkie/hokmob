@@ -4,6 +4,7 @@ import {NstShot} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {NhlPlayTypeEnum} from "@shared/enums/nhl-play-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
+import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 
 /**
  * Helpers for the game page's shot maps: the shots on goal and goals of the play-by-play, turned so each shooter
@@ -33,6 +34,8 @@ export class ShotMapUtils {
    */
   public static getShots(playByPlay: PlayByPlay, nstShots?: NstShot[]): GameShot[] {
     const homeTeamId = playByPlay?.homeTeam?.id;
+    const rosterSpots = PlayByPlayUtils.getRosterSpotMap(playByPlay);
+    const fullName = (playerId: number) => PlayByPlayUtils.getFullName(rosterSpots.get(playerId));
     const shots: GameShot[] = (playByPlay?.plays ?? [])
         .filter(play => ShotMapUtils.isShot(play))
         .sort((playA, playB) => playA.sortOrder - playB.sortOrder)
@@ -41,13 +44,15 @@ export class ShotMapUtils {
           const isHomeTeam = details.eventOwnerTeamId === homeTeamId;
           const isGoal = play.typeDescKey === NhlPlayTypeEnum.GOAL;
           const turn = ShotMapUtils.attacksLeftEnd(play, isHomeTeam) ? -1 : 1;
+          const shooterId = isGoal ? details.scoringPlayerId : details.shootingPlayerId;
           return {
             eventId: play.eventId,
             sortOrder: play.sortOrder,
             teamId: details.eventOwnerTeamId,
             isHomeTeam,
-            shooterId: isGoal ? details.scoringPlayerId : details.shootingPlayerId,
+            shooterId,
             goalieId: details.goalieInNetId,
+            shooterName: fullName(shooterId),
             isGoal,
             shotType: details.shotType,
             periodDescriptor: play.periodDescriptor,

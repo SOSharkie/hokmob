@@ -219,7 +219,8 @@ Missed and blocked shots aren't plotted. `ShotMapUtils.getShots` reads them.
   and a goal with a posted clip opens the goal highlight dialog.
 - **xG:** once a finished game's Natural Stat Trick stats load, each shot gets NST's xG (see
   [Shot xG](#shot-xg)): the team map shows it in the shot's details and credits NST below the rink, and the player
-  map adds it to each shot's chip. A shot NST doesn't list shows "-".
+  map's shot tooltip (a hovered or selected shot's result, time, shot type and xG) shows it too. A shot NST doesn't
+  list shows "-" on the team map and no xG in the tooltip.
 
 ## Season dates and playoff mode
 

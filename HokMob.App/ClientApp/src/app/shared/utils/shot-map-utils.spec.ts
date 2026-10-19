@@ -46,6 +46,8 @@ describe('ShotMapUtils', () => {
       const shots = ShotMapUtils.getShots(final());
       expect(shot(shots, 86).shooterId).toBe(8475913);
       expect(shot(shots, 448).shooterId).toBe(8473533);
+      expect(shot(shots, 86).shooterName).toBe('Mark Stone');
+      expect(shot(shots, 448).shooterName).toBe('Jordan Staal');
     });
 
     it('should leave out the goalie of an empty net goal', () => {

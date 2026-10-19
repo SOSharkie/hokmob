@@ -173,24 +173,10 @@
   }
 }
 
-// Desktop Styling: the shot map beside the stats, below the close button
+// Desktop Styling
 @media only screen and (min-width: $game-mobile-screen-breakpoint) {
   .player-game-dialog-container {
     min-width: 350px;
-  }
-
-  .player-dialog-body.with-shot-map {
-    display: flex;
-
-    app-player-game-stats {
-      width: 350px;
-    }
-
-    app-player-shot-map {
-      width: 360px;
-      padding-top: 48px;
-      border-left: 1px solid $black-01;
-    }
   }
 }
 

@@ -40,11 +40,9 @@ describe('PlayerShotMapComponent', () => {
   const elements = (selector: string): Element[] => Array.from(fixture.nativeElement.querySelectorAll(selector));
   const text = (selector: string) => element(selector)?.textContent.trim();
 
-  it("should show a skater's shots on goal, goals and shooting percentage", () => {
+  it("should show only a skater's shooting percentage above the map", () => {
     show(playerShots(staalId, false));
-    expect(elements('dt').map(label => label.textContent.trim())).toEqual(['Shots on goal', 'Goals', 'Shooting %']);
-    expect(text('.shot-count')).toBe('4');
-    expect(text('.goal-count')).toBe('2');
+    expect(elements('.shot-stats dt').map(label => label.textContent.trim())).toEqual(['Shooting %']);
     expect(text('.shot-accuracy')).toBe('2/4 (50%)');
   });
 
@@ -71,12 +69,81 @@ describe('PlayerShotMapComponent', () => {
     expect(component.rinkHeight).toBe(100 - component.topX);
   });
 
-  it("should add each shot's xG from Natural Stat Trick to its chip", () => {
-    const shots = ShotMapUtils.getPlayerShots(
+  describe('shot tooltip', () => {
+    /** Staal's shots with Natural Stat Trick's xG. */
+    const staalShotsWithXg = () => ShotMapUtils.getPlayerShots(
         ShotMapUtils.getShots(mockGamePlayByPlay(2025030414), mockNstGameStats(2025030414).shots), staalId, false);
-    show(shots);
-    expect(elements('.shot-chip').map(chip => chip.textContent.replace(/\s+/g, ' ').trim()))
-        .toEqual(['1st 7:05 0.05 xG', '1st 12:48 0.33 xG', '2nd 10:28 0.11 xG', '3rd 6:32 0.06 xG']);
+    const tooltipText = () => text('.shot-tooltip')?.replace(/\s+/g, ' ');
+
+    function hover(selector: string, index: number, event: 'mouseenter' | 'mouseleave'): void {
+      elements(selector)[index].dispatchEvent(new MouseEvent(event));
+      fixture.detectChanges();
+    }
+
+    it("should show a selected shot's result, time, shot type and xG, without the goalie", () => {
+      show(staalShotsWithXg());
+      expect(element('.shot-tooltip')).toBeNull();
+      (elements('.shot-chip')[1] as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(text('.tooltip-result')).toBe('Goal');
+      expect(text('.tooltip-time')).toBe('1st 12:48');
+      expect(text('.tooltip-shot-type')).toBe('Wrist');
+      expect(text('.tooltip-xg')).toBe('0.33');
+      expect(tooltipText()).not.toContain('Goalie');
+      expect(tooltipText()).not.toContain('Carter Hart');
+      expect(element('.tooltip-shooter')).toBeNull();
+    });
+
+    it('should leave the xG out without Natural Stat Trick stats', () => {
+      show(playerShots(staalId, false));
+      component.toggleShot(component.markers[0]);
+      fixture.detectChanges();
+      expect(text('.tooltip-result')).toBe('Saved');
+      expect(element('.tooltip-xg')).toBeNull();
+    });
+
+    it('should name the shooter of a shot a goalie faced', () => {
+      show(playerShots(hartId, true), true);
+      // Stankoven's goal at 1:06 of the 1st
+      component.toggleShot(component.markers.find(marker => marker.shot.eventId === 69));
+      fixture.detectChanges();
+      expect(text('.tooltip-shooter')).toBe('Logan Stankoven');
+      expect(text('.tooltip-result')).toBe('Goal');
+    });
+
+    it('should show while a shot or its chip is hovered, and go back to the selected shot after', () => {
+      show(staalShotsWithXg());
+      hover('.shot-marker', 3, 'mouseenter');
+      expect(text('.tooltip-time')).toBe('3rd 6:32');
+      hover('.shot-marker', 3, 'mouseleave');
+      expect(element('.shot-tooltip')).toBeNull();
+
+      elements('.shot-marker')[0].dispatchEvent(new MouseEvent('click'));
+      fixture.detectChanges();
+      expect(elements('.shot-marker.selected').length).toBe(1);
+      hover('.shot-chip', 2, 'mouseenter');
+      expect(text('.tooltip-time')).toBe('2nd 10:28');
+      hover('.shot-chip', 2, 'mouseleave');
+      expect(text('.tooltip-time')).toBe('1st 7:05');
+    });
+
+    it('should point at the shot from above, or from below near the top, staying over the rink', () => {
+      const shots = staalShotsWithXg();
+      // Pull the first shot out to the top of the zone and against the boards
+      shots[0] = {...shots[0], x: 30, y: -41};
+      show(shots);
+      component.toggleShot(component.markers[1]);
+      fixture.detectChanges();
+      expect(element('.shot-tooltip').classList).not.toContain('below');
+      expect(component.tooltipPosition.anchor).toBe(component.tooltipPosition.left);
+
+      component.toggleShot(component.markers[0]);
+      fixture.detectChanges();
+      expect(element('.shot-tooltip').classList).toContain('below');
+      // 1.5ft from the left boards: the arrow moves to the tooltip's side
+      expect(component.tooltipPosition.left).toBeCloseTo(1.8, 1);
+      expect(component.tooltipPosition.anchor).toBe(10);
+    });
   });
 
   it('should label a chip per shot, and highlight the shot of a selected chip', () => {
@@ -100,9 +167,7 @@ describe('PlayerShotMapComponent', () => {
     const shots = playerShots(hartId, true);
     show(shots, true);
     const hart = mockGameBoxscore(2025030414).playerByGameStats.homeTeam.goalies.find(goalie => goalie.playerId === hartId);
-    expect(elements('dt').map(label => label.textContent.trim())).toEqual(['Shots faced', 'Goals against', 'Save %']);
-    expect(text('.shot-count')).toBe(String(hart.shotsAgainst));
-    expect(text('.goal-count')).toBe(String(hart.shotsAgainst - hart.saves));
+    expect(elements('.shot-stats dt').map(label => label.textContent.trim())).toEqual(['Save %']);
     expect(text('.shot-accuracy')).toBe(hart.saves + '/' + hart.shotsAgainst + ' (.852)');
     expect(elements('.shot-marker').length).toBe(27);
   });
@@ -134,7 +199,6 @@ describe('PlayerShotMapComponent', () => {
 
   it('should show zeros without shots', () => {
     show([]);
-    expect(text('.shot-count')).toBe('0');
     expect(text('.shot-accuracy')).toBe('0/0 (0%)');
     expect(elements('.shot-marker').length).toBe(0);
   });

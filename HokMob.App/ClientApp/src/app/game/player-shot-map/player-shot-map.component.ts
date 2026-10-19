@@ -21,9 +21,22 @@ export interface PlayerShotMarker {
 }
 
 /**
+ * Where the shot tooltip points over the half rink, in percent of it: at the shot, above it, or below it when the shot
+ * is near the top. The anchor is where along the tooltip's own width its arrow sits, in percent: the middle over the
+ * middle of the rink, nearer the side over a shot near the boards, so the tooltip stays over the rink.
+ */
+export interface ShotTooltipPosition {
+  left: number;
+  top: number;
+  below: boolean;
+  anchor: number;
+}
+
+/**
  * A player's shots in the player game dialog: a skater's shots on goal and goals, or the shots a goalie faced, on the
- * attacked half of the rink with the net at the bottom, each with a line to the net. A chip per shot below the rink,
- * with its xG from Natural Stat Trick when the game has it, highlights it.
+ * attacked half of the rink with the net at the bottom, each with a line to the net. A chip per shot below the rink
+ * selects it. A hovered or selected shot shows a tooltip with its result, time, shot type, xG (from Natural Stat Trick,
+ * when the game has it) and, for a goalie's shots, the shooter.
  */
 @Component({
   selector: 'app-player-shot-map',
@@ -57,7 +70,8 @@ export class PlayerShotMapComponent implements OnChanges {
   public shots: GameShot[];
 
   /**
-   * Whether the shots are the ones a goalie faced, which changes the stats above the rink.
+   * Whether the shots are the ones a goalie faced, which shows his save percentage above the rink instead of a skater's
+   * shooting percentage.
    */
   @Input()
   public isGoalie: boolean = false;
@@ -67,8 +81,11 @@ export class PlayerShotMapComponent implements OnChanges {
   /** Where the half rink starts, in feet from center ice. */
   public topX: number = PlayerShotMapComponent.zoneTopX;
 
-  /** The shot whose chip is selected, highlighted on the rink. */
+  /** The shot whose chip or marker is selected, highlighted on the rink. */
   public selectedEventId: number;
+
+  /** The shot under the pointer, on the rink or its chip. Its tooltip shows over the selected shot's. */
+  public hoveredEventId: number;
 
   public ngOnChanges(changes: SimpleChanges): void {
     const shots = this.shots ?? [];
@@ -86,6 +103,7 @@ export class PlayerShotMapComponent implements OnChanges {
     if (!this.markers.some(marker => marker.shot.eventId === this.selectedEventId)) {
       this.selectedEventId = undefined;
     }
+    this.hoveredEventId = undefined;
   }
 
   /** The half rink's height in feet, from its top to the end boards. */
@@ -178,6 +196,54 @@ export class PlayerShotMapComponent implements OnChanges {
    */
   public toggleShot(marker: PlayerShotMarker): void {
     this.selectedEventId = this.selectedEventId === marker.shot.eventId ? undefined : marker.shot.eventId;
+  }
+
+  /**
+   * Shows a shot's tooltip while the pointer is over it or its chip, or hides it with null.
+   */
+  public hoverShot(marker: PlayerShotMarker): void {
+    this.hoveredEventId = marker?.shot?.eventId;
+  }
+
+  /**
+   * The shot whose tooltip shows: the hovered one, else the selected one.
+   */
+  public get tooltipMarker(): PlayerShotMarker {
+    const eventId = this.hoveredEventId ?? this.selectedEventId;
+    return eventId == null ? undefined : this.markers.find(marker => marker.shot.eventId === eventId);
+  }
+
+  /**
+   * Where the tooltip goes, in percent of the half rink: pointing at the shot, from above, or from below when the shot
+   * is in the top third, where there's no room above it.
+   */
+  public get tooltipPosition(): ShotTooltipPosition {
+    const marker = this.tooltipMarker;
+    if (!marker) {
+      return undefined;
+    }
+    const left = Math.round(marker.x / PlayerShotMapComponent.rinkWidth * 1000) / 10;
+    const top = Math.round(marker.y / this.rinkHeight * 1000) / 10;
+    return {left, top, below: top < 35, anchor: Math.min(Math.max(left, 10), 90)};
+  }
+
+  public get tooltipResultLabel(): string {
+    const shot = this.tooltipMarker?.shot;
+    if (!shot) {
+      return "";
+    }
+    return shot.isGoal ? "Goal" : "Saved";
+  }
+
+  public get tooltipShotTypeLabel(): string {
+    return ShotMapUtils.getShotTypeLabel(this.tooltipMarker?.shot?.shotType);
+  }
+
+  /**
+   * Who took a shot the goalie faced, for a goalie's tooltip.
+   */
+  public get tooltipShooterLabel(): string {
+    return this.tooltipMarker?.shot?.shooterName || "Unknown";
   }
 
   public isSelected(marker: PlayerShotMarker): boolean {

@@ -13,6 +13,8 @@ export interface GameShot {
   shooterId: number;
   /** The goalie in net, or undefined for a shot into an empty net. */
   goalieId: number;
+  /** The shooter's full name, from the play-by-play's roster, or empty without a roster spot. */
+  shooterName: string;
   isGoal: boolean;
   /** Like "wrist", "snap" or "tip-in" (ShotMapUtils.getShotTypeLabel). */
   shotType: string;

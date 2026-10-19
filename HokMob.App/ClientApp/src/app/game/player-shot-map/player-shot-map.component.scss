@@ -39,12 +39,18 @@ $rink-line: $gray-01;
   }
 }
 
+// The half rink and the shot tooltip over it
+.half-rink-container {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  margin: $spacing-x-large auto 0;
+}
+
 // The attacked half, net at the bottom, drawn in feet (PlayerShotMapComponent)
 .half-rink {
   display: block;
   width: 100%;
-  max-width: 340px;
-  margin: $spacing-x-large auto 0;
   overflow: visible;
 
   .boards {
@@ -98,20 +104,30 @@ $rink-line: $gray-01;
     }
   }
 
-  .shot-marker circle {
+  .shot-marker {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .shot-marker .hit-area {
+    fill: transparent;
+    stroke: none;
+  }
+
+  .shot-marker .dot {
     fill: var(--team-color);
     stroke: rgba(255, 255, 255, 0.75);
     stroke-width: 1.5px;
     vector-effect: non-scaling-stroke;
   }
 
-  .shot-marker.goal circle {
+  .shot-marker.goal .dot {
     fill: white;
     stroke: var(--team-color);
     stroke-width: 2px;
   }
 
-  .shot-marker.selected circle {
+  .shot-marker.selected .dot {
     stroke: white;
     stroke-width: 3px;
   }
@@ -119,6 +135,8 @@ $rink-line: $gray-01;
 
 // One chip per shot, in play order. A selected chip fills with the team color and highlights its shot on the rink.
 .shot-chips {
+  // Wraps to the dialog's width instead of widening it, however many shots there are
+  contain: inline-size;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -154,11 +172,6 @@ $rink-line: $gray-01;
     background-color: white;
   }
 
-  .chip-xg {
-    color: $gray-03;
-    font-weight: 400;
-  }
-
   @include hover {
     background-color: $gray-01;
   }
@@ -166,10 +179,80 @@ $rink-line: $gray-01;
   &.selected {
     background-color: var(--team-color);
     color: var(--team-text-color);
+  }
+}
 
-    .chip-xg {
-      color: inherit;
-      opacity: 0.8;
+// A shot's details over the half rink, above the shot (or below it near the top), with a small arrow pointing at it.
+// Its --anchor is where the arrow sits along it, nearer a side for a shot near the boards, so it stays over the rink.
+// It doesn't take the pointer, so moving onto it doesn't hide it.
+.shot-tooltip {
+  position: absolute;
+  z-index: 1;
+  min-width: 120px;
+  padding: $spacing-medium $spacing-large;
+  transform: translate(calc(-1 * var(--anchor, 50%)), calc(-100% - 12px));
+  border: 1px solid $gray-01;
+  border-radius: 10px;
+  background-color: $black-02;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: var(--anchor, 50%);
+    border: 6px solid transparent;
+    border-top-color: $gray-01;
+    transform: translateX(-50%);
+  }
+
+  &.below {
+    transform: translate(calc(-1 * var(--anchor, 50%)), 12px);
+
+    &::after {
+      top: auto;
+      bottom: 100%;
+      border-top-color: transparent;
+      border-bottom-color: $gray-01;
+    }
+  }
+
+  .tooltip-title {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing-large;
+    margin-bottom: $spacing-small;
+    font-weight: 500;
+
+    .tooltip-result.goal {
+      color: $green-01;
+    }
+
+    .tooltip-time {
+      color: $gray-04;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .tooltip-facts {
+    margin: 0;
+
+    > div {
+      display: flex;
+      justify-content: space-between;
+      gap: $spacing-large;
+      line-height: 18px;
+    }
+
+    dt {
+      color: $gray-03;
+    }
+
+    dd {
+      margin: 0;
     }
   }
 }
