@@ -11,10 +11,25 @@
   border-radius: 25px !important;
 }
 
+// A column no taller than the pane allows (95svh, or the mobile-dialog-panel's height on phones): the body scrolls
+// between the rounded top and the footer, so the dialog never scrolls as a whole with its scrollbar cut by the corners
 .player-game-dialog-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: min(95svh, calc(100svh - #{$spacing-huge}));
   border-radius: 25px;
   background-color: $black-02;
+
+  > .player-dialog-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    // Clear of the rounded top corner, which would cut off the top of the scrollbar
+    margin-top: $spacing-large;
+    scrollbar-width: thin;
+    scrollbar-color: $gray-01 transparent;
+  }
 
   // Opens the player's stat line on the Ratings page. Mirrors the close button in the other corner.
   > .dialog-ratings-button {
@@ -64,6 +79,7 @@
 
   .player-footer-container {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
     background-color: $black-03;
@@ -145,7 +161,7 @@
   }
 }
 
-// With a shot map, the dialog scrolls as a whole instead of the stats scrolling in their own box
+// With a shot map, the body scrolls as a whole instead of the stats scrolling in their own box
 .player-dialog-body.with-shot-map .player-game-stats-container {
   max-height: none;
   overflow: visible;
