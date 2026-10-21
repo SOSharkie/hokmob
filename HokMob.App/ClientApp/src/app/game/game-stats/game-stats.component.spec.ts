@@ -4,7 +4,8 @@ import { Chart } from 'chart.js';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { TeamGameStat } from '@shared/models/nhl-web-api/right-rail.model';
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
-import { mockGameRightRail, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockGameRightRail, mockLiveNstGameStats, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { NhlGameTypeEnum } from '@shared/enums/nhl-game-type.enum';
 
 import { GameStatsComponent } from './game-stats.component';
 
@@ -173,6 +174,21 @@ describe('GameStatsComponent', () => {
     const source = fixture.nativeElement.querySelector('.stats-source');
     expect(source.getAttribute('href')).toBe('https://www.naturalstattrick.com/game.php?season=20262027&game=20010');
     expect(source.getAttribute('target')).toBe('_blank');
+  });
+
+  it("should say how far a live game's Natural Stat Trick stats go", () => {
+    // LAK (26) @ WSH (15), with NST at 0:12 of the 2nd
+    fixture.componentRef.setInput('advancedStats', mockLiveNstGameStats());
+    fixture.componentRef.setInput('gameType', NhlGameTypeEnum.REGULAR_SEASON);
+    show(mockGameRightRail(2026020010).teamGameStats, 15, 26);
+    expect(rows().slice(0, 2)).toEqual([['1.04', 'Expected Goals', '0.69'], ['53.3%', 'Corsi %', '46.7%']]);
+    const source = () => fixture.nativeElement.querySelector('.stats-source').textContent.trim();
+    expect(source()).toBe('Expected goals and Corsi from Natural Stat Trick, through 2nd 0:12');
+
+    // Once NST marks the game final
+    fixture.componentRef.setInput('advancedStats', {...mockLiveNstGameStats(), isFinal: true});
+    fixture.detectChanges();
+    expect(source()).toBe('Expected goals and Corsi from Natural Stat Trick');
   });
 
   it('should highlight neither team on a Corsi tie', () => {

@@ -6,7 +6,13 @@ import { GameLandingScoringPeriod } from '@shared/models/nhl-web-api/gamecenter-
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 import { ShotMapUtils } from '@shared/utils/shot-map-utils';
-import { mockGameLanding, mockGamePlayByPlay, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  mockGameLanding,
+  mockGamePlayByPlay,
+  mockLiveNstGameStats,
+  mockLiveNstPlayByPlay,
+  mockNstGameStats
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { ShotMapComponent } from './shot-map.component';
 
@@ -149,6 +155,20 @@ describe('ShotMapComponent', () => {
       fixture.detectChanges();
       expect(text('.shooter-name')).toBe('Jake Guentzel');
       expect(text('.shot-xg')).toBe('-');
+    });
+
+    it("should show a live game's shot NST hasn't got to yet as pending", () => {
+      fixture.nativeElement.style.width = '1000px';
+      fixture.componentRef.setInput('advancedStats', mockLiveNstGameStats());
+      show(mockLiveNstPlayByPlay(), []);
+      // The last shot, at 1:56 of the 2nd, with NST at 0:12
+      expect(component.selectedShot.eventId).toBe(522);
+      expect(text('.shot-xg')).toBe('Pending');
+      expect(element('.shot-xg').getAttribute('title')).toContain('a few minutes behind');
+      component.selectShot(component.markers.find(marker => marker.shot.eventId === 88));
+      fixture.detectChanges();
+      expect(text('.shot-xg')).toBe('0.04');
+      expect(element('.shot-xg').getAttribute('title')).toBeNull();
     });
 
     it('should show no xG or credit without NST stats, or when they have no shots', () => {

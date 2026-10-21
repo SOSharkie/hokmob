@@ -1,4 +1,7 @@
 import {NstGameStats, NstPlayerGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
+import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
+import {PeriodUtils} from "@shared/utils/period-utils";
 
 /**
  * Helpers for the Corsi and expected goals (xG) from Natural Stat Trick (NaturalStatTrickService).
@@ -45,6 +48,49 @@ export class NstStatsUtils {
   }
 
   /**
+   * How far the stats of a game NST hasn't marked final go, like "2nd 12:34", or "the 1st" (or "OT") once that period
+   * is over. NST runs a few minutes behind a live game, so its numbers are credited with this. Empty once the game is
+   * final on NST, or when its page doesn't say.
+   *
+   * @param stats - The game's NST stats.
+   * @param gameType - The game type: a regular season or preseason overtime is 5 minutes, a playoff one 20.
+   */
+  public static getProgressLabel(stats: NstGameStats, gameType: NhlGameTypeEnum): string {
+    if (!stats || stats.isFinal || !(stats.period > 0) || !stats.timeInPeriod) {
+      return "";
+    }
+    const isOvertime = stats.period > 3;
+    const periodLabel = PeriodUtils.getLabel({
+      number: stats.period,
+      periodType: isOvertime ? NhlPeriodTypeEnum.OVERTIME : NhlPeriodTypeEnum.REGULATION,
+      maxRegulationPeriods: 3
+    });
+    const periodLength = isOvertime && gameType !== NhlGameTypeEnum.PLAYOFFS ? "5:00" : "20:00";
+    if (stats.timeInPeriod === periodLength) {
+      return isOvertime ? periodLabel : "the " + periodLabel;
+    }
+    return periodLabel + " " + stats.timeInPeriod;
+  }
+
+  /**
+   * Whether a moment of the game is past how far the stats of a game NST hasn't marked final go, so NST hasn't got
+   * to a shot taken then yet. False once the game is final on NST, or when its page doesn't say how far it goes.
+   *
+   * @param stats - The game's NST stats.
+   * @param period - The period number, 4 for the first overtime.
+   * @param timeInPeriod - The time elapsed in the period, like "04:12" (play-by-play) or "4:12".
+   */
+  public static isPending(stats: NstGameStats, period: number, timeInPeriod: string): boolean {
+    if (!stats || stats.isFinal || !(stats.period > 0) || period == null) {
+      return false;
+    }
+    if (period !== stats.period) {
+      return period > stats.period;
+    }
+    return NstStatsUtils.toSeconds(timeInPeriod) > NstStatsUtils.toSeconds(stats.timeInPeriod);
+  }
+
+  /**
    * A skater's stats in the game, found by NHL player ID in either team. Undefined without stats or for a goalie.
    */
   public static findPlayer(stats: NstGameStats, playerId: number): NstPlayerGameStats {
@@ -53,5 +99,13 @@ export class NstStatsUtils {
     }
     return [...(stats.homeTeam?.players ?? []), ...(stats.awayTeam?.players ?? [])]
         .find(player => player.playerId === playerId);
+  }
+
+  /**
+   * "12:34" in seconds, or NaN when it isn't a time.
+   */
+  private static toSeconds(time: string): number {
+    const match = /^(\d+):(\d\d)$/.exec(time ?? "");
+    return match ? Number(match[1]) * 60 + Number(match[2]) : NaN;
   }
 }

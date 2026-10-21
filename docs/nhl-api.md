@@ -1,7 +1,7 @@
 # NHL APIs
 
-Everything on the site comes from two public NHL APIs plus the player search host, and a finished game's expected
-goals and Corsi from Natural Stat Trick. All of them are called through the backend, so Angular only ever uses relative
+Everything on the site comes from two public NHL APIs plus the player search host, and a live or finished game's
+expected goals and Corsi from Natural Stat Trick. All of them are called through the backend, so Angular only ever uses relative
 `/api/...` URLs.
 
 | API | Host | Proxy | Used for |
@@ -9,7 +9,7 @@ goals and Corsi from Natural Stat Trick. All of them are called through the back
 | api-web | `api-web.nhle.com/v1` | `/api/nhl/<path>` | live, game, team, schedule, standings, playoff, draft and leader data |
 | Stats API | `api.nhle.com/stats/rest/en` | `/api/nhl-stats/*` | per-season and per-game player stats, team season stats, hits and shots leaders, season dates, draft career stats |
 | Player search | `search.d3.nhle.com` | `/api/nhl-search/player` | header search |
-| Natural Stat Trick | `data.naturalstattrick.com` | `/api/nst/game/{gameId}` | a finished game's expected goals (xG) and Corsi, for teams and skaters (see [Natural Stat Trick](#natural-stat-trick)) |
+| Natural Stat Trick | `data.naturalstattrick.com` | `/api/nst/game/{gameId}` | a live or finished game's expected goals (xG) and Corsi, for teams and skaters (see [Natural Stat Trick](#natural-stat-trick)) |
 
 Reference: [Zmalski/NHL-API-Reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md). It documents
 api-web well. For the stats API it lists endpoints and query parameters but not the report names, the `cayenneExp`
@@ -38,7 +38,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Page | Requests |
 |---|---|
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
-| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a finished game's xG and Corsi (the game stats card and the player dialog) |
+| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a live or finished game's xG and Corsi (the game stats card, the shot maps and the player dialog) |
 | Team | `standings/now` (division and conference), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams` |
 | Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
@@ -147,7 +147,8 @@ minutes, and today, live games and unsettled days are always refetched.
 upstream returns 502 rather than a partial answer.
 
 `NaturalStatTrickClient` keeps a game NST marks final with a 24-hour sliding expiration, and anything else (a game
-in progress, or no stats yet) for 10 minutes. See [Natural Stat Trick](#natural-stat-trick) for why.
+in progress, or no stats yet) for 3 minutes, or 10 once the key's standard tokens are below half. See
+[Natural Stat Trick](#natural-stat-trick) for why.
 
 ### Surviving an api-web outage
 
@@ -217,10 +218,11 @@ Missed and blocked shots aren't plotted. `ShotMapUtils.getShots` reads them.
   top). It lines the shots up with the drawn rink's goal lines and faceoff dots, since the rink is drawn 200.13ft long
   (`ShotMapComponent.getRinkPosition`). It starts on the last shot, a shot clicked on the rink shows its details,
   and a goal with a posted clip opens the goal highlight dialog.
-- **xG:** once a finished game's Natural Stat Trick stats load, each shot gets NST's xG (see
+- **xG:** once a live or finished game's Natural Stat Trick stats load, each shot gets NST's xG (see
   [Shot xG](#shot-xg)): the team map shows it in the shot's details and credits NST below the rink, and the player
   map's shot tooltip (a hovered or selected shot's result, time, shot type and xG) shows it too. A shot NST doesn't
-  list shows "-" on the team map and no xG in the tooltip.
+  list shows "-" on the team map and no xG in the tooltip. During a live game, a shot past how far NST has got shows
+  "Pending" in both (`GameShot.expectedGoalsPending`, see [Live games](#live-games)).
 
 ## Season dates and playoff mode
 
@@ -335,10 +337,10 @@ final with `npm run capture-live-fixtures -- --watch` from `HokMob.App/ClientApp
 
 ## Natural Stat Trick
 
-A finished game's all situations expected goals (xG) and Corsi come from
+A live or finished game's all situations expected goals (xG) and Corsi come from
 [Natural Stat Trick](https://www.naturalstattrick.com) (NST), through `/api/nst/game/{gameId}`
 (`NaturalStatTrickController`, `NaturalStatTrickClient`, `NaturalStatTrickGameParser`). The game page loads it once
-the game is final and shows it in the game stats card (each team's xG and Corsi %, crediting NST with a link to its
+the game has started (see [Live games](#live-games)) and shows it in the game stats card (each team's xG and Corsi %, crediting NST with a link to its
 game page) and the player dialog (a skater's own xG and his on-ice Corsi %), and each shot's xG on the shot maps. The
 goal highlight dialog's compact bar leaves them out.
 
@@ -355,7 +357,8 @@ tokens added every 5 minutes up to 1800. That's about 80 pages per 5 minutes and
 what's left in its `tokens-remaining` and `burst-remaining` headers. Going over the limits can get the key blocked,
 so the client:
 
-- caches each game (24 hours sliding once NST marks it final, else 10 minutes),
+- caches each game (24 hours sliding once NST marks it final, else 3 minutes, or 10 once fewer than 900 standard
+  tokens are left),
 - shares one request among concurrent visitors of the same game,
 - pauses all requests for 5 minutes once either pool drops below 100 tokens, or when NST answers 401, 403 or 429, and
   answers 503 meanwhile (cached games are still served),
@@ -366,7 +369,7 @@ year. The stats are tables found by ID, with the home team first:
 
 | Table | What | Columns used |
 |---|---|---|
-| `tbtsall` | Each team, all situations: a line per period, then the total (the last line is used) | `CF`, `CA`, `xGF`, `xGA` |
+| `tbtsall` | Each team, all situations: a line per period, then the total (the last line is used) | `Period`, `TOI` (how far the stats go), `CF`, `CA`, `xGF`, `xGA` |
 | `tb{TEAM}oiall` | A team's skaters on-ice, all situations | `Player`, `Position`, `TOI` (minutes, like `20.2`), `CF`, `CA`, `xGF`, `xGA` |
 | `tb{TEAM}stall` | A team's skaters' individual stats, all situations | `Player`, `ixG`, `iCF` |
 
@@ -383,6 +386,34 @@ player dialog.
 
 A game NST has no stats for has no `tbtsall` table, and the endpoint answers 404. NST tracks games live, so a game
 that just ended may still have partial numbers: the heading's `<h2>` says "Final" once NST has it all (`isFinal`).
+
+### Live games
+
+NST updates a game's page while it's played, a few minutes behind. Captured on 2026-10-20 (LAK @ WSH, game
+2026020144): at the 1st intermission NST had the whole period, and 3:04 into the 2nd it was at 0:12 of it, about 3
+minutes of game time behind. An earlier capture (2026020121, 2026-10-17) had NST at about 19:12 of the 1st while the
+NHL was 1:16 into the 2nd. The heading's `<h2>` shows the date, NST's score and where it is: "19:48 Per. 2" (time
+left), "Per. 1 End", then "Final" (or "Final OT"). The team table's total line is labelled "Final" even live, so it
+can't tell a live game apart.
+
+- **How far it goes:** the parser reads the team table's last period with time played and its `TOI` into `period`
+  and `timeInPeriod` (`2` and `"0:12"`; a finished period is `"20:00"`). The game stats card's credit says so,
+  like "Expected goals and Corsi from Natural Stat Trick, through 2nd 0:12" or "through the 1st"
+  (`NstStatsUtils.getProgressLabel`), until NST marks the game final.
+- **Shots:** a play-by-play shot later than that has no NST shot yet and is marked pending (`NstStatsUtils.isPending`)
+  rather than "-". A shot at or before it that NST doesn't list is a "-" as for a finished game.
+- **Refreshing:** the game page asks for NST's stats when a live game opens and every minute until NST marks the game
+  final, also after the NHL calls it final; a game that ended stops being refreshed 6 hours after its start, so one NST
+  never finishes isn't asked for forever. A failed refresh (or a 404) keeps the stats shown. The backend's 3 minute
+  cache for a game that isn't final means most of those minutes are served from memory, and NST's page is fetched about
+  20 times an hour per live game that's being watched.
+- **Budget:** NST's pages cost the same live. With the standard pool full (1800) when the first game starts and 1800
+  more an hour, a night of 16 games, each watched throughout, would take about 880 pages over 5 hours against about 1100
+  available. Live games are kept 10 minutes instead of 3 once fewer than 900 standard tokens are left, which the
+  tokens-remaining header tells, so a busy night slows down before it reaches the 5 minute pause, and another app
+  using the same key (another environment) is counted too.
+- **The player dialog** gets a skater's NST stats when it opens, so they're as of then. The goalie and the goal highlight
+  dialog have none.
 
 ### Shot xG
 

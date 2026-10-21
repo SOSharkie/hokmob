@@ -128,8 +128,9 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public awaySeasonStats: ClubStats;
 
   /**
-   * Both teams' and each skater's expected goals and Corsi from Natural Stat Trick. Only loaded for finished games, and
-   * undefined until NST has them.
+   * Both teams' and each skater's expected goals and Corsi from Natural Stat Trick, for live and finished games.
+   * Undefined until NST has them. NST runs a few minutes behind a live game, so they're refreshed until NST marks the
+   * game final.
    */
   public advancedStats: NstGameStats;
 
@@ -139,9 +140,23 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private intermissionTimerId: number;
 
+  private advancedStatsTimerId: number;
+
   private nextPeriod: string;
 
   private readonly nhlGameRefreshTime = 10000;
+
+  /**
+   * How often NST's stats are refreshed until NST marks the game final. The backend keeps such a game for 3 minutes,
+   * so most refreshes come from its cache, and a new NST page shows up within a minute of being fetched.
+   */
+  private readonly advancedStatsRefreshTime = 60000;
+
+  /**
+   * How many hours after its start a finished game's NST stats are still refreshed until NST marks it final, which it
+   * does a few minutes after the game ends. A game NST never finishes isn't asked for forever.
+   */
+  private readonly advancedStatsRefreshHours = 6;
 
   private readonly nhlSiteUrl = "https://www.nhl.com";
 
@@ -279,6 +294,18 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     return !this.futureGame && this.rightRail?.teamGameStats?.length > 0;
   }
 
+  /**
+   * Whether NST's stats may still change: a live game, or a game that ended within a few hours, until NST marks it
+   * final.
+   */
+  private get advancedStatsPending(): boolean {
+    if (this.advancedStats?.isFinal) {
+      return false;
+    }
+    return this.liveGame || (this.completedGame &&
+        dayjs().diff(dayjs(this.landing.startTimeUTC), "hour", true) < this.advancedStatsRefreshHours);
+  }
+
   public get showTeamForm(): boolean {
     return !this.completedGame && (this.homeTeamFormGames.length > 0 || this.awayTeamFormGames.length > 0);
   }
@@ -310,6 +337,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public ngOnDestroy(): void {
     this.stopContinuousNhlGameUpdates();
     this.stopNhlIntermissionTimer();
+    this.stopAdvancedStatsUpdates();
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
@@ -416,6 +444,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadGame(): void {
     this.stopContinuousNhlGameUpdates();
     this.stopNhlIntermissionTimer();
+    this.stopAdvancedStatsUpdates();
     this.clearGame();
     const gameId = this.gameId;
     this.nhlGameService.getGameBundle(gameId).then(bundle => {
@@ -430,6 +459,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadTeamForm();
       this.loadSeasonLeaders();
       this.loadAdvancedStats();
+      this.updateAdvancedStatsRefresh();
       if (!this.completedGame && (this.liveGame || this.gameDay === "Today")) {
         this.startContinuousNhlGameUpdates();
       }
@@ -472,7 +502,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.playByPlay = bundle.playByPlay ?? this.playByPlay;
     this.boxscore = bundle.boxscore ?? this.boxscore;
     this.rightRail = bundle.rightRail ?? this.rightRail;
-    this.shots = ShotMapUtils.getShots(this.playByPlay, this.advancedStats?.shots);
+    this.shots = ShotMapUtils.getShots(this.playByPlay, this.advancedStats);
     const rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
     const faceoffCounts = this.playByPlay ? PlayByPlayUtils.getFaceoffCounts(this.playByPlay) : undefined;
     const penaltiesDrawnCounts = this.playByPlay ? PlayByPlayUtils.getPenaltiesDrawnCounts(this.playByPlay) : undefined;
@@ -544,27 +574,54 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Loads the expected goals and Corsi of a finished game from Natural Stat Trick, once. If NST doesn't have them yet
-   * (a game that just ended) or they fail to load, the game stats and player dialog show without them.
+   * Loads the expected goals and Corsi of a live or finished game from Natural Stat Trick. If NST doesn't have them yet
+   * (a game that just started) or they fail to load, the game stats and player dialog show without them, or keep the
+   * ones already shown.
    */
   private loadAdvancedStats(): void {
-    if (!this.completedGame) {
+    if (!this.liveGame && !this.completedGame) {
       return;
     }
     const gameId = this.gameId;
     this.naturalStatTrickService.getGameStats(gameId).then(stats => {
-      if (gameId === this.gameId) {
-        this.advancedStats = stats;
-        this.shots = ShotMapUtils.getShots(this.playByPlay, stats?.shots);
+      if (gameId !== this.gameId || !stats) {
+        return;
       }
+      this.advancedStats = stats;
+      this.shots = ShotMapUtils.getShots(this.playByPlay, stats);
+      this.updateAdvancedStatsRefresh();
     }).catch(() => {
       // Already logged by the service
     });
   }
 
   /**
-   * Refreshes the game every 10 seconds. Stops once the game is over, after reloading the series status and
-   * highlights. A failed refresh keeps the data already shown.
+   * Refreshes NST's stats every minute while they may still change (advancedStatsPending), and stops once they can't.
+   */
+  private updateAdvancedStatsRefresh(): void {
+    if (!this.advancedStatsPending) {
+      this.stopAdvancedStatsUpdates();
+    } else if (!this.advancedStatsTimerId) {
+      this.advancedStatsTimerId = setInterval(() => {
+        if (this.advancedStatsPending) {
+          this.loadAdvancedStats();
+        } else {
+          this.stopAdvancedStatsUpdates();
+        }
+      }, this.advancedStatsRefreshTime);
+    }
+  }
+
+  private stopAdvancedStatsUpdates(): void {
+    if (this.advancedStatsTimerId) {
+      clearInterval(this.advancedStatsTimerId);
+      this.advancedStatsTimerId = null;
+    }
+  }
+
+  /**
+   * Refreshes the game every 10 seconds. Stops once the game is over, after reloading the series status, highlights
+   * and NST's stats. A failed refresh keeps the data already shown.
    */
   private startContinuousNhlGameUpdates(): void {
     this.nhlGameUpdateTimerId = setInterval(() => {
@@ -574,6 +631,8 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
         this.applyGameBundle(bundle);
+        // A game that starts while the page is open starts NST's refresh
+        this.updateAdvancedStatsRefresh();
         if (this.completedGame) {
           this.stopContinuousNhlGameUpdates();
           this.loadScoreGame();

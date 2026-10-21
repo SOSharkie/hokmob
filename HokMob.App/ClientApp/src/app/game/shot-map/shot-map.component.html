@@ -39,7 +39,7 @@
       </div>
       <div *ngIf="hasExpectedGoals" class="shot-fact">
         <dt title="Expected goals: how likely the shot was to score, from Natural Stat Trick">xG</dt>
-        <dd class="shot-xg">{{expectedGoalsLabel}}</dd>
+        <dd class="shot-xg" [attr.title]="expectedGoalsTitle">{{expectedGoalsLabel}}</dd>
       </div>
       <div *ngIf="isFactShown('goalie')" class="shot-fact">
         <dt>Goalie</dt>

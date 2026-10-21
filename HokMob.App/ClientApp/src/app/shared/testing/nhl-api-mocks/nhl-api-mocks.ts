@@ -112,6 +112,8 @@ import clubStatsCar20252026Playoffs from './club-stats-car-20252026-3.json';
 import clubStatsVgk20252026Playoffs from './club-stats-vgk-20252026-3.json';
 import nstGame2026020010 from './nst-game-2026020010.json';
 import nstGame2025030414 from './nst-game-2025030414.json';
+import nstGame2026020144Live from './nst-game-2026020144-live.json';
+import gamecenter2026020144PlayByPlayLive from './gamecenter-2026020144-play-by-play-live.json';
 import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 
 /*
@@ -128,7 +130,9 @@ import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.mod
  * skater/summary and skater/realtime (or goalie/summary) the way the backend merges them. The nst-game-* responses are
  * the backend's /api/nst/game/{id}, read from Natural Stat Trick's game pages and captured from a running app on
  * 2026-10-16 (see mockNstGameStats); their shots were added on 2026-10-17 by running the backend's parser on the same
- * pages. To refresh one, download it again with curl and re-check the values the specs assert.
+ * pages. nst-game-2026020144-live was read the same way from a live game's page on 2026-10-20, with the game's
+ * play-by-play fetched in the same second (see mockLiveNstGameStats). To refresh one, download it again with curl and
+ * re-check the values the specs assert.
  *
  * Every function returns a fresh deep copy, so tests can change the data. "derived" helpers turn real data into states
  * that couldn't be captured (live games, postponed games, series in progress). Keep those changes minimal.
@@ -701,4 +705,22 @@ export type MockNstGameId = 2026020010 | 2025030414;
  */
 export function mockNstGameStats(gameId: MockNstGameId): NstGameStats {
   return copy(gameId === 2026020010 ? nstGame2026020010 : nstGame2025030414);
+}
+
+/**
+ * /api/nst/game/2026020144: LAK 2 @ WSH 2 on 2026-10-20, captured live 3:04 into the 2nd period, when NST's stats only
+ * went to 0:12 of it (period 2, timeInPeriod "0:12", not final). Capitals 16-14 on Corsi and 1.04-0.69 on xG, all of
+ * it from the 1st. Its 18 goals and shots on goal are the 1st period's 18 in mockLiveNstPlayByPlay.
+ */
+export function mockLiveNstGameStats(): NstGameStats {
+  return copy(nstGame2026020144Live);
+}
+
+/**
+ * gamecenter/2026020144/play-by-play, fetched in the same second as mockLiveNstGameStats: LIVE, 3:04 into the 2nd
+ * (16:56 left). Of its 22 goals and shots on goal, the 2nd period's 4 (events 501, 515, 516 and 522, from 0:22 to
+ * 1:56) are past how far NST had got.
+ */
+export function mockLiveNstPlayByPlay(): PlayByPlay {
+  return copy(gamecenter2026020144PlayByPlayLive);
 }

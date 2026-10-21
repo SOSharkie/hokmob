@@ -4,7 +4,13 @@ import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameShot } from '@shared/models/game-shot.model';
 import { ShotMapUtils } from '@shared/utils/shot-map-utils';
 import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
-import { mockGameBoxscore, mockGamePlayByPlay, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  mockGameBoxscore,
+  mockGamePlayByPlay,
+  mockLiveNstGameStats,
+  mockLiveNstPlayByPlay,
+  mockNstGameStats
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { PlayerShotMapComponent } from './player-shot-map.component';
 
@@ -72,7 +78,7 @@ describe('PlayerShotMapComponent', () => {
   describe('shot tooltip', () => {
     /** Staal's shots with Natural Stat Trick's xG. */
     const staalShotsWithXg = () => ShotMapUtils.getPlayerShots(
-        ShotMapUtils.getShots(mockGamePlayByPlay(2025030414), mockNstGameStats(2025030414).shots), staalId, false);
+        ShotMapUtils.getShots(mockGamePlayByPlay(2025030414), mockNstGameStats(2025030414)), staalId, false);
     const tooltipText = () => text('.shot-tooltip')?.replace(/\s+/g, ' ');
 
     function hover(selector: string, index: number, event: 'mouseenter' | 'mouseleave'): void {
@@ -92,6 +98,16 @@ describe('PlayerShotMapComponent', () => {
       expect(tooltipText()).not.toContain('Goalie');
       expect(tooltipText()).not.toContain('Carter Hart');
       expect(element('.tooltip-shooter')).toBeNull();
+    });
+
+    it("should show a live game's shot NST hasn't got to yet as pending", () => {
+      // Two shots in the 2nd at 1:38 and 1:39, with NST at 0:12 of it
+      show(ShotMapUtils.getPlayerShots(
+          ShotMapUtils.getShots(mockLiveNstPlayByPlay(), mockLiveNstGameStats()), 8478550, false));
+      component.toggleShot(component.markers.find(marker => marker.shot.eventId === 515));
+      fixture.detectChanges();
+      expect(text('.tooltip-time')).toBe('2nd 1:38');
+      expect(text('.tooltip-xg')).toBe('Pending');
     });
 
     it('should leave the xG out without Natural Stat Trick stats', () => {

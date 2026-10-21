@@ -4,6 +4,7 @@ import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {TeamGameStat} from "@shared/models/nhl-web-api/right-rail.model";
 import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 Chart.register(...registerables);
 
 /**
@@ -58,11 +59,17 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
   public teamGameStats: TeamGameStat[];
 
   /**
-   * The expected goals and Corsi from Natural Stat Trick, shown above the other stats for a finished game. Undefined
-   * until they load, or when NST has none.
+   * The expected goals and Corsi from Natural Stat Trick, shown above the other stats. A live game's are a few minutes
+   * behind. Undefined until they load, or when NST has none.
    */
   @Input()
   public advancedStats: NstGameStats;
+
+  /**
+   * The game type, for how long an overtime NST's live stats have got to is.
+   */
+  @Input()
+  public gameType: NhlGameTypeEnum;
 
   public statRows: GameStatRow[] = [];
 
@@ -114,6 +121,15 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
    */
   public get advancedStatsSourceUrl(): string {
     return this.advancedStats ? NstStatsUtils.getGamePageUrl(this.advancedStats.gameId) : "";
+  }
+
+  /**
+   * The credit for NST's stats, which says how far they go until NST marks the game final, like "Expected goals and
+   * Corsi from Natural Stat Trick, through 2nd 12:34": NST runs a few minutes behind a live game.
+   */
+  public get advancedStatsSourceLabel(): string {
+    const progress = NstStatsUtils.getProgressLabel(this.advancedStats, this.gameType);
+    return "Expected goals and Corsi from Natural Stat Trick" + (progress ? ", through " + progress : "");
   }
 
   public ngOnChanges(changes: SimpleChanges): void {

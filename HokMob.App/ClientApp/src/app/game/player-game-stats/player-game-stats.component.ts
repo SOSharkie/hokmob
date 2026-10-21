@@ -47,8 +47,8 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
   public compact: boolean = false;
 
   /**
-   * The skater's expected goals and Corsi from Natural Stat Trick, shown when given (a finished game NST has stats
-   * for) and the stats aren't compact.
+   * The skater's expected goals and Corsi from Natural Stat Trick, shown when given (a live or finished game NST has
+   * stats for) and the stats aren't compact.
    */
   @Input()
   public advancedStats: NstPlayerGameStats;

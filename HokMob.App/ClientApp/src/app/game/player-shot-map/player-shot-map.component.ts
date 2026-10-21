@@ -16,7 +16,10 @@ export interface PlayerShotMarker {
   /** The text color on the team color, for a selected chip. */
   textColor: string;
   timeLabel: string;
-  /** The shot's xG from Natural Stat Trick, like "0.30", or undefined without one. */
+  /**
+   * The shot's xG from Natural Stat Trick, like "0.30", "Pending" for a live game's shot NST hasn't got to yet, or
+   * undefined without one.
+   */
   expectedGoalsLabel: string;
 }
 
@@ -98,7 +101,8 @@ export class PlayerShotMapComponent implements OnChanges {
       color: NhlTeamColorUtils.getTeamPrimaryColor(shot.teamId),
       textColor: NhlTeamColorUtils.getTeamTextColor(shot.teamId),
       timeLabel: ShotMapUtils.getTimeLabel(shot),
-      expectedGoalsLabel: shot.expectedGoals == null ? undefined : NstStatsUtils.formatExpectedGoals(shot.expectedGoals)
+      expectedGoalsLabel: shot.expectedGoalsPending ? "Pending" :
+          shot.expectedGoals == null ? undefined : NstStatsUtils.formatExpectedGoals(shot.expectedGoals)
     }));
     if (!this.markers.some(marker => marker.shot.eventId === this.selectedEventId)) {
       this.selectedEventId = undefined;

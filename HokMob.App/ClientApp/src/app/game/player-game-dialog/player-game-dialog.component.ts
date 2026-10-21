@@ -13,7 +13,10 @@ import {NstPlayerGameStats} from "@shared/models/natural-stat-trick/nst-game-sta
  */
 export interface PlayerGameDialogData {
   player: GamePlayer;
-  /** The skater's expected goals and Corsi from Natural Stat Trick, for a finished game NST has stats for. */
+  /**
+   * The skater's expected goals and Corsi from Natural Stat Trick, for a live or finished game NST has stats for. A live
+   * game's are as of when the dialog opened, a few minutes behind.
+   */
   advancedStats?: NstPlayerGameStats;
   shots?: GameShot[];
 }
