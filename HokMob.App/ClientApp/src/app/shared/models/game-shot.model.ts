@@ -32,4 +32,9 @@ export interface GameShot {
    * (a goalie's, or one from behind the net).
    */
   expectedGoals?: number;
+  /**
+   * Whether the shot has no xG because Natural Stat Trick, which runs a few minutes behind a live game, hasn't got to it
+   * yet (NstStatsUtils.isPending).
+   */
+  expectedGoalsPending?: boolean;
 }

@@ -21,9 +21,11 @@ namespace HokMob.App.Controllers
         }
 
         /// <summary>
-        /// Returns a game's all situations Corsi and xG for both teams and each skater, as
-        /// { gameId, isFinal, homeTeam, awayTeam }. 404 when NST has no stats for the game (yet), 503 when NST can't be
-        /// asked right now (no key configured, NST unreachable, or the usage tokens are running low).
+        /// Returns a game's all situations Corsi and xG for both teams and each skater, and each shot's xG, as
+        /// { gameId, isFinal, period, timeInPeriod, homeTeam, awayTeam, shots }. A live game's stats are partial and a
+        /// few minutes behind; period and timeInPeriod say how far they go. 404 when NST has no stats for the game
+        /// (yet), 503 when NST can't be asked right now (no key configured, NST unreachable, or the usage tokens are
+        /// running low).
         /// </summary>
         /// <param name="gameId">The NHL game ID of a regular season or playoff game, like 2026020110.</param>
         [HttpGet("game/{gameId:long}")]

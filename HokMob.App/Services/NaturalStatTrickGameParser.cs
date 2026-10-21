@@ -8,9 +8,14 @@ namespace HokMob.App.Services
     /// A game's all situations Corsi and expected goals (xG) from Natural Stat Trick, for both teams and each skater.
     /// </summary>
     /// <param name="IsFinal">Whether NST marks the game final. A game in progress has partial numbers.</param>
+    /// <param name="Period">
+    /// The last period the stats include (4 for the first overtime), or null when the page doesn't say. NST runs a few
+    /// minutes behind a live game, so this and TimeInPeriod say how far its numbers go.
+    /// </param>
+    /// <param name="TimeInPeriod">How far into Period the stats go, like "12:34" ("20:00" once it's over).</param>
     /// <param name="Shots">Every skater's goals, shots on goal and missed shots, with each one's xG.</param>
-    public record NstGameStats(long GameId, bool IsFinal, NstTeamGameStats HomeTeam, NstTeamGameStats AwayTeam,
-        List<NstShot> Shots);
+    public record NstGameStats(long GameId, bool IsFinal, int? Period, string? TimeInPeriod, NstTeamGameStats HomeTeam,
+        NstTeamGameStats AwayTeam, List<NstShot> Shots);
 
     /// <param name="Name">NST's team name, like "Red Wings".</param>
     public record NstTeamGameStats(string Name, int? CorsiFor, int? CorsiAgainst, double? ExpectedGoalsFor,
@@ -127,7 +132,29 @@ namespace HokMob.App.Services
                 ToDouble(FinalLine(GetCell(header, teamRows[index], "xGA"))),
                 ReadPlayers(html, teamCodes[index - 1], playerIds));
 
-            return new NstGameStats(gameId, isFinal, ReadTeam(1), ReadTeam(2), ReadShots(gameId, html));
+            var (period, timeInPeriod) = ReadProgress(header, teamRows[1]);
+            return new NstGameStats(gameId, isFinal, period, timeInPeriod, ReadTeam(1), ReadTeam(2),
+                ReadShots(gameId, html));
+        }
+
+        /// <summary>
+        /// Reads how far the stats go from a team's line of the team table: its Period and TOI cells list each period
+        /// NST has (a live game's current period with the time played so far, like "1\n2\nFinal" and
+        /// "20:00\n12:34\n32:34"), then the total. The last period with time played is the one reached.
+        /// </summary>
+        private static (int? Period, string? TimeInPeriod) ReadProgress(List<string> header, List<string> teamRow)
+        {
+            var lines = (string? cell) => cell?.Split('\n', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            var periods = lines(GetCell(header, teamRow, "Period"));
+            var times = lines(GetCell(header, teamRow, "TOI"));
+            for (var index = Math.Min(periods.Length, times.Length) - 2; index >= 0; index--)
+            {
+                if (ToInt(periods[index]) is { } period && times[index] != "0:00")
+                {
+                    return (period, times[index]);
+                }
+            }
+            return (null, null);
         }
 
         /// <summary>

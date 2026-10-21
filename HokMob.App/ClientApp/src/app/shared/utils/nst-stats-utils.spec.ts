@@ -1,5 +1,7 @@
 import {NstStatsUtils} from '@shared/utils/nst-stats-utils';
-import {mockNstGameStats} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {mockLiveNstGameStats, mockNstGameStats} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {NhlGameTypeEnum} from '@shared/enums/nhl-game-type.enum';
+import {NstGameStats} from '@shared/models/natural-stat-trick/nst-game-stats.model';
 
 describe('NstStatsUtils', () => {
 
@@ -42,6 +44,54 @@ describe('NstStatsUtils', () => {
       expect(NstStatsUtils.formatExpectedGoals(0.6)).toBe('0.60');
       expect(NstStatsUtils.formatExpectedGoals(0)).toBe('0.00');
       expect(NstStatsUtils.formatExpectedGoals(null)).toBe('-');
+    });
+  });
+
+  describe('getProgressLabel', () => {
+    const live = (period: number, timeInPeriod: string): NstGameStats => ({...mockLiveNstGameStats(), period, timeInPeriod});
+
+    it("should say how far a live game's stats go", () => {
+      expect(NstStatsUtils.getProgressLabel(mockLiveNstGameStats(), NhlGameTypeEnum.REGULAR_SEASON)).toBe('2nd 0:12');
+      expect(NstStatsUtils.getProgressLabel(live(3, '17:05'), NhlGameTypeEnum.REGULAR_SEASON)).toBe('3rd 17:05');
+    });
+
+    it('should name a period that NST has all of', () => {
+      expect(NstStatsUtils.getProgressLabel(live(1, '20:00'), NhlGameTypeEnum.REGULAR_SEASON)).toBe('the 1st');
+      expect(NstStatsUtils.getProgressLabel(live(4, '5:00'), NhlGameTypeEnum.REGULAR_SEASON)).toBe('OT');
+      expect(NstStatsUtils.getProgressLabel(live(4, '2:30'), NhlGameTypeEnum.REGULAR_SEASON)).toBe('OT 2:30');
+    });
+
+    it('should count a playoff overtime as 20 minutes', () => {
+      expect(NstStatsUtils.getProgressLabel(live(4, '5:00'), NhlGameTypeEnum.PLAYOFFS)).toBe('OT 5:00');
+      expect(NstStatsUtils.getProgressLabel(live(5, '20:00'), NhlGameTypeEnum.PLAYOFFS)).toBe('2OT');
+    });
+
+    it('should be empty once NST marks the game final, or without how far it goes', () => {
+      expect(NstStatsUtils.getProgressLabel(mockNstGameStats(2026020010), NhlGameTypeEnum.REGULAR_SEASON)).toBe('');
+      expect(NstStatsUtils.getProgressLabel({...mockLiveNstGameStats(), period: null}, NhlGameTypeEnum.REGULAR_SEASON))
+          .toBe('');
+      expect(NstStatsUtils.getProgressLabel({...mockLiveNstGameStats(), timeInPeriod: undefined},
+          NhlGameTypeEnum.REGULAR_SEASON)).toBe('');
+      expect(NstStatsUtils.getProgressLabel(undefined, NhlGameTypeEnum.REGULAR_SEASON)).toBe('');
+    });
+  });
+
+  describe('isPending', () => {
+    it("should be true past how far a live game's stats go", () => {
+      // NST is at 0:12 of the 2nd
+      const stats = mockLiveNstGameStats();
+      expect(NstStatsUtils.isPending(stats, 2, '00:22')).toBeTrue();
+      expect(NstStatsUtils.isPending(stats, 3, '00:01')).toBeTrue();
+      expect(NstStatsUtils.isPending(stats, 2, '00:12')).toBeFalse();
+      expect(NstStatsUtils.isPending(stats, 2, '0:05')).toBeFalse();
+      expect(NstStatsUtils.isPending(stats, 1, '19:59')).toBeFalse();
+    });
+
+    it('should be false once NST marks the game final, or without how far it goes', () => {
+      expect(NstStatsUtils.isPending(mockNstGameStats(2026020010), 3, '19:59')).toBeFalse();
+      expect(NstStatsUtils.isPending({...mockLiveNstGameStats(), period: undefined}, 3, '00:01')).toBeFalse();
+      expect(NstStatsUtils.isPending(undefined, 3, '00:01')).toBeFalse();
+      expect(NstStatsUtils.isPending(mockLiveNstGameStats(), null, '00:01')).toBeFalse();
     });
   });
 

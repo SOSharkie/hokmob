@@ -26,6 +26,7 @@ import {
   mockClubStats,
   mockGameBundle,
   mockGameLanding,
+  mockLiveNstGameStats,
   mockNstGameStats,
   mockPlayoffScoreResponse,
   mockRegularSeasonScoreResponse,
@@ -129,6 +130,17 @@ describe('GameComponent', () => {
       request.flush('Error', {status: errorStatus, statusText: 'Error'});
     } else {
       request.flush(mockNstGameStats(Number(gameId) as 2026020010 | 2025030414));
+    }
+  }
+
+  /**
+   * Moves a game that isn't over on by the seconds in a fakeAsync test, answering each 10s refresh with the bundle.
+   */
+  function refreshFor(gameId: string, bundle: GameBundle, seconds: number): void {
+    for (let elapsed = 0; elapsed < seconds; elapsed += 10) {
+      tick(10000);
+      flushBundle(gameId, bundle);
+      settleFakeAsync();
     }
   }
 
@@ -930,6 +942,7 @@ describe('GameComponent', () => {
     settleFakeAsync();
     flushClubSchedule('WPG', 20252026);
     flushClubSchedule('STL', 20252026);
+    httpMock.expectOne('/api/nst/game/2025021057');
     settleFakeAsync();
     expect(component.liveGame).toBeTrue();
     expect(element('app-goal-scorers').scoring.length).toBe(2);
@@ -954,12 +967,120 @@ describe('GameComponent', () => {
     flushScore('2026-03-15', mockRegularSeasonScoreResponse());
     settleFakeAsync();
     expect(text('.watch-link')).toBe('Highlights');
-    // And so are the expected goals and Corsi, which weren't asked for while it was live
+    // And so are the expected goals and Corsi, which were first asked for when it was opened
     httpMock.expectOne('/api/nst/game/2025021057');
 
     tick(30000);
     httpMock.expectNone('/api/nhl/gamecenter/2025021057/landing');
   }));
+
+  describe("a live game's Natural Stat Trick stats", () => {
+    const liveBundle = (): GameBundle => ({...mockGameBundle(2025021057), landing: derivedLiveLanding()});
+
+    /** Opens the live STL @ WPG game and answers its team form requests with server errors. */
+    function openLiveGame(): void {
+      open('2025021057');
+      flushBundle('2025021057', liveBundle());
+      settleFakeAsync();
+      flushClubSchedule('WPG', 20252026);
+      flushClubSchedule('STL', 20252026);
+    }
+
+    it('should load them right away and refresh them every minute until NST marks the game final', fakeAsync(() => {
+      openLiveGame();
+      httpMock.expectOne('/api/nst/game/2025021057').flush(mockLiveNstGameStats());
+      settleFakeAsync();
+      expect(component.advancedStats.timeInPeriod).toBe('0:12');
+      const gameStats = element('app-game-stats');
+      expect(gameStats.advancedStats.isFinal).toBeFalse();
+      expect(gameStats.gameType).toBe(2);
+      expect(element('app-shot-map').advancedStats.period).toBe(2);
+
+      // A failed refresh keeps the stats shown
+      refreshFor('2025021057', liveBundle(), 60);
+      httpMock.expectOne('/api/nst/game/2025021057').flush('Error', {status: 503, statusText: 'Error'});
+      settleFakeAsync();
+      expect(component.advancedStats.timeInPeriod).toBe('0:12');
+
+      refreshFor('2025021057', liveBundle(), 60);
+      httpMock.expectOne('/api/nst/game/2025021057').flush({...mockLiveNstGameStats(), timeInPeriod: '6:40'});
+      settleFakeAsync();
+      expect(component.advancedStats.timeInPeriod).toBe('6:40');
+
+      // Once NST marks the game final, it isn't asked again, even while the NHL still has it live
+      refreshFor('2025021057', liveBundle(), 60);
+      httpMock.expectOne('/api/nst/game/2025021057').flush({...mockLiveNstGameStats(), isFinal: true});
+      settleFakeAsync();
+      refreshFor('2025021057', liveBundle(), 120);
+      httpMock.expectNone('/api/nst/game/2025021057');
+
+      fixture.destroy();
+      tick(60000);
+      httpMock.expectNone('/api/nst/game/2025021057');
+    }));
+
+    it('should stop refreshing them when the page is left', fakeAsync(() => {
+      openLiveGame();
+      httpMock.expectOne('/api/nst/game/2025021057').flush(mockLiveNstGameStats());
+      settleFakeAsync();
+      fixture.destroy();
+      tick(120000);
+      httpMock.expectNone('/api/nst/game/2025021057');
+    }));
+
+    it('should start refreshing them when a game starts while its page is open', fakeAsync(() => {
+      const bundle = mockGameBundle(2026020056);
+      bundle.landing.startTimeUTC = dayjs().toISOString();
+      open('2026020056');
+      flushBundle('2026020056', bundle);
+      settleFakeAsync();
+      flushSeasonLeaders();
+      flushClubSchedule('BOS', 20262027);
+      flushClubSchedule('UTA', 20262027);
+      settleFakeAsync();
+      httpMock.expectNone('/api/nst/game/2026020056');
+
+      const started = {...bundle, landing: {...bundle.landing, gameState: NhlGameStateEnum.LIVE}};
+      refreshFor('2026020056', started, 70);
+      httpMock.expectOne('/api/nst/game/2026020056').flush('Not found', {status: 404, statusText: 'Not Found'});
+      settleFakeAsync();
+      expect(component.advancedStats).toBeUndefined();
+
+      fixture.destroy();
+    }));
+
+    it('should refresh those of a game that ended in the last few hours until NST marks it final', fakeAsync(() => {
+      const bundle = mockGameBundle(2026020010);
+      bundle.landing.startTimeUTC = dayjs().subtract(3, 'hour').toISOString();
+      open('2026020010');
+      flushBundle('2026020010', bundle);
+      settleFakeAsync();
+      flushScore('2026-10-01');
+      httpMock.expectOne('/api/nst/game/2026020010').flush({...mockNstGameStats(2026020010), isFinal: false});
+      settleFakeAsync();
+
+      tick(60000);
+      httpMock.expectOne('/api/nst/game/2026020010').flush(mockNstGameStats(2026020010));
+      settleFakeAsync();
+      expect(component.advancedStats.isFinal).toBeTrue();
+      tick(120000);
+      httpMock.expectNone('/api/nst/game/2026020010');
+      fixture.destroy();
+    }));
+
+    it('should not refresh those of an older finished game, even when NST never marked it final', fakeAsync(() => {
+      open('2026020010');
+      flushBundle('2026020010', mockGameBundle(2026020010));
+      settleFakeAsync();
+      flushScore('2026-10-01');
+      httpMock.expectOne('/api/nst/game/2026020010').flush({...mockNstGameStats(2026020010), isFinal: false});
+      settleFakeAsync();
+      expect(component.advancedStats.isFinal).toBeFalse();
+      tick(120000);
+      httpMock.expectNone('/api/nst/game/2026020010');
+      fixture.destroy();
+    }));
+  });
 
   it('should show top players and game stats for a game captured live', fakeAsync(() => {
     open('2026010001');

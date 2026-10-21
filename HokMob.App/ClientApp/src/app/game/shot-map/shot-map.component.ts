@@ -67,8 +67,8 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   public scoring: GameLandingScoringPeriod[];
 
   /**
-   * The finished game's stats from Natural Stat Trick, whose shots give each shot its xG. Undefined until they load,
-   * and for a game NST has no stats for.
+   * The game's stats from Natural Stat Trick, whose shots give each shot its xG (a live game's only up to how far NST
+   * has got). Undefined until they load, and for a game NST has no stats for.
    */
   @Input()
   public advancedStats: NstGameStats;
@@ -136,7 +136,7 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
     const homeColor = NhlTeamColorUtils.getTeamPrimaryColor(this.homeTeamId);
     const awayColor = NhlTeamColorUtils.getTeamSecondaryColor(this.homeTeamId, this.awayTeamId);
-    this.markers = ShotMapUtils.getShots(this.playByPlay, this.advancedStats?.shots).map(shot => ({
+    this.markers = ShotMapUtils.getShots(this.playByPlay, this.advancedStats).map(shot => ({
       shot,
       ...ShotMapComponent.getRinkPosition(shot),
       color: shot.isHomeTeam ? homeColor : awayColor
@@ -274,10 +274,22 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   /**
-   * The selected shot's xG, like "0.30", or "-" for a shot NST doesn't list.
+   * The selected shot's xG, like "0.30", "Pending" for a live game's shot NST hasn't got to yet, or "-" for a shot NST
+   * doesn't list.
    */
   public get expectedGoalsLabel(): string {
+    if (this.selectedShot?.expectedGoalsPending) {
+      return "Pending";
+    }
     return NstStatsUtils.formatExpectedGoals(this.selectedShot?.expectedGoals);
+  }
+
+  /**
+   * Explains a pending xG, which Natural Stat Trick adds a few minutes after the shot.
+   */
+  public get expectedGoalsTitle(): string {
+    return this.selectedShot?.expectedGoalsPending ?
+        "Natural Stat Trick runs a few minutes behind live games, so this shot's xG isn't in yet" : null;
   }
 
   /**

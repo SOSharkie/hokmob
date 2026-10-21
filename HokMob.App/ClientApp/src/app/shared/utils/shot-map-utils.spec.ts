@@ -2,7 +2,14 @@ import { ShotMapUtils } from './shot-map-utils';
 import { GameShot } from '@shared/models/game-shot.model';
 import { PlayByPlay } from '@shared/models/nhl-web-api/play-by-play.model';
 import { NhlPeriodTypeEnum } from '@shared/enums/nhl-period-type.enum';
-import { mockGameBoxscore, mockGamePlayByPlay, mockNstGameStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { NstShot } from '@shared/models/natural-stat-trick/nst-game-stats.model';
+import {
+  mockGameBoxscore,
+  mockGamePlayByPlay,
+  mockLiveNstGameStats,
+  mockLiveNstPlayByPlay,
+  mockNstGameStats
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 describe('ShotMapUtils', () => {
 
@@ -98,12 +105,14 @@ describe('ShotMapUtils', () => {
   });
 
   describe('getShots with Natural Stat Trick xG', () => {
-    const nstShots = (gameId: 2025030414 | 2026020010) => mockNstGameStats(gameId).shots;
+    const nst = (gameId: 2025030414 | 2026020010) => mockNstGameStats(gameId);
+    const nstShots = (gameId: 2025030414 | 2026020010) => nst(gameId).shots;
+    const withShots = (shots: NstShot[]) => ({...nst(2026020010), shots});
     /** TBL @ NYR, where NST leaves out a shot from behind the net and a goalie's goal. */
     const rangers = () => mockGamePlayByPlay(2026020010);
 
     it("should give every shot of the final its xG", () => {
-      const shots = ShotMapUtils.getShots(final(), nstShots(2025030414));
+      const shots = ShotMapUtils.getShots(final(), nst(2025030414));
       expect(shots.length).toBe(49);
       expect(shots.every(item => item.expectedGoals != null)).toBeTrue();
       // Stankoven's goal at 1:06 of the 1st, and Theodore's shot from 101ft at the end
@@ -112,13 +121,13 @@ describe('ShotMapUtils', () => {
     });
 
     it("should match each shot by its shooter, period, time and type, leaving NST's missed shots out", () => {
-      const staalShots = ShotMapUtils.getPlayerShots(ShotMapUtils.getShots(final(), nstShots(2025030414)), 8473533, false);
+      const staalShots = ShotMapUtils.getPlayerShots(ShotMapUtils.getShots(final(), nst(2025030414)), 8473533, false);
       // His miss at 10:21 of the 2nd (0.08) isn't on the map
       expect(staalShots.map(item => item.expectedGoals)).toEqual([0.05, 0.33, 0.11, 0.06]);
     });
 
     it("should add up to NST's xG of the goals and shots on goal", () => {
-      const total = ShotMapUtils.getShots(final(), nstShots(2025030414))
+      const total = ShotMapUtils.getShots(final(), nst(2025030414))
           .reduce((sum, item) => sum + item.expectedGoals, 0);
       const nstTotal = nstShots(2025030414).filter(item => item.type !== 'miss')
           .reduce((sum, item) => sum + item.expectedGoals, 0);
@@ -126,7 +135,7 @@ describe('ShotMapUtils', () => {
     });
 
     it("should leave the xG out of a shot NST doesn't list", () => {
-      const shots = ShotMapUtils.getShots(rangers(), nstShots(2026020010));
+      const shots = ShotMapUtils.getShots(rangers(), nst(2026020010));
       // Guentzel's shot from behind the net, and Shesterkin's empty net goal
       expect(shot(shots, 334).expectedGoals).toBeUndefined();
       expect(shot(shots, 1036).expectedGoals).toBeUndefined();
@@ -140,19 +149,38 @@ describe('ShotMapUtils', () => {
       holmberg[0].expectedGoals = 0.4;
       holmberg[1].expectedGoals = 0.2;
       const others = nstShots(2026020010).filter(item => !(item.playerId === 8480995 && item.time === '2:05'));
-      const shots = ShotMapUtils.getShots(rangers(), [holmberg[1], ...others, holmberg[0]]);
+      const shots = ShotMapUtils.getShots(rangers(), withShots([holmberg[1], ...others, holmberg[0]]));
       expect(shot(shots, 452).expectedGoals).toBe(0.4);
       expect(shot(shots, 207).expectedGoals).toBe(0.2);
     });
 
     it('should not take the xG of a different type of shot at the same time', () => {
       const stankovenGoal = nstShots(2025030414).find(item => item.playerId === 8482702 && item.time === '1:06');
-      const shots = ShotMapUtils.getShots(final(), [{...stankovenGoal, type: 'shot'}]);
+      const shots = ShotMapUtils.getShots(final(), withShots([{...stankovenGoal, type: 'shot'}]));
       expect(shot(shots, 69).expectedGoals).toBeUndefined();
     });
 
+    it("should mark a live game's shots that NST hasn't got to as pending", () => {
+      // NST was at 0:12 of the 2nd, the play-by-play at 3:04
+      const shots = ShotMapUtils.getShots(mockLiveNstPlayByPlay(), mockLiveNstGameStats());
+      expect(shots.length).toBe(22);
+      const pending = shots.filter(item => item.expectedGoalsPending);
+      expect(pending.map(item => item.eventId)).toEqual([501, 515, 516, 522]);
+      expect(pending.every(item => item.expectedGoals === undefined)).toBeTrue();
+      expect(shots.filter(item => !item.expectedGoalsPending).every(item => item.expectedGoals != null)).toBeTrue();
+      // Andre Lee's shot at 3:11 of the 1st
+      expect(shot(shots, 88).expectedGoals).toBe(0.04);
+    });
+
+    it("should not mark a finished game's shots NST doesn't list as pending", () => {
+      const shots = ShotMapUtils.getShots(rangers(), nst(2026020010));
+      expect(shots.some(item => item.expectedGoalsPending)).toBeFalse();
+      expect(ShotMapUtils.getShots(mockLiveNstPlayByPlay(), {...mockLiveNstGameStats(), isFinal: true})
+          .some(item => item.expectedGoalsPending)).toBeFalse();
+    });
+
     it('should leave every xG out without NST shots', () => {
-      [undefined, null, []].forEach(missing => {
+      [undefined, null, withShots([])].forEach(missing => {
         expect(ShotMapUtils.getShots(final(), missing).some(item => item.expectedGoals != null)).toBeFalse();
       });
     });

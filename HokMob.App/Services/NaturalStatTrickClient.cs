@@ -39,8 +39,22 @@ namespace HokMob.App.Services
         /// </summary>
         private static readonly TimeSpan FinalGameSlidingExpiration = TimeSpan.FromHours(24);
 
-        /// <summary>How long a game that isn't final on NST yet, or that NST has no page for, is kept.</summary>
-        private static readonly TimeSpan PendingGameCacheDuration = TimeSpan.FromMinutes(10);
+        /// <summary>
+        /// How long a game that isn't final on NST yet (a live game, or one that just ended), or that NST has no page for
+        /// yet, is kept. NST itself runs a few minutes behind a live game. A busy night's live games, each refetched
+        /// every 3 minutes, take most of the standard pool (its 1800 tokens are full when the first game starts, and
+        /// 1800 more come in every hour), so SlowPendingGameCacheDuration takes over once it's half spent.
+        /// </summary>
+        private static readonly TimeSpan PendingGameCacheDuration = TimeSpan.FromMinutes(3);
+
+        /// <summary>
+        /// How long a pending game is kept once fewer than LowStandardTokens are left, which cuts what live games spend
+        /// to under a third, so finished games can still be fetched.
+        /// </summary>
+        private static readonly TimeSpan SlowPendingGameCacheDuration = TimeSpan.FromMinutes(10);
+
+        /// <summary>Half the standard pool (1800 tokens).</summary>
+        private const int LowStandardTokens = 900;
 
         /// <summary>
         /// The tokens kept in reserve in both pools. Below this, requests pause, so the key never goes over its limits
@@ -62,6 +76,12 @@ namespace HokMob.App.Services
 
         /// <summary>Until when requests are paused (ticks of a UTC DateTime), shared by every instance.</summary>
         private static long _pausedUntilTicks;
+
+        /// <summary>
+        /// The standard tokens NST reported left on the last response, shared by every instance. The pool is the key's,
+        /// so it also counts what other apps using the key (another environment) spend.
+        /// </summary>
+        private static int _standardTokensRemaining = int.MaxValue;
 
         private readonly HttpClient _httpClient;
         private readonly IMemoryCache _cache;
@@ -157,7 +177,9 @@ namespace HokMob.App.Services
                 }
                 else
                 {
-                    options.AbsoluteExpirationRelativeToNow = PendingGameCacheDuration;
+                    options.AbsoluteExpirationRelativeToNow = Volatile.Read(ref _standardTokensRemaining) < LowStandardTokens
+                        ? SlowPendingGameCacheDuration
+                        : PendingGameCacheDuration;
                 }
                 _cache.Set(cacheKey, result, options);
                 return result;
@@ -177,6 +199,10 @@ namespace HokMob.App.Services
         {
             var standard = ReadHeader(response, "tokens-remaining");
             var burst = ReadHeader(response, "burst-remaining");
+            if (standard != null)
+            {
+                Volatile.Write(ref _standardTokensRemaining, standard.Value);
+            }
             if ((standard ?? int.MaxValue) < ReservedTokens || (burst ?? int.MaxValue) < ReservedTokens)
             {
                 _logger.LogWarning("Natural Stat Trick tokens are low ({Standard} standard, {Burst} burst), pausing",

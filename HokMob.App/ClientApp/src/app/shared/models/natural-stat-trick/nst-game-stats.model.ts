@@ -6,6 +6,13 @@ export interface NstGameStats {
   gameId: number;
   /** Whether NST marks the game final. A game in progress has partial numbers. */
   isFinal: boolean;
+  /**
+   * The last period the stats include (4 for the first overtime), or null when NST's page doesn't say. NST runs a few
+   * minutes behind a live game, so this and timeInPeriod say how far its numbers go.
+   */
+  period?: number;
+  /** How far into the period the stats go, like "12:34", or "20:00" once it's over. */
+  timeInPeriod?: string;
   homeTeam: NstTeamGameStats;
   awayTeam: NstTeamGameStats;
   /** Every skater's goals, shots on goal and missed shots, with each one's xG. */

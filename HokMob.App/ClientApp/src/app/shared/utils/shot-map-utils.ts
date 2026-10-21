@@ -1,10 +1,11 @@
 import {Play, PlayByPlay} from "@shared/models/nhl-web-api/play-by-play.model";
 import {GameShot} from "@shared/models/game-shot.model";
-import {NstShot} from "@shared/models/natural-stat-trick/nst-game-stats.model";
+import {NstGameStats, NstShot} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {NhlPlayTypeEnum} from "@shared/enums/nhl-play-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
 import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
+import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 /**
  * Helpers for the game page's shot maps: the shots on goal and goals of the play-by-play, turned so each shooter
@@ -30,9 +31,9 @@ export class ShotMapUtils {
    * left out. Each shot gets its xG from Natural Stat Trick's shots, when they're given (addExpectedGoals).
    *
    * @param playByPlay - The game's play-by-play.
-   * @param nstShots - NST's shots of the game (NstGameStats.shots), for each shot's xG.
+   * @param nstStats - The game's NST stats, for each shot's xG.
    */
-  public static getShots(playByPlay: PlayByPlay, nstShots?: NstShot[]): GameShot[] {
+  public static getShots(playByPlay: PlayByPlay, nstStats?: NstGameStats): GameShot[] {
     const homeTeamId = playByPlay?.homeTeam?.id;
     const rosterSpots = PlayByPlayUtils.getRosterSpotMap(playByPlay);
     const fullName = (playerId: number) => PlayByPlayUtils.getFullName(rosterSpots.get(playerId));
@@ -61,7 +62,7 @@ export class ShotMapUtils {
             y: details.yCoord * turn || 0
           };
         });
-    ShotMapUtils.addExpectedGoals(shots, nstShots);
+    ShotMapUtils.addExpectedGoals(shots, nstStats);
     return shots;
   }
 
@@ -69,11 +70,12 @@ export class ShotMapUtils {
    * Gives each shot the xG of its Natural Stat Trick shot: the one by the same shooter, of the same type (goal or shot
    * on goal), at the same period and time. A shooter's shots in the same second are paired up nearest to the net
    * first, by NST's distance and the shot's own. A shot NST doesn't list keeps no xG: in 13 games checked that was only
-   * goalies' shots and one from behind the net.
+   * goalies' shots and one from behind the net. While NST is behind a live game, a shot after how far its stats go is
+   * marked pending instead.
    */
-  private static addExpectedGoals(shots: GameShot[], nstShots: NstShot[]): void {
+  private static addExpectedGoals(shots: GameShot[], nstStats: NstGameStats): void {
     const nstShotsByKey = new Map<string, NstShot[]>();
-    (nstShots ?? []).filter(nstShot => nstShot?.type !== "miss").forEach(nstShot => {
+    (nstStats?.shots ?? []).filter(nstShot => nstShot?.type !== "miss").forEach(nstShot => {
       const key = [nstShot.playerId, nstShot.period, nstShot.time, nstShot.type === "goal"].join("|");
       nstShotsByKey.set(key, [...(nstShotsByKey.get(key) ?? []), nstShot]);
     });
@@ -91,6 +93,8 @@ export class ShotMapUtils {
       const keyNstShots = [...(nstShotsByKey.get(key) ?? [])].sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
       [...keyShots].sort((a, b) => distance(a) - distance(b)).forEach((shot, index) => {
         shot.expectedGoals = keyNstShots[index]?.expectedGoals ?? undefined;
+        shot.expectedGoalsPending = shot.expectedGoals === undefined &&
+            NstStatsUtils.isPending(nstStats, shot.periodDescriptor?.number, shot.timeInPeriod);
       });
     });
   }

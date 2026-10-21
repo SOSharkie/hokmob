@@ -6,8 +6,8 @@ app and proxies the NHL API. `HokMob.App/ClientApp/` is the Angular 15 frontend 
 ## NHL APIs
 
 Data comes from api-web (`api-web.nhle.com/v1`), the stats API (`api.nhle.com/stats/rest/en`) and the player search
-(`search.d3.nhle.com`), all through the backend. A finished game's expected goals and Corsi come from Natural Stat Trick
-(`data.naturalstattrick.com`). Its access key must never be committed, and its usage tokens are limited (about 180
+(`search.d3.nhle.com`), all through the backend. A live or finished game's expected goals and Corsi come from Natural
+Stat Trick (`data.naturalstattrick.com`), which runs a few minutes behind a live game. Its access key must never be committed, and its usage tokens are limited (about 180
 pages an hour): don't loop requests to it, and save a page to your scratch directory when working on the parser. See
 "Natural Stat Trick" in `docs/nhl-api.md`.
 
