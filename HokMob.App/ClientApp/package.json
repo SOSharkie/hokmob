@@ -13,6 +13,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
+    "clean-cache": "ng cache clean",
     "capture-live-fixtures": "node capture-live-fixtures.js",
     "build-season-data": "node build-season-data.js"
   },

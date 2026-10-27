@@ -111,6 +111,10 @@ All from `HokMob.App/ClientApp`.
   to target: shared testing setup (`AppTestingModule`, `nhl-api-mocks`, `src/test.ts`), test or build config
   (`karma.conf.js`, `tsconfig*.json`, `angular.json`), `app.module.ts`, a model or util used across the app, or
   dependency upgrades.
+- **Build cache:** `npm run clean-cache` empties `.angular/cache`. Angular starts a new ~250 MB cache whenever the
+  build options (including `ng test --include`) or the set of source files change, and never deletes the old ones,
+  so it grows by gigabytes a week. Run it when it gets large, with no dev server or test run going. The next build is
+  slower while the cache refills.
 - **CI** (`.github/workflows/pr-tests.yml`) runs on every pull request: "Client tests" (production `ng build`, which
   enforces the `angular.json` budgets, then `npm run test:ci`) and "Backend build" (`dotnet build -c Release`). Both
   have to pass before merging into `master`.
