@@ -6,6 +6,7 @@ import * as dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ScoreGame } from '@shared/models/nhl-web-api/score.model';
 import { NhlGameScheduleStateEnum } from '@shared/enums/nhl-game-schedule-state.enum';
+import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import { DateTimeUtils } from '@shared/utils/date-time-utils';
 import {
   derivedLiveGame,
@@ -76,6 +77,22 @@ describe('ScorecardComponent', () => {
     expect(component.completedGameStatus).toBe('OT');
     expect(render(mockShootoutFinal())).toContain('3 - 2');
     expect(component.completedGameStatus).toBe('SO');
+  });
+
+  it('should show the score and final label of a game that just ended (OVER), not a blank status', () => {
+    // OVER can't be captured yet: it lasts a few minutes after the final horn, with the final's data
+    const regulation = mockRegulationFinal();
+    regulation.gameState = NhlGameStateEnum.OVER;
+    let text = render(regulation);
+    expect(component.completedGame).toBeTrue();
+    expect(text).toContain('5 - 0');
+    expect(text).toContain('Final');
+
+    const overtime = mockOvertimeFinal();
+    overtime.gameState = NhlGameStateEnum.OVER;
+    text = render(overtime);
+    expect(text).toContain('2 - 1');
+    expect(component.completedGameStatus).toBe('OT');
   });
 
   it('should show the series status only for playoff games', () => {

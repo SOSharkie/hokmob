@@ -159,9 +159,11 @@ export class NhlGameInfoUtils {
   }
 
   /**
-   * Whether the game is over (gameState FINAL or OFF).
+   * Whether the game is over (gameState OVER, FINAL or OFF). OVER is the few minutes between the final horn and
+   * FINAL, and already has the final score and gameOutcome.
    */
   public static isCompletedGame(gameState: NhlGameStateEnum): boolean {
-    return gameState === NhlGameStateEnum.FINAL || gameState === NhlGameStateEnum.OFF;
+    return gameState === NhlGameStateEnum.OVER || gameState === NhlGameStateEnum.FINAL ||
+        gameState === NhlGameStateEnum.OFF;
   }
 }

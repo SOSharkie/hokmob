@@ -56,8 +56,10 @@ syntax or the response fields, so those are written down below (its WADL is at
   `landing` and `boxscore`: `placeName.default` plus `commonName.default`. `standings`: `teamName.default` is the
   full name, but rows have **no team ID**, only `teamAbbrev.default` (`NhlTeamUtils.getTeamIdByAbbrev`).
   `schedule/playoff-series`: series teams have `name` (common), game teams have `commonName` and `placeName`.
-- **Game state.** `gameState` is `FUT`, `PRE`, `LIVE`, `CRIT`, `FINAL` or `OFF`; `gameScheduleState` is `OK`, `TBD`,
-  `PPD`, `SUSP` or `CNCL`. Check with `NhlGameInfoUtils.isFutureGame` / `isLiveGame` / `isCompletedGame`.
+- **Game state.** `gameState` is `FUT`, `PRE`, `LIVE`, `CRIT`, `OVER`, `FINAL` or `OFF`; `gameScheduleState` is `OK`,
+  `TBD`, `PPD`, `SUSP` or `CNCL`. `OVER` lasts a few minutes after the final horn, until the NHL marks the game
+  `FINAL`; it counts as completed. Check with `NhlGameInfoUtils.isFutureGame` / `isLiveGame` / `isCompletedGame`,
+  never a state directly, so a state like `OVER` can't fall through every check and leave a blank scorecard.
 - **Game type** is a number (`NhlGameTypeEnum`): 1 preseason, 2 regular season, 3 playoffs.
 - **Period and clock:** `periodDescriptor.number` and `.periodType` (`REG` / `OT` / `SO`), `clock.timeRemaining`,
   `clock.inIntermission`, and `gameOutcome.lastPeriodType` for a finished game's OT or SO label. `PeriodUtils` builds

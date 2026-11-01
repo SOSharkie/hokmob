@@ -45,6 +45,12 @@ describe('NhlGameInfoUtils', () => {
       expect(NhlGameInfoUtils.isLiveGame(NhlGameStateEnum.FINAL)).toBeFalse();
     });
 
+    it('should treat OVER, the minutes between the final horn and FINAL, as a completed game', () => {
+      expect(NhlGameInfoUtils.isCompletedGame(NhlGameStateEnum.OVER)).toBeTrue();
+      expect(NhlGameInfoUtils.isLiveGame(NhlGameStateEnum.OVER)).toBeFalse();
+      expect(NhlGameInfoUtils.isFutureGame(NhlGameStateEnum.OVER)).toBeFalse();
+    });
+
     it('should not match a missing or unknown state', () => {
       expect(NhlGameInfoUtils.isFutureGame(undefined)).toBeFalse();
       expect(NhlGameInfoUtils.isLiveGame(null)).toBeFalse();

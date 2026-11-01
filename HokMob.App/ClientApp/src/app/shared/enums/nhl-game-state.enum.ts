@@ -12,6 +12,9 @@ export enum NhlGameStateEnum {
 
     CRITICAL = "CRIT",
 
+    /** The game just ended, before the NHL marks it FINAL a few minutes later. */
+    OVER = "OVER",
+
     FINAL = "FINAL",
 
     OFF = "OFF"
