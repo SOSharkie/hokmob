@@ -39,7 +39,35 @@
     </button>
   </div>
   <div class="chart-container">
-    <canvas #momentumChart></canvas>
+    <canvas
+        #momentumChart
+        (pointermove)="onChartPointerMove($event)"
+        (pointerdown)="onChartPointerMove($event)"
+        (pointerleave)="onChartPointerLeave()"
+        (pointercancel)="onChartPointerLeave()"
+    ></canvas>
+    <div
+        *ngIf="hoveredMinute && hoveredGoals.length === 0 && !goalData[hoveredMinute.index]"
+        class="minute-dot"
+        [style.left.px]="minuteDotPosition.x"
+        [style.top.px]="minuteDotPosition.y"
+    ></div>
+    <div
+        *ngIf="hoveredMinute && hoveredGoals.length === 0"
+        #minuteTooltip
+        class="minute-tooltip"
+        [style.left.px]="minuteTooltipPosition.left"
+        [style.top.px]="minuteTooltipPosition.top"
+        [style.bottom.px]="minuteTooltipPosition.bottom"
+    >
+      <div class="minute-label">{{hoveredMinute.label}}</div>
+      <div *ngFor="let team of hoveredMinute.teams; trackBy: trackTeam" class="minute-team">
+        <app-team-logo class="team-logo" [src]="getTeamLogoById(team.teamId)" [size]="minuteLogoSize"></app-team-logo>
+        <span class="minute-plays">{{team.playsLabel}}</span>
+        <span class="minute-momentum">+{{team.momentum}}</span>
+      </div>
+      <div *ngIf="hoveredMinute.teams.length === 0" class="minute-empty">No shot attempts</div>
+    </div>
     <div
         *ngIf="hoveredGoals.length > 0"
         class="goal-tooltip"

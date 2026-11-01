@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { Chart } from 'chart.js';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayByPlay } from '@shared/models/nhl-web-api/play-by-play.model';
@@ -11,7 +11,7 @@ import {
   mockGamePlayByPlay
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
-import { MomentumComponent } from './momentum.component';
+import { MomentumChartView, MomentumComponent } from './momentum.component';
 
 describe('MomentumComponent', () => {
   let component: MomentumComponent;
@@ -315,6 +315,239 @@ describe('MomentumComponent', () => {
       expect(pointY < momentumChart.height / 2 ? top : bottom).toBeGreaterThan(0);
     });
   });
+
+  /** Moves the pointer over the chart point at the index, at its momentum. */
+  function point(index: number): void {
+    const momentumChart = Chart.getChart(canvas());
+    const rect = canvas().getBoundingClientRect();
+    const x = momentumChart.scales['x'].getPixelForValue(index);
+    const y = momentumChart.scales['y'].getPixelForValue(component.momentumData[index]);
+    canvas().dispatchEvent(new PointerEvent('pointermove', {clientX: rect.left + x, clientY: rect.top + y}));
+    fixture.detectChanges();
+  }
+
+  function minuteTooltip(): HTMLElement {
+    return fixture.nativeElement.querySelector('.minute-tooltip');
+  }
+
+  /** The minute tooltip's label, then each team's plays and momentum, with their parts joined by spaces. */
+  function minuteTooltipText(): string[] {
+    return Array.from<Element>(minuteTooltip()?.children ?? [])
+        .map(row => (row.children.length > 0 ? Array.from(row.children) : [row])
+            .map(part => part.textContent.trim())
+            .filter(text => text)
+            .join(' '));
+  }
+
+  function minuteDot(): HTMLElement {
+    return fixture.nativeElement.querySelector('.minute-dot');
+  }
+
+  /** Waits out the minute tooltip's delay and renders it. */
+  function waitForMinuteTooltip(): void {
+    tick(MomentumComponent.minuteTooltipDelay);
+    fixture.detectChanges();
+  }
+
+  /** Ends a fakeAsync test: destroys the chart, then runs its animation frames. */
+  function endFakeAsync(): void {
+    fixture.destroy();
+    flush();
+  }
+
+  it('should explain a minute after resting on it for the delay', fakeAsync(() => {
+    // 0:00–1:00 of the 1st: STL (away) shot on goal at 0:22, its blocked shot at 0:31, and more
+    const playByPlay = mockGamePlayByPlay(2025021057);
+    show(playByPlay);
+    const firstMinute = playByPlay.plays.filter(play => play.periodDescriptor.number === 1
+        && play.timeInPeriod < '01:00' && ['shot-on-goal', 'missed-shot', 'blocked-shot'].includes(play.typeDescKey));
+    expect(firstMinute.length).toBeGreaterThan(0);
+
+    point(1);
+    tick(MomentumComponent.minuteTooltipDelay - 1);
+    fixture.detectChanges();
+    expect(minuteTooltip()).toBeNull();
+    tick(1);
+    fixture.detectChanges();
+    expect(minuteTooltip()).not.toBeNull();
+    expect(minuteTooltipText()[0]).toBe('1st · 0:00–1:00');
+    expect(component.hoveredMinute.teams.map(team => team.momentum).reduce((a, b) => a + b, 0))
+        .toBe(firstMinute.reduce((total, play) => total + ({'shot-on-goal': 7, 'missed-shot': 5, 'blocked-shot': 4})[play.typeDescKey], 0));
+    endFakeAsync();
+  }));
+
+  it('should list each team\'s goals and shot attempts, home team first', fakeAsync(() => {
+    // 2:00–3:00 of the 1st: Fleury's WPG (home) goal at 2:31, with two STL (away) shots on goal and a blocked STL shot
+    // moved into the same minute
+    const playByPlay = withPlays(2025021057, [80]);
+    const shot = mockGamePlayByPlay(2025021057).plays.find(play => play.typeDescKey === 'shot-on-goal'
+        && play.details.eventOwnerTeamId === 19);
+    const blocked = mockGamePlayByPlay(2025021057).plays.find(play => play.eventId === 58);
+    playByPlay.plays.push(
+        {...shot, periodDescriptor: playByPlay.plays[0].periodDescriptor, timeInPeriod: '02:10'},
+        {...shot, periodDescriptor: playByPlay.plays[0].periodDescriptor, timeInPeriod: '02:40'},
+        {...blocked, periodDescriptor: playByPlay.plays[0].periodDescriptor, timeInPeriod: '02:50'});
+    show(playByPlay);
+
+    point(3);
+    waitForMinuteTooltip();
+    expect(minuteTooltipText()).toEqual(['1st · 2:00–3:00', '1 goal +9', '2 shots · 1 blocked +18']);
+    const logos = Array.from<HTMLElement & {src: string}>(minuteTooltip().querySelectorAll('.team-logo'));
+    expect(logos.map(logo => logo.src))
+        .toEqual([NhlTeamLogoUtils.getTeamPrimaryLogo(52), NhlTeamLogoUtils.getTeamPrimaryLogo(19)]);
+    endFakeAsync();
+  }));
+
+  it('should say when a minute has no shot attempts', fakeAsync(() => {
+    show(withPlays(2025021057, [80]));
+    // 10:00–11:00 of the 2nd
+    point(31);
+    waitForMinuteTooltip();
+    expect(minuteTooltipText()).toEqual(['2nd · 10:00–11:00', 'No shot attempts']);
+    endFakeAsync();
+  }));
+
+  it('should mark the hovered minute\'s point with a dot while its tooltip is open', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    (['line', 'bar'] as MomentumChartView[]).forEach(view => {
+      component.setChartView(view);
+      point(10);
+      expect(minuteDot()).toBeNull();
+      waitForMinuteTooltip();
+      const dot = minuteDot().getBoundingClientRect();
+      const chartRect = canvas().getBoundingClientRect();
+      const chart = Chart.getChart(canvas());
+      expect(dot.left + dot.width / 2 - chartRect.left).toBeCloseTo(chart.scales['x'].getPixelForValue(10), 0);
+      expect(dot.top + dot.height / 2 - chartRect.top)
+          .toBeCloseTo(chart.scales['y'].getPixelForValue(component.momentumData[10]), 0);
+      canvas().dispatchEvent(new PointerEvent('pointerleave'));
+      fixture.detectChanges();
+      expect(minuteDot()).toBeNull();
+    });
+    endFakeAsync();
+  }));
+
+  it('should label the overtime\'s minutes', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025020952));
+    point(63);
+    waitForMinuteTooltip();
+    expect(minuteTooltipText()[0]).toBe('OT · 2:00–3:00');
+    endFakeAsync();
+  }));
+
+  it('should not explain the start of the game, which ends no minute', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    expect(component.getMomentumMinute(0)).toBeUndefined();
+    expect(component.getMomentumMinute(60).label).toBe('3rd · 19:00–20:00');
+    endFakeAsync();
+  }));
+
+  it('should follow the pointer to the next minute right away once open', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    point(10);
+    waitForMinuteTooltip();
+    point(11);
+    expect(minuteTooltipText()[0]).toBe('1st · 10:00–11:00');
+    endFakeAsync();
+  }));
+
+  it('should cancel the minute tooltip when the pointer leaves the chart', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    point(10);
+    canvas().dispatchEvent(new PointerEvent('pointerleave'));
+    waitForMinuteTooltip();
+    expect(minuteTooltip()).toBeNull();
+
+    point(10);
+    waitForMinuteTooltip();
+    expect(minuteTooltip()).not.toBeNull();
+    canvas().dispatchEvent(new PointerEvent('pointerleave'));
+    fixture.detectChanges();
+    expect(minuteTooltip()).toBeNull();
+    endFakeAsync();
+  }));
+
+  it('should restart the delay when the pointer moves to another minute before it opens', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    point(10);
+    tick(MomentumComponent.minuteTooltipDelay - 100);
+    point(12);
+    tick(100);
+    fixture.detectChanges();
+    expect(minuteTooltip()).toBeNull();
+    tick(MomentumComponent.minuteTooltipDelay - 100);
+    fixture.detectChanges();
+    expect(minuteTooltipText()[0]).toBe('1st · 11:00–12:00');
+    endFakeAsync();
+  }));
+
+  it('should show the goal tooltip instead of the minute tooltip over a goal', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    point(3);
+    waitForMinuteTooltip();
+    expect(minuteTooltip()).not.toBeNull();
+    // The goal's puck already marks the point
+    expect(minuteDot()).toBeNull();
+    hover(3);
+    expect(tooltip()).not.toBeNull();
+    expect(minuteTooltip()).toBeNull();
+    expect(minuteDot()).toBeNull();
+    endFakeAsync();
+  }));
+
+  it('should center the minute tooltip right above a dot in the top half, right below one in the bottom half',
+      fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    const momentumChart = Chart.getChart(canvas());
+    // Mid-game minutes, away from the screen's sides: one with WPG (home) momentum, one with STL (away) momentum
+    const midGame = component.momentumData.map((value, index) => ({value, index})).slice(25, 36);
+    const homeIndex = midGame.find(item => item.value >= 10).index;
+    const awayIndex = midGame.find(item => item.value <= -10).index;
+    [homeIndex, awayIndex].forEach(index => {
+      point(index);
+      waitForMinuteTooltip();
+      const rect = minuteTooltip().getBoundingClientRect();
+      const dot = minuteDot().getBoundingClientRect();
+      const dotX = dot.left + dot.width / 2;
+      const dotY = dot.top + dot.height / 2;
+      expect(rect.left + rect.width / 2).toBeCloseTo(dotX, 0);
+      if (dotY - canvas().getBoundingClientRect().top < momentumChart.height / 2) {
+        expect(index).toBe(homeIndex);
+        expect(rect.bottom).toBeCloseTo(dotY - 8, 0);
+      } else {
+        expect(index).toBe(awayIndex);
+        expect(rect.top).toBeCloseTo(dotY + 8, 0);
+      }
+      canvas().dispatchEvent(new PointerEvent('pointerleave'));
+    });
+    endFakeAsync();
+  }));
+
+  it('should shift the minute tooltip to stay on screen', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    point(1);
+    waitForMinuteTooltip();
+    // Moved past the screen's left side, as on a phone
+    canvas().parentElement.style.marginLeft = '-200px';
+    fixture.detectChanges();
+    expect(minuteTooltip().getBoundingClientRect().left).toBeCloseTo(8, 0);
+    canvas().parentElement.style.marginLeft = '';
+    endFakeAsync();
+  }));
+
+  it('should close the minute tooltip when switching views', fakeAsync(() => {
+    show(mockGamePlayByPlay(2025021057));
+    point(10);
+    waitForMinuteTooltip();
+    toggleButton('Bar chart').click();
+    fixture.detectChanges();
+    expect(minuteTooltip()).toBeNull();
+
+    point(10);
+    waitForMinuteTooltip();
+    expect(minuteTooltipText()[0]).toBe('1st · 9:00–10:00');
+    endFakeAsync();
+  }));
 
   it('should switch back to the line view and keep one chart on the canvas', () => {
     show(mockGamePlayByPlay(2025021057));
