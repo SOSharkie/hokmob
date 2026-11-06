@@ -58,6 +58,32 @@ describe('AppComponent', () => {
     expect(history.classList).toContain('selected');
   });
 
+  it('should select Standings with a standings type in the URL, and not on another page', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const standings = fixture.nativeElement.querySelector('#playoffs-item') as HTMLElement;
+    for (const url of ['/standings', '/standings?standingsType=byDivision']) {
+      fixture.componentInstance.menuUrl = url;
+      fixture.detectChanges();
+      expect(standings.classList).withContext(url).toContain('selected');
+    }
+
+    fixture.componentInstance.menuUrl = '/history';
+    fixture.detectChanges();
+    expect(standings.classList).not.toContain('selected');
+  });
+
+  it('should select History with a season in the URL, and not on another page', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const history = fixture.nativeElement.querySelector('#history-item') as HTMLElement;
+    fixture.componentInstance.menuUrl = '/history?season=20252026';
+    fixture.detectChanges();
+    expect(history.classList).toContain('selected');
+
+    fixture.componentInstance.menuUrl = '/standings';
+    fixture.detectChanges();
+    expect(history.classList).not.toContain('selected');
+  });
+
   it('should select Stats on the stats page, with a game type, and on a category table', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const stats = fixture.nativeElement.querySelector('#stats-item') as HTMLElement;

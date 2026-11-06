@@ -8,7 +8,7 @@
       <mat-icon svgIcon="lucide:calendar-days"></mat-icon>
       <span>Games</span>
     </div>
-    <div id="playoffs-item" class="menu-item" [ngClass]="{selected : menuUrl === '/standings'}" [routerLink]="['/standings']">
+    <div id="playoffs-item" class="menu-item" [ngClass]="{selected : isStandingsSelected}" [routerLink]="['/standings']">
       <mat-icon svgIcon="lucide:list-ordered"></mat-icon>
       <span>Standings</span>
     </div>
@@ -16,7 +16,7 @@
       <mat-icon svgIcon="lucide:chart-no-axes-column"></mat-icon>
       <span>Stats</span>
     </div>
-    <div id="history-item" class="menu-item" [ngClass]="{selected : menuUrl === '/history'}" [routerLink]="['/history']">
+    <div id="history-item" class="menu-item" [ngClass]="{selected : isHistorySelected}" [routerLink]="['/history']">
       <mat-icon svgIcon="lucide:history"></mat-icon>
       <span>History</span>
     </div>

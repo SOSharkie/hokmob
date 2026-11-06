@@ -104,4 +104,20 @@ describe('BestGamesComponent', () => {
     expect(rowElements().length).toBe(0);
     expect(fixture.nativeElement.querySelector('.list-message').textContent.trim()).toBe('No games');
   });
+
+  it('should show the position it is given', () => {
+    fixture.componentRef.setInput('ratedSeason', ratedSeason);
+    fixture.componentRef.setInput('position', 'G');
+    fixture.detectChanges();
+    expect(component.rows.length).toBeGreaterThan(0);
+    expect(component.rows.every(row => row.position === 'G')).toBeTrue();
+  });
+
+  it('should say when another position is picked', () => {
+    fixture.componentRef.setInput('ratedSeason', ratedSeason);
+    fixture.detectChanges();
+    const positionChange = spyOn(component.positionChange, 'emit');
+    component.selectPosition('D');
+    expect(positionChange).toHaveBeenCalledOnceWith('D');
+  });
 });
