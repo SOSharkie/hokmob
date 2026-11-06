@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output} from '@angular/core';
 import * as dayjs from "dayjs";
 import {PositionGroup, RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
@@ -48,7 +48,11 @@ export class BestGamesComponent implements OnChanges {
   public ratedSeason: RatedSeason;
 
   /** The position group shown, or null for every position. */
+  @Input()
   public position: PositionGroup = null;
+
+  @Output()
+  public positionChange = new EventEmitter<PositionGroup>();
 
   public rows: BestGameRow[] = [];
 
@@ -59,6 +63,7 @@ export class BestGamesComponent implements OnChanges {
   public selectPosition(position: PositionGroup): void {
     this.position = position;
     this.buildRows();
+    this.positionChange.emit(position);
   }
 
   public showBlankHeadshot(event: Event): void {

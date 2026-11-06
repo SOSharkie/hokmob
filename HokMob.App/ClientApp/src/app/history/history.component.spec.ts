@@ -1,5 +1,7 @@
 import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
+import {Location} from '@angular/common';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {HttpTestingController} from '@angular/common/http/testing';
 import {ActivatedRoute, convertToParamMap, ParamMap, Params, Router} from '@angular/router';
 import {BehaviorSubject} from 'rxjs';
@@ -198,6 +200,96 @@ describe('HistoryComponent', () => {
       fixture.destroy();
       queryParams.next(convertToParamMap({season: '20252026'}));
       httpMock.expectNone(finishedSeasonUrl);
+    });
+  });
+
+  describe('the filters in the URL', () => {
+    /** Answers the page's season request, with the URL the page reads its filters' siblings from. */
+    async function openWithUrl(url: string, params: Params = {}): Promise<jasmine.Spy> {
+      const location = TestBed.inject(Location);
+      spyOn(location, 'path').and.returnValue(url);
+      spyOn(location, 'getState').and.returnValue({ɵrouterPageId: 4});
+      const replaceState = spyOn(location, 'replaceState');
+      open(params);
+      await respond(mockSeasonHistory(), undefined, params['season'] ? finishedSeasonUrl : historyUrl);
+      return replaceState;
+    }
+
+    function card(selector: string): any {
+      return element(selector);
+    }
+
+    /** Changes a card's filter, the way the card does. */
+    function changeFilter(selector: string, output: string, value: unknown): void {
+      fixture.debugElement.query(By.css(selector)).triggerEventHandler(output, value);
+      fixture.detectChanges();
+    }
+
+    it('should give the cards their defaults without any', async () => {
+      await openWithUrl('/history');
+      expect(card('app-rating-distribution').position).toBe('F');
+      expect(card('app-average-rating-leaders').position).toBeNull();
+      expect(card('app-average-rating-leaders').teamId).toBeNull();
+      expect(card('app-best-games').position).toBeNull();
+    });
+
+    it('should give the cards the filters in the URL, so a reload keeps them', async () => {
+      await openWithUrl('/history', {distribution: 'G', leaders: 'D', team: '59', best: 'F'});
+      expect(card('app-rating-distribution').position).toBe('G');
+      expect(card('app-average-rating-leaders').position).toBe('D');
+      expect(card('app-average-rating-leaders').teamId).toBe(59);
+      expect(card('app-best-games').position).toBe('F');
+    });
+
+    it('should use the defaults for filters it doesn\'t know', async () => {
+      await openWithUrl('/history', {distribution: 'X', leaders: 'all', team: 'abc', best: 'g'});
+      expect(card('app-rating-distribution').position).toBe('F');
+      expect(card('app-average-rating-leaders').position).toBeNull();
+      expect(card('app-average-rating-leaders').teamId).toBeNull();
+      expect(card('app-best-games').position).toBeNull();
+    });
+
+    it('should save a filter without the router, keeping the season and the history state', async () => {
+      const replaceState = await openWithUrl('/history?season=20252026', {season: '20252026'});
+      changeFilter('app-average-rating-leaders', 'teamIdChange', 59);
+      expect(replaceState).toHaveBeenCalledOnceWith('/history', 'season=20252026&team=59', {ɵrouterPageId: 4});
+      expect(navigate).not.toHaveBeenCalled();
+      expect(card('app-average-rating-leaders').teamId).toBe(59);
+    });
+
+    it('should save every card\'s filter', async () => {
+      const replaceState = await openWithUrl('/history');
+      changeFilter('app-rating-distribution', 'positionChange', 'D');
+      expect(replaceState.calls.mostRecent().args[1]).toBe('distribution=D');
+      changeFilter('app-average-rating-leaders', 'positionChange', 'G');
+      expect(replaceState.calls.mostRecent().args[1]).toBe('distribution=D&leaders=G');
+      changeFilter('app-best-games', 'positionChange', 'F');
+      expect(replaceState.calls.mostRecent().args[1]).toBe('distribution=D&leaders=G&best=F');
+    });
+
+    it('should take a filter back to its default out of the URL', async () => {
+      const replaceState = await openWithUrl('/history?distribution=D&team=59&best=F',
+          {distribution: 'D', team: '59', best: 'F'});
+      changeFilter('app-rating-distribution', 'positionChange', 'F');
+      changeFilter('app-average-rating-leaders', 'teamIdChange', null);
+      changeFilter('app-best-games', 'positionChange', null);
+      expect(replaceState.calls.mostRecent().args.slice(0, 2)).toEqual(['/history', '']);
+    });
+
+    it('should clear the filters when another season is picked', async () => {
+      await openWithUrl('/history', {team: '59', best: 'F'});
+      component.selectSeason(finishedSeason);
+      await respond(mockSeasonHistory(), undefined, finishedSeasonUrl);
+      expect(card('app-average-rating-leaders').teamId).toBeNull();
+      expect(card('app-best-games').position).toBeNull();
+    });
+
+    it('should follow the back button to a URL with other filters of the same season', async () => {
+      await openWithUrl('/history', {best: 'F'});
+      queryParams.next(convertToParamMap({best: 'G'}));
+      fixture.detectChanges();
+      expect(card('app-best-games').position).toBe('G');
+      expect(component.isLoading).toBeFalse();
     });
   });
 

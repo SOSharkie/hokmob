@@ -25,10 +25,16 @@
     <span>The season couldn't be loaded</span>
   </div>
   <ng-container *ngIf="ratedSeason">
-    <app-rating-distribution class="history-section" [ratedGames]="ratedSeason.ratedGames"></app-rating-distribution>
+    <app-rating-distribution class="history-section" [ratedGames]="ratedSeason.ratedGames"
+                             [position]="distributionPosition"
+                             (positionChange)="distributionPosition = $event; saveFilters()"></app-rating-distribution>
     <div class="history-columns">
-      <app-average-rating-leaders [ratedSeason]="ratedSeason" [minGames]="minGames"></app-average-rating-leaders>
-      <app-best-games [ratedSeason]="ratedSeason"></app-best-games>
+      <app-average-rating-leaders [ratedSeason]="ratedSeason" [minGames]="minGames" [position]="leadersPosition"
+                                  [teamId]="leadersTeamId"
+                                  (positionChange)="leadersPosition = $event; saveFilters()"
+                                  (teamIdChange)="leadersTeamId = $event; saveFilters()"></app-average-rating-leaders>
+      <app-best-games [ratedSeason]="ratedSeason" [position]="bestGamesPosition"
+                      (positionChange)="bestGamesPosition = $event; saveFilters()"></app-best-games>
     </div>
   </ng-container>
 </div>

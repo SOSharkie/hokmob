@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output} from '@angular/core';
 import {PositionGroup, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
@@ -54,10 +54,18 @@ export class AverageRatingLeadersComponent implements OnChanges {
   public minGames: number = AverageRatingLeadersComponent.defaultMinGames;
 
   /** The position group shown, or null for every position. */
+  @Input()
   public position: PositionGroup = null;
 
-  /** The team shown, or null for every team. */
+  /** The team shown, or null for every team. A team without a game in the season shows every team. */
+  @Input()
   public teamId: number = null;
+
+  @Output()
+  public positionChange = new EventEmitter<PositionGroup>();
+
+  @Output()
+  public teamIdChange = new EventEmitter<number>();
 
   /** The season's teams, by name. */
   public teamOptions: TeamOption[] = [];
@@ -82,6 +90,7 @@ export class AverageRatingLeadersComponent implements OnChanges {
   public selectPosition(position: PositionGroup): void {
     this.position = position;
     this.buildRows();
+    this.positionChange.emit(position);
   }
 
   /**
@@ -90,6 +99,7 @@ export class AverageRatingLeadersComponent implements OnChanges {
   public selectTeam(teamId: number): void {
     this.teamId = teamId;
     this.buildRows();
+    this.teamIdChange.emit(teamId);
   }
 
   /**

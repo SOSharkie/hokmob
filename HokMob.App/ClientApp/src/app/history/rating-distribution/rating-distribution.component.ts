@@ -1,4 +1,14 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  ViewChild
+} from '@angular/core';
 import {Chart, Plugin, registerables, TooltipItem} from 'chart.js';
 import {PositionGroup, RatedGame} from "@shared/models/nhl-history/season-history.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
@@ -23,7 +33,12 @@ export class RatingDistributionComponent implements OnChanges, AfterViewInit, On
   @Input()
   public ratedGames: RatedGame[];
 
+  /** The position group shown. */
+  @Input()
   public position: PositionGroup = "F";
+
+  @Output()
+  public positionChange = new EventEmitter<PositionGroup>();
 
   public distribution: RatingDistribution = SeasonRatingStatsUtils.getDistribution([], "F");
 
@@ -78,6 +93,7 @@ export class RatingDistributionComponent implements OnChanges, AfterViewInit, On
     this.position = position;
     this.buildDistribution();
     this.updateChart();
+    this.positionChange.emit(position);
   }
 
   private buildDistribution(): void {

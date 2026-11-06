@@ -8,7 +8,7 @@
       <mat-icon svgIcon="lucide:calendar-days"></mat-icon>
       <span>Games</span>
     </div>
-    <div id="playoffs-item" class="menu-item" [ngClass]="{selected : menuUrl === '/standings'}" [routerLink]="['/standings']">
+    <div id="playoffs-item" class="menu-item" [ngClass]="{selected : isStandingsSelected}" [routerLink]="['/standings']">
       <mat-icon svgIcon="lucide:list-ordered"></mat-icon>
       <span>Standings</span>
     </div>

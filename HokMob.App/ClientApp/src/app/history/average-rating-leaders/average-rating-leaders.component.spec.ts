@@ -134,4 +134,32 @@ describe('AverageRatingLeadersComponent', () => {
     expect(component.teamOptions).toEqual([]);
     expect(fixture.nativeElement.querySelector('.list-message')).not.toBeNull();
   });
+
+  it('should show the position and team it is given', () => {
+    fixture.componentRef.setInput('position', 'G');
+    fixture.componentRef.setInput('teamId', 6);
+    show(1);
+    expect(component.selectedTeamName).toBe('Boston Bruins');
+    expect(component.rows.length).toBeGreaterThan(0);
+    expect(component.rows.every(row => row.position === 'G' && row.teamId === 6)).toBeTrue();
+  });
+
+  it('should show every team for a team without a game in the season', () => {
+    fixture.componentRef.setInput('teamId', 59);
+    show(1);
+    expect(component.teamId).toBeNull();
+    expect(component.selectedTeamName).toBe('All teams');
+    expect(component.rows.length).toBeGreaterThan(0);
+  });
+
+  it('should say when another position or team is picked', () => {
+    show(1);
+    const positionChange = spyOn(component.positionChange, 'emit');
+    const teamIdChange = spyOn(component.teamIdChange, 'emit');
+    component.selectPosition('D');
+    component.selectTeam(54);
+    component.selectTeam(null);
+    expect(positionChange).toHaveBeenCalledOnceWith('D');
+    expect(teamIdChange.calls.allArgs()).toEqual([[54], [null]]);
+  });
 });

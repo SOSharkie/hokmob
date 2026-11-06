@@ -268,7 +268,11 @@ ratings, so a formula change shows up on the history page without regenerating i
   `20262027-2.json` runs through 2026-11-05: 261 games, 823 players, 9,395 skater rows and 549 goalie rows, 582 KB
   (112 KB gzipped).
 - **URL:** the picked season is a query parameter, `/history?season=20252026`, with `&gameType=3` for a playoffs file. Plain
-  `/history`, or a season the page doesn't have, shows the newest season.
+  `/history`, or a season the page doesn't have, shows the newest season. The cards' filters are query parameters too:
+  `distribution`, `leaders` and `best` (`F`, `D` or `G`) and `team` (the leaderboard's team ID), left out at their
+  defaults. They're written with `Location.replaceState` rather than the router, which would scroll to the top of the page
+  (`AppComponent` does on every router event) and add a history entry per click, and with the history state kept, because
+  `RouterExtensionService` and the scroll restoration read the router's page ID from it. Picking a season clears them.
 - **Seasons so far:** 2024-25 and 2025-26 (finished) and 2026-27 (in progress). 2024-25 has the same shape as 2025-26:
   1,312 games, 1,023 players, 47,224 skater rows and 2,764 goalie rows, 2.87 MB (492 KB gzipped). Its Utah is the Utah
   Hockey Club, team ID 59, not the Mammoth's 68. It's a former team in `NhlTeamUtils`, with the same `UTA` abbreviation

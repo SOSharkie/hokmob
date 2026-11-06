@@ -116,4 +116,21 @@ describe('RatingDistributionComponent', () => {
     fixture.destroy();
     expect(Chart.getChart(canvas)).toBeUndefined();
   });
+
+  it('should show the position it is given', () => {
+    fixture.componentRef.setInput('ratedGames', ratedGames());
+    fixture.componentRef.setInput('position', 'G');
+    fixture.detectChanges();
+    expect(component.distribution.total).toBe(15);
+  });
+
+  it('should say when another position is picked, and not for the one shown', () => {
+    fixture.componentRef.setInput('ratedGames', ratedGames());
+    fixture.detectChanges();
+    const positionChange = spyOn(component.positionChange, 'emit');
+    component.selectPosition('F');
+    expect(positionChange).not.toHaveBeenCalled();
+    component.selectPosition('D');
+    expect(positionChange).toHaveBeenCalledOnceWith('D');
+  });
 });
