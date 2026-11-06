@@ -267,6 +267,8 @@ ratings, so a formula change shows up on the history page without regenerating i
   games any team has played (`SeasonRatingStatsUtils.getMinGames`): 5 games when the most is 18.
   `20262027-2.json` runs through 2026-11-05: 261 games, 823 players, 9,395 skater rows and 549 goalie rows, 582 KB
   (112 KB gzipped).
+- **URL:** the picked season is a query parameter, `/history?season=20252026`, with `&gameType=3` for a playoffs file. Plain
+  `/history`, or a season the page doesn't have, shows the newest season.
 - **Seasons so far:** 2024-25 and 2025-26 (finished) and 2026-27 (in progress). 2024-25 has the same shape as 2025-26:
   1,312 games, 1,023 players, 47,224 skater rows and 2,764 goalie rows, 2.87 MB (492 KB gzipped). Its Utah is the Utah
   Hockey Club, team ID 59, not the Mammoth's 68. It's a former team in `NhlTeamUtils`, with the same `UTA` abbreviation

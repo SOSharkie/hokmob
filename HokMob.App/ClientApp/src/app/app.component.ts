@@ -37,6 +37,11 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.menuUrl === '/stats' || this.menuUrl.startsWith('/stats?') || this.menuUrl.startsWith('/stats/');
   }
 
+  /** Whether the history page is open, with or without a season. */
+  public get isHistorySelected(): boolean {
+    return this.menuUrl === '/history' || this.menuUrl.startsWith('/history?');
+  }
+
   /**
    *
    * @param router - The angular router.

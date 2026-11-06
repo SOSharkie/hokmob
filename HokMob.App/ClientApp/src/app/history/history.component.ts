@@ -1,4 +1,6 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute, ParamMap, Router} from "@angular/router";
+import {Subscription} from "rxjs";
 import * as dayjs from "dayjs";
 import {RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {HistorySeasonOption, SeasonHistoryService} from "@shared/services/season-history.service";
@@ -10,18 +12,19 @@ import {SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
 /**
  * The history page (`/history`): season-wide HokMob rating charts of a season, from the season's preloaded stat lines
  * (SeasonHistoryService), rated with the same formulas as the game and player pages. The season picker lists every
- * season with a file in src/assets/history. A season in progress says how far its file goes.
+ * season with a file in src/assets/history, and the picked season is a query parameter, like `?season=20252026`, so a
+ * reload or a shared link keeps it. A season in progress says how far its file goes.
  */
 @Component({
   selector: 'app-history',
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss']
 })
-export class HistoryComponent implements OnInit {
+export class HistoryComponent implements OnInit, OnDestroy {
 
   public readonly seasonOptions: HistorySeasonOption[] = SeasonHistoryService.seasons;
 
-  public selectedSeason: HistorySeasonOption = SeasonHistoryService.seasons[0];
+  public selectedSeason: HistorySeasonOption;
 
   public ratedSeason: RatedSeason;
 
@@ -35,7 +38,11 @@ export class HistoryComponent implements OnInit {
   /** Counts the loads, so a season picked before the last one can't replace it. */
   private loadId: number = 0;
 
-  constructor(private seasonHistoryService: SeasonHistoryService) {
+  private queryParamSubscription: Subscription;
+
+  constructor(private seasonHistoryService: SeasonHistoryService,
+              private activatedRoute: ActivatedRoute,
+              private router: Router) {
   }
 
   /**
@@ -46,8 +53,21 @@ export class HistoryComponent implements OnInit {
     return throughDate ? "Season in progress, through " + dayjs(throughDate).format("MMMM D") : null;
   }
 
+  /**
+   * Loads the season in the query parameters, and again whenever they change to another season.
+   */
   public ngOnInit(): void {
-    this.loadSeason(this.selectedSeason);
+    this.queryParamSubscription = this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
+      const option = this.parseSeason(params);
+      if (!this.isSelected(option)) {
+        this.selectedSeason = option;
+        this.loadSeason(option);
+      }
+    });
+  }
+
+  public ngOnDestroy(): void {
+    this.queryParamSubscription?.unsubscribe();
   }
 
   /**
@@ -64,10 +84,14 @@ export class HistoryComponent implements OnInit {
     return option.season === this.selectedSeason?.season && option.gameType === this.selectedSeason?.gameType;
   }
 
+  /**
+   * Shows another season. The season is a query parameter, so it's loaded by the query parameter subscription rather
+   * than here. The game type is left out for the regular season.
+   */
   public selectSeason(option: HistorySeasonOption): void {
     if (!this.isSelected(option)) {
-      this.selectedSeason = option;
-      this.loadSeason(option);
+      const gameType = option.gameType === NhlGameTypeEnum.REGULAR_SEASON ? {} : {gameType: option.gameType};
+      this.router.navigate([], {relativeTo: this.activatedRoute, queryParams: {season: option.season, ...gameType}});
     }
   }
 
@@ -76,6 +100,16 @@ export class HistoryComponent implements OnInit {
    */
   public scrollToSelectedSeason(): void {
     PickerMenuUtils.scrollToSelectedOption("season-menu");
+  }
+
+  /**
+   * The season of the query parameters, or the newest one without them or when the page doesn't have that season.
+   */
+  private parseSeason(params: ParamMap): HistorySeasonOption {
+    const season = Number(params.get("season"));
+    const gameType = Number(params.get("gameType") ?? NhlGameTypeEnum.REGULAR_SEASON);
+    return this.seasonOptions.find(option => option.season === season && option.gameType === gameType) ??
+        this.seasonOptions[0];
   }
 
   private loadSeason(option: HistorySeasonOption): void {
