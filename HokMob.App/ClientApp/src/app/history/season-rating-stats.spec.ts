@@ -1,7 +1,7 @@
 import {SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
 import {SeasonHistoryService} from "@shared/services/season-history.service";
-import {mockSeasonHistory} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
-import {RatedGame} from "@shared/models/nhl-history/season-history.model";
+import {derivedSeasonHistoryInProgress, mockSeasonHistory} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 
 describe('SeasonRatingStatsUtils', () => {
 
@@ -81,6 +81,39 @@ describe('SeasonRatingStatsUtils', () => {
         expect(distribution.median).toBe(0);
         expect(distribution.greenShare).toBe(0);
       });
+    });
+  });
+
+  describe('getMinGames', () => {
+    /** The 7 game fixture in progress, with its games repeated. Carolina has 3 of the 7, the most of any team. */
+    function seasonInProgress(repeats: number): RatedSeason {
+      const ratedSeason = SeasonHistoryService.rateSeason(derivedSeasonHistoryInProgress());
+      return {...ratedSeason, games: Array.from({length: repeats}, () => ratedSeason.games).flat()};
+    }
+
+    it('should need 20 games in a finished season, however few it has', () => {
+      expect(SeasonRatingStatsUtils.getMinGames(SeasonHistoryService.rateSeason(mockSeasonHistory()))).toBe(20);
+    });
+
+    it('should need 20 games before a season has loaded', () => {
+      expect(SeasonRatingStatsUtils.getMinGames(undefined)).toBe(20);
+    });
+
+    it('should need the same share of the games played so far in a season in progress', () => {
+      // 18 games, the most of any team on 2026-11-05: 18 * 20 / 82 = 4.4
+      expect(SeasonRatingStatsUtils.getMinGames(seasonInProgress(6))).toBe(5);
+      // 42 games, the middle of the season: 42 * 20 / 82 = 10.2
+      expect(SeasonRatingStatsUtils.getMinGames(seasonInProgress(14))).toBe(11);
+    });
+
+    it('should need at least 1 game, even without any', () => {
+      expect(SeasonRatingStatsUtils.getMinGames(seasonInProgress(1))).toBe(1);
+      expect(SeasonRatingStatsUtils.getMinGames(seasonInProgress(0))).toBe(1);
+    });
+
+    it('should need no more than 20 games at the end of a season', () => {
+      expect(SeasonRatingStatsUtils.getMinGames(seasonInProgress(27))).toBe(20);
+      expect(SeasonRatingStatsUtils.getMinGames(seasonInProgress(30))).toBe(20);
     });
   });
 

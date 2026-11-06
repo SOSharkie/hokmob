@@ -1,14 +1,16 @@
 import {Component, OnInit} from '@angular/core';
+import * as dayjs from "dayjs";
 import {RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {HistorySeasonOption, SeasonHistoryService} from "@shared/services/season-history.service";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {PickerMenuUtils} from "@shared/utils/picker-menu-utils";
+import {SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
 
 /**
- * The history page (`/history`): season-wide HokMob rating charts of a finished season, from the season's preloaded
- * stat lines (SeasonHistoryService), rated with the same formulas as the game and player pages. The season picker lists
- * every season with a file in src/assets/history.
+ * The history page (`/history`): season-wide HokMob rating charts of a season, from the season's preloaded stat lines
+ * (SeasonHistoryService), rated with the same formulas as the game and player pages. The season picker lists every
+ * season with a file in src/assets/history. A season in progress says how far its file goes.
  */
 @Component({
   selector: 'app-history',
@@ -23,6 +25,9 @@ export class HistoryComponent implements OnInit {
 
   public ratedSeason: RatedSeason;
 
+  /** The fewest games a player needs on the leaderboard of the season shown. */
+  public minGames: number = SeasonRatingStatsUtils.fullSeasonMinGames;
+
   public isLoading: boolean = false;
 
   public hasError: boolean = false;
@@ -31,6 +36,14 @@ export class HistoryComponent implements OnInit {
   private loadId: number = 0;
 
   constructor(private seasonHistoryService: SeasonHistoryService) {
+  }
+
+  /**
+   * How far a season in progress goes, like "Season in progress, through November 5", or null for a finished season.
+   */
+  public get progressNote(): string {
+    const throughDate = this.ratedSeason?.throughDate;
+    return throughDate ? "Season in progress, through " + dayjs(throughDate).format("MMMM D") : null;
   }
 
   public ngOnInit(): void {
@@ -73,6 +86,7 @@ export class HistoryComponent implements OnInit {
     this.seasonHistoryService.getSeasonHistory(option.season, option.gameType).then(ratedSeason => {
       if (loadId === this.loadId) {
         this.ratedSeason = ratedSeason;
+        this.minGames = SeasonRatingStatsUtils.getMinGames(ratedSeason);
         this.isLoading = false;
       }
     }).catch(() => {

@@ -5,6 +5,7 @@ describe('NhlTeamColorUtils', () => {
   describe('getTeamPrimaryColor', () => {
     it('should return team colors, including Utah', () => {
       expect(NhlTeamColorUtils.getTeamPrimaryColor(68)).toBe('#6CACE4');
+      expect(NhlTeamColorUtils.getTeamPrimaryColor(59)).toBe('#6CACE4');
       expect(NhlTeamColorUtils.getTeamPrimaryColor(54)).toBe('#B4975A');
     });
 

@@ -2,7 +2,7 @@ import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {HttpTestingController} from '@angular/common/http/testing';
 import {AppTestingModule} from '@shared/testing/app-testing.module';
-import {mockSeasonHistory} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {derivedSeasonHistoryInProgress, mockSeasonHistory} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {RatedSeason} from '@shared/models/nhl-history/season-history.model';
 import {SeasonHistoryService} from '@shared/services/season-history.service';
 
@@ -13,7 +13,7 @@ describe('HistoryComponent', () => {
   let fixture: ComponentFixture<HistoryComponent>;
   let httpMock: HttpTestingController;
 
-  const historyUrl = 'assets/history/20252026-2.json';
+  const historyUrl = 'assets/history/20262027-2.json';
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -65,9 +65,41 @@ describe('HistoryComponent', () => {
   it('should show the season in the picker', async () => {
     await respond(mockSeasonHistory());
     const picker = element('.season-picker');
-    expect(picker.textContent.trim()).toBe('2025-26 Regular Season');
-    expect(picker.getAttribute('aria-label')).toBe('Season, 2025-26 Regular Season');
+    expect(picker.textContent.trim()).toBe('2026-27 Regular Season');
+    expect(picker.getAttribute('aria-label')).toBe('Season, 2026-27 Regular Season');
     expect(component.getSeasonLabel({season: 20262027, gameType: 3})).toBe('2026-27 Playoffs');
+  });
+
+  it('should say how far a season in progress goes', async () => {
+    expect(element('.history-progress')).toBeNull();
+    await respond(derivedSeasonHistoryInProgress());
+    expect(element('.history-progress').textContent.trim()).toBe('Season in progress, through April 14');
+  });
+
+  it('should not call a finished season in progress', async () => {
+    await respond(mockSeasonHistory());
+    expect(element('.history-progress')).toBeNull();
+  });
+
+  it('should lower the leaderboard\'s minimum games for a season in progress', async () => {
+    await respond(derivedSeasonHistoryInProgress());
+    expect((element('app-average-rating-leaders') as any).minGames).toBe(1);
+  });
+
+  it('should keep the leaderboard\'s minimum games for a finished season', async () => {
+    await respond(mockSeasonHistory());
+    expect((element('app-average-rating-leaders') as any).minGames).toBe(20);
+  });
+
+  it('should go back to a finished season\'s note and minimum after a season in progress', async () => {
+    await respond(derivedSeasonHistoryInProgress());
+
+    component.selectSeason({season: 20252026, gameType: 2});
+    httpMock.expectOne('assets/history/20252026-2.json').flush(mockSeasonHistory());
+    await new Promise(resolve => setTimeout(resolve));
+    fixture.detectChanges();
+    expect(element('.history-progress')).toBeNull();
+    expect((element('app-average-rating-leaders') as any).minGames).toBe(20);
   });
 
   it('should show an empty state instead of the charts when the season can\'t be loaded', async () => {
@@ -100,7 +132,7 @@ describe('HistoryComponent', () => {
 
   it('should not reload the season already shown', async () => {
     await respond(mockSeasonHistory());
-    component.selectSeason({season: 20252026, gameType: 2});
+    component.selectSeason({season: 20262027, gameType: 2});
     httpMock.expectNone(historyUrl);
     expect(component.isLoading).toBeFalse();
   });

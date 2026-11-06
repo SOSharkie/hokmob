@@ -3,9 +3,10 @@
     <div class="history-heading">
       <h1 class="history-title">History</h1>
       <p class="history-lead">
-        Every HokMob rating of a finished season, from each player's stat line in every game, rated with the same
-        formula as the game and player pages.
+        Every HokMob rating of a season, from each player's stat line in every game, rated with the same formula as
+        the game and player pages.
       </p>
+      <p *ngIf="progressNote" class="history-progress">{{progressNote}}</p>
     </div>
     <button type="button" class="pill-picker season-picker"
             [attr.aria-label]="'Season, ' + getSeasonLabel(selectedSeason)"
@@ -26,7 +27,7 @@
   <ng-container *ngIf="ratedSeason">
     <app-rating-distribution class="history-section" [ratedGames]="ratedSeason.ratedGames"></app-rating-distribution>
     <div class="history-columns">
-      <app-average-rating-leaders [ratedSeason]="ratedSeason"></app-average-rating-leaders>
+      <app-average-rating-leaders [ratedSeason]="ratedSeason" [minGames]="minGames"></app-average-rating-leaders>
       <app-best-games [ratedSeason]="ratedSeason"></app-best-games>
     </div>
   </ng-container>

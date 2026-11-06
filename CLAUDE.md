@@ -54,7 +54,7 @@ A request to one of them is a regression.
 - Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`
   (the leaderboards, and each category's top 25 table at `/stats/{category}`),
   `draft`, `ratings` (the HokMob rating explorer, which a game's player dialog can open on a player's stat line),
-  `history` (season-wide rating charts of a finished season, rated in the browser from a preloaded file), `header`,
+  `history` (season-wide rating charts of a season, rated in the browser from a preloaded file), `header`,
   `footer`, `about`.
 - Path aliases: `@shared/*`, `@app/*`, `@home/*`, `@header/*`.
 
@@ -65,7 +65,7 @@ A request to one of them is a regression.
 - Read localized names via `.default` (most api-web names are `{ "default": "Jets", ... }` objects).
 - Team logos, colors and full names come from the utils keyed by team ID (`NhlTeamUtils.getTeam(id)`,
   `NhlTeamLogoUtils.getTeamPrimaryLogo(id)`). Standings rows only have abbreviations: `NhlTeamUtils.getTeamIdByAbbrev`.
-  Utah is ID 68.
+  Utah is ID 68 (59 as the Utah Hockey Club in 2024-25, a former team like Arizona).
 - Game state/type checks: `NhlGameInfoUtils.isFutureGame/isLiveGame/isCompletedGame(gameState)`; period labels:
   `PeriodUtils`; playoff series text: `NhlGameInfoUtils.getSeriesStatusShort`.
 - Components `.catch()` every service promise (the service already logs). Show an empty or fallback state instead of
@@ -172,8 +172,8 @@ Both APIs are public. Save responses to your scratch directory and inspect them 
 - api-web: `curl -sSL -o <scratch>/x.json https://api-web.nhle.com/v1/<path>`
 - Stats API (URL-encode spaces as `%20`): `curl -sSL -o <scratch>/x.json
   "https://api.nhle.com/stats/rest/en/skater/summary?isAggregate=false&isGame=false&cayenneExp=playerId=8477496%20and%20gameTypeId=2"`
-- A finished season's history file: `npm run build-season-data -- 20252026` (from `HokMob.App/ClientApp`), then add
-  the season to `SeasonHistoryService.seasons`. See "History data" in `docs/nhl-api.md`.
+- A season's history file: `npm run build-season-data -- 20252026` (from `HokMob.App/ClientApp`, with `--partial` for
+  a season in progress), then add the season to `SeasonHistoryService.seasons`. See "History data" in `docs/nhl-api.md`.
 - During a live game, `npm run capture-live-fixtures -- --watch` (from `HokMob.App/ClientApp`) saves live responses;
   see "Live game data" in `docs/nhl-api.md`.
 

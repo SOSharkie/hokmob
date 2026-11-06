@@ -1,7 +1,12 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {SeasonHistoryService} from '@shared/services/season-history.service';
-import {mockPlayerStats, MockPlayerStatsId, mockSeasonHistory} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {
+  derivedSeasonHistoryInProgress,
+  mockPlayerStats,
+  MockPlayerStatsId,
+  mockSeasonHistory
+} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {RatedGame, RatedSeason} from '@shared/models/nhl-history/season-history.model';
 import {RecentPlayerGamesComponent} from '@app/player/recent-player-games/recent-player-games.component';
 
@@ -47,6 +52,15 @@ describe('SeasonHistoryService', () => {
     expect(ratedSeason.ratedGames.filter(game => game.position === 'D').length).toBe(84);
     expect(ratedSeason.ratedGames.filter(game => game.position === 'G').length).toBe(15);
     ratedSeason.ratedGames.forEach(game => expect(game.rating).withContext(game.player.name).toBeLessThanOrEqual(10));
+  });
+
+  it('should list the seasons newest first', () => {
+    expect(SeasonHistoryService.seasons.map(option => option.season)).toEqual([20262027, 20252026, 20242025]);
+  });
+
+  it('should keep how far a season in progress goes, which a finished season does not have', () => {
+    expect(SeasonHistoryService.rateSeason(derivedSeasonHistoryInProgress()).throughDate).toBe('2026-04-14');
+    expect(SeasonHistoryService.rateSeason(mockSeasonHistory()).throughDate).toBeUndefined();
   });
 
   it('should default to the regular season', () => {

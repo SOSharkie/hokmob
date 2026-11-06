@@ -3,16 +3,18 @@ import {NhlTeamCustomModel} from "@shared/models/nhl-team.model";
 export class NhlTeamUtils {
 
   /**
-   * All team IDs, including former teams (Arizona, 53) for historical games.
+   * All team IDs, including former teams for historical games. The Utah Hockey Club (59) and the Mammoth (68) share an
+   * abbreviation, and the last one wins in getTeamIdByAbbrev, so 68 has to stay after 59.
    */
   private static readonly teamIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-    26, 28, 29, 30, 52, 53, 54, 55, 68];
+    26, 28, 29, 30, 52, 53, 54, 55, 59, 68];
 
   /**
-   * The ID of Arizona, which moved to Utah (68) after the 2023-24 season. Its games and stats are still in the API,
-   * but it has no current roster, schedule or standings row.
+   * The IDs of Arizona (53), which moved to Utah after the 2023-24 season, and of the Utah Hockey Club (59), which became
+   * the Mammoth (68) after the 2024-25 season. Their games and stats are still in the API, but they have no current
+   * roster, schedule or standings row.
    */
-  private static readonly formerTeamIds = [53];
+  private static readonly formerTeamIds = [53, 59];
 
   private static teamIdsByAbbrev: Map<string, number>;
 
@@ -293,6 +295,14 @@ export class NhlTeamUtils {
           shortName: "Seattle",
           teamName: "Kraken",
           triCode: "SEA"
+        }
+      case 59:
+        return {
+          id: 59,
+          name: "Utah Hockey Club",
+          shortName: "Utah",
+          teamName: "Hockey Club",
+          triCode: "UTA"
         }
       case 68:
         return {

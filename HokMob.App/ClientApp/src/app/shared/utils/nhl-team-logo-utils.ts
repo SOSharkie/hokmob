@@ -101,6 +101,7 @@ export class NhlTeamLogoUtils {
       case 55:
         imagePath += "seattle";
         break;
+      case 59:
       case 68:
         imagePath += "utah";
         break;

@@ -540,6 +540,11 @@ export function mockSeasonHistory(): SeasonHistory {
   return copy(seasonHistory20252026);
 }
 
+/** The 7 game fixture as a season in progress, through its last game. */
+export function derivedSeasonHistoryInProgress(): SeasonHistory {
+  return {...mockSeasonHistory(), throughDate: '2026-04-14'};
+}
+
 /** Teams with captured club-schedule-season responses: the teams of the future game 2026020056 (UTA @ BOS). */
 export type MockClubScheduleTeam = 'BOS' | 'UTA';
 

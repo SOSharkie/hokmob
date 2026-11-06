@@ -22,16 +22,19 @@ export interface HistorySeasonOption {
 }
 
 /**
- * The history page's data: a finished season's per game stat lines, preloaded into src/assets/history by
- * build-season-data.js, and rated in the browser with the same formulas as the game and player pages. The file is only
- * loaded by the history page, so it stays out of the main bundle.
+ * The history page's data: a season's per game stat lines, preloaded into src/assets/history by build-season-data.js,
+ * and rated in the browser with the same formulas as the game and player pages. A season in progress is a snapshot of
+ * its final games, up to the file's throughDate. The file is only loaded by the history page, so it stays out of the
+ * main bundle.
  */
 @Injectable()
 export class SeasonHistoryService {
 
   /** The seasons with a file in src/assets/history, newest first. */
   public static readonly seasons: HistorySeasonOption[] = [
-    {season: 20252026, gameType: NhlGameTypeEnum.REGULAR_SEASON}
+    {season: 20262027, gameType: NhlGameTypeEnum.REGULAR_SEASON},
+    {season: 20252026, gameType: NhlGameTypeEnum.REGULAR_SEASON},
+    {season: 20242025, gameType: NhlGameTypeEnum.REGULAR_SEASON}
   ];
 
   /** The top of the rating scale, where a rating is capped. */
@@ -177,7 +180,14 @@ export class SeasonHistoryService {
     }
     ratedGames.sort((gameA, gameB) => gameA.game.id - gameB.game.id);
 
-    return {season: history.season, gameType: history.gameType, players, games, ratedGames};
+    return {
+      season: history.season,
+      gameType: history.gameType,
+      throughDate: history.throughDate,
+      players,
+      games,
+      ratedGames
+    };
   }
 
   /**

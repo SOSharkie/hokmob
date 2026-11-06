@@ -34,6 +34,13 @@ $history-columns-breakpoint: $tiny-display-breakpoint;
     line-height: 1.6;
   }
 
+  .history-progress {
+    margin: $spacing-small 0 0;
+    color: $green-01;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
   .season-picker {
     flex: none;
     margin-top: $spacing-small;
