@@ -1,4 +1,14 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild} from '@angular/core';
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import { Chart, ChartDataset, registerables, TooltipModel } from 'chart.js';
 import {Play, PlayByPlay, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {PeriodDescriptor} from "@shared/models/nhl-web-api/common.model";
@@ -20,6 +30,28 @@ interface ChartPeriod {
 }
 
 /**
+ * The plays that moved one team's momentum in a minute.
+ */
+export interface MomentumTeamPlays {
+  teamId: number;
+  /** The plays by type, like "1 goal · 2 shots · 1 blocked". */
+  playsLabel: string;
+  /** The momentum the plays add for the team, before the chart's cap. */
+  momentum: number;
+}
+
+/**
+ * A game minute's momentum, explained in the minute tooltip.
+ */
+export interface MomentumMinute {
+  index: number;
+  /** The period and its minute, like "2nd · 5:00–6:00". */
+  label: string;
+  /** The home team's plays, then the away team's: the chart's order, where home is above the axis. */
+  teams: MomentumTeamPlays[];
+}
+
+/**
  * How the momentum is drawn: a filled curve, or a bar per minute.
  */
 export type MomentumChartView = "line" | "bar";
@@ -29,10 +61,16 @@ export type MomentumChartView = "line" | "bar";
   templateUrl: './momentum.component.html',
   styleUrls: ['./momentum.component.scss']
 })
-export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
+export class MomentumComponent implements OnChanges, AfterViewInit, AfterViewChecked, OnDestroy {
 
   /** The logo above a goal in the chart's hover tooltip. */
   public readonly logoSize: number = 24;
+
+  /** The logo beside a team's plays in the minute tooltip. */
+  public readonly minuteLogoSize: number = 16;
+
+  /** How long the pointer rests on a minute before its tooltip opens, in milliseconds. */
+  public static readonly minuteTooltipDelay: number = 500;
 
   /**
    * The game's play-by-play. Goals and shots move the momentum toward the team that took them.
@@ -78,6 +116,25 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
   public tooltipPosition: {left: number, top?: number, bottom?: number, width: number};
 
   /**
+   * The minute the pointer rests on, shown in the minute tooltip once the delay has passed. The template hides it while
+   * a goal's tooltip is open.
+   */
+  public hoveredMinute: MomentumMinute;
+
+  /**
+   * The minute tooltip's position within the chart, in pixels, centered on the minute's dot: right above it in the top
+   * half of the chart, right below it in the bottom half. It can reach past the card.
+   */
+  public minuteTooltipPosition: {left: number, top?: number, bottom?: number};
+
+  /**
+   * The hovered minute's point within the chart, in pixels, where a dot marks it while its tooltip is open: the
+   * middle of the minute's hover zone, on the curve in the line view and atop the bar in the bar view. A goal minute's
+   * puck marks it instead.
+   */
+  public minuteDotPosition: {x: number, y: number};
+
+  /**
    * The game's roster spots by player ID, for the tooltip's player names.
    */
   public rosterSpots = new Map<number, RosterSpot>();
@@ -97,9 +154,24 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild("momentumChart")
   private chartCanvas: ElementRef<HTMLCanvasElement>;
 
+  @ViewChild("minuteTooltip")
+  private minuteTooltipElement: ElementRef<HTMLElement>;
+
   private momentumChart: Chart<"bar" | "line", number[]>;
 
   private readonly goalImage = MomentumComponent.createGoalImage();
+
+  /**
+   * The plays counted in each minute's momentum, by point index.
+   */
+  private minutePlays: Play[][] = [];
+
+  private chartPeriods: ChartPeriod[] = [];
+
+  /** The point index under the pointer. */
+  private pointerIndex: number;
+
+  private minuteTooltipTimer: ReturnType<typeof setTimeout>;
 
   private readonly maxChartValue: number = 30;
 
@@ -120,6 +192,12 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   private readonly tooltipOffset: number = 14;
 
+  /** The space between the minute's dot and its tooltip: the dot's radius, plus a gap. */
+  private readonly minuteTooltipGap: number = 8;
+
+  /** The least room the minute tooltip keeps from the screen's sides. */
+  private readonly screenMargin: number = 8;
+
   /**
    * The momentum each play type adds for the team that owns the play. A blocked shot's owner is the shooting team.
    */
@@ -130,10 +208,25 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
     [NhlPlayTypeEnum.BLOCKED_SHOT]: 4
   };
 
+  /**
+   * How the minute tooltip names each play type, singular and plural, in the order of their momentum. Missed and
+   * blocked plays are the team's shot attempts.
+   */
+  private readonly playLabels: [string, string, string][] = [
+    [NhlPlayTypeEnum.GOAL, "goal", "goals"],
+    [NhlPlayTypeEnum.SHOT_ON_GOAL, "shot", "shots"],
+    [NhlPlayTypeEnum.MISSED_SHOT, "missed", "missed"],
+    [NhlPlayTypeEnum.BLOCKED_SHOT, "blocked", "blocked"]
+  ];
+
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes["playByPlay"]) {
       this.generateChartData();
       this.updateChart();
+      // A live game's refresh can add plays to the open minute
+      if (this.hoveredMinute) {
+        this.showMinuteTooltip(this.hoveredMinute.index);
+      }
     }
   }
 
@@ -145,7 +238,12 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.updateChart();
   }
 
+  public ngAfterViewChecked(): void {
+    this.keepMinuteTooltipOnScreen();
+  }
+
   public ngOnDestroy(): void {
+    clearTimeout(this.minuteTooltipTimer);
     this.momentumChart?.destroy();
     this.momentumChart = undefined;
   }
@@ -175,6 +273,67 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
     return NhlTeamLogoUtils.getTeamPrimaryLogo(goal?.details?.eventOwnerTeamId);
   }
 
+  public getTeamLogoById(teamId: number): string {
+    return NhlTeamLogoUtils.getTeamPrimaryLogo(teamId);
+  }
+
+  /**
+   * Opens the tooltip of the minute under the pointer once the pointer has rested on it for the delay. While a minute
+   * tooltip is open, it follows the pointer to the next minute right away.
+   *
+   * @param event - A pointer move or press over the chart canvas.
+   */
+  public onChartPointerMove(event: PointerEvent): void {
+    let index = this.getPointIndexAt(event);
+    if (index === this.pointerIndex) {
+      return;
+    }
+    this.pointerIndex = index;
+    clearTimeout(this.minuteTooltipTimer);
+    if (index === undefined) {
+      this.hoveredMinute = undefined;
+    } else if (this.hoveredMinute) {
+      this.showMinuteTooltip(index);
+    } else {
+      this.minuteTooltipTimer = setTimeout(() => this.showMinuteTooltip(index), MomentumComponent.minuteTooltipDelay);
+    }
+  }
+
+  /**
+   * Closes the minute tooltip, or cancels the pending one, when the pointer leaves the chart.
+   */
+  public onChartPointerLeave(): void {
+    clearTimeout(this.minuteTooltipTimer);
+    this.pointerIndex = undefined;
+    this.hoveredMinute = undefined;
+  }
+
+  /**
+   * Returns the plays counted in the momentum of the minute ending at the point index, by team, or undefined for the
+   * game's first point, which ends no minute.
+   *
+   * @param index - A chart point index.
+   */
+  public getMomentumMinute(index: number): MomentumMinute {
+    let period = this.chartPeriods.find(item => index > item.start && index <= item.start + item.minutes);
+    if (!period) {
+      return undefined;
+    }
+    let minute = index - period.start - 1;
+    let label = `${PeriodUtils.getLabel(period.periodDescriptor)} · ${minute}:00–${minute + 1}:00`;
+    let teams = [this.playByPlay?.homeTeam?.id, this.playByPlay?.awayTeam?.id]
+        .map(teamId => this.getTeamPlays(teamId, this.minutePlays[index] ?? []))
+        .filter(team => team.momentum > 0);
+    return {index, label, teams};
+  }
+
+  /**
+   * Keeps the minute tooltip's rows rendered while it follows the pointer.
+   */
+  public trackTeam(index: number, team: MomentumTeamPlays): number {
+    return team.teamId;
+  }
+
   /**
    * Keeps the tooltip's goals rendered while the same point stays hovered.
    */
@@ -194,6 +353,7 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.chartView = view;
     MomentumComponent.saveChartView(view);
     this.hoveredGoals = [];
+    this.onChartPointerLeave();
     this.momentumChart?.destroy();
     this.createChart();
     this.updateChart();
@@ -343,6 +503,77 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Returns the point index nearest the pointer, or undefined outside the chart area: the nearest point in the line
+   * view, the bar under the pointer in the bar view.
+   */
+  private getPointIndexAt(event: PointerEvent): number {
+    let chartArea = this.momentumChart?.chartArea;
+    if (!chartArea || this.chartLabels.length === 0) {
+      return undefined;
+    }
+    let rect = this.chartCanvas.nativeElement.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+    if (x < chartArea.left || x > chartArea.right || y < chartArea.top || y > chartArea.bottom) {
+      return undefined;
+    }
+    let index = Math.round(this.momentumChart.scales["x"].getValueForPixel(x));
+    return Math.max(0, Math.min(index, this.chartLabels.length - 1));
+  }
+
+  /**
+   * Opens the tooltip of the minute ending at the point index, centered on its point: right above points in the top
+   * half of the chart, right below the others.
+   */
+  private showMinuteTooltip(index: number): void {
+    let minute = this.getMomentumMinute(index);
+    if (!minute || !this.momentumChart) {
+      this.hoveredMinute = undefined;
+      return;
+    }
+    let x = this.momentumChart.scales["x"].getPixelForValue(index);
+    let y = this.momentumChart.scales["y"].getPixelForValue(this.momentumData[index]);
+    let chartHeight = this.momentumChart.height;
+    this.minuteTooltipPosition = y < chartHeight / 2
+        ? {left: x, bottom: chartHeight - y + this.minuteTooltipGap}
+        : {left: x, top: y + this.minuteTooltipGap};
+    this.minuteDotPosition = {x, y};
+    this.hoveredMinute = minute;
+  }
+
+  /**
+   * Shifts the minute tooltip sideways just enough to stay on screen, for a dot near the edge of a phone screen.
+   * Measured after rendering, since the tooltip is as wide as its plays.
+   */
+  private keepMinuteTooltipOnScreen(): void {
+    let element = this.minuteTooltipElement?.nativeElement;
+    if (!element) {
+      return;
+    }
+    element.style.setProperty("--shift", "0px");
+    let rect = element.getBoundingClientRect();
+    let screenWidth = document.documentElement.clientWidth;
+    let shift = Math.max(this.screenMargin - rect.left, Math.min(0, screenWidth - this.screenMargin - rect.right));
+    element.style.setProperty("--shift", shift + "px");
+  }
+
+  /**
+   * Counts a team's plays by type, like "1 goal · 2 shots", and adds up the momentum they give it.
+   */
+  private getTeamPlays(teamId: number, plays: Play[]): MomentumTeamPlays {
+    let teamPlays = plays.filter(play => play.details?.eventOwnerTeamId === teamId);
+    let playsLabel = this.playLabels
+        .map(([type, singular, plural]) => {
+          let count = teamPlays.filter(play => play.typeDescKey === type).length;
+          return count > 0 ? `${count} ${count === 1 ? singular : plural}` : "";
+        })
+        .filter(label => label)
+        .join(" · ");
+    let momentum = teamPlays.reduce((total, play) => total + this.playMomentum[play.typeDescKey], 0);
+    return {teamId, playsLabel, momentum};
+  }
+
+  /**
    * Builds the labels, momentum and goal points from the play-by-play. Shootout plays aren't counted.
    */
   private generateChartData(): void {
@@ -361,6 +592,8 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.momentumData = new Array(this.chartLabels.length).fill(0);
     this.goalData = new Array(this.chartLabels.length).fill(0);
     this.goalPlays = this.chartLabels.map(() => []);
+    this.minutePlays = this.chartLabels.map(() => []);
+    this.chartPeriods = periods;
     this.rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
 
     plays.forEach(play => {
@@ -373,6 +606,7 @@ export class MomentumComponent implements OnChanges, AfterViewInit, OnDestroy {
       let minute = Math.floor(MomentumComponent.getSeconds(play.timeInPeriod) / 60);
       let index = period.start + Math.min(minute + 1, period.minutes);
       this.momentumData[index] += ownerTeamId === homeTeamId ? momentum : -momentum;
+      this.minutePlays[index].push(play);
       if (play.typeDescKey === NhlPlayTypeEnum.GOAL) {
         this.goalData[index] = this.goalPointRadius;
         this.goalPlays[index].push(play);

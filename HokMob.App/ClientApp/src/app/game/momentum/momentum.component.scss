@@ -5,7 +5,7 @@
   background-color: $black-02;
   border-radius: 25px;
   padding: $spacing-large;
-  overflow: hidden;
+  // No overflow clipping: the minute tooltip can reach past the card
   position: relative;
 
   .chart-title {
@@ -67,20 +67,80 @@
     height: 280px;
     position: relative;
 
-    .goal-tooltip {
+    .goal-tooltip, .minute-tooltip {
       position: absolute;
       z-index: 1;
       box-sizing: border-box;
       padding: $spacing-medium $spacing-large;
       color: white;
       font-size: small;
-      text-align: center;
       background-color: $black-04;
       border: 1px solid $gray-01;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-      // The tooltip only shows while hovering the chart, so it must not take the pointer from it
+      // The tooltips only show while hovering the chart, so they must not take the pointer from it
       pointer-events: none;
+    }
+
+    // Marks the hovered minute's point, under its tooltip
+    .minute-dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      box-sizing: border-box;
+      background-color: white;
+      border: 2px solid $black-02;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px $gray-02;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    // What moved the momentum in the hovered minute, sized to its plays
+    .minute-tooltip {
+      // Above the cards below, which it can reach past
+      z-index: 2;
+      // Not the room right of the dot, which shrinks to nothing at the chart's right edge
+      width: max-content;
+      max-width: 240px;
+      // Centered on the dot, unless that would leave the screen (keepMinuteTooltipOnScreen)
+      transform: translateX(calc(-50% + var(--shift, 0px)));
+      white-space: nowrap;
+
+      .minute-label {
+        padding: $spacing-x-small 0 $spacing-small;
+        color: $gray-03;
+        text-align: center;
+      }
+
+      .minute-team {
+        display: flex;
+        align-items: center;
+        gap: $spacing-medium;
+        padding: $spacing-x-small 0;
+      }
+
+      .minute-plays {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .minute-momentum {
+        margin-left: $spacing-medium;
+        color: $gray-03;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .minute-empty {
+        padding-bottom: $spacing-x-small;
+        color: $gray-03;
+        text-align: center;
+      }
+    }
+
+    .goal-tooltip {
+      text-align: center;
 
       .goal {
         padding: $spacing-small 0;
