@@ -1,4 +1,4 @@
-import {HistoryPlayer, PositionGroup, RatedGame} from "@shared/models/nhl-history/season-history.model";
+import {HistoryPlayer, PositionGroup, RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 
 /**
  * A choice of a position toggle. A null value is every position.
@@ -88,6 +88,12 @@ export class SeasonRatingStatsUtils {
 
   public static readonly blueRating = 8.5;
 
+  /** The fewest games a player needs on the average rating leaderboard of a finished season. */
+  public static readonly fullSeasonMinGames = 20;
+
+  /** A team's games in a regular season. */
+  public static readonly teamSeasonGames = 82;
+
   /**
    * Bins the ratings of one position group into a 0 to 10 histogram, and works out their mean, median and the share
    * of green and blue games. An empty list gives empty bins and 0s.
@@ -121,6 +127,26 @@ export class SeasonRatingStatsUtils {
       greenShare: total ? greenCount / total : 0,
       blueShare: total ? blueCount / total : 0
     };
+  }
+
+  /**
+   * The fewest games a player needs on the average rating leaderboard. In a season in progress it's the same share of
+   * the season as a finished season's minimum, counted from the most games any team has played, so the leaderboard
+   * isn't empty until a quarter of the way through the season.
+   *
+   * @param ratedSeason - The season shown.
+   */
+  public static getMinGames(ratedSeason: RatedSeason): number {
+    const fullSeasonMinGames = SeasonRatingStatsUtils.fullSeasonMinGames;
+    if (!ratedSeason?.throughDate) {
+      return fullSeasonMinGames;
+    }
+    const teamGames = new Map<number, number>();
+    ratedSeason.games.flatMap(game => [game.homeTeamId, game.awayTeamId])
+        .forEach(teamId => teamGames.set(teamId, (teamGames.get(teamId) ?? 0) + 1));
+    const mostTeamGames = Math.max(0, ...teamGames.values());
+    const minGames = Math.ceil(mostTeamGames * fullSeasonMinGames / SeasonRatingStatsUtils.teamSeasonGames);
+    return Math.max(1, Math.min(fullSeasonMinGames, minGames));
   }
 
   /**

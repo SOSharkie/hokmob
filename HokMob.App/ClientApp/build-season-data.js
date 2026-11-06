@@ -1,10 +1,11 @@
-// Builds the history page's data for one finished season: every player's per game stat line from the stats API
+// Builds the history page's data for one season: every player's per game stat line from the stats API
 // (api.nhle.com/stats/rest/en), the inputs of the HokMob rating rather than the ratings, so a formula change shows up
 // on the history page without regenerating the file. See "History data" in docs/nhl-api.md.
 //
-// Usage: npm run build-season-data -- <season> [gameType] [--games <id,id,...>] [--out <file>]
+// Usage: npm run build-season-data -- <season> [gameType] [--partial] [--games <id,id,...>] [--out <file>]
 //   season    Like 20252026.
 //   gameType  2 for the regular season (the default) or 3 for the playoffs.
+//   --partial Build a season in progress from its final games so far. Without it, every game has to be final.
 //   --games   Keep only these games, for a test fixture. Everything is still fetched and validated.
 //   --out     Output file. Default: src/assets/history/<season>-<gameType>.json
 //
@@ -56,9 +57,11 @@ const optionValue = name => {
   const index = args.indexOf(name);
   return index >= 0 ? args[index + 1] : undefined;
 };
-const positional = args.filter((arg, i) => !arg.startsWith('--') && !args[i - 1]?.startsWith('--'));
+const valueOptions = ['--games', '--out'];
+const positional = args.filter((arg, i) => !arg.startsWith('--') && !valueOptions.includes(args[i - 1]));
 const season = Number(positional[0]);
 const gameType = Number(positional[1] ?? 2);
+const partial = args.includes('--partial');
 const onlyGameIds = optionValue('--games')?.split(',').map(Number);
 const outFile = optionValue('--out') ?? path.join(__dirname, `src/assets/history/${season}-${gameType}.json`);
 
@@ -184,22 +187,27 @@ function checkNumbers(row, fields, label) {
 async function main() {
   const isSeason = /^\d{8}$/.test(String(season)) && season % 10000 - Math.floor(season / 10000) === 1;
   if (!isSeason || ![2, 3].includes(gameType)) {
-    console.error('Usage: npm run build-season-data -- <season like 20252026> [gameType 2 or 3] [--games <ids>] ' +
-        '[--out <file>]');
+    console.error('Usage: npm run build-season-data -- <season like 20252026> [gameType 2 or 3] [--partial] ' +
+        '[--games <ids>] [--out <file>]');
     process.exitCode = 1;
     return;
   }
   const seasonFilter = `seasonId=${season} and gameTypeId=${gameType}`;
 
   console.log(`Fetching the ${season} games (game type ${gameType})`);
-  const gameRows = (await getReport('game', {cayenneExp: `season=${season} and gameType=${gameType}`}))
+  const scheduledGames = (await getReport('game', {cayenneExp: `season=${season} and gameType=${gameType}`}))
       .sort((gameA, gameB) => gameA.id - gameB.id);
-  const unfinished = gameRows.filter(game => game.gameStateId !== 7);
-  if (gameRows.length === 0 || unfinished.length > 0) {
+  const gameRows = scheduledGames.filter(game => game.gameStateId === 7);
+  const unfinished = scheduledGames.filter(game => game.gameStateId !== 7);
+  if (gameRows.length === 0 || (unfinished.length > 0 && !partial)) {
     const examples = unfinished.slice(0, 5).map(game => game.id).join(', ');
-    throw new Error(`${gameRows.length} games, ${unfinished.length} not final (${examples}). ` +
-        'Only a finished season can be built.');
+    throw new Error(`${scheduledGames.length} games, ${unfinished.length} not final (${examples}). ` +
+        'Only a finished season can be built, or the final games so far with --partial.');
   }
+  const gamesById = new Map(gameRows.map(game => [game.id, game]));
+  // A game in progress can have rows in some reports and not yet in others, so its rows are dropped before the merge.
+  // Without --partial every game is final, and the validation below fails on a row with an unknown game
+  const finalGameRows = rows => partial ? rows.filter(row => gamesById.has(row.gameId)) : rows;
   const teamIds = [...new Set(gameRows.flatMap(game => [game.homeTeamId, game.visitingTeamId]))]
       .sort((teamA, teamB) => teamA - teamB);
 
@@ -208,7 +216,7 @@ async function main() {
   console.log(`Fetching ${reports.length} skater reports for ${teamIds.length} teams`);
   const teamReports = teamIds.flatMap(teamId => reports.map(report => ({teamId, report})));
   const teamReportRows = await runAll(teamReports.map(({teamId, report}) => () =>
-      getReport(report, gameRowParams(`${seasonFilter} and teamId=${teamId}`))));
+      getReport(report, gameRowParams(`${seasonFilter} and teamId=${teamId}`)).then(finalGameRows)));
   const skaterRows = teamIds.flatMap(teamId => {
     const reportRows = Object.fromEntries(reports.map(report =>
         [report, teamReportRows[teamReports.findIndex(task => task.teamId === teamId && task.report === report)]]));
@@ -218,11 +226,10 @@ async function main() {
   console.log('Fetching the goalie reports');
   const goalieReportNames = Object.keys(goalieReports);
   const goalieReportRows = await runAll(goalieReportNames.map(report => () =>
-      getReport(report, gameRowParams(seasonFilter))));
+      getReport(report, gameRowParams(seasonFilter)).then(finalGameRows)));
   const goalieReportsByName = Object.fromEntries(goalieReportNames.map((report, i) => [report, goalieReportRows[i]]));
   const goalieRows = mergeReports(goalieReportsByName, goalieReports, 'goalies');
 
-  const gamesById = new Map(gameRows.map(game => [game.id, game]));
   const skaterFields = Object.values(skaterReports).flat();
   const goalieFields = Object.values(goalieReports).flat();
 
@@ -302,6 +309,8 @@ async function main() {
     season,
     gameType,
     generated: new Date().toISOString().slice(0, 10),
+    // Only in a season in progress: the day of its last final game
+    ...(unfinished.length > 0 ? {throughDate: gameRows.map(game => game.gameDate).sort().at(-1)} : {}),
     games: columns(keptGames, [
       ['id', game => game.id],
       ['date', game => game.gameDate],
@@ -328,7 +337,7 @@ async function main() {
 
   const kilobytes = bytes => Math.round(bytes / 1024).toLocaleString('en-US') + ' KB';
   console.log(`\nWrote ${path.relative(process.cwd(), outFile)}`);
-  console.log(`  games:        ${keptGames.length}`);
+  console.log(`  games:        ${keptGames.length}${history.throughDate ? ` (through ${history.throughDate})` : ''}`);
   console.log(`  players:      ${keptPlayers.length}`);
   console.log(`  skater rows:  ${keptSkaters.length}`);
   console.log(`  goalie rows:  ${keptGoalies.length}`);

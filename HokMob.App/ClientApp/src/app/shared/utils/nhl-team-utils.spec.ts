@@ -19,6 +19,11 @@ describe('NhlTeamUtils', () => {
       expect(NhlTeamUtils.getTeamIdByAbbrev(utah.abbrev)).toBe(utah.id);
     });
 
+    it('should find the Mammoth rather than the Utah Hockey Club, which has the same abbreviation', () => {
+      expect(NhlTeamUtils.getTeam(59).triCode).toBe(NhlTeamUtils.getTeam(68).triCode);
+      expect(NhlTeamUtils.getTeamIdByAbbrev('UTA')).toBe(68);
+    });
+
     it('should ignore letter case and still find former teams', () => {
       expect(NhlTeamUtils.getTeamIdByAbbrev('sjs')).toBe(28);
       expect(NhlTeamUtils.getTeamIdByAbbrev('ARI')).toBe(53);
@@ -30,11 +35,24 @@ describe('NhlTeamUtils', () => {
     });
   });
 
+  describe('getTeam', () => {
+    it('should know the Utah Hockey Club, the team ID of the 2024-25 season', () => {
+      expect(NhlTeamUtils.getTeam(59)).toEqual({
+        id: 59,
+        name: 'Utah Hockey Club',
+        shortName: 'Utah',
+        teamName: 'Hockey Club',
+        triCode: 'UTA'
+      });
+    });
+  });
+
   describe('getActiveTeamIds', () => {
-    it('should return the 32 teams of the real standings, without Arizona', () => {
+    it('should return the 32 teams of the real standings, without Arizona or the Utah Hockey Club', () => {
       const activeTeamIds = NhlTeamUtils.getActiveTeamIds();
       expect(activeTeamIds.length).toBe(32);
       expect(activeTeamIds).not.toContain(53);
+      expect(activeTeamIds).not.toContain(59);
       mockStandingsTeams().forEach(standingsTeam => {
         expect(activeTeamIds).withContext(standingsTeam.teamAbbrev.default)
             .toContain(NhlTeamUtils.getTeamIdByAbbrev(standingsTeam.teamAbbrev.default));

@@ -41,7 +41,7 @@ export interface AverageRatingRow {
 export class AverageRatingLeadersComponent implements OnChanges {
 
   /** The fewest games a player needs to be listed. */
-  public static readonly defaultMinGames = 20;
+  public static readonly defaultMinGames = SeasonRatingStatsUtils.fullSeasonMinGames;
 
   public static readonly leaderCount = 20;
 

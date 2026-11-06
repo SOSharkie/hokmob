@@ -19,6 +19,7 @@ describe('NhlTeamLogoUtils', () => {
 
   it('should use the local logo for Utah', () => {
     expect(NhlTeamLogoUtils.getTeamPrimaryLogo(68)).toBe('assets/logos/utah.png');
+    expect(NhlTeamLogoUtils.getTeamPrimaryLogo(59)).toBe('assets/logos/utah.png');
   });
 
   it('should use the fallback logo for an unknown or missing team', () => {

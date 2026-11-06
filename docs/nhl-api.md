@@ -248,15 +248,29 @@ the latest bracket that has series.
 
 ## History data
 
-The history page doesn't call the NHL APIs. A finished season's per game stat lines are preloaded into
+The history page doesn't call the NHL APIs. A season's per game stat lines are preloaded into
 `src/assets/history/{season}-{gameType}.json` (`20252026-2.json` is the 2025-26 regular season), which only the history
 page loads (`SeasonHistoryService`), and they're rated in the browser with `StatsUtils.calculateSkaterGameRating` /
 `calculateGoalieGameRating`, the same as the player page's recent games. The file holds the rating's inputs, not
 ratings, so a formula change shows up on the history page without regenerating it.
 
 - **Generating a season:** `npm run build-season-data -- 20252026 [gameType]` from `HokMob.App/ClientApp` (game type 2
-  by default), once the season is over: it fails while any of its games isn't final. It takes about a minute. Add the
-  new file's season to `SeasonHistoryService.seasons` for the page's picker. Nobody edits the file by hand.
+  by default), once the season is over: it fails while any of its games isn't final, unless `--partial` is passed. It
+  takes about a minute. Add the new file's season to `SeasonHistoryService.seasons` for the page's picker. Nobody edits
+  the file by hand.
+- **A season in progress:** `npm run build-season-data -- 20262027 --partial` keeps the final games so far, and drops
+  the rows of any game that isn't final, since a game in progress can have rows in some reports and not in others. The
+  file is a snapshot: it doesn't update itself, so run the same command again to bring it up to date, and once more
+  without `--partial` when the season is over, which removes `throughDate`. That field is only in a file with
+  unfinished games, and holds the day of its last final game. With it, the page says "Season in progress, through
+  November 5", and the leaderboard's 20 game minimum becomes the same share of the games played so far, from the most
+  games any team has played (`SeasonRatingStatsUtils.getMinGames`): 5 games when the most is 18.
+  `20262027-2.json` runs through 2026-11-05: 261 games, 823 players, 9,395 skater rows and 549 goalie rows, 582 KB
+  (112 KB gzipped).
+- **Seasons so far:** 2024-25 and 2025-26 (finished) and 2026-27 (in progress). 2024-25 has the same shape as 2025-26:
+  1,312 games, 1,023 players, 47,224 skater rows and 2,764 goalie rows, 2.87 MB (492 KB gzipped). Its Utah is the Utah
+  Hockey Club, team ID 59, not the Mammoth's 68. It's a former team in `NhlTeamUtils`, with the same `UTA` abbreviation
+  and the Mammoth's logo and color, and `UTA` still resolves to 68.
 - **Reports:** the per game rows (`isGame=true`) of the reports the player page's recent games merge: `skater/summary`,
   `skater/realtime`, `skater/faceoffwins`, `skater/scoringpergame`, `skater/powerplay` and `skater/penalties`, plus
   `skater/summaryshooting` for the 5v5 Corsi (`satFor`, `satAgainst`) and Fenwick (`usatFor`, `usatAgainst`) counts,
