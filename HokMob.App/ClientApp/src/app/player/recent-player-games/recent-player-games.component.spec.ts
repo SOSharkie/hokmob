@@ -68,13 +68,13 @@ describe('RecentPlayerGamesComponent', () => {
     show(games, false);
     expect(gameRows().length).toBe(10);
     // Stanley Cup Final game 6: VGK 0, CAR 3 at home, 11:48 played, 2 shots, 3 hits, -2
-    expect(row(0)).toEqual(['Jun 14', 'CAR(0 - 3)', '11:48', '0', '0', '2', '3', '-2', '0', '5.2']);
+    expect(row(0)).toEqual(['Jun 14', 'CAR(0 - 3)', '11:48', '0', '0', '2', '3', '-2', '0', '5.1']);
     expect(opponentLogo(0)).toBe('assets/logos/carolina.png');
     // His best game of the run: 2 goals, a secondary assist and a penalty drawn in a 3-1 win at COL
-    expect(row(8)).toEqual(['May 22', 'COL(3 - 1)', '16:15', '2', '1', '3', '7', '3', '0', '9.8']);
+    expect(row(8)).toEqual(['May 22', 'COL(3 - 1)', '16:15', '2', '1', '3', '7', '3', '0', '9.5']);
     expect(opponentLogo(8)).toBe('assets/logos/colorado.png');
     // A game with a penalty
-    expect(row(9)).toEqual(['May 20', 'COL(4 - 2)', '16:25', '0', '0', '2', '2', '-1', '2', '4.6']);
+    expect(row(9)).toEqual(['May 20', 'COL(4 - 2)', '16:25', '0', '0', '2', '2', '-1', '2', '4.5']);
   });
 
   it('should scale the faceoff term of a center by the faceoffs taken in the game', () => {

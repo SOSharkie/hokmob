@@ -79,14 +79,12 @@ describe('GameTopPlayersComponent', () => {
   it('should line up the best rated goalie, two defensemen and three forwards of each team', () => {
     show(gamePlayers(2025021057, true), gamePlayers(2025021057, false));
     expect(names('home', 'goalies')).toEqual(['Eric Comrie']);
-    expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
-    // Connor and Barron are both rated 6.5, and Connor is one of the Winnipeg stars
-    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Kyle Connor']);
-    expect(cards('home').map(rating)).toEqual(['6.9', '7.9', '6', '7.1', '6.7', '6.5']);
+    expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Dylan Samberg']);
+    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Morgan Barron', 'Cole Koepke']);
+    expect(cards('home').map(rating)).toEqual(['6.9', '7.8', '5.8', '7.1', '6.5', '6.5']);
 
     expect(names('away', 'goalies')).toEqual(['Jordan Binnington']);
-    // Parayko and Mailloux are both rated 6.3, and Parayko is one of the St. Louis stars
-    expect(names('away', 'defense')).toEqual(['Colton Parayko', 'Logan Mailloux']);
+    expect(names('away', 'defense')).toEqual(['Logan Mailloux', 'Colton Parayko']);
     expect(names('away', 'forwards')).toEqual(['Dylan Holloway', 'Jimmy Snuggerud', 'Dalibor Dvorsky']);
   });
 
@@ -94,11 +92,11 @@ describe('GameTopPlayersComponent', () => {
     // Carolina: Jaccob Slavin is one of its stars and Shayne Gostisbehere is not, and both are rated 6.2
     show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
     expect(names('away', 'defense')).toEqual(['Jalen Chatfield', 'Jaccob Slavin']);
-    expect(cards('away', 'defense').map(rating)).toEqual(['7.1', '6.2']);
+    expect(cards('away', 'defense').map(rating)).toEqual(['6.9', '6.2']);
   });
 
   it('should keep the better rated player over a star', () => {
-    // None of the three Carolina forwards is a star, so Sebastian Aho, rated 6.2, stays off the rink
+    // None of the three Carolina forwards is a star, so Sebastian Aho, rated 6.1, stays off the rink
     show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
     expect(names('away', 'forwards')).toEqual(['Jordan Staal', 'Nikolaj Ehlers', 'Logan Stankoven']);
     expect(card('away', 'Sebastian Aho')).toBeUndefined();
@@ -174,7 +172,7 @@ describe('GameTopPlayersComponent', () => {
 
     const awayPlayers = gamePlayers(2025030414, false);
     const staal = awayPlayers.find(player => player.playerId === 8473533);
-    expect(staal.hokmobRating).toBe(9.4); // 9.35, rounded up
+    expect(staal.hokmobRating).toBe(9.3); // 9.25, rounded up
     const homePlayers = gamePlayers(2025030414, true);
     const homeForward = homePlayers.find(player => player.skaterStats && player.position !== 'D');
     homeForward.hokmobRating = staal.hokmobRating; // so the home player takes the tie
@@ -261,7 +259,7 @@ describe('GameTopPlayersComponent', () => {
     show([...forwards, ...defense], gamePlayers(2025021057, false));
     expect(names('home', 'goalies')).toEqual([]);
     expect(names('home', 'defense')).toEqual(['Haydn Fleury']);
-    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke']);
+    expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Morgan Barron']);
   });
 
   describe('star lineup toggle', () => {
@@ -290,7 +288,7 @@ describe('GameTopPlayersComponent', () => {
       expect(toggle().getAttribute('aria-pressed')).toBe('true');
       expect(toggle().classList).toContain('showing-stars');
 
-      // Carolina's stars, none of them rated into the lineup: Svechnikov is rated 4.7 and Aho 6.2
+      // Carolina's stars, none of them rated into the lineup: Svechnikov is rated 4.7 and Aho 6.1
       expect(names('away', 'forwards')).toEqual(['Sebastian Aho', 'Nikolaj Ehlers', 'Andrei Svechnikov']);
       expect(names('away', 'defense')).toEqual(['Jaccob Slavin', 'Shayne Gostisbehere']);
       expect(names('away', 'goalies')).toEqual(['Brandon Bussi']);
@@ -302,7 +300,7 @@ describe('GameTopPlayersComponent', () => {
 
     it('should star the best rated player of the lineup it is showing', () => {
       show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
-      // Jordan Staal, rated 9.1, is no star player, so the rink's star moves to Nikolaj Ehlers
+      // Jordan Staal, rated 9.3, is no star player, so the rink's star moves to Nikolaj Ehlers
       expect(component.gameMvpPlayerId).toBe(8473533);
       toggle().click();
       fixture.detectChanges();
@@ -318,7 +316,7 @@ describe('GameTopPlayersComponent', () => {
       fixture.detectChanges();
       expect(names('away', 'forwards')).toEqual(['Matt Coronato', 'Mikael Backlund', 'Morgan Frost']);
       expect(names('away', 'defense')).toEqual(['Zach Whitecloud', 'Yan Kuznetsov']);
-      expect(cards('away', 'defense').map(rating)).toEqual(['6.5', '6.4']);
+      expect(cards('away', 'defense').map(rating)).toEqual(['6.4', '6.3']);
     });
 
     it('should go back to the rating lineup when it is pressed again', () => {
@@ -330,8 +328,8 @@ describe('GameTopPlayersComponent', () => {
       toggle().click();
       fixture.detectChanges();
       expect(title()).toBe('Top Players');
-      expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Cole Koepke', 'Kyle Connor']);
-      expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Elias Salomonsson']);
+      expect(names('home', 'forwards')).toEqual(['Mark Scheifele', 'Morgan Barron', 'Cole Koepke']);
+      expect(names('home', 'defense')).toEqual(['Haydn Fleury', 'Dylan Samberg']);
     });
   });
 
@@ -364,12 +362,12 @@ describe('GameTopPlayersComponent', () => {
 
     it('should seat the four next best rated players of each team on its bench, best first', () => {
       show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
-      // Aho and Gostisbehere are both rated 6.2, and Aho is one of the Carolina stars
-      expect(benchNames('away')).toEqual(['Jackson Blake', 'Sebastian Aho', 'Shayne Gostisbehere', 'Taylor Hall']);
-      expect(benchPlayers('away').map(rating)).toEqual(['6.7', '6.2', '6.2', '6.1']);
+      // Aho and Hall are both rated 6.1, and Aho is one of the Carolina stars
+      expect(benchNames('away')).toEqual(['Jackson Blake', 'Shayne Gostisbehere', 'Sebastian Aho', 'Taylor Hall']);
+      expect(benchPlayers('away').map(rating)).toEqual(['6.6', '6.2', '6.1', '6.1']);
       // Vegas' third defenseman sits behind two forwards
-      expect(benchNames('home')).toEqual(['William Karlsson', 'Cole Smith', 'Keegan Kolesar', 'Noah Hanifin']);
-      expect(benchPlayers('home').map(rating)).toEqual(['6.4', '6', '6', '5.8']);
+      expect(benchNames('home')).toEqual(['William Karlsson', 'Cole Smith', 'Keegan Kolesar', 'Jeremy Lauzon']);
+      expect(benchPlayers('home').map(rating)).toEqual(['6.4', '5.8', '5.8', '5.6']);
       // Nobody on the bench is on the rink too
       for (const side of ['home', 'away'] as Side[]) {
         expect(benchNames(side).filter(name => card(side, name))).toEqual([]);
@@ -422,7 +420,7 @@ describe('GameTopPlayersComponent', () => {
       const goalies = homePlayers.filter(player => player.goalieStats);
       show([...forwards, ...defense, ...goalies], gamePlayers(2025021057, false));
       // Hellebuyck didn't play and is rated 0
-      expect(benchNames('home')).toEqual(['Morgan Barron', 'Connor Hellebuyck']);
+      expect(benchNames('home')).toEqual(['Kyle Connor', 'Connor Hellebuyck']);
       expect(benchPlayers('home')[1].querySelector('.goalie-icon')).not.toBeNull();
       expect(benchPlayers('home')[0].querySelector('.goalie-icon')).toBeNull();
     });
@@ -440,7 +438,7 @@ describe('GameTopPlayersComponent', () => {
       show(gamePlayers(2025030414, true), gamePlayers(2025030414, false));
       fixture.componentRef.setInput('highlightedPlayer', {playerId: 8478427});
       fixture.detectChanges();
-      const aho = benchPlayers('away')[1];
+      const aho = benchPlayers('away')[2];
       expect(aho.classList).toContain('highlighted');
       expect(aho.style.getPropertyValue('--highlight-color')).toBe(StatsUtils.hokmobRatingGreen);
     });

@@ -265,8 +265,8 @@ ratings, so a formula change shows up on the history page without regenerating i
   unfinished games, and holds the day of its last final game. With it, the page says "Season in progress, through
   November 5", and the leaderboard's 20 game minimum becomes the same share of the games played so far, from the most
   games any team has played (`SeasonRatingStatsUtils.getMinGames`): 5 games when the most is 18.
-  `20262027-2.json` runs through 2026-11-05: 261 games, 823 players, 9,395 skater rows and 549 goalie rows, 582 KB
-  (112 KB gzipped).
+  `20262027-2.json` runs through 2026-11-08: 282 games, 833 players, 10,151 skater rows and 594 goalie rows, 628 KB
+  (119 KB gzipped).
 - **URL:** the picked season is a query parameter, `/history?season=20252026`, with `&gameType=3` for a playoffs file. Plain
   `/history`, or a season the page doesn't have, shows the newest season. The cards' filters are query parameters too:
   `distribution`, `leaders` and `best` (`F`, `D` or `G`) and `team` (the leaderboard's team ID), left out at their

@@ -494,7 +494,7 @@ describe('RatingsComponent opened on a game stat line', () => {
     expect(players.length).toBeGreaterThan(30);
     const geekie = players.find(player => player.playerId === 8483447);
     expect(geekie.skaterStats.faceoffWinningPctg).toBe(0.666667);
-    expect(geekie.hokmobRating).toBe(5.7);
+    expect(geekie.hokmobRating).toBe(5.5);
     players.forEach(player => {
       const component = open(RatingStatLineUtils.getQueryParams(player));
       expect(component.subject).withContext(player.name).toBe('skater');

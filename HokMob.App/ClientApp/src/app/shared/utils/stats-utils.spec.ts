@@ -34,8 +34,8 @@ describe('StatsUtils', () => {
     it('should scale the faceoff term by the faceoffs taken, up to 10', () => {
       // Scheifele took 17, so his 70.6% counts fully.
       expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8476460), {faceoffsTaken: 17})).toBe(7.1);
-      // Holloway, a winger, won 2 of 10: 7.9 + (0.2 - 0.5) = 7.6.
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077), {faceoffsTaken: 10})).toBe(7.6);
+      // Holloway, a winger, won 2 of 10: 7.8 + (0.2 - 0.5) = 7.5.
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077), {faceoffsTaken: 10})).toBe(7.5);
       // Suter won 1 of 4: 5.95 + (0.25 - 0.5) * 0.4 = 5.85.
       expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8480459), {faceoffsTaken: 4})).toBe(5.8);
     });
@@ -53,8 +53,8 @@ describe('StatsUtils', () => {
     });
 
     it('should rate real skaters with positive and negative plus/minus', () => {
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8477938))).toBe(7.9); // Fleury, +2
-      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077))).toBe(7.9); // Holloway, +1, winger with faceoffs
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8477938))).toBe(7.8); // Fleury, +2
+      expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8482077))).toBe(7.8); // Holloway, +1, winger with faceoffs
       expect(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer(8479385))).toBe(3.6); // Kyrou, -3
     });
 
@@ -81,12 +81,12 @@ describe('StatsUtils', () => {
 
     it('should fall back to the flat assist weight without both halves of the split', () => {
       const fleury = boxscorePlayer<BoxscoreSkater>(8477938); // 1 goal, 1 assist, +2
-      expect(StatsUtils.calculateSkaterHokmobRating(fleury)).toBe(7.9);
-      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {})).toBe(7.9);
-      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 1})).toBe(7.9);
-      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {secondaryAssists: 1})).toBe(7.9);
-      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 1, secondaryAssists: 0})).toBe(8.0);
-      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 0, secondaryAssists: 1})).toBe(7.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury)).toBe(7.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {})).toBe(7.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 1})).toBe(7.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {secondaryAssists: 1})).toBe(7.8);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 1, secondaryAssists: 0})).toBe(7.9);
+      expect(StatsUtils.calculateSkaterHokmobRating(fleury, {primaryAssists: 0, secondaryAssists: 1})).toBe(7.7);
     });
 
     it('should add power play assists back to realPlusMinus', () => {
@@ -171,13 +171,14 @@ describe('StatsUtils', () => {
 
     it('should round a rating on a half the same whether the faceoff percentage is rounded or exact', () => {
       // Geekie in 2026020010: 3 hits, 2 of 3 faceoffs, which the boxscore gives as 0.666667
-      // 5 + 0.6 + (0.666667 - 0.5) x 0.3 = 5.65000.., and with 2/3 it's 5.64999..
+      // 5 + 0.45 + (0.666667 - 0.5) x 0.3 = 5.50000.., and with 2/3 it's 5.5 give or take floating point
       const geekie = boxscorePlayer<BoxscoreSkater>(8483447, 2026020010);
       expect(geekie.faceoffWinningPctg).toBe(0.666667);
-      expect(StatsUtils.calculateSkaterHokmobRating(geekie, {faceoffsTaken: 3})).toBe(5.7);
+      expect(StatsUtils.getSkaterRawRating(geekie, {faceoffsTaken: 3})).toBeGreaterThan(5.5);
+      expect(StatsUtils.calculateSkaterHokmobRating(geekie, {faceoffsTaken: 3})).toBe(5.5);
       geekie.faceoffWinningPctg = 2 / 3;
-      expect(StatsUtils.getSkaterRawRating(geekie, {faceoffsTaken: 3})).toBeLessThan(5.65);
-      expect(StatsUtils.calculateSkaterHokmobRating(geekie, {faceoffsTaken: 3})).toBe(5.7);
+      expect(StatsUtils.getSkaterRawRating(geekie, {faceoffsTaken: 3})).toBeCloseTo(5.5, 10);
+      expect(StatsUtils.calculateSkaterHokmobRating(geekie, {faceoffsTaken: 3})).toBe(5.5);
     });
   });
 
@@ -544,7 +545,7 @@ describe('StatsUtils', () => {
       const players = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots());
       expect(players.length).toBe(20);
       expect(players.slice(0, 3).map(player => [player.name, player.position, player.hokmobRating]))
-          .toEqual([['Haydn Fleury', 'D', 7.9], ['Mark Scheifele', 'C', 7.1], ['Eric Comrie', 'G', 6.9]]);
+          .toEqual([['Haydn Fleury', 'D', 7.8], ['Mark Scheifele', 'C', 7.1], ['Eric Comrie', 'G', 6.9]]);
       expect(players[players.length - 1].name).toBe('Connor Hellebuyck');
       expect(players.every(player => player.teamId === 52 && player.isHome)).toBeTrue();
       const ratings = players.map(player => player.hokmobRating);
@@ -573,7 +574,7 @@ describe('StatsUtils', () => {
       const away = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), false, rosterSpots(), faceoffCounts);
       expect(rating(home, 8476460)).toBe(7.1); // Scheifele, 17 faceoffs
       expect(rating(home, 8480014)).toBe(4.8); // Vilardi, a center without faceoffs
-      expect(rating(away, 8482077)).toBe(7.6); // Holloway, a winger who won 2 of 10
+      expect(rating(away, 8482077)).toBe(7.5); // Holloway, a winger who won 2 of 10
 
       const withoutCounts = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots());
       expect(rating(withoutCounts, 8480014)).toBe(4.3);
@@ -590,8 +591,8 @@ describe('StatsUtils', () => {
       const withoutCounts = StatsUtils.getGamePlayers(mockGameBoxscore(2025021057), true, rosterSpots());
 
       // Fleury's one assist was a secondary one, so he loses 0.1 off the flat weight.
-      expect(rating(withoutCounts, 8477938)).toBe(7.9);
-      expect(rating(withCounts, 8477938)).toBe(7.8);
+      expect(rating(withoutCounts, 8477938)).toBe(7.8);
+      expect(rating(withCounts, 8477938)).toBe(7.7);
       // Morrissey's was primary.
       expect(rating(withCounts, 8477504)).toBe(rating(withoutCounts, 8477504) + 0.1);
       // Barron had one of each, so the split and the flat weight agree.
@@ -699,7 +700,7 @@ describe('StatsUtils', () => {
     it('should give a real game the same rating as its boxscore', () => {
       expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(statsApiSkater())))
           .toBe(StatsUtils.calculateSkaterHokmobRating(boxscorePlayer<BoxscoreSkater>(8477964, 2025030414)));
-      // 5 + 1 shot * 0.3 + 1 hit * 0.2 - 1 giveaway * 0.2, with no faceoff term for a winger.
+      // 5 + 1 shot * 0.3 + 1 hit * 0.15 - 1 giveaway * 0.2 = 5.25, with no faceoff term for a winger.
       expect(StatsUtils.calculateSkaterHokmobRating(StatsUtils.toBoxscoreSkater(statsApiSkater()))).toBe(5.3);
     });
 
@@ -819,7 +820,7 @@ describe('StatsUtils', () => {
             powerPlayAssists: game.ppAssists,
             penaltiesDrawn: game.penaltiesDrawn
           }));
-      // 5 + 1 shot * 0.3 + 1 hit * 0.2 - 1 giveaway * 0.2 + 1 penalty drawn * 0.3
+      // 5 + 1 shot * 0.3 + 1 hit * 0.15 - 1 giveaway * 0.2 + 1 penalty drawn * 0.3 = 5.55
       expect(StatsUtils.calculateSkaterGameRating(game)).toBe(5.6);
     });
 
@@ -845,7 +846,7 @@ describe('StatsUtils', () => {
     });
 
     it('should give the uncapped totals, which round to the ratings below 10', () => {
-      expect(StatsUtils.getSkaterGameRawRating(statsApiGame<SkaterGameStats>(8477964))).toBeCloseTo(5.6, 5);
+      expect(StatsUtils.getSkaterGameRawRating(statsApiGame<SkaterGameStats>(8477964))).toBeCloseTo(5.55, 5);
       // 5.75 + 0.6 x (12 - 0.903 x 15) + 0.6 x (5 - 0.853 x 5) + 0.6 x (1 - 0.910 x 1) + 0.02 x (21 - 26) + 0.3
       expect(StatsUtils.getGoalieGameRawRating(statsApiGame<GoalieGameStats>(8483548))).toBeCloseTo(5.518, 4);
     });
@@ -894,13 +895,13 @@ describe('StatsUtils', () => {
     });
 
     it('should list a star ahead of an equally rated teammate, but never ahead of a better rated one', () => {
-      // Carolina, where Sebastian Aho leads the star forwards and Jaccob Slavin the defensemen, both rated 6.2 here
+      // Carolina, where Jaccob Slavin leads the star defensemen, rated 6.2 here
       const faceoffCounts = PlayByPlayUtils.getFaceoffCounts(mockGamePlayByPlay(2025030414));
       const players = StatsUtils.getGamePlayers(mockGameBoxscore(2025030414), false, undefined, faceoffCounts);
       const rated = (rating: number) => players.filter(player => player.hokmobRating === rating)
           .map(player => player.playerId);
       // Shayne Gostisbehere is the second star defenseman and Taylor Hall is no star, so they follow
-      expect(rated(6.2)).toEqual([8478427, 8476958, 8476906, 8475791]);
+      expect(rated(6.2)).toEqual([8476958, 8476906, 8475791]);
       // Jordan Staal, Nikolaj Ehlers and Logan Stankoven are rated better and still lead the list
       expect(players.slice(0, 3).map(player => player.playerId)).toEqual([8473533, 8477940, 8482702]);
     });

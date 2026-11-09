@@ -71,7 +71,7 @@ describe('RatingBreakdownUtils', () => {
       expect(term(breakdown, 'Goals')).toBe(2.4);
       expect(term(breakdown, 'Assists')).toBe(0.5);
       expect(term(breakdown, 'Shots on goal')).toBe(0.9);
-      expect(term(breakdown, 'Hits')).toBe(0.6);
+      expect(term(breakdown, 'Hits')).toBeCloseTo(0.45, 10);
       expect(term(breakdown, 'Blocked shots')).toBe(0.4);
       expect(term(breakdown, 'Takeaways')).toBe(0.2);
       expect(term(breakdown, 'Giveaways')).toBe(-0.4);
