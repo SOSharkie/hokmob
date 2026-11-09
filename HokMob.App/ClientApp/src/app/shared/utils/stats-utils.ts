@@ -94,6 +94,9 @@ export class StatsUtils {
 
   public static readonly unknownAssistWeight = 0.5;
 
+  /** The rating weight of a hit. It's a little less than a blocked shot or a takeaway (0.2). */
+  public static readonly hitWeight = 0.15;
+
   /**
    * The rating weight of a penalty drawn. It's less than a minor penalty taken costs (0.5), since not every penalty
    * drawn gives a power play.
@@ -201,7 +204,7 @@ export class StatsUtils {
     hokmobRating += (goals * StatsUtils.goalWeight);
     hokmobRating += StatsUtils.getAssistRating(assists, context);
     hokmobRating += (((skater.sog ?? 0) - goals) * 0.3);
-    hokmobRating += ((skater.hits ?? 0) * 0.2);
+    hokmobRating += ((skater.hits ?? 0) * StatsUtils.hitWeight);
     hokmobRating += ((skater.blockedShots ?? 0) * 0.2);
     hokmobRating += ((skater.takeaways ?? 0) * 0.2);
 

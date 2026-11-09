@@ -98,7 +98,7 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     {key: "powerPlayAssists", label: "Power play assists", weight: "Added back to plus/minus", min: 0, max: 6,
       maxStat: "assists"},
     {key: "sog", label: "Shots on goal", weight: "+0.3 each, goals aside", min: 0, max: 15},
-    {key: "hits", label: "Hits", weight: "+0.2 each", min: 0, max: 15},
+    {key: "hits", label: "Hits", weight: "+0.15 each", min: 0, max: 15},
     {key: "blockedShots", label: "Blocked shots", weight: "+0.2 each", min: 0, max: 12},
     {key: "takeaways", label: "Takeaways", weight: "+0.2 each", min: 0, max: 10},
     {key: "giveaways", label: "Giveaways", weight: "-0.2 each", min: 0, max: 10},

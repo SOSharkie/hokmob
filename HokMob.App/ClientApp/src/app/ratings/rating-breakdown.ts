@@ -74,7 +74,7 @@ export class RatingBreakdownUtils {
     addTerm("Assists", RatingBreakdownUtils.getAssistDetail(assists, context),
         RatingBreakdownUtils.getAssistValue(assists, context));
     addTerm("Shots on goal", "(" + shotsOnGoal + " - " + goals + " scored) x 0.3", (shotsOnGoal - goals) * 0.3);
-    addTerm("Hits", (skater.hits ?? 0) + " x 0.2", (skater.hits ?? 0) * 0.2);
+    addTerm("Hits", (skater.hits ?? 0) + " x " + StatsUtils.hitWeight, (skater.hits ?? 0) * StatsUtils.hitWeight);
     addTerm("Blocked shots", (skater.blockedShots ?? 0) + " x 0.2", (skater.blockedShots ?? 0) * 0.2);
     addTerm("Takeaways", (skater.takeaways ?? 0) + " x 0.2", (skater.takeaways ?? 0) * 0.2);
     addTerm("Penalty minutes", RatingBreakdownUtils.getPenaltyDetail(skater.pim ?? 0),
