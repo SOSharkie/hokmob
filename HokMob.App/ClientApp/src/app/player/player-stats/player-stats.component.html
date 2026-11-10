@@ -1,73 +1,90 @@
-<div class="player-stats-container">
+<div class="player-stats-container" [class.has-rating]="showRating">
   <div class="stats-header">
     <span>{{statTitle}}</span>
   </div>
-  <div *ngIf="!isGoalie" class="stats-grid skater-stats">
-    <div class="stats-item">
-      <span class="item-title">Goals</span>
-      <span class="item-value">{{skaterStats.goals}}</span>
+  <div class="stats-body">
+    <div *ngIf="!isGoalie" class="stats-grid skater-stats">
+      <div class="stats-item">
+        <span class="item-title">Goals</span>
+        <span class="item-value">{{skaterStats.goals}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Assists</span>
+        <span class="item-value">{{skaterStats.assists}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Points</span>
+        <span class="item-value" [ngStyle]="{'color': skaterStats.points > 0 ? '#84dc7b' : ''}">{{skaterStats.points}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title" [title]="'Games Played'">Games</span>
+        <span class="item-value">{{skaterStats.gamesPlayed}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">+/-</span>
+        <span class="item-value">{{skaterStats.plusMinus}}</span>
+      </div>
+      <div class="stats-item faceoff-item">
+        <span class="item-title">Faceoff %</span>
+        <span class="item-value">{{formatFaceoffPercent(skaterStats.faceoffWinPct)}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Shots</span>
+        <span class="item-value">{{skaterStats.shots}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Hits</span>
+        <span class="item-value">{{skaterStats.hits}}</span>
+      </div>
     </div>
-    <div class="stats-item">
-      <span class="item-title">Assists</span>
-      <span class="item-value">{{skaterStats.assists}}</span>
+    <div *ngIf="isGoalie" class="stats-grid goalie-stats">
+      <div class="stats-item">
+        <span class="item-title">Save %</span>
+        <span class="item-value" [ngStyle]="{'background-color': teamColor, 'color': teamTextColor}">{{goalieStats.savePct | savePercentage}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">GAA</span>
+        <span class="item-value" [ngStyle]="{'background-color': teamColor, 'color': teamTextColor}">{{goalieStats.goalsAgainstAverage | goalsAgainstAverage}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Shutouts</span>
+        <span class="item-value">{{goalieStats.shutouts}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Shots Against</span>
+        <span class="item-value">{{goalieStats.shotsAgainst}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Starts</span>
+        <span class="item-value">{{goalieStats.gamesStarted}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Wins</span>
+        <span class="item-value">{{goalieStats.wins}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">Losses</span>
+        <span class="item-value">{{goalieStats.losses}}</span>
+      </div>
+      <div class="stats-item">
+        <span class="item-title">OT Losses</span>
+        <span class="item-value">{{goalieStats.otLosses}}</span>
+      </div>
     </div>
-    <div class="stats-item">
-      <span class="item-title">Points</span>
-      <span class="item-value" [ngStyle]="{'color': skaterStats.points > 0 ? '#84dc7b' : ''}">{{skaterStats.points}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title" [title]="'Games Played'">Games</span>
-      <span class="item-value">{{skaterStats.gamesPlayed}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">+/-</span>
-      <span class="item-value">{{skaterStats.plusMinus}}</span>
-    </div>
-    <div class="stats-item faceoff-item">
-      <span class="item-title">Faceoff %</span>
-      <span class="item-value">{{formatFaceoffPercent(skaterStats.faceoffWinPct)}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">Shots</span>
-      <span class="item-value">{{skaterStats.shots}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">Hits</span>
-      <span class="item-value">{{skaterStats.hits}}</span>
-    </div>
-  </div>
-  <div *ngIf="isGoalie" class="stats-grid goalie-stats">
-    <div class="stats-item">
-      <span class="item-title">Save %</span>
-      <span class="item-value" [ngStyle]="{'background-color': teamColor, 'color': teamTextColor}">{{goalieStats.savePct | savePercentage}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">GAA</span>
-      <span class="item-value" [ngStyle]="{'background-color': teamColor, 'color': teamTextColor}">{{goalieStats.goalsAgainstAverage | goalsAgainstAverage}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">Shutouts</span>
-      <span class="item-value">{{goalieStats.shutouts}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">Shots Against</span>
-      <span class="item-value">{{goalieStats.shotsAgainst}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">Starts</span>
-      <span class="item-value">{{goalieStats.gamesStarted}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">Wins</span>
-      <span class="item-value">{{goalieStats.wins}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">Losses</span>
-      <span class="item-value">{{goalieStats.losses}}</span>
-    </div>
-    <div class="stats-item">
-      <span class="item-title">OT Losses</span>
-      <span class="item-value">{{goalieStats.otLosses}}</span>
+    <div *ngIf="showRating" class="rating-column">
+      <div class="stats-item rating-item">
+        <span class="item-title" [title]="ratingTooltip">HokMob</span>
+        <span class="item-value rating-value"
+              [style.background-color]="averageRatingColor" [title]="ratingTooltip">{{averageRating}}</span>
+      </div>
+      <div *ngIf="!isGoalie" class="stats-item">
+        <span class="item-title" title="5v5 shot attempts for, out of all shot attempts while on the ice">Corsi %</span>
+        <span class="item-value">{{corsiForPct}}</span>
+      </div>
+      <div *ngIf="isGoalie" class="stats-item">
+        <span class="item-title" title="Goals saved above an average goalie facing the same shots">GSAA</span>
+        <span class="item-value">{{goalsSavedAboveAverage}}</span>
+      </div>
     </div>
   </div>
 </div>

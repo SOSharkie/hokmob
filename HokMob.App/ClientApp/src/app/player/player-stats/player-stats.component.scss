@@ -21,32 +21,86 @@
     color: white;
   }
 
+  // The stats, and the rating column on their right when the season has a history file
+  .stats-body {
+    display: flex;
+  }
+
   .stats-grid {
+    flex: 1;
+    min-width: 0;
     display: grid;
     padding: $spacing-x-small $spacing-medium;
     grid-auto-rows: 100px;
     grid-template-rows: repeat(2, 1fr);
     grid-template-columns: repeat(4, 25%);
     height: 185px;
+  }
+
+  // A fifth column like the grid's four, with the rating on top and its stat below. The same height and vertical
+  // padding as the grid, so its two rows line up with the grid's.
+  .rating-column {
+    flex: 0 0 20%;
+    display: grid;
+    grid-template-rows: repeat(2, 1fr);
+    padding: $spacing-x-small $spacing-medium $spacing-x-small 0;
+    height: 185px;
+  }
+
+  .stats-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: larger;
+
+    .item-title {
+      padding: $spacing-medium;
+      color: $gray-02;
+    }
+
+    .item-value {
+      width: fit-content;
+      padding: $spacing-medium $spacing-large;
+      border-radius: 25px;
+      color: white;
+    }
+
+    .rating-value {
+      font-weight: 600;
+    }
+  }
+}
+
+// Five columns in a card that can be as narrow as 375px: the labels shrink with the card (4cqi is 4% of its width), so
+// the skaters' longest (Faceoff %) stays on one line. Full size from a 480px card.
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  // Only here: as a size container on a phone, the card's slot grows taller than the card
+  .player-stats-container.has-rating {
+    container-type: inline-size;
+  }
+
+  // A goalie's longest labels (Shots Against, OT Losses) still take two lines, so every value sits at the bottom of
+  // its cell, and the values of a row line up whatever their label. The grid and the rating column keep two equal
+  // rows, even when a two line label is taller than its half.
+  .player-stats-container.has-rating {
+    .stats-grid, .rating-column {
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    // The column takes the grid's right padding, so the five columns are evenly spaced
+    .stats-grid {
+      padding-right: 0;
+    }
 
     .stats-item {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      font-size: larger;
+      justify-content: flex-end;
+      padding-bottom: $spacing-medium;
+      font-size: clamp(13px, 4cqi, 1.2rem);
 
       .item-title {
-        padding: $spacing-medium;
-        color: $gray-02;
-      }
-
-      .item-value {
-        width: fit-content;
-        padding: $spacing-medium $spacing-large;
-        border-radius: 25px;
-        color: white;
+        padding: $spacing-small $spacing-x-small;
       }
     }
   }
@@ -83,6 +137,25 @@
 
     .skater-stats .stats-item:nth-child(n + 5) {
       grid-column: span 4;
+    }
+
+    // No room for a fifth column: the rating and its stat go side by side above the grid
+    .stats-body {
+      flex-direction: column;
+
+      // Keeps its height in a column, instead of shrinking to fit the card
+      .stats-grid {
+        flex: none;
+      }
+    }
+
+    .rating-column {
+      order: -1;
+      flex: none;
+      height: auto;
+      grid-template-rows: none;
+      grid-template-columns: repeat(2, 1fr);
+      padding: $spacing-small $spacing-medium 0;
     }
   }
 }

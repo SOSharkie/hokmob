@@ -147,6 +147,14 @@ export interface RatedGame {
   uncappedRating?: number;
   /** Seconds. */
   timeOnIce: number;
+  /** Only for a skater: the 5v5 shot attempts (Corsi) for and against while they were on the ice. */
+  satFor?: number;
+  satAgainst?: number;
+  /**
+   * Only for a goalie: the goals he saved above an average goalie facing the same shots
+   * (StatsUtils.getGoalsSavedAboveAverage).
+   */
+  goalsSavedAboveAverage?: number;
 }
 
 /**
