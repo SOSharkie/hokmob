@@ -40,7 +40,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
 | Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a live or finished game's xG and Corsi (the game stats card, the shot maps and the player dialog) |
 | Team | `standings/now` (division and conference), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams` |
-| Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split) |
+| Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split), and the featured season's `assets/history/{season}-2.json` when it has one, for the regular season card's rating column (see [History data](#history-data)) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
 | Stats category (`/stats/{category}`, a card's top 25) | `standings/now`, the card's leaders with `limit=25` and only its category, then `/api/nhl-stats/season-players?season=&gameType=&position=skater` or `goalie` `&ids=` (the 25 IDs) for the other columns, `/api/nhl-stats/seasons`. The categories and their columns are in `StatCategoryUtils` |
 | Playoffs | `playoff-bracket/{year}`, `schedule/playoff-series/{season}/{letter}` for the series dialog, `/api/nhl-stats/seasons` |
@@ -249,10 +249,10 @@ the latest bracket that has series.
 ## History data
 
 The history page doesn't call the NHL APIs. A season's per game stat lines are preloaded into
-`src/assets/history/{season}-{gameType}.json` (`20252026-2.json` is the 2025-26 regular season), which only the history
-page loads (`SeasonHistoryService`), and they're rated in the browser with `StatsUtils.calculateSkaterGameRating` /
-`calculateGoalieGameRating`, the same as the player page's recent games. The file holds the rating's inputs, not
-ratings, so a formula change shows up on the history page without regenerating it.
+`src/assets/history/{season}-{gameType}.json` (`20252026-2.json` is the 2025-26 regular season), which the history
+page loads (`SeasonHistoryService`), as does the player page for its rating column. They're rated in the browser with
+`StatsUtils.calculateSkaterGameRating` / `calculateGoalieGameRating`, the same as the player page's recent games. The
+file holds the rating's inputs, not ratings, so a formula change shows up on the history page without regenerating it.
 
 - **Generating a season:** `npm run build-season-data -- 20252026 [gameType]` from `HokMob.App/ClientApp` (game type 2
   by default), once the season is over: it fails while any of its games isn't final, unless `--partial` is passed. It
@@ -267,6 +267,11 @@ ratings, so a formula change shows up on the history page without regenerating i
   games any team has played (`SeasonRatingStatsUtils.getMinGames`): 5 games when the most is 18.
   `20262027-2.json` runs through 2026-11-08: 282 games, 833 players, 10,151 skater rows and 594 goalie rows, 628 KB
   (119 KB gzipped).
+- **Player page:** when the landing's featured season has a regular season file, the season card gets a fifth column:
+  the player's average HokMob rating over their rated games, and below it a skater's 5v5 Corsi For % (`satFor` /
+  (`satFor` + `satAgainst`)) or a goalie's goals saved above average (`StatsUtils.getGoalsSavedAboveAverage`, summed
+  over their games), from `PlayerSeasonRatingUtils`. The file is shared with the history page and kept for the session.
+  A player who isn't in the file (no game since it was generated) gets no column, and the playoffs card never has one.
 - **URL:** the picked season is a query parameter, `/history?season=20252026`, with `&gameType=3` for a playoffs file. Plain
   `/history`, or a season the page doesn't have, shows the newest season. The cards' filters are query parameters too:
   `distribution`, `leaders` and `best` (`F`, `D` or `G`) and `team` (the leaderboard's team ID), left out at their

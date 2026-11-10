@@ -6,6 +6,7 @@ import {
   SkaterSeasonStats
 } from '@shared/models/nhl-stats-api/player-stats.model';
 import { mockPlayerStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { PlayerSeasonRating } from '@shared/utils/player-season-rating-utils';
 
 import { PlayerStatsComponent } from './player-stats.component';
 
@@ -131,5 +132,60 @@ describe('PlayerStatsComponent', () => {
         .filter(value => value.style.backgroundColor);
     expect(pills.map(pill => pill.textContent.trim())).toEqual(['.895', '2.86']);
     expect(pills.map(pill => pill.style.color)).toEqual(['rgb(27, 27, 27)', 'rgb(27, 27, 27)']);
+  });
+
+  describe('rating column', () => {
+    function showRated(isGoalie: boolean, seasonRating: PlayerSeasonRating, ratingPending: boolean = false): void {
+      fixture.componentRef.setInput('seasonRating', seasonRating);
+      fixture.componentRef.setInput('ratingPending', ratingPending);
+      const stats = mockPlayerStats(isGoalie ? 8476945 : 8477964).regularSeasons[0];
+      show(stats as SkaterSeasonStats | GoalieSeasonStats, isGoalie);
+    }
+
+    /** The column's items, after the grid's eight. */
+    function ratingItems(): string[][] {
+      return items().slice(8);
+    }
+
+    function badge(): HTMLElement {
+      return fixture.nativeElement.querySelector('.rating-column .rating-value');
+    }
+
+    it('should not be there without a rated season', () => {
+      showRated(false, undefined);
+      expect(fixture.nativeElement.querySelector('.rating-column')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.player-stats-container').classList).not.toContain('has-rating');
+      expect(items().length).toBe(8);
+    });
+
+    it('should show a skater\'s average rating, then his Corsi For %, after the grid', () => {
+      showRated(false, {gamesRated: 14, averageRating: 7.456, corsiForPct: 11 / 16, throughDate: '2026-11-08'});
+      expect(fixture.nativeElement.querySelector('.player-stats-container').classList).toContain('has-rating');
+      expect(items().slice(0, 8).map(item => item[0]))
+          .toEqual(['Goals', 'Assists', 'Points', 'Games', '+/-', 'Faceoff %', 'Shots', 'Hits']);
+      expect(ratingItems()).toEqual([['HokMob', '7.46'], ['Corsi %', '68.8%']]);
+      expect(badge().style.backgroundColor).toBe('rgb(30, 200, 84)');
+      expect(badge().title).toBe('Average HokMob rating over 14 games, through Nov 8');
+    });
+
+    it('should show a goalie\'s average rating, then his goals saved above average', () => {
+      showRated(true, {gamesRated: 1, averageRating: 5.9, goalsSavedAboveAverage: -1.578});
+      expect(ratingItems()).toEqual([['HokMob', '5.90'], ['GSAA', '-1.6']]);
+      expect(badge().style.backgroundColor).toBe('rgb(229, 91, 91)');
+      // A finished season has no through date
+      expect(badge().title).toBe('Average HokMob rating over 1 game');
+    });
+
+    it('should keep its place with dashes while the season loads', () => {
+      showRated(false, undefined, true);
+      expect(ratingItems()).toEqual([['HokMob', '-'], ['Corsi %', '-']]);
+      expect(badge().style.backgroundColor).toBe('');
+      expect(badge().title).toBe('Average HokMob rating');
+    });
+
+    it('should show a dash for a skater without a 5v5 shot attempt', () => {
+      showRated(false, {gamesRated: 1, averageRating: 6.1});
+      expect(ratingItems()[1]).toEqual(['Corsi %', '-']);
+    });
   });
 });

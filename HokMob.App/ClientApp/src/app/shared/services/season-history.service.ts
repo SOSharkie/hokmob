@@ -24,8 +24,8 @@ export interface HistorySeasonOption {
 /**
  * The history page's data: a season's per game stat lines, preloaded into src/assets/history by build-season-data.js,
  * and rated in the browser with the same formulas as the game and player pages. A season in progress is a snapshot of
- * its final games, up to the file's throughDate. The file is only loaded by the history page, so it stays out of the
- * main bundle.
+ * its final games, up to the file's throughDate. The file is a static asset, so it stays out of the main bundle. The
+ * history page loads it, and so does the player page for its featured season's rating column.
  */
 @Injectable()
 export class SeasonHistoryService {
@@ -83,7 +83,8 @@ export class SeasonHistoryService {
   /**
    * Rates every skater and goalie row of a season's history in one pass. Each row is turned into the stats API game
    * row it came from and rated by StatsUtils.calculateSkaterGameRating / calculateGoalieGameRating, like the player
-   * page's recent games. Goalies who faced no shots are left out. A game rated 10 also gets its uncapped rating.
+   * page's recent games. Goalies who faced no shots are left out. A game rated 10 also gets its uncapped rating, a
+   * skater's game its 5v5 Corsi counts and a goalie's its goals saved above average, for the player page.
    *
    * @param history - The season's history file.
    */
@@ -147,8 +148,11 @@ export class SeasonHistoryService {
         totalFaceoffs: skaters.totalFaceoffs[row],
         penaltiesDrawn: skaters.penaltiesDrawn[row]
       } as SkaterGameStats;
-      ratedGames.push(toRatedGame(row, skaters, StatsUtils.calculateSkaterGameRating(game),
-          () => StatsUtils.getSkaterGameRawRating(game), game.timeOnIcePerGame));
+      const ratedGame = toRatedGame(row, skaters, StatsUtils.calculateSkaterGameRating(game),
+          () => StatsUtils.getSkaterGameRawRating(game), game.timeOnIcePerGame);
+      ratedGame.satFor = skaters.satFor?.[row];
+      ratedGame.satAgainst = skaters.satAgainst?.[row];
+      ratedGames.push(ratedGame);
     }
 
     const goalies = history.goalies;
@@ -175,8 +179,10 @@ export class SeasonHistoryService {
         shotsAgainst,
         savePct: saves / shotsAgainst
       } as GoalieGameStats;
-      ratedGames.push(toRatedGame(row, goalies, StatsUtils.calculateGoalieGameRating(game),
-          () => StatsUtils.getGoalieGameRawRating(game), game.timeOnIce));
+      const ratedGame = toRatedGame(row, goalies, StatsUtils.calculateGoalieGameRating(game),
+          () => StatsUtils.getGoalieGameRawRating(game), game.timeOnIce);
+      ratedGame.goalsSavedAboveAverage = StatsUtils.getGoalsSavedAboveAverage(StatsUtils.toBoxscoreGoalie(game));
+      ratedGames.push(ratedGame);
     }
     ratedGames.sort((gameA, gameB) => gameA.game.id - gameB.game.id);
 

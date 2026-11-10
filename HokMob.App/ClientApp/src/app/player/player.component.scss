@@ -193,6 +193,17 @@
     .career-beside-stats {
       grid-row: span 2;
     }
+
+    // With its rating column the season card has five columns to the bio's four, so the bio gives it some width:
+    // 8 to 10 beside the career table, or 8 and 9 to the season card's 10 after the playoffs card. The recent games
+    // keep about two thirds below.
+    &.season-rating-cards {
+      grid-template-columns: minmax(0, 8fr) minmax(0, 10fr) minmax(0, 9fr);
+
+      &.with-playoff-stats {
+        grid-template-columns: minmax(0, 8fr) minmax(0, 9fr) minmax(0, 10fr);
+      }
+    }
   }
 }
 

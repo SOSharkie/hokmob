@@ -30,7 +30,8 @@
       </a>
     </div>
   </div>
-  <div class="player-cards">
+  <div class="player-cards" [class.season-rating-cards]="hasSeasonRating"
+       [class.with-playoff-stats]="!!playoffStats">
     <div class="player-bio-container">
       <app-player-bio
         [player]="player"
@@ -54,6 +55,8 @@
           [stats]="regularSeasonStats"
           [teamColor]="teamColor"
           [isGoalie]="isGoalie"
+          [seasonRating]="seasonRating"
+          [ratingPending]="seasonRatingPending"
       ></app-player-stats>
     </div>
     <div *ngIf="stats?.recentGames?.length" class="match-stats-container">

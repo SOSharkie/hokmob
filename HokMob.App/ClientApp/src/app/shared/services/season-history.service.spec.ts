@@ -155,6 +155,19 @@ describe('SeasonHistoryService', () => {
     expect(ratedGamesOf(ratedSeason, 'Frederik Andersen').length).toBe(1);
   });
 
+  it('should keep a skater\'s 5v5 shot attempts and a goalie\'s goals saved above average, for the player page',
+      async () => {
+    const ratedSeason = await loadFixture();
+    const [barbashev] = ratedGamesOf(ratedSeason, 'Ivan Barbashev');
+    expect(barbashev.satFor).toBe(11);
+    expect(barbashev.satAgainst).toBe(5);
+    expect(barbashev.goalsSavedAboveAverage).toBeUndefined();
+    // 18 of 21 at even strength, 13 of 15 on the penalty kill and 1 of 2 shorthanded, against .903, .853 and .910
+    const [hellebuyck] = ratedGamesOf(ratedSeason, 'Connor Hellebuyck');
+    expect(hellebuyck.goalsSavedAboveAverage).toBeCloseTo(18 - 0.903 * 21 + 13 - 0.853 * 15 + 1 - 0.91 * 2, 10);
+    expect(hellebuyck.satFor).toBeUndefined();
+  });
+
   it('should give a traded player each game\'s team', async () => {
     const ratedSeason = await loadFixture();
     // Nic Dowd played for Washington, then Vegas

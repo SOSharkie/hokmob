@@ -3,6 +3,9 @@ import {ActivatedRoute, Params} from "@angular/router";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
+import {SeasonHistoryService} from "@shared/services/season-history.service";
+import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
+import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
@@ -17,7 +20,8 @@ import {
 /**
  * The player page. Two requests: player/{id}/landing for the header and bio, and /api/nhl-stats/player/{id} for the
  * season cards, the career table and the recent games. The bio stays when the stats fail, and the season shown is the
- * landing's featuredStats season, so the off-season shows the last season played.
+ * landing's featuredStats season, so the off-season shows the last season played. When that season has a history
+ * file (SeasonHistoryService), it's loaded too, for the regular season card's average HokMob rating.
  */
 @Component({
   selector: 'app-player',
@@ -39,6 +43,12 @@ export class PlayerComponent implements OnInit {
 
   /** Whether the stats request failed, so the cards, career and recent games are replaced by a message. */
   public statsFailed: boolean = false;
+
+  /** The player's rated regular season. Undefined while it loads, without a history file, or when it fails. */
+  public seasonRating: PlayerSeasonRating;
+
+  /** Whether the featured season's history file is loading, so the card keeps a place for the rating. */
+  public seasonRatingPending: boolean = false;
 
   public teamColor: string = "#000000";
 
@@ -81,6 +91,14 @@ export class PlayerComponent implements OnInit {
     return season ? String(season).substring(4) : "";
   }
 
+  /**
+   * Whether the regular season card has its rating column (loading or loaded), which makes it five columns wide to the
+   * bio's four, so the wide layout gives it more room.
+   */
+  public get hasSeasonRating(): boolean {
+    return !!this.regularSeasonStats && (this.seasonRatingPending || !!this.seasonRating);
+  }
+
   /** The featured season's regular season row, or undefined when there is none. */
   public get regularSeasonStats(): SkaterSeasonStats | GoalieSeasonStats {
     return this.findFeaturedSeason(this.stats?.regularSeasons);
@@ -94,7 +112,8 @@ export class PlayerComponent implements OnInit {
   constructor(private route: ActivatedRoute,
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
-              private nhlStatsApiService: NhlStatsApiService) {}
+              private nhlStatsApiService: NhlStatsApiService,
+              private seasonHistoryService: SeasonHistoryService) {}
 
   public ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
@@ -131,6 +150,7 @@ export class PlayerComponent implements OnInit {
       }
       this.countryFlagPath = player.birthCountry ? "assets/flags/" + player.birthCountry + ".png" : undefined;
       this.retrieveStats();
+      this.retrieveSeasonRating();
     }).catch(() => {
       // The service logs the error. Without the landing there's no player to show at all
       if (this.playerId === playerId) {
@@ -154,6 +174,33 @@ export class PlayerComponent implements OnInit {
   }
 
   /**
+   * Rates the featured regular season from its history file, when there is one. The file is shared with the history
+   * page and kept for the session, so it's only loaded once. A player who isn't in it, or a file that fails, leaves
+   * the card without the rating column.
+   */
+  private retrieveSeasonRating(): void {
+    const playerId = this.playerId;
+    const season = this.player?.featuredStats?.season;
+    const hasHistory = SeasonHistoryService.seasons.some(option =>
+        option.season === season && option.gameType === NhlGameTypeEnum.REGULAR_SEASON);
+    if (!hasHistory) {
+      return;
+    }
+    this.seasonRatingPending = true;
+    this.seasonHistoryService.getSeasonHistory(season, NhlGameTypeEnum.REGULAR_SEASON).then(ratedSeason => {
+      if (this.playerId === playerId) {
+        this.seasonRating = PlayerSeasonRatingUtils.getPlayerSeasonRating(ratedSeason, playerId);
+        this.seasonRatingPending = false;
+      }
+    }).catch(() => {
+      // The service logs the error. The card just goes without the rating
+      if (this.playerId === playerId) {
+        this.seasonRatingPending = false;
+      }
+    });
+  }
+
+  /**
    * The row of the landing's featured season, which is the player's latest season.
    */
   private findFeaturedSeason(seasons: SkaterSeasonStats[] | GoalieSeasonStats[]): SkaterSeasonStats | GoalieSeasonStats {
@@ -170,6 +217,8 @@ export class PlayerComponent implements OnInit {
     this.playerFailed = false;
     this.stats = undefined;
     this.statsFailed = false;
+    this.seasonRating = undefined;
+    this.seasonRatingPending = false;
     this.teamColor = "#000000";
     this.countryFlagPath = undefined;
   }
