@@ -3,6 +3,7 @@ import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-pl
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import {StandingsGroup} from "@shared/models/nhl-web-api/standings.model";
+import {StandingsTypeFilter, StandingsTypeUtils} from "@shared/utils/standings-type-utils";
 
 @Component({
   selector: 'app-league-standings',
@@ -15,13 +16,8 @@ export class LeagueStandingsComponent implements OnInit {
 
   public currentStandingsType: NhlStandingsTypeEnum = NhlStandingsTypeEnum.BY_LEAGUE;
 
-  /** The standings types of the filters, the only ones the URL can select. */
-  private readonly filterTypes = [
-    NhlStandingsTypeEnum.BY_LEAGUE,
-    NhlStandingsTypeEnum.BY_CONFERENCE,
-    NhlStandingsTypeEnum.BY_DIVISION,
-    NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS
-  ];
+  /** The filter buttons. Their types are the only ones the URL can select. */
+  public readonly filters: StandingsTypeFilter[] = StandingsTypeUtils.filters;
 
   constructor(private activatedRoute: ActivatedRoute,
               private router: Router,
@@ -34,7 +30,7 @@ export class LeagueStandingsComponent implements OnInit {
    */
   public ngOnInit() {
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
-      const standingsType = this.filterTypes.find(type => type.toString() === params.get("standingsType"));
+      const standingsType = StandingsTypeUtils.fromQueryParam(params.get("standingsType"));
       this.currentStandingsType = standingsType ?? NhlStandingsTypeEnum.BY_LEAGUE;
       this.updateStandings();
     });
@@ -56,8 +52,6 @@ export class LeagueStandingsComponent implements OnInit {
         }
     );
   }
-
-  protected readonly NhlStandingsTypeEnum = NhlStandingsTypeEnum;
 
   private updateStandings(): void {
     const standingsType = this.currentStandingsType;

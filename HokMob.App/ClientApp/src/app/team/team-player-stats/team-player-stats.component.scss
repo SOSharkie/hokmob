@@ -1,0 +1,268 @@
+@import "variables";
+@import "interaction";
+
+// The space between the card's left edge and its content, smaller on phones
+$table-edge: $spacing-xx-large;
+$table-edge-phone: $spacing-x-large;
+
+// A column header's side padding: room for the sort arrow (8px wide, $spacing-small from the edge) and a gap
+$sort-button-side: 14px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-page-gap;
+  color: white;
+}
+
+.team-player-stats-card {
+  background-color: $black-02;
+  border-radius: 25px;
+  overflow: hidden;
+}
+
+// Waits a moment before fading in, so a quick load doesn't flash the spinner
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-huge;
+  animation: team-player-stats-spinner-in 200ms ease-out 150ms both;
+}
+
+@keyframes team-player-stats-spinner-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.team-player-stats-message {
+  padding: $spacing-huge $spacing-xx-large;
+  text-align: center;
+  color: $gray-03;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: $spacing-large;
+  padding: $spacing-x-large $table-edge $spacing-small;
+
+  .table-title {
+    font-size: 17px;
+    font-weight: 500;
+  }
+
+  .table-season {
+    font-size: small;
+    color: $gray-03;
+    white-space: nowrap;
+  }
+}
+
+// Scrolls sideways inside the card on a narrow screen, with the player column kept in view
+.table-scroll-container {
+  overflow-x: auto;
+  padding-bottom: $spacing-large;
+}
+
+.player-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    padding: $spacing-medium $spacing-small;
+    color: $gray-03;
+    font-weight: normal;
+    white-space: nowrap;
+  }
+
+  // The card's left edge: the title, the Player header and the headshots line up on it. thead th is named again, so this
+  // beats its padding above.
+  thead th.player-header, tbody th.player-cell {
+    padding-left: $table-edge;
+    text-align: left;
+  }
+
+  .player-header, .player-cell {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: $black-02;
+  }
+
+  .stat-header {
+    min-width: 44px;
+    text-align: center;
+  }
+
+  // The same padding on both sides, so the label centers over its column's values and the hover background stays
+  // even. The sort arrow sits in the right padding.
+  .sort-button {
+    @include button-reset;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: $spacing-small $sort-button-side;
+    border-radius: 8px;
+    white-space: nowrap;
+    @include pressable(background-color, color);
+    @include focus-ring;
+    @include hover {
+      color: white;
+      background-color: $black-04;
+    }
+  }
+
+  // The sorted column: a brighter header and a tinted column
+  .sorted-column {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  .stat-header.sorted-column .sort-button {
+    color: white;
+    font-weight: 500;
+  }
+
+  // A small arrow beside the sorted column's header: down for most first, up for least first. It's laid over the
+  // button's right padding, so it takes no room and sorting doesn't shift the headers.
+  .sort-indicator {
+    position: absolute;
+    top: 50%;
+    right: $spacing-small;
+    transform: translateY(-50%);
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    visibility: hidden;
+
+    &.visible {
+      visibility: visible;
+    }
+
+    &.ascending {
+      border-top: none;
+      border-bottom: 5px solid currentColor;
+    }
+  }
+
+  .player-row {
+    border-top: 1px solid $black-04;
+
+    @include hover {
+      background-color: rgba(255, 255, 255, 0.03);
+
+      .player-cell {
+        background-color: #202020;
+      }
+    }
+  }
+
+  .player-cell {
+    padding-top: $spacing-small;
+    padding-bottom: $spacing-small;
+    padding-right: $spacing-medium;
+    font-weight: normal;
+  }
+
+  .player-link {
+    display: flex;
+    align-items: center;
+    gap: $spacing-large;
+    min-width: 0;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    @include pressable(opacity);
+    @include focus-ring;
+    @include hover {
+      .player-name {
+        text-decoration: underline;
+      }
+    }
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
+
+  .player-headshot-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: $gray-01;
+
+    .player-headshot {
+      width: 42px;
+      height: 42px;
+      margin-top: 6px;
+    }
+  }
+
+  .player-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .player-name {
+    white-space: nowrap;
+  }
+
+  .player-position {
+    margin-top: $spacing-x-small;
+    font-size: smaller;
+    color: $gray-03;
+  }
+
+  .stat-cell {
+    padding: $spacing-medium $spacing-small;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: lighter;
+  }
+
+  .stat-cell.sorted-column {
+    font-weight: 500;
+  }
+
+  .rating-badge {
+    display: inline-block;
+    min-width: 34px;
+    padding: $spacing-x-small $spacing-medium;
+    border-radius: 8px;
+    font-weight: 500;
+    color: white;
+  }
+}
+
+// Phones: a smaller headshot and tighter cells, so more columns fit before the table scrolls
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .table-header {
+    padding: $spacing-large $table-edge-phone $spacing-small;
+  }
+
+  .player-stats-table {
+    font-size: 14px;
+
+    thead th.player-header, tbody th.player-cell {
+      padding-left: $table-edge-phone;
+    }
+
+    .player-headshot-container {
+      width: 28px;
+      height: 28px;
+
+      .player-headshot {
+        width: 34px;
+        height: 34px;
+        margin-top: 5px;
+      }
+    }
+  }
+}

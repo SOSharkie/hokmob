@@ -1,56 +1,123 @@
 <div class="team-container">
-  <div class="team-header">
-    <div class="back-container">
-      <button type="button" class="games-back-button" (click)="backToPrevious()">
-        <span class="back-icon" aria-hidden="true">
-          <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
-        </span>
-        <span class="games-label">{{backButtonLabel}}</span>
-      </button>
-    </div>
-    <div *ngIf="team" class="team-logo-container">
-      <app-team-logo class="team-logo" [teamId]="teamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
-    </div>
-    <div class="team-info">
-      <span class="team-name">{{team ? teamName : 'Team not found'}}</span>
-      <div *ngIf="divisionName" class="team-division">
-        <span class="team-division-label">{{divisionName}} Division</span>
+  <div class="team-header-card">
+    <div class="team-header">
+      <div class="back-container">
+        <button type="button" class="games-back-button" (click)="backToPrevious()">
+          <span class="back-icon" aria-hidden="true">
+            <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
+          </span>
+          <span class="games-label">{{backButtonLabel}}</span>
+        </button>
       </div>
+      <div *ngIf="team" class="team-logo-container">
+        <app-team-logo class="team-logo" [teamId]="teamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
+      </div>
+      <div class="team-info">
+        <span class="team-name">{{team ? teamName : 'Team not found'}}</span>
+        <div *ngIf="divisionName" class="team-division">
+          <span class="team-division-label">{{divisionName}} Division</span>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="team" #tabList class="team-tabs" role="tablist" aria-label="Team pages">
+      <button *ngFor="let tab of tabs; let i = index"
+              type="button"
+              role="tab"
+              class="team-tab"
+              [id]="'team-tab-' + tab.id"
+              aria-controls="team-tab-panel"
+              [attr.aria-selected]="tab.id === selectedTab"
+              [attr.tabindex]="tab.id === selectedTab ? 0 : -1"
+              [class.selected-tab]="tab.id === selectedTab"
+              (click)="selectTab(tab.id)"
+              (keydown)="onTabKeydown($event, i)">{{tab.label}}</button>
     </div>
   </div>
-  <div *ngIf="team" class="team-data-container">
-    <div class="team-main-container">
-      <div class="team-stats-container">
-        <app-team-stats
+
+  <div *ngIf="team" id="team-tab-panel" class="team-tab-panel" role="tabpanel"
+       [attr.aria-labelledby]="'team-tab-' + selectedTab" [ngSwitch]="selectedTab">
+
+    <div *ngSwitchCase="'standings'" class="standings-tab">
+      <app-team-standings
           [teamId]="teamId"
-          [teamStats]="teamStats"
-        ></app-team-stats>
-      </div>
-      <div *ngIf="standings?.length" class="team-standings">
-        <app-standings
-            [selectedTeamId]="teamId"
-            [standings]="standings"
-            [defaultStandingsType]="NhlStandingsTypeEnum.BY_CONFERENCE"
-            [showFormAndNext]="false"
-        ></app-standings>
+          [standingsType]="standingsType"
+          (standingsTypeChange)="selectStandingsType($event)"
+      ></app-team-standings>
+    </div>
+
+    <div *ngSwitchCase="'player-stats'" class="player-stats-tab">
+      <app-team-player-stats *ngIf="!seasonFailed"
+          [teamId]="teamId"
+          [season]="season"
+      ></app-team-player-stats>
+      <div *ngIf="seasonFailed" class="team-tab-message">
+        <span>The player stats couldn't be loaded</span>
       </div>
     </div>
-    <div class="team-info-container">
-      <div *ngIf="nextGame" class="next-game-container">
-        <app-team-next-game
-            [game]="nextGame"
-        ></app-team-next-game>
-      </div>
-      <div class="team-form-container">
-        <app-single-team-form
+
+    <div *ngSwitchCase="'team-stats'" class="team-stats-tab">
+      <app-team-stats *ngIf="hasTeamStats"
           [teamId]="teamId"
-          [games]="formGames"
+          [teamStats]="teamStats"
+      ></app-team-stats>
+      <div *ngIf="teamStatsLoaded && !hasTeamStats" class="team-tab-message">
+        <span>No team stats yet</span>
+      </div>
+    </div>
+
+    <div *ngSwitchCase="'games'" class="games-tab">
+      <div class="games-column">
+        <div *ngIf="nextGame" class="next-game-container">
+          <app-team-next-game
+              [game]="nextGame"
+          ></app-team-next-game>
+        </div>
+        <app-team-schedule
+            [games]="scheduleGames"
+        ></app-team-schedule>
+      </div>
+      <div class="games-column">
+        <app-single-team-form
+            [teamId]="teamId"
+            [games]="formGames"
         ></app-single-team-form>
       </div>
-      <div class="team-next-game-container">
-        <app-team-schedule
-          [games]="scheduleGames"
-        ></app-team-schedule>
+    </div>
+
+    <div *ngSwitchDefault class="team-data-container overview-tab">
+      <div class="team-main-container">
+        <div class="team-stats-container">
+          <app-team-stats
+            [teamId]="teamId"
+            [teamStats]="teamStats"
+          ></app-team-stats>
+        </div>
+        <div *ngIf="standings?.length" class="team-standings">
+          <app-standings
+              [selectedTeamId]="teamId"
+              [standings]="standings"
+              [defaultStandingsType]="NhlStandingsTypeEnum.BY_CONFERENCE"
+              [showFormAndNext]="false"
+          ></app-standings>
+        </div>
+      </div>
+      <div class="team-info-container">
+        <div *ngIf="nextGame" class="next-game-container">
+          <app-team-next-game
+              [game]="nextGame"
+          ></app-team-next-game>
+        </div>
+        <div class="team-form-container">
+          <app-single-team-form
+            [teamId]="teamId"
+            [games]="formGames"
+          ></app-single-team-form>
+        </div>
+        <div class="team-next-game-container">
+          <app-team-schedule
+            [games]="scheduleGames"
+          ></app-team-schedule>
+        </div>
       </div>
     </div>
   </div>

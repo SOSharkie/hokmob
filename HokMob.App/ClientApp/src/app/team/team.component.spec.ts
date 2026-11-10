@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, ParamMap, Params, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -13,6 +13,7 @@ import { RouterExtensionService } from '@shared/services/router-extension.servic
 import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 import { ClubScheduleSeason } from '@shared/models/nhl-web-api/club-schedule.model';
 import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
+import { NhlStandingsTypeEnum } from '@shared/enums/nhl-standings-type.enum';
 import {
   mockClubScheduleSeason,
   mockStandingsResponse,
@@ -26,6 +27,10 @@ describe('TeamComponent', () => {
   let fixture: ComponentFixture<TeamComponent>;
   let httpMock: HttpTestingController;
   let routeParams: BehaviorSubject<Params>;
+  let queryParams: BehaviorSubject<ParamMap>;
+  /** The page's URL with its query, which the test Location (SpyLocation) leaves out of path() unlike the browser's. */
+  let currentUrl: string;
+  let replaceState: jasmine.Spy;
 
   const standingsUrl = '/api/nhl/standings/now';
   const scheduleUrl = '/api/nhl/club-schedule-season/';
@@ -33,10 +38,11 @@ describe('TeamComponent', () => {
 
   beforeEach(async () => {
     routeParams = new BehaviorSubject<Params>({});
+    queryParams = new BehaviorSubject<ParamMap>(convertToParamMap({}));
     await TestBed.configureTestingModule({
       imports: [ AppTestingModule ],
       declarations: [ TeamComponent ],
-      providers: [ {provide: ActivatedRoute, useValue: {params: routeParams}} ],
+      providers: [ {provide: ActivatedRoute, useValue: {params: routeParams, queryParamMap: queryParams}} ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
@@ -47,6 +53,12 @@ describe('TeamComponent', () => {
     // always fetches today, which is never cached, so the value here doesn't otherwise affect these tests.
     spyOn(TestBed.inject(NhlStatsApiService), 'getCurrentSeason').and.resolveTo({season: 20252026, isPlayoffMode: false});
     spyOn(console, 'error');
+    currentUrl = '';
+    const location = TestBed.inject(Location);
+    replaceState = spyOn(location, 'replaceState').and.callFake((path: string, query?: string) => {
+      currentUrl = path + (query ? '?' + query : '');
+    });
+    spyOn(location, 'path').and.callFake(() => currentUrl);
   });
 
   afterEach(() => {
@@ -54,8 +66,11 @@ describe('TeamComponent', () => {
     httpMock.verify();
   });
 
-  function open(teamId: string): void {
+  /** Opens a team's page, with the query parameters of its URL (like a tab), as a link or a reload does. */
+  function open(teamId: string, params: Params = {}): void {
+    TestBed.inject(Location).replaceState('/team/' + teamId, new URLSearchParams(params).toString());
     routeParams.next({id: teamId});
+    queryParams.next(convertToParamMap(params));
     fixture = TestBed.createComponent(TeamComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -274,5 +289,202 @@ describe('TeamComponent', () => {
     expect(text('.team-division-label')).toBe('Central Division');
     expect(component.standings[0].title).toBe('Western Conference');
     expect(child('app-single-team-form').teamId).toBe(68);
+  });
+
+  describe('tabs', () => {
+    function tabs(): HTMLButtonElement[] {
+      return Array.from(fixture.nativeElement.querySelectorAll('.team-tab'));
+    }
+
+    function tab(label: string): HTMLButtonElement {
+      return tabs().find(button => button.textContent.trim() === label);
+    }
+
+    function selectedTabLabel(): string {
+      return text('.team-tab.selected-tab');
+    }
+
+    function path(): string {
+      return TestBed.inject(Location).path();
+    }
+
+    function pressKey(button: HTMLElement, key: string): void {
+      button.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true, cancelable: true}));
+      fixture.detectChanges();
+    }
+
+    it('should show the five tabs, on the overview by default', async () => {
+      open('6');
+      await flushTeamPage('BOS');
+      expect(tabs().map(button => button.textContent.trim()))
+          .toEqual(['Overview', 'Standings', 'Player Stats', 'Team Stats', 'Games']);
+      expect(selectedTabLabel()).toBe('Overview');
+      expect(tab('Overview').getAttribute('aria-selected')).toBe('true');
+      expect(tab('Overview').tabIndex).toBe(0);
+      expect(tab('Games').getAttribute('aria-selected')).toBe('false');
+      expect(tab('Games').tabIndex).toBe(-1);
+      expect(child('[role="tabpanel"]').getAttribute('aria-labelledby')).toBe('team-tab-overview');
+      expect(child('.overview-tab app-standings')).not.toBeNull();
+    });
+
+    it('should have no tabs for an unknown team', () => {
+      open('999');
+      expect(tabs().length).toBe(0);
+      expect(child('[role="tabpanel"]')).toBeNull();
+    });
+
+    it('should open the tab of the URL', async () => {
+      open('6', {tab: 'games'});
+      await flushTeamPage('BOS');
+      expect(selectedTabLabel()).toBe('Games');
+      expect(child('.overview-tab')).toBeNull();
+      expect(child('.games-tab app-team-next-game').game.id).toBe(2026010013);
+      expect(child('.games-tab app-team-schedule').games.length).toBe(5);
+      expect(child('.games-tab app-single-team-form').games.map(game => game.id))
+          .toEqual([2025030116, 2025030115, 2025030114, 2025030113, 2025030112]);
+    });
+
+    it('should open the overview for an unknown tab', async () => {
+      open('6', {tab: 'roster'});
+      await flushTeamPage('BOS');
+      expect(selectedTabLabel()).toBe('Overview');
+    });
+
+    it('should save a picked tab in the URL, and leave the overview out of it', async () => {
+      open('6');
+      await flushTeamPage('BOS');
+      replaceState.calls.reset();
+
+      tab('Team Stats').click();
+      fixture.detectChanges();
+      expect(path()).toBe('/team/6?tab=team-stats');
+      expect(child('.team-stats-tab app-team-stats').teamStats.length).toBe(32);
+
+      tab('Overview').click();
+      fixture.detectChanges();
+      expect(path()).toBe('/team/6');
+      expect(replaceState).toHaveBeenCalledTimes(2);
+    });
+
+    it('should keep the URL\'s other query parameters', async () => {
+      open('6', {tab: 'games', utm_source: 'share'});
+      await flushTeamPage('BOS');
+      tab('Overview').click();
+      expect(path()).toBe('/team/6?utm_source=share');
+      tab('Player Stats').click();
+      expect(path()).toBe('/team/6?utm_source=share&tab=player-stats');
+      fixture.detectChanges();
+      await settle();
+      // The player stats tab loads its own data
+      httpMock.match(() => true).forEach(request => request.flush({skaters: [], goalies: []}));
+    });
+
+    it('should not touch the URL for the tab already shown', async () => {
+      open('6', {tab: 'games'});
+      await flushTeamPage('BOS');
+      replaceState.calls.reset();
+      tab('Games').click();
+      expect(replaceState).not.toHaveBeenCalled();
+    });
+
+    it('should open the player stats of the standings season', async () => {
+      open('6', {tab: 'player-stats'});
+      expect(child('app-team-player-stats').season).toBeUndefined();
+      await flushTeamPage('BOS');
+      expect(child('app-team-player-stats').teamId).toBe(6);
+      expect(child('app-team-player-stats').season).toBe(20252026);
+    });
+
+    it('should say the player stats failed when the standings did', async () => {
+      open('6', {tab: 'player-stats'});
+      httpMock.expectOne(standingsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
+      await settle();
+      httpMock.match(scheduleUrl + 'BOS/20252026')
+          .forEach(request => request.flush(mockClubScheduleSeason('BOS', 20252026)));
+      await settle();
+      expect(child('app-team-player-stats')).toBeNull();
+      expect(text('.team-tab-message')).toBe('The player stats couldn\'t be loaded');
+    });
+
+    it('should say there are no team stats when they fail', async () => {
+      open('6', {tab: 'team-stats'});
+      httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
+      httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
+      await settle();
+      expect(child('.team-tab-message')).toBeNull();
+      httpMock.expectOne(teamStatsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      httpMock.match(scheduleUrl + 'BOS/20252026')
+          .forEach(request => request.flush(mockClubScheduleSeason('BOS', 20252026)));
+      await settle();
+      expect(child('app-team-stats')).toBeNull();
+      expect(text('.team-tab-message')).toBe('No team stats yet');
+    });
+
+    it('should open the standings tab with the standings type of the URL', async () => {
+      open('6', {tab: 'standings', standingsType: 'byConference'});
+      await flushTeamPage('BOS');
+      expect(child('app-team-standings').teamId).toBe(6);
+      expect(child('app-team-standings').standingsType).toBe(NhlStandingsTypeEnum.BY_CONFERENCE);
+    });
+
+    it('should open the standings tab on the divisions without a type, or with an unknown one', async () => {
+      open('6', {tab: 'standings', standingsType: 'preseason'});
+      await flushTeamPage('BOS');
+      expect(child('app-team-standings').standingsType).toBe(NhlStandingsTypeEnum.BY_DIVISION);
+    });
+
+    it('should save the standings type in the URL while the standings tab is open', async () => {
+      open('6', {tab: 'standings'});
+      await flushTeamPage('BOS');
+      const standings = child('app-team-standings');
+
+      // What the standings tab's filters ask for (standingsTypeChange)
+      component.selectStandingsType(NhlStandingsTypeEnum.BY_LEAGUE);
+      fixture.detectChanges();
+      expect(path()).toBe('/team/6?tab=standings&standingsType=byLeague');
+      expect(standings.standingsType).toBe(NhlStandingsTypeEnum.BY_LEAGUE);
+
+      // The default type is left out, and another tab drops the type
+      component.selectStandingsType(NhlStandingsTypeEnum.BY_DIVISION);
+      expect(path()).toBe('/team/6?tab=standings');
+      component.selectStandingsType(NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS);
+      tab('Games').click();
+      expect(path()).toBe('/team/6?tab=games');
+
+      // Back on the standings tab, the type picked last is still shown and saved
+      tab('Standings').click();
+      expect(path()).toBe('/team/6?tab=standings&standingsType=wildCardWithLeaders');
+    });
+
+    it('should move between the tabs with the arrow keys, Home and End', async () => {
+      open('6');
+      await flushTeamPage('BOS');
+
+      pressKey(tab('Overview'), 'ArrowRight');
+      expect(selectedTabLabel()).toBe('Standings');
+      expect(document.activeElement).toBe(tab('Standings'));
+
+      pressKey(tab('Standings'), 'End');
+      expect(selectedTabLabel()).toBe('Games');
+      pressKey(tab('Games'), 'ArrowRight');
+      expect(selectedTabLabel()).toBe('Overview');
+      pressKey(tab('Overview'), 'ArrowLeft');
+      expect(selectedTabLabel()).toBe('Games');
+      pressKey(tab('Games'), 'Home');
+      expect(selectedTabLabel()).toBe('Overview');
+      expect(path()).toBe('/team/6');
+
+      pressKey(tab('Overview'), 'Enter');
+      expect(selectedTabLabel()).toBe('Overview');
+    });
+
+    it('should follow a link to another tab', async () => {
+      open('6', {tab: 'games'});
+      await flushTeamPage('BOS');
+      queryParams.next(convertToParamMap({tab: 'team-stats'}));
+      fixture.detectChanges();
+      expect(selectedTabLabel()).toBe('Team Stats');
+    });
   });
 });

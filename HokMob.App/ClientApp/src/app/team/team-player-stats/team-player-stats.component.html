@@ -1,0 +1,60 @@
+<div *ngIf="isLoading" class="team-player-stats-card loading-container">
+  <app-loading-spinner class="loading-spinner"></app-loading-spinner>
+</div>
+<div *ngIf="!isLoading && hasError" class="team-player-stats-card team-player-stats-message">
+  <span>The player stats couldn't be loaded</span>
+</div>
+<div *ngIf="!isLoading && !hasError && !tables.length" class="team-player-stats-card team-player-stats-message">
+  <span>No player stats yet</span>
+</div>
+<div *ngFor="let table of tables" class="team-player-stats-card" [ngClass]="table.id + '-table-card'">
+  <div class="table-header">
+    <span class="table-title">{{table.title}}</span>
+    <span class="table-season">{{seasonLabel}} Regular Season</span>
+  </div>
+  <div class="table-scroll-container">
+    <table class="player-stats-table">
+      <thead>
+        <tr>
+          <th class="player-header" scope="col"><span>Player</span></th>
+          <th *ngFor="let column of visibleColumns(table); trackBy: trackColumn"
+              class="stat-header" scope="col"
+              [ngClass]="column.id + '-column'"
+              [class.sorted-column]="table.sortColumn?.id === column.id"
+              [attr.aria-sort]="getAriaSort(table, column)">
+            <button type="button" class="sort-button" [title]="getColumnTitle(column)"
+                    (click)="sortBy(table, column)">
+              <span>{{column.label}}</span>
+              <span class="sort-indicator" aria-hidden="true"
+                    [class.visible]="table.sortColumn?.id === column.id"
+                    [class.ascending]="table.sortColumn?.id === column.id && table.sortDirection === 'ascending'"></span>
+            </button>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of table.rows; trackBy: trackPlayer" class="player-row">
+          <th class="player-cell" scope="row">
+            <a class="player-link" [routerLink]="['/player', row.playerId]">
+              <span class="player-headshot-container">
+                <img [src]="row.headshot" (error)="showBlankHeadshot($event)" alt="" loading="lazy"
+                     class="player-headshot">
+              </span>
+              <span class="player-info">
+                <span class="player-name">{{row.name}}</span>
+                <span class="player-position">{{row.position}}</span>
+              </span>
+            </a>
+          </th>
+          <td *ngFor="let column of visibleColumns(table); trackBy: trackColumn"
+              class="stat-cell" [ngClass]="column.id + '-column'"
+              [class.sorted-column]="table.sortColumn?.id === column.id">
+            <span *ngIf="column.isRating && row.rating; else plainValue" class="rating-badge"
+                  [style.background-color]="getRatingColor(row)">{{column.format(row)}}</span>
+            <ng-template #plainValue><span>{{column.format(row)}}</span></ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

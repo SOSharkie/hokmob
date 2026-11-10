@@ -3,6 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {TeamSeasonStats, TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
 import {GoalieSeasonStats, PlayerStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {SeasonPlayersResponse} from "@shared/models/nhl-stats-api/season-players.model";
+import {TeamPlayersResponse} from "@shared/models/nhl-stats-api/team-players.model";
 import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {CurrentSeason, SeasonDates, SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
@@ -22,6 +23,8 @@ export class NhlStatsApiService {
   private readonly nhlLeadersUrl = "/api/nhl-stats/leaders";
 
   private readonly nhlSeasonPlayersUrl = "/api/nhl-stats/season-players";
+
+  private readonly nhlTeamPlayersUrl = "/api/nhl-stats/team-players";
 
   private readonly nhlSeasonsUrl = "/api/nhl-stats/seasons";
 
@@ -111,6 +114,30 @@ export class NhlStatsApiService {
       return this.http.get<SeasonPlayersResponse>(url).subscribe({
         next: (response) => {
           resolve(response?.players ?? []);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+   * Gets a team's skater and goalie stats for one season, for the team page's player stats tab. Only a traded
+   * player's games for this team count. A season the team hasn't played yet resolves empty lists.
+   *
+   * @param teamId - The NHL team ID, like 28.
+   * @param season - The season ID, like 20252026.
+   * @param gameType - 2 for the regular season (the default), 3 for the playoffs.
+   */
+  public getTeamPlayerStats(teamId: number, season: number | string,
+                            gameType: number = 2): Promise<TeamPlayersResponse> {
+    const url = this.nhlTeamPlayersUrl + "?teamId=" + teamId + "&season=" + season + "&gameType=" + gameType;
+    return new Promise((resolve, reject) => {
+      return this.http.get<TeamPlayersResponse>(url).subscribe({
+        next: (response) => {
+          resolve({skaters: response?.skaters ?? [], goalies: response?.goalies ?? []});
         },
         error: (error) => {
           console.error(error);

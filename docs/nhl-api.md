@@ -39,7 +39,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 |---|---|
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
 | Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a live or finished game's xG and Corsi (the game stats card, the shot maps and the player dialog) |
-| Team | `standings/now` (division and conference), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams` |
+| Team | `standings/now` (division, conference and season), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams`. The standings tab loads `standings/now` again for its type, and the player stats tab `/api/nhl-stats/team-players?teamId=&season=&gameType=2` and the season's `assets/history/{season}-2.json` when it has one (see [Team page](#team-page)) |
 | Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split), and the featured season's `assets/history/{season}-2.json` when it has one, for the regular season card's rating column (see [History data](#history-data)) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
 | Stats category (`/stats/{category}`, a card's top 25) | `standings/now`, the card's leaders with `limit=25` and only its category, then `/api/nhl-stats/season-players?season=&gameType=&position=skater` or `goalie` `&ids=` (the 25 IDs) for the other columns, `/api/nhl-stats/seasons`. The categories and their columns are in `StatCategoryUtils` |
@@ -103,6 +103,9 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
   `cayenneExp=seasonId=20252026 and gameTypeId=2`.
 - **Some players' season rows:** `playerId in (...)` with the season and game type, e.g. a top 25's rows in one call
   per report (`/api/nhl-stats/season-players` takes at most 25 IDs). Rows come back in no particular order.
+- **A team's season rows:** `teamId=<id>` with the season and game type gives one row per player who played for the
+  team, counting only their games for it: Lukas Reichel's 2025-26 row for Boston has 10 games, though `teamAbbrevs`
+  still lists every team of his season (`"CHI,VAN,BOS"`). `skater/realtime` and `goalie/summary` take the same filter.
 
 | Report | Fields used |
 |---|---|
@@ -166,6 +169,26 @@ from their edge. `NhlApiClient` keeps the scoreboard up through it (the reasonin
   intended bound; the client recovers on its next refresh.
 - **Errors are JSON:** `NhlController` never passes an upstream error body through. Any status of 400 or more comes
   back as `{"status": <code>, "error": "The NHL API request failed."}`.
+
+## Team page
+
+`/team/{id}` has five tabs, kept in the `tab` query parameter (`overview`, the default, is left out): `standings`,
+`player-stats`, `team-stats` and `games` (`TeamTabs`). The standings tab's type is `standingsType`, as on the standings
+page (`StandingsTypeUtils`), left out at its default, the divisions. Picking a tab rewrites the URL with
+`Location.replaceState`, like the history page's filters, so it doesn't scroll to the top or add a history entry, and
+the back button still leaves the page.
+
+- **Overview:** the team stats card, the conference standings, the next game, the form and the schedule.
+- **Standings:** the whole league's standings of the picked type, with the team's row highlighted.
+- **Player stats:** a sortable table of skaters (GP, G, A, P, +/-, S, hits, FO%) and one of goalies (GS, W, L, OTL,
+  SV%, GAA, SO, SA), from `/api/nhl-stats/team-players` (`skater/summary` merged with `skater/realtime`, and
+  `goalie/summary`, filtered by team). The season is the standings' season, so it matches the overview between
+  seasons; only the regular season for now. A season with a history file adds the average HokMob rating and a skater's
+  Corsi For % or a goalie's goals saved above average, from the player's games for this team only
+  (`PlayerSeasonRatingUtils.getTeamSeasonRatings`). The file is a snapshot, so a season in progress is rated through
+  its `throughDate` (the column's tooltip says so), while the stats are current.
+- **Team stats:** the team stats card.
+- **Games:** the next game and the schedule, and the form.
 
 ## Season leaders
 
