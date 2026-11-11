@@ -32,7 +32,7 @@ A request to one of them is a regression.
 - `HokMob.App/Controllers/NhlSearchController.cs`: `/api/nhl-search/player?q=…` → the player search
   (`NhlSearchApiClient`). Only allowlisted query parameters are forwarded.
 - `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/season-players`,
-  `/teams`, `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
+  `/team-players?teamId=&season=&gameType=`, `/teams`, `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
   into one response.
 - `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, and each
   shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page. `NaturalStatTrickClient` caches it and stays under the token
@@ -51,7 +51,7 @@ A request to one of them is a regression.
   `_rink-card.scss`, shared by the top players card and a future game's season leaders card. Its card and header
   toggle are in `_rink-card-base.scss`, which the shot map card imports. The player game dialog's shot map
   (`player-shot-map`) draws its own half rink. See "Shot maps" in `docs/nhl-api.md`.
-- Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team`, `player`, `stats`
+- Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team` (tabs in `team-tabs.ts`, see "Team page" in `docs/nhl-api.md`), `player`, `stats`
   (the leaderboards, and each category's top 25 table at `/stats/{category}`),
   `draft`, `ratings` (the HokMob rating explorer, which a game's player dialog can open on a player's stat line),
   `history` (season-wide rating charts of a season, rated in the browser from a preloaded file), `header`,

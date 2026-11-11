@@ -8,6 +8,7 @@ import {
   mockSeasonDates,
   mockSeasonPlayersGoalieSavePctg,
   mockSeasonPlayersSkaterPoints,
+  mockTeamPlayers,
   mockTeamStats
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {
@@ -222,6 +223,44 @@ describe('NhlStatsApiService', () => {
       const rejection = expectAsync(draftStats).toBeRejectedWith(jasmine.objectContaining({status: 502}));
       httpMock.expectOne('/api/nhl-stats/draft?year=2015&round=1')
           .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getTeamPlayerStats', () => {
+    const bostonUrl = '/api/nhl-stats/team-players?teamId=6&season=20252026&gameType=2';
+
+    it('should resolve the real skaters and goalies of a team', async () => {
+      const teamPlayers = service.getTeamPlayerStats(6, 20252026);
+      httpMock.expectOne(bostonUrl).flush(mockTeamPlayers());
+
+      const {skaters, goalies} = await teamPlayers;
+      expect(skaters.length).toBe(32);
+      expect(goalies.length).toBe(3);
+      const pastrnak = skaters.find(skater => skater.skaterFullName === 'David Pastrnak');
+      expect(pastrnak.points).toBe(100);
+      expect(pastrnak.hits).toBe(86);
+      expect(goalies.find(goalie => goalie.goalieFullName === 'Jeremy Swayman').wins).toBe(31);
+    });
+
+    it('should ask for the playoffs when that game type is given', async () => {
+      const teamPlayers = service.getTeamPlayerStats(6, '20252026', 3);
+      httpMock.expectOne('/api/nhl-stats/team-players?teamId=6&season=20252026&gameType=3')
+          .flush({skaters: [], goalies: []});
+      expect(await teamPlayers).toEqual({skaters: [], goalies: []});
+    });
+
+    it('should resolve empty lists for a response without them', async () => {
+      const teamPlayers = service.getTeamPlayerStats(6, 20252026);
+      httpMock.expectOne(bostonUrl).flush({});
+      expect(await teamPlayers).toEqual({skaters: [], goalies: []});
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const teamPlayers = service.getTeamPlayerStats(6, 20252026);
+      const rejection = expectAsync(teamPlayers).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne(bostonUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
     });

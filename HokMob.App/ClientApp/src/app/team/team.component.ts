@@ -1,5 +1,6 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Params} from "@angular/router";
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute, ParamMap, Params} from "@angular/router";
+import {Location} from "@angular/common";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
@@ -14,11 +15,19 @@ import {ClubScheduleGame, ClubScheduleSeason} from "@shared/models/nhl-web-api/c
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
 import {TeamSeasonStats} from "@shared/models/nhl-stats-api/team-stats.model";
 import {NhlTeamCustomModel} from "@shared/models/nhl-team.model";
+import {StandingsTypeUtils} from "@shared/utils/standings-type-utils";
+import {TeamStandingsComponent} from "@app/team/team-standings/team-standings.component";
+import {TeamTab, TeamTabId, TeamTabs} from "@app/team/team-tabs";
 import * as dayjs from "dayjs";
 
 /**
- * The team page. One club-schedule-season/{abbrev}/now response feeds the form, the schedule and the next game, the
- * standings give the division and conference, and the stats API gives the season stats card.
+ * The team page: a header with the team's tabs (TeamTabs), and the picked tab below it. One
+ * club-schedule-season/{abbrev}/now response feeds the form, the schedule and the next game of the overview and games
+ * tabs, the standings give the division, conference and season, and the stats API gives the season stats card. The
+ * standings and player stats tabs load their own data when they're opened.
+ *
+ * The tab is the tab query parameter (/team/6?tab=player-stats), and the standings tab's type is standingsType, like
+ * on the standings page. Picking a tab rewrites the URL without the router (see saveTabToUrl).
  */
 @Component({
   selector: 'app-team',
@@ -38,6 +47,25 @@ export class TeamComponent implements OnInit, OnDestroy {
   public readonly logoMaxWidth: number = 111;
 
   public teamColor: string = "#000000";
+
+  public readonly tabs: TeamTab[] = TeamTabs.tabs;
+
+  @ViewChild("tabList")
+  private tabList: ElementRef<HTMLElement>;
+
+  public selectedTab: TeamTabId = TeamTabs.defaultTab;
+
+  /** The standings tab's type, from the standingsType query parameter. */
+  public standingsType: NhlStandingsTypeEnum = TeamStandingsComponent.defaultStandingsType;
+
+  /** The season of the standings, which the stats cards and the player stats tab show. Undefined until they load. */
+  public season: number;
+
+  /** Whether the standings failed, so there's no season for the player stats tab. */
+  public seasonFailed: boolean = false;
+
+  /** Whether the team stats request is over, so the team stats tab can tell an empty season from a pending one. */
+  public teamStatsLoaded: boolean = false;
 
   /** The team's division, from its standings row. Empty until the standings load. */
   public divisionName: string = "";
@@ -74,7 +102,13 @@ export class TeamComponent implements OnInit, OnDestroy {
     return this.team?.name;
   }
 
+  /** Whether the team stats have the team's row, which the team stats card needs. */
+  public get hasTeamStats(): boolean {
+    return this.teamStats.some(stats => stats.teamId === this.teamId);
+  }
+
   constructor(private route: ActivatedRoute,
+              private location: Location,
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
               private nhlStandingAndPlayoffService: NhlStandingAndPlayoffService,
@@ -94,6 +128,13 @@ export class TeamComponent implements OnInit, OnDestroy {
       this.retrieveStandings();
       this.retrieveSchedule();
     });
+    this.route.queryParamMap.subscribe((params: ParamMap) => {
+      this.selectedTab = TeamTabs.fromQueryParam(params.get("tab"));
+      this.standingsType = StandingsTypeUtils.fromQueryParam(params.get("standingsType"))
+          ?? TeamStandingsComponent.defaultStandingsType;
+      // After the tab bar renders: a link to the last tabs opens with the selected one off screen on a phone
+      setTimeout(() => this.scrollSelectedTabIntoView());
+    });
   }
 
   public ngOnDestroy(): void {
@@ -101,10 +142,92 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Shows a tab and saves it in the URL, so a reload or a shared link opens the same tab.
+   */
+  public selectTab(tab: TeamTabId): void {
+    if (tab === this.selectedTab) {
+      return;
+    }
+    this.selectedTab = tab;
+    this.saveTabToUrl();
+  }
+
+  /**
+   * Shows another standings type in the standings tab and saves it in the URL.
+   */
+  public selectStandingsType(type: NhlStandingsTypeEnum): void {
+    this.standingsType = type;
+    this.saveTabToUrl();
+  }
+
+  /**
+   * Moves between the tabs with the arrow keys, Home and End, as a tab list does, and shows the tab moved to.
+   *
+   * @param event - The key press on a tab.
+   * @param index - The index of the tab that has the focus.
+   */
+  public onTabKeydown(event: KeyboardEvent, index: number): void {
+    const lastIndex = this.tabs.length - 1;
+    const nextIndex: number = {
+      ArrowRight: index === lastIndex ? 0 : index + 1,
+      ArrowLeft: index === 0 ? lastIndex : index - 1,
+      Home: 0,
+      End: lastIndex
+    }[event.key];
+    if (nextIndex === undefined) {
+      return;
+    }
+    event.preventDefault();
+    this.selectTab(this.tabs[nextIndex].id);
+    (this.tabList?.nativeElement.children[nextIndex] as HTMLElement)?.focus();
+  }
+
+  /**
+   * Scrolls the tab bar sideways, and only it, so the selected tab is in view. The tabs only overflow on a phone.
+   */
+  private scrollSelectedTabIntoView(): void {
+    const tabList = this.tabList?.nativeElement;
+    const tab = tabList?.querySelector(".selected-tab") as HTMLElement;
+    if (!tab) {
+      return;
+    }
+    if (tab.offsetLeft < tabList.scrollLeft) {
+      tabList.scrollLeft = tab.offsetLeft;
+    } else if (tab.offsetLeft + tab.offsetWidth > tabList.scrollLeft + tabList.clientWidth) {
+      tabList.scrollLeft = tab.offsetLeft + tab.offsetWidth - tabList.clientWidth;
+    }
+  }
+
+  /**
    * Goes back to the previous page, or without one (the team was opened directly) to today's games.
    */
   public backToPrevious(): void {
     this.routerExtensionService.back("/");
+  }
+
+  /**
+   * Writes the tab to the URL, leaving out the overview, and the standings type while the standings tab is open. It
+   * doesn't go through the router, which would scroll to the top of the page and add a history entry per tab, so the
+   * back button still leaves the team page. The history state is kept, because the back buttons and the scroll
+   * restoration need the router's page ID in it (like the history page's filters).
+   */
+  private saveTabToUrl(): void {
+    const [path, query] = this.location.path().split("?");
+    const params = new URLSearchParams(query);
+    const isStandingsTypeShown = this.selectedTab === "standings"
+        && this.standingsType !== TeamStandingsComponent.defaultStandingsType;
+    const values: {[name: string]: string} = {
+      tab: this.selectedTab === TeamTabs.defaultTab ? null : this.selectedTab,
+      standingsType: isStandingsTypeShown ? this.standingsType : null
+    };
+    Object.entries(values).forEach(([name, value]) => {
+      if (value) {
+        params.set(name, value);
+      } else {
+        params.delete(name);
+      }
+    });
+    this.location.replaceState(path, params.toString(), this.location.getState());
   }
 
   /**
@@ -119,20 +242,28 @@ export class TeamComponent implements OnInit, OnDestroy {
           ? standings.filter(group => group.title === teamRow.conferenceName + " Conference")
           : [];
       if (teamRow?.seasonId) {
+        this.season = teamRow.seasonId;
         this.retrieveTeamStats(teamRow.seasonId);
+      } else {
+        this.seasonFailed = true;
+        this.teamStatsLoaded = true;
       }
     }).catch(() => {
-      // The service logs the error. The page keeps working without the standings, division and stats card
+      // The service logs the error. The page keeps working without the standings, division and stats
       this.standings = [];
+      this.seasonFailed = true;
+      this.teamStatsLoaded = true;
     });
   }
 
   private retrieveTeamStats(season: number): void {
     this.nhlStatsApiService.getTeamStats(season).then(teamStats => {
       this.teamStats = teamStats;
+      this.teamStatsLoaded = true;
     }).catch(() => {
       // The service logs the error. Without stats the card isn't shown
       this.teamStats = [];
+      this.teamStatsLoaded = true;
     });
   }
 
@@ -235,7 +366,10 @@ export class TeamComponent implements OnInit, OnDestroy {
   private resetTeamData(): void {
     this.divisionName = "";
     this.standings = undefined;
+    this.season = undefined;
+    this.seasonFailed = false;
     this.teamStats = [];
+    this.teamStatsLoaded = false;
     this.formGames = [];
     this.scheduleGames = [];
     this.nextGame = undefined;

@@ -41,6 +41,9 @@ namespace HokMob.App.Controllers
 
         private const int MaxLeaderLimit = 25;
 
+        /// <summary>Above every NHL team ID, current and former (Utah Mammoth is 68).</summary>
+        private const int MaxTeamId = 100;
+
         /// <summary>The first draft the draft page shows.</summary>
         private const int FirstDraftYear = 2006;
 
@@ -206,6 +209,52 @@ namespace HokMob.App.Controllers
             Merge(players, realtimeTask.Result, "playerId", SkaterRealtimeFields);
 
             return new JsonResult(new JsonObject {["players"] = ToJsonArray(players)});
+        }
+
+        /// <summary>
+        /// Returns a team's player stats for one season, as { skaters, goalies } in no particular order: the team page's
+        /// player stats tab. Filtered by team, the stats API counts only a traded player's games for this team, though
+        /// teamAbbrevs still lists every team of their season ("SJS,NYR"). A skater's rows include the realtime stats
+        /// (hits, blocks, takeaways and giveaways), which are left out when that call fails.
+        /// </summary>
+        /// <param name="teamId">The NHL team ID, like 28.</param>
+        /// <param name="season">The season ID, like 20252026.</param>
+        /// <param name="gameType">2 for the regular season, 3 for the playoffs.</param>
+        [HttpGet("team-players")]
+        public async Task<IActionResult> GetTeamPlayerStats(int teamId, int season, int gameType,
+            CancellationToken cancellationToken)
+        {
+            if (teamId <= 0 || teamId > MaxTeamId || !IsValidSeason(season) || !IsValidGameType(gameType))
+            {
+                return BadRequest();
+            }
+
+            var parameters = new[]
+            {
+                new KeyValuePair<string, string>("isAggregate", "false"),
+                new KeyValuePair<string, string>("isGame", "false"),
+                new KeyValuePair<string, string>("limit", "-1"),
+                new KeyValuePair<string, string>("cayenneExp",
+                    $"seasonId={season} and gameTypeId={gameType} and teamId={teamId}")
+            };
+            var skatersTask = _nhlStatsApiClient.GetReportAsync("skater/summary", parameters, cancellationToken);
+            var realtimeTask = _nhlStatsApiClient.GetReportAsync("skater/realtime", parameters, cancellationToken);
+            var goaliesTask = _nhlStatsApiClient.GetReportAsync("goalie/summary", parameters, cancellationToken);
+            await Task.WhenAll(skatersTask, realtimeTask, goaliesTask);
+
+            var skaters = skatersTask.Result;
+            var goalies = goaliesTask.Result;
+            if (skaters == null || goalies == null)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway);
+            }
+            Merge(skaters, realtimeTask.Result, "playerId", SkaterRealtimeFields);
+
+            return new JsonResult(new JsonObject
+            {
+                ["skaters"] = ToJsonArray(skaters),
+                ["goalies"] = ToJsonArray(goalies)
+            });
         }
 
         /// <summary>

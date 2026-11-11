@@ -13,12 +13,17 @@
   margin: 0 auto;
   padding: $spacing-page-gap;
 
+  // The header and the tabs below it, in one card like Fotmob's
+  .team-header-card {
+    background-color: $black-02;
+    border-radius: 25px;
+    overflow: hidden;
+  }
+
   .team-header {
     display: flex;
     align-items: center;
     height: 100px;
-    background-color: $black-02;
-    border-radius: 25px;
     position: relative;
     overflow: hidden;
 
@@ -72,6 +77,90 @@
         }
       }
     }
+  }
+
+  // The tab bar: plain labels, with a bar under the selected one. It scrolls sideways on a narrow phone rather than
+  // wrapping.
+  .team-tabs {
+    // The tabs' offsetParent, which scrollSelectedTabIntoView measures from
+    position: relative;
+    display: flex;
+    gap: clamp(#{$spacing-small}, 1.5vw, #{$spacing-x-large});
+    padding: 0 clamp(#{$spacing-large}, 2vw, 24px);
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .team-tab {
+      @include button-reset;
+      position: relative;
+      flex-shrink: 0;
+      padding: $spacing-large $spacing-large $spacing-x-large;
+      font-size: 15px;
+      font-weight: 500;
+      white-space: nowrap;
+      color: $gray-03;
+      border-radius: 8px 8px 0 0;
+      @include pressable(color, background-color);
+      @include focus-ring(-2px);
+      @include hover {
+        color: white;
+      }
+
+      // The bar under the selected tab
+      &::after {
+        content: "";
+        position: absolute;
+        left: $spacing-large;
+        right: $spacing-large;
+        bottom: 0;
+        height: 3px;
+        border-radius: 3px 3px 0 0;
+        background-color: transparent;
+        transition: background-color 150ms ease-out;
+      }
+
+      &.selected-tab {
+        color: white;
+
+        &::after {
+          background-color: white;
+        }
+      }
+    }
+  }
+
+  // Each tab lays its cards out in a grid, so more cards can be added next to the current ones
+  .team-stats-tab {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+    gap: $spacing-page-gap;
+    align-items: start;
+  }
+
+  .games-tab {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: $spacing-page-gap;
+    align-items: start;
+
+    .games-column {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-page-gap;
+      min-width: 0;
+    }
+  }
+
+  .team-tab-message {
+    padding: $spacing-huge $spacing-xx-large;
+    text-align: center;
+    color: $gray-03;
+    background-color: $black-02;
+    border-radius: 25px;
   }
 
   .team-data-container {
@@ -152,6 +241,10 @@
 
 // Mobile Display
 @media only screen and (max-width: $mobile-screen-breakpoint) {
+  .team-tabs .team-tab {
+    font-size: 14px;
+  }
+
   .team-header {
     .back-container {
       width: 70px;

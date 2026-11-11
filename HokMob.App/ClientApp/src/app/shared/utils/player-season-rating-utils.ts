@@ -1,4 +1,4 @@
-import {RatedSeason} from "@shared/models/nhl-history/season-history.model";
+import {RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
 
 /**
@@ -31,6 +31,34 @@ export class PlayerSeasonRatingUtils {
    */
   public static getPlayerSeasonRating(ratedSeason: RatedSeason, playerId: number): PlayerSeasonRating {
     const games = (ratedSeason?.ratedGames ?? []).filter(game => game.player.id === playerId);
+    return PlayerSeasonRatingUtils.summarizeGames(ratedSeason, games);
+  }
+
+  /**
+   * Sums the rated games of every player of a team, by player ID. Only their games for this team count, so a traded
+   * player's rating matches their stats with the team. A player without a rated game for the team isn't in the map.
+   *
+   * @param ratedSeason - The season's rated games.
+   * @param teamId - The team.
+   */
+  public static getTeamSeasonRatings(ratedSeason: RatedSeason, teamId: number): Map<number, PlayerSeasonRating> {
+    const gamesByPlayer = new Map<number, RatedGame[]>();
+    (ratedSeason?.ratedGames ?? []).filter(game => game.teamId === teamId).forEach(game => {
+      const games = gamesByPlayer.get(game.player.id) ?? [];
+      games.push(game);
+      gamesByPlayer.set(game.player.id, games);
+    });
+    const ratings = new Map<number, PlayerSeasonRating>();
+    gamesByPlayer.forEach((games, playerId) =>
+        ratings.set(playerId, PlayerSeasonRatingUtils.summarizeGames(ratedSeason, games)));
+    return ratings;
+  }
+
+  /**
+   * Averages one player's rated games, and sums a skater's Corsi or a goalie's goals saved above average. Undefined
+   * without games.
+   */
+  private static summarizeGames(ratedSeason: RatedSeason, games: RatedGame[]): PlayerSeasonRating {
     if (games.length === 0) {
       return undefined;
     }

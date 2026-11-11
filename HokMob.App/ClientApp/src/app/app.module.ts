@@ -59,6 +59,8 @@ import {SingleTeamFormComponent} from "@app/team/single-team-form/single-team-fo
 import { TeamScheduleComponent } from './team/team-schedule/team-schedule.component';
 import { TeamStatsComponent } from './team/team-stats/team-stats.component';
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
+import { TeamStandingsComponent } from './team/team-standings/team-standings.component';
+import { TeamPlayerStatsComponent } from './team/team-player-stats/team-player-stats.component';
 import { StandingsSummaryComponent } from './home/standings-summary/standings-summary.component';
 import { GameTopPlayersComponent } from './game/game-top-players/game-top-players.component';
 import { GameSeasonLeadersComponent } from './game/game-season-leaders/game-season-leaders.component';
@@ -124,6 +126,8 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
     TeamScheduleComponent,
     TeamStatsComponent,
     TeamNextGameComponent,
+    TeamStandingsComponent,
+    TeamPlayerStatsComponent,
     StandingsSummaryComponent,
     GameTopPlayersComponent,
     GameSeasonLeadersComponent,

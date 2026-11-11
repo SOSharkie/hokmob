@@ -1,29 +1,12 @@
 <div class="league-standings-container">
   <div class="standings-card">
     <div class="standings-filters-container">
-      <button type="button"
-              (click)="updateStandingsType(NhlStandingsTypeEnum.BY_LEAGUE)"
+      <button *ngFor="let filter of filters"
+              type="button"
+              (click)="updateStandingsType(filter.type)"
               class="standings-type-filter"
-              [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_LEAGUE}">
-        League
-      </button>
-      <button type="button"
-              (click)="updateStandingsType(NhlStandingsTypeEnum.BY_CONFERENCE)"
-              class="standings-type-filter"
-              [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_CONFERENCE}">
-        Conference
-      </button>
-      <button type="button"
-              (click)="updateStandingsType(NhlStandingsTypeEnum.BY_DIVISION)"
-              class="standings-type-filter"
-              [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.BY_DIVISION}">
-        Division
-      </button>
-      <button type="button"
-              (click)="updateStandingsType(NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS)"
-              class="standings-type-filter"
-              [ngClass]="{'selected-filter': currentStandingsType === NhlStandingsTypeEnum.WILD_CARD_WITH_LEADERS}">
-        Playoffs
+              [ngClass]="{'selected-filter': currentStandingsType === filter.type}">
+        {{filter.label}}
       </button>
     </div>
     <div *ngIf="standings" class="main-standings">

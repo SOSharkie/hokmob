@@ -1,0 +1,23 @@
+<div class="team-standings-card">
+  <div class="standings-filters-container">
+    <button *ngFor="let filter of filters"
+            type="button"
+            (click)="selectStandingsType(filter.type)"
+            class="standings-type-filter"
+            [class.selected-filter]="standingsType === filter.type"
+            [attr.aria-pressed]="standingsType === filter.type">
+      {{filter.label}}
+    </button>
+  </div>
+  <app-standings
+      *ngIf="standings"
+      class="embedded"
+      [standings]="standings"
+      [selectedTeamId]="teamId"
+      [showFormAndNext]="true"
+      [defaultStandingsType]="standingsType"
+  ></app-standings>
+  <div *ngIf="hasError" class="team-standings-message">
+    <span>The standings couldn't be loaded</span>
+  </div>
+</div>

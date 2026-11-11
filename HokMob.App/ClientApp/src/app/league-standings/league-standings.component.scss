@@ -1,4 +1,5 @@
 @import "variables";
+@import "standings-filters";
 
 .league-standings-container {
   box-sizing: border-box;
@@ -16,36 +17,7 @@
   }
 
   .standings-filters-container {
-    display: flex;
-    align-items: center;
-    gap: clamp(#{$spacing-small}, 0.8vw, #{$spacing-large});
-    min-height: 64px;
-    padding: 0 clamp(#{$spacing-large}, 2vw, 24px);
-    border-bottom: 1px solid $black-04;
-
-    .standings-type-filter {
-      min-width: 0;
-      height: 32px;
-      padding: 0 clamp(#{$spacing-large}, 1.5vw, #{$spacing-xx-large});
-      font-family: inherit;
-      font-size: clamp(13px, 0.2vw + 12px, 14px);
-      font-weight: 500;
-      white-space: nowrap;
-      color: white;
-      background-color: $gray-01;
-      border: none;
-      border-radius: 22px;
-      cursor: pointer;
-    }
-
-    .standings-type-filter:hover {
-      background-color: $gray-02;
-    }
-
-    .selected-filter, .selected-filter:hover {
-      color: $black-02;
-      background-color: white;
-    }
+    @include standings-filters;
   }
 
   app-standings {

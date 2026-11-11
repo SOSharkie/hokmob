@@ -83,6 +83,7 @@ import playerStats8476945 from './player-stats-8476945-goalie.json';
 import playerStats8483548 from './player-stats-8483548-goalie.json';
 import hitsAndShotsLeaders20252026 from './leaders-hits-shots-20252026-2.json';
 import teamStats20252026 from './team-stats-20252026-2.json';
+import teamPlayersBos20252026 from './team-players-bos-20252026-2.json';
 import teamStats20262027 from './team-stats-20262027-2.json';
 import seasonDates from './seasons-2026-09-16.json';
 import {GoalieStatsLeaders, SkaterStatsLeaders} from "@shared/models/nhl-web-api/stats-leaders.model";
@@ -90,6 +91,7 @@ import {PlayerSearchResult} from "@shared/models/nhl-web-api/player-search.model
 import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
+import {TeamPlayersResponse} from "@shared/models/nhl-stats-api/team-players.model";
 import {SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.model";
 import {SeasonPlayersResponse} from "@shared/models/nhl-stats-api/season-players.model";
 import draftPicksNow from './draft-picks-now-2026-09-17.json';
@@ -488,6 +490,17 @@ export type MockTeamStatsSeason = 20252026 | 20262027;
  */
 export function mockTeamStats(season: MockTeamStatsSeason = 20252026): TeamStatsResponse {
   return copy(season === 20252026 ? teamStats20252026 : teamStats20262027);
+}
+
+/**
+ * /api/nhl-stats/team-players?teamId=6&season=20252026&gameType=2, captured from a running app on 2026-11-10: Boston's
+ * 32 skaters and 3 goalies. David Pastrnak (RW) leads with 100 points in 77 games (29 goals, 71 assists, 86 hits); Morgan
+ * Geekie has the most goals (39) and Charlie McAvoy (D) took no faceoffs (faceoffWinPct null), like 13 other skaters.
+ * Lukas Reichel's row counts only his 10 games for Boston, though his teamAbbrevs is "CHI,VAN,BOS". Jeremy Swayman has
+ * 54 starts and 31 wins (.9077, 2.70764 GAA); Michael DiPietro started none and has a 1.000 save percentage.
+ */
+export function mockTeamPlayers(): TeamPlayersResponse {
+  return copy(teamPlayersBos20252026);
 }
 
 /**

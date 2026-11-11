@@ -1,0 +1,31 @@
+@import "variables";
+@import "standings-filters";
+
+:host {
+  display: block;
+}
+
+// One card with the filters above the standings, the same as the standings page
+.team-standings-card {
+  color: white;
+  background-color: $black-02;
+  border-radius: 25px;
+  overflow: hidden;
+
+  .standings-filters-container {
+    @include standings-filters;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  app-standings {
+    display: block;
+    width: 100%;
+  }
+
+  .team-standings-message {
+    padding: $spacing-huge $spacing-xx-large;
+    text-align: center;
+    color: $gray-03;
+  }
+}

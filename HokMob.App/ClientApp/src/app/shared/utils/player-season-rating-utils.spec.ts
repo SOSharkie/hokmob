@@ -74,6 +74,42 @@ describe('PlayerSeasonRatingUtils', () => {
     });
   });
 
+  describe('getTeamSeasonRatings', () => {
+    it('should rate every player of a team, skaters and goalies', () => {
+      // Boston plays 2025021237 and 2025021292
+      const ratings = PlayerSeasonRatingUtils.getTeamSeasonRatings(ratedSeason, 6);
+      expect(ratings.size).toBe(22);
+      // David Pastrnak plays both games, both for Boston, so his team rating is his season rating
+      expect(ratings.get(8477956)).toEqual(PlayerSeasonRatingUtils.getPlayerSeasonRating(ratedSeason, 8477956));
+      expect(ratings.get(8477956).gamesRated).toBe(2);
+      // Jeremy Swayman is a goalie: goals saved above average, no Corsi
+      expect(ratings.get(8480280).goalsSavedAboveAverage).toBeDefined();
+      expect(ratings.get(8480280).corsiForPct).toBeUndefined();
+      // Connor Hellebuyck never plays Boston's games
+      expect(ratings.has(8476945)).toBeFalse();
+    });
+
+    it('should only count a traded player\'s games for the team', () => {
+      // Nic Dowd plays 2025021259 for Washington and 2025021290 for Vegas
+      expect(PlayerSeasonRatingUtils.getPlayerSeasonRating(ratedSeason, 8475343).gamesRated).toBe(2);
+      const vegasRating = PlayerSeasonRatingUtils.getTeamSeasonRatings(ratedSeason, 54).get(8475343);
+      expect(vegasRating.gamesRated).toBe(1);
+      const vegasGame = ratedSeason.ratedGames.find(game => game.player.id === 8475343 && game.teamId === 54);
+      expect(vegasRating.averageRating).toBe(vegasGame.rating);
+    });
+
+    it('should keep how far a season in progress goes', () => {
+      const inProgress = SeasonHistoryService.rateSeason(derivedSeasonHistoryInProgress());
+      expect(PlayerSeasonRatingUtils.getTeamSeasonRatings(inProgress, 6).get(8477956).throughDate).toBe('2026-04-14');
+    });
+
+    it('should have no ratings for a team without games, or without a season', () => {
+      // Seattle (55) isn't in any of the 7 games
+      expect(PlayerSeasonRatingUtils.getTeamSeasonRatings(ratedSeason, 55).size).toBe(0);
+      expect(PlayerSeasonRatingUtils.getTeamSeasonRatings(undefined, 6).size).toBe(0);
+    });
+  });
+
   describe('formatting', () => {
     it('should show an average rating with two decimals, colored by its shown value', () => {
       expect(PlayerSeasonRatingUtils.formatAverageRating(7.123)).toBe('7.12');
