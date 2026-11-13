@@ -188,4 +188,130 @@ describe('StandingsComponent', () => {
     expect(logoCell(0).teamId).toBeUndefined();
     expect(cell(0, '.team-name-text')).toBe('Colorado Avalanche');
   });
+
+  describe('points percentage', () => {
+    function header(selector: string): HTMLElement {
+      return fixture.nativeElement.querySelector(selector);
+    }
+
+    function clickSort(selector: string): void {
+      header(selector).querySelector<HTMLButtonElement>('.sort-button').click();
+      fixture.detectChanges();
+    }
+
+    function abbrevs(): string[] {
+      return component.sortedStandings[0].teams.map(standingsTeam => standingsTeam.teamAbbrev.default);
+    }
+
+    /**
+     * The final standings with Carolina 12 games behind the rest, as early in a season: the same 113 points in 70
+     * games is the league's best percentage, though still second in points.
+     */
+    function leagueGroupWithCarolinaBehind(): StandingsGroup {
+      const group = leagueGroup();
+      const carolina = group.teams.find(standingsTeam => standingsTeam.teamAbbrev.default === 'CAR');
+      carolina.gamesPlayed = 70;
+      carolina.pointPctg = carolina.points / (2 * carolina.gamesPlayed);
+      return group;
+    }
+
+    it('should not show the column or sort buttons unless asked', () => {
+      render([leagueGroup()]);
+      expect(header('.pctg-header')).toBeNull();
+      expect(rows()[0].querySelector('.pctg-cell')).toBeNull();
+      expect(header('.points-header .sort-button')).toBeNull();
+      expect(header('.points-header').textContent.trim()).toBe('PTS');
+    });
+
+    it('should show each team\'s points percentage, sorted by points first', () => {
+      render([leagueGroup()], {showPointsPercentage: true});
+      expect(header('.pctg-header').textContent.trim()).toBe('P%');
+      expect(cell(0, '.pctg-cell')).toBe('.738');
+      expect(cell(31, '.pctg-cell')).toBe('.354');
+      expect(component.sortColumn).toBe('points');
+      expect(header('.points-header').getAttribute('aria-sort')).toBe('descending');
+      expect(header('.pctg-header').getAttribute('aria-sort')).toBeNull();
+      expect(header('.points-header .sort-indicator').classList).toContain('visible');
+      expect(header('.pctg-header .sort-indicator').classList).not.toContain('visible');
+    });
+
+    it('should sort by points percentage and back to the NHL order by points', () => {
+      render([leagueGroupWithCarolinaBehind()], {showPointsPercentage: true});
+      expect(abbrevs().slice(0, 2)).toEqual(['COL', 'CAR']);
+
+      clickSort('.pctg-header');
+      expect(component.sortColumn).toBe('pointPctg');
+      expect(abbrevs().slice(0, 3)).toEqual(['CAR', 'COL', 'DAL']);
+      expect(cell(0, '.team-name-text')).toBe('Carolina Hurricanes');
+      expect(cell(0, '.pctg-cell')).toBe('.807');
+      expect(cell(0, '.points-cell')).toBe('113');
+      // The rank is the row's place, and the logo and link follow the row
+      expect(cell(0, '.rank-cell')).toBe('1');
+      expect(cell(1, '.rank-cell')).toBe('2');
+      expect(component.teamIds[0][0]).toBe(12);
+      expect(logoCell(0).teamId).toBe(12);
+      expect(header('.pctg-header').getAttribute('aria-sort')).toBe('descending');
+      expect(header('.points-header').getAttribute('aria-sort')).toBeNull();
+      expect(rows()[0].querySelector('.pctg-cell').classList).toContain('sorted-column');
+      // The input isn't reordered
+      expect(component.standings[0].teams[0].teamAbbrev.default).toBe('COL');
+
+      clickSort('.points-header');
+      expect(component.sortColumn).toBe('points');
+      expect(abbrevs().slice(0, 2)).toEqual(['COL', 'CAR']);
+      expect(cell(0, '.rank-cell')).toBe('1');
+      expect(component.teamIds[0][0]).toBe(21);
+    });
+
+    it('should keep the NHL order for teams with the same points percentage', () => {
+      const nhlOrder = leagueGroup().teams.map(standingsTeam => standingsTeam.teamAbbrev.default);
+      render([leagueGroup()], {showPointsPercentage: true});
+      clickSort('.pctg-header');
+      // Every team played 82 games, so ties like Tampa Bay and Montreal (106 points) stay in the NHL's order
+      expect(abbrevs()).toEqual(nhlOrder);
+      expect(abbrevs().slice(4, 6)).toEqual(['TBL', 'MTL']);
+    });
+
+    it('should sort each group on its own', () => {
+      const metropolitan = divisionGroup('Metropolitan');
+      const rangers = metropolitan.teams.find(standingsTeam => standingsTeam.teamAbbrev.default === 'NYR');
+      rangers.pointPctg = 0.9;
+      render([divisionGroup('Central'), metropolitan],
+          {defaultStandingsType: NhlStandingsTypeEnum.BY_DIVISION, showPointsPercentage: true});
+      clickSort('.pctg-header');
+      expect(component.sortedStandings[0].teams[0].teamAbbrev.default).toBe('COL');
+      expect(component.sortedStandings[1].teams[0].teamAbbrev.default).toBe('NYR');
+      expect(component.sortedStandings[1].teams.length).toBe(8);
+      expect(rows()[8].querySelector('.rank-cell').textContent.trim()).toBe('1');
+    });
+
+    it('should keep the sort when the standings change, and reset it when the column is turned off', () => {
+      render([leagueGroupWithCarolinaBehind()], {showPointsPercentage: true});
+      clickSort('.pctg-header');
+      render([leagueGroupWithCarolinaBehind()]);
+      expect(abbrevs()[0]).toBe('CAR');
+
+      render([leagueGroupWithCarolinaBehind()], {showPointsPercentage: false});
+      expect(component.sortColumn).toBe('points');
+      expect(abbrevs()[0]).toBe('COL');
+    });
+
+    it('should format points percentages like the NHL', () => {
+      expect(component.formatPointPctg(0.737805)).toBe('.738');
+      expect(component.formatPointPctg(0.5)).toBe('.500');
+      expect(component.formatPointPctg(0)).toBe('.000');
+      expect(component.formatPointPctg(1)).toBe('1.000');
+      expect(component.formatPointPctg(null)).toBe('-');
+      expect(component.formatPointPctg(undefined)).toBe('-');
+    });
+
+    it('should put a team with no points percentage last', () => {
+      const group = leagueGroup();
+      delete group.teams[0].pointPctg;
+      render([group], {showPointsPercentage: true});
+      clickSort('.pctg-header');
+      expect(abbrevs()[31]).toBe('COL');
+      expect(cell(31, '.pctg-cell')).toBe('-');
+    });
+  });
 });

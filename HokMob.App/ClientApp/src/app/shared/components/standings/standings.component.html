@@ -1,5 +1,5 @@
 <div *ngIf="standings?.length" class="standings-container">
-  <div *ngFor="let standingDivision of standings, let i = index" class="standings-group">
+  <div *ngFor="let standingDivision of sortedStandings, let i = index" class="standings-group">
     <div *ngIf="!miniStandings" class="standings-type-container">
       <span>{{standingsTableTitle(standingDivision)}}</span>
     </div>
@@ -16,7 +16,27 @@
         <th *ngIf="!miniStandings" class="gfga-header stat-cell"><span [title]="'Goals For / Goals Against'">GF / GA</span></th>
         <th *ngIf="!miniStandings" class="gd-header stat-cell"><span [title]="'Goal Differential'">GD</span></th>
         <th *ngIf="showFormAndNext" class="form-header stat-cell"><span>Form</span></th>
-        <th class="points-header stat-cell"><span [title]="'Points'">PTS</span></th>
+        <ng-container *ngIf="showPointsPercentage; else plainPointsHeader">
+          <th class="pctg-header stat-cell" scope="col"
+              [class.sorted-column]="sortColumn === 'pointPctg'"
+              [attr.aria-sort]="getAriaSort('pointPctg')">
+            <button type="button" class="sort-button" title="Points Percentage" (click)="sortBy('pointPctg')">
+              <span>P%</span>
+              <span class="sort-indicator" aria-hidden="true" [class.visible]="sortColumn === 'pointPctg'"></span>
+            </button>
+          </th>
+          <th class="points-header stat-cell" scope="col"
+              [class.sorted-column]="sortColumn === 'points'"
+              [attr.aria-sort]="getAriaSort('points')">
+            <button type="button" class="sort-button" title="Points" (click)="sortBy('points')">
+              <span>PTS</span>
+              <span class="sort-indicator" aria-hidden="true" [class.visible]="sortColumn === 'points'"></span>
+            </button>
+          </th>
+        </ng-container>
+        <ng-template #plainPointsHeader>
+          <th class="points-header stat-cell"><span [title]="'Points'">PTS</span></th>
+        </ng-template>
 <!--        <th *ngIf="showFormAndNext" class="next-game-header"><span>Next</span></th>-->
       </tr>
       </thead>
@@ -26,7 +46,7 @@
           [ngClass]="{'selected-row': teamIds[i][j] === selectedTeamId}">
         <td class="rank-cell stat-cell"
             [ngClass]="{'playoffPosition': isPlayoffPosition(team), 'eliminated': isEliminated(team)}">
-          <span>{{getTeamRank(team)}}</span>
+          <span>{{getRowRank(team, j)}}</span>
         </td>
         <td class="team-logo-cell" [routerLink]="['/team', teamIds[i][j]]">
           <app-team-logo class="team-logo" [teamId]="teamIds[i][j]" [size]="logoSize"></app-team-logo>
@@ -43,6 +63,9 @@
         <td *ngIf="!miniStandings" class="gfga-cell stat-cell"><span>{{team.goalFor}} / {{team.goalAgainst}}</span></td>
         <td *ngIf="!miniStandings" class="gd-cell stat-cell"><span>{{team.goalDifferential}}</span></td>
         <td *ngIf="showFormAndNext" class="form-cell stat-cell"><span>{{team.streakCount}}{{team.streakCode}}</span></td>
+        <td *ngIf="showPointsPercentage" class="pctg-cell stat-cell" [class.sorted-column]="sortColumn === 'pointPctg'">
+          <span>{{formatPointPctg(team.pointPctg)}}</span>
+        </td>
         <td class="points-cell stat-cell">
           <span class="points-value" [ngStyle]="{'background-color': teamIds[i][j] === selectedTeamId ? selectedTeamColor : '',
                                                  'color': teamIds[i][j] === selectedTeamId ? selectedTeamTextColor : ''}">

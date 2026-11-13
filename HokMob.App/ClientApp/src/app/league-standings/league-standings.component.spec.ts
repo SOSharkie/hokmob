@@ -61,7 +61,10 @@ describe('LeagueStandingsComponent', () => {
     expect(component.currentStandingsType).toBe(NhlStandingsTypeEnum.BY_LEAGUE);
     expect(component.standings.map(group => group.title)).toEqual(['NHL']);
     expect(selectedFilter()).toBe('League');
-    expect(fixture.nativeElement.querySelector('.main-standings app-standings').standings).toBe(component.standings);
+    const standings = fixture.nativeElement.querySelector('.main-standings app-standings');
+    expect(standings.standings).toBe(component.standings);
+    // Only the standings page has the points percentage column
+    expect(standings.showPointsPercentage).toBeTrue();
   });
 
   it('should use the standings type from the URL', async () => {
