@@ -219,7 +219,9 @@ players card.
 
 A live or finished game's shot map card (`ShotMapComponent`, on the shared `RinkComponent`) and the player game dialog's
 shot map (`PlayerShotMapComponent`) plot the shots on goal and goals of the play-by-play, which the page already loads.
-Missed and blocked shots aren't plotted. `ShotMapUtils.getShots` reads them.
+The shot map card's header filter picks "All" (adding the missed shots), "On target" (the default) or "Goals". The
+player map never shows missed shots, and blocked shots are never plotted. `ShotMapUtils.getShots` reads them, with the
+missed shots only when asked (`includeMissed`).
 
 - **Coordinates:** `details.xCoord` / `yCoord` in feet from center ice: x from -100 to 100 along the rink (goal lines at
   ±89), y from -42.5 to 42.5 across it. The teams switch ends each period, and `homeTeamDefendingSide` (`"left"` is
@@ -234,15 +236,24 @@ Missed and blocked shots aren't plotted. `ShotMapUtils.getShots` reads them.
   offensive zone, or down to the center line when a shot came from the neutral zone, and pins a shot from the
   shooter's own half to its top edge.
 - **What's missing:** there's no location on the net for a shot on goal (FotMob's goal mouth view), only a missed
-  shot's `reason` (`wide-left`, `above-crossbar`, `hit-right-post`, ...). `shotType` is `wrist`, `snap`, `slap`,
+  shot's `reason` (`wide-left`, `wide-right`, `above-crossbar`, `high-and-wide-left`, `hit-right-post`,
+  `hit-crossbar`, `short`, `failed-bank-attempt`, ...). The card shows it as the missed shot's result without the side
+  (`ShotMapUtils.getMissReasonLabel`: "Wide", "Over the net", "Hit the post", ...), since it doesn't say whose left it
+  is. `shotType` is `wrist`, `snap`, `slap`,
   `backhand`, `tip-in`, `deflected`, `wrap-around`, `bat` or `poke` (`ShotMapUtils.getShotTypeLabel`). The shootout
   (period type `SO`) is left out.
 - **Blocked shots,** if they're ever plotted: their coordinates are where the shot was blocked, not where it was taken,
   and `eventOwnerTeamId` is still the shooting team.
 - **The team map** puts home's shots at the left end and away's at the right (standing up on phones, home's at the
-  top). It lines the shots up with the drawn rink's goal lines and faceoff dots, since the rink is drawn 200.13ft long
-  (`ShotMapComponent.getRinkPosition`). It starts on the last shot, a shot clicked on the rink shows its details,
-  and a goal with a posted clip opens the goal highlight dialog.
+  top). A missed shot is an empty circle in the team's color, under the shots on goal, and while the filter shows every
+  shot, each team's count adds its missed shots ("21 shots · 15 missed · 3 goals"). The selected shot's line runs to
+  the middle of the net, but a missed shot's is dashed and stops at the edge of the drawn crease (none from inside it),
+  since the puck didn't get there. The crease is round on the drawn rink but a different size in percent on the lying
+  and standing rinks (`RinkComponent.getCreaseRadiusPercent`), so the line has an end for each, and CSS shows the one
+  for the layout (`ShotMapComponent.getCreaseEnd`). On phones the title moves left to make room for the filter. It
+  lines the shots up with the drawn rink's goal lines and faceoff dots, since the rink is drawn 200.13ft long
+  (`ShotMapComponent.getRinkPosition`). It starts on the last shot, a shot clicked on the rink shows its details, and
+  a goal with a posted clip opens the goal highlight dialog.
 - **xG:** once a live or finished game's Natural Stat Trick stats load, each shot gets NST's xG (see
   [Shot xG](#shot-xg)): the team map shows it in the shot's details and credits NST below the rink, and the player
   map's shot tooltip (a hovered or selected shot's result, time, shot type and xG) shows it too. A shot NST doesn't
@@ -482,8 +493,10 @@ have no xG, and hits, giveaways and takeaways have tooltips too. A regular seaso
 attempts are listed as period 5 at 0:00, with xG, but they aren't in NST's team totals, so the parser drops them; a
 playoff game's period 5 is its second overtime.
 
-`ShotMapUtils.getShots` matches each play-by-play goal and shot on goal to NST's by shooter, period, time and type, and
-pairs a shooter's shots in the same second by distance. Checked on 13 games (2026-10-17) with 13 different home teams,
+`ShotMapUtils.getShots` matches each play-by-play goal, shot on goal and missed shot to NST's by shooter, period, time
+and type (`goal`, `shot`, `miss`), and pairs a shooter's shots in the same second by distance. With the missed shots
+(the shot map card's "All"), the shots add up to all of NST's shots' xG, which is the team's xG apart from goalies'
+shots. Checked on 13 games (2026-10-17) with 13 different home teams,
 including 3 overtime and 2 shootout games, and `S.J`, `L.A` and `T.B`: all 1086 of NST's shots matched one of the
 1089 unblocked shots outside the shootouts. The 3 left were 2 goalies' shots (an empty net goal and an empty net miss:
 goalies have no event map) and a shot from 9ft behind the net. Each team's shots added up to its NST xG within

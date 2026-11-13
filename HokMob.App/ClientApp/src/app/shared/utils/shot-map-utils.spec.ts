@@ -72,10 +72,37 @@ describe('ShotMapUtils', () => {
 
     it('should leave out missed and blocked shots', () => {
       const playByPlay = final();
-      const eventIds = ShotMapUtils.getShots(playByPlay).map(item => item.eventId);
+      const shots = ShotMapUtils.getShots(playByPlay);
+      const eventIds = shots.map(item => item.eventId);
       const otherShots = playByPlay.plays.filter(play => play.typeDescKey === 'missed-shot' || play.typeDescKey === 'blocked-shot');
       expect(otherShots.length).toBeGreaterThan(0);
       expect(otherShots.some(play => eventIds.includes(play.eventId))).toBeFalse();
+      expect(shots.some(item => item.isMissed)).toBeFalse();
+    });
+
+    it('should add the missed shots when asked, but never the blocked ones', () => {
+      const playByPlay = final();
+      const shots = ShotMapUtils.getShots(playByPlay, undefined, true);
+      const missed = shots.filter(item => item.isMissed);
+      expect(missed.length).toBe(27);
+      expect(missed.filter(item => item.isHomeTeam).length).toBe(15);
+      expect(missed.some(item => item.isGoal)).toBeFalse();
+      expect(shots.length - missed.length).toBe(49);
+      const blockedIds = playByPlay.plays.filter(play => play.typeDescKey === 'blocked-shot').map(play => play.eventId);
+      expect(shots.some(item => blockedIds.includes(item.eventId))).toBeFalse();
+      const sortOrders = shots.map(item => item.sortOrder);
+      expect(sortOrders).toEqual([...sortOrders].sort((a, b) => a - b));
+    });
+
+    it("should turn a missed shot like the others, and keep why it missed", () => {
+      const shots = ShotMapUtils.getShots(final(), undefined, true);
+      // Andersson's slap shot in the 1st (raw -48, -7): Vegas attacks the left end
+      expect(shot(shots, 124)).toEqual(jasmine.objectContaining({
+        isHomeTeam: true, shooterId: 8478397, shooterName: 'Rasmus Andersson', isGoal: false, isMissed: true,
+        missReason: 'high-and-wide-right', shotType: 'slap', x: 48, y: 7
+      }));
+      expect(shot(shots, 69).isMissed).toBeFalse();
+      expect(shot(shots, 69).missReason).toBeUndefined();
     });
 
     it('should leave out a shot without coordinates or a shooter', () => {
@@ -126,12 +153,33 @@ describe('ShotMapUtils', () => {
       expect(staalShots.map(item => item.expectedGoals)).toEqual([0.05, 0.33, 0.11, 0.06]);
     });
 
+    it("should give the missed shots NST's xG of its misses when they're asked for", () => {
+      const shots = ShotMapUtils.getShots(final(), nst(2025030414), true);
+      const staalShots = ShotMapUtils.getPlayerShots(shots, 8473533, false);
+      expect(staalShots.map(item => item.expectedGoals)).toEqual([0.05, 0.33, 0.08, 0.11, 0.06]);
+      expect(staalShots[2].isMissed).toBeTrue();
+      expect(shots.every(item => item.expectedGoals != null)).toBeTrue();
+    });
+
     it("should add up to NST's xG of the goals and shots on goal", () => {
       const total = ShotMapUtils.getShots(final(), nst(2025030414))
           .reduce((sum, item) => sum + item.expectedGoals, 0);
       const nstTotal = nstShots(2025030414).filter(item => item.type !== 'miss')
           .reduce((sum, item) => sum + item.expectedGoals, 0);
       expect(total).toBeCloseTo(nstTotal, 6);
+    });
+
+    it("should add up to all of NST's shots' xG with the missed shots", () => {
+      const total = ShotMapUtils.getShots(final(), nst(2025030414), true)
+          .reduce((sum, item) => sum + item.expectedGoals, 0);
+      const nstTotal = nstShots(2025030414).reduce((sum, item) => sum + item.expectedGoals, 0);
+      expect(total).toBeCloseTo(nstTotal, 6);
+    });
+
+    it('should not take the xG of a miss for a shot on goal at the same time', () => {
+      const staalMiss = nstShots(2025030414).find(item => item.playerId === 8473533 && item.type === 'miss');
+      const shots = ShotMapUtils.getShots(final(), withShots([{...staalMiss, type: 'shot'}]), true);
+      expect(shot(shots, 871).expectedGoals).toBeUndefined();
     });
 
     it("should leave the xG out of a shot NST doesn't list", () => {
@@ -222,6 +270,38 @@ describe('ShotMapUtils', () => {
     it('should return "Unknown" without a shot type', () => {
       expect(ShotMapUtils.getShotTypeLabel(undefined)).toBe('Unknown');
       expect(ShotMapUtils.getShotTypeLabel('')).toBe('Unknown');
+    });
+  });
+
+  describe('getMissReasonLabel', () => {
+    it("should label why a shot missed, without the side of the net", () => {
+      expect(ShotMapUtils.getMissReasonLabel('wide-left')).toBe('Wide');
+      expect(ShotMapUtils.getMissReasonLabel('wide-right')).toBe('Wide');
+      expect(ShotMapUtils.getMissReasonLabel('above-crossbar')).toBe('Over the net');
+      expect(ShotMapUtils.getMissReasonLabel('high-and-wide-right')).toBe('High and wide');
+      expect(ShotMapUtils.getMissReasonLabel('hit-right-post')).toBe('Hit the post');
+      expect(ShotMapUtils.getMissReasonLabel('hit-crossbar')).toBe('Hit the crossbar');
+      expect(ShotMapUtils.getMissReasonLabel('short')).toBe('Short');
+    });
+
+    it('should return "Missed" for a reason without a label or none', () => {
+      expect(ShotMapUtils.getMissReasonLabel('failed-bank-attempt')).toBe('Missed');
+      expect(ShotMapUtils.getMissReasonLabel(undefined)).toBe('Missed');
+    });
+  });
+
+  describe('getResultLabel', () => {
+    it("should return a goal's, a saved shot's and a missed shot's result", () => {
+      const shots = ShotMapUtils.getShots(final(), undefined, true);
+      expect(ShotMapUtils.getResultLabel(shot(shots, 69))).toBe('Goal');
+      expect(ShotMapUtils.getResultLabel(shot(shots, 86))).toBe('Saved');
+      // Howden off the post in the 1st, and Aho's failed bank attempt in the 3rd
+      expect(ShotMapUtils.getResultLabel(shot(shots, 499))).toBe('Hit the post');
+      expect(ShotMapUtils.getResultLabel(shot(shots, 1220))).toBe('Missed');
+    });
+
+    it('should return "Saved" without a shot', () => {
+      expect(ShotMapUtils.getResultLabel(null)).toBe('Saved');
     });
   });
 

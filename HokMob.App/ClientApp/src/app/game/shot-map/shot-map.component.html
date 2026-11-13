@@ -1,11 +1,11 @@
 <div class="rink-card shot-map-card">
   <div class="rink-card-header">
     <span>Shot Map</span>
-    <button type="button" class="goals-toggle" [class.showing-goals]="showGoalsOnly" [attr.aria-pressed]="showGoalsOnly"
-            [title]="showGoalsOnly ? 'Show every shot on goal' : 'Show only the goals'" (click)="toggleGoalsOnly()">
-      <img class="toggle-icon" src="assets/puck.png" alt="">
-      <span>Goals</span>
-    </button>
+    <div class="shot-filter" role="group" aria-label="Shots shown">
+      <button *ngFor="let filter of shotFilters" type="button" class="shot-filter-option"
+              [class.selected]="filter.value === shotFilter" [attr.aria-pressed]="filter.value === shotFilter"
+              [title]="filter.title" (click)="selectShotFilter(filter.value)">{{filter.label}}</button>
+    </div>
   </div>
   <div *ngIf="selectedShot" #shotDetails class="shot-details">
     <button type="button" class="shooter" (click)="clickShooter()" [attr.aria-label]="'Open ' + shooterName + '\'s game stats'">
@@ -29,7 +29,7 @@
       </div>
       <div class="shot-fact">
         <dt>Result</dt>
-        <dd class="shot-result" [class.goal]="selectedShot.isGoal">
+        <dd class="shot-result" [class.goal]="selectedShot.isGoal" [class.missed]="selectedShot.isMissed">
           <span>{{resultLabel}}</span>
           <button *ngIf="selectedGoalHasClip" type="button" class="watch-goal-button" title="Watch the goal"
                   aria-label="Watch the goal" (click)="clickWatchGoal()">
@@ -52,10 +52,15 @@
     <div class="shot-layer">
       <svg *ngIf="selectedShotLine as line" class="shot-line-layer" viewBox="0 0 100 100" preserveAspectRatio="none"
            aria-hidden="true">
-        <line class="shot-line" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2"/>
+        <!-- One line per way the rink is drawn, since a missed shot's stops at the crease (ShotLine) -->
+        <line *ngIf="line.lyingEnd as end" class="shot-line lying-shot-line" [class.missed]="line.missed"
+              [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="end.x" [attr.y2]="end.y"/>
+        <line *ngIf="line.standingEnd as end" class="shot-line standing-shot-line" [class.missed]="line.missed"
+              [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="end.x" [attr.y2]="end.y"/>
       </svg>
       <button *ngFor="let marker of shownMarkers; trackBy: trackByShot" type="button" class="shot-marker"
-              [class.goal]="marker.shot.isGoal" [class.selected]="marker === selectedMarker"
+              [class.goal]="marker.shot.isGoal" [class.missed]="marker.shot.isMissed"
+              [class.selected]="marker === selectedMarker"
               [style.left.%]="marker.along" [style.top.%]="marker.across" [style.--team-color]="marker.color"
               [attr.aria-label]="getMarkerLabel(marker)" [attr.aria-pressed]="marker === selectedMarker"
               (click)="selectShot(marker)">

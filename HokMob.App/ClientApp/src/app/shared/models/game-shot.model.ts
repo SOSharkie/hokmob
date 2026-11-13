@@ -1,8 +1,8 @@
 import {PeriodDescriptor} from "@shared/models/nhl-web-api/common.model";
 
 /**
- * A shot on goal or a goal from the play-by-play, for the shot maps (ShotMapUtils.getShots). Missed and blocked shots
- * aren't shot map shots.
+ * A shot on goal, a goal or a missed shot from the play-by-play, for the shot maps (ShotMapUtils.getShots). Missed
+ * shots are only listed when asked for, and blocked shots never are.
  */
 export interface GameShot {
   eventId: number;
@@ -16,6 +16,10 @@ export interface GameShot {
   /** The shooter's full name, from the play-by-play's roster, or empty without a roster spot. */
   shooterName: string;
   isGoal: boolean;
+  /** Whether the shot missed the net (wide, over it or off the post), so it's neither a goal nor saved. */
+  isMissed: boolean;
+  /** Why a missed shot missed, like "wide-left" or "hit-right-post" (ShotMapUtils.getMissReasonLabel). */
+  missReason?: string;
   /** Like "wrist", "snap" or "tip-in" (ShotMapUtils.getShotTypeLabel). */
   shotType: string;
   periodDescriptor: PeriodDescriptor;
@@ -29,7 +33,7 @@ export interface GameShot {
   y: number;
   /**
    * Natural Stat Trick's xG for the shot, or undefined without NST's stats for the game, or for a shot NST doesn't list
-   * (a goalie's, or one from behind the net).
+   * (a goalie's, or one from behind the net). Missed shots have xG too, so all the shots add up to the team's xG.
    */
   expectedGoals?: number;
   /**

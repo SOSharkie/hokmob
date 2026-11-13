@@ -161,6 +161,19 @@ export class RinkComponent {
   }
 
   /**
+   * The goal crease's radius in percent of the rink, along it and across it: a 6ft semicircle drawn at getRoundScale
+   * on the standing rink (phones) or the lying one (wider screens). It's round in feet, so it isn't in percent.
+   *
+   * @param standing - Whether the rink stands up, as on phones.
+   */
+  public static getCreaseRadiusPercent(standing: boolean): {along: number, across: number} {
+    const length = standing ? RinkComponent.standingRinkLength : RinkComponent.rinkLength;
+    const width = standing ? RinkComponent.standingRinkWidth : RinkComponent.lyingRinkWidth;
+    const radius = 6 * RinkComponent.getRoundScale(length);
+    return {along: radius / length * 100, across: radius / width * 100};
+  }
+
+  /**
    * How much smaller a round marking is drawn on a rink that is drawn shorter than a real one: the square root of how
    * much the rink lost, so a circle covers the same ice as the oval it stands in for. Drawn at their full size across
    * a shortened rink the faceoff circles look too big for its length, and squashed to fit they aren't circles at all.
