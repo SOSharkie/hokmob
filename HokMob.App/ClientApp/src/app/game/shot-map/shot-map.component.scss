@@ -8,25 +8,42 @@
 // The lying rink is 200.13ft long and 78.74ft wide, the standing one 1.6 times as long as wide (RinkComponent)
 $standing-aspect-ratio: 1.6;
 
-.rink-card .rink-card-header .goals-toggle {
-  @include header-toggle;
+// Which shots the map shows: a segmented pill in the header's top right corner, so the title stays centered on the card
+// (on phones the title moves to the left to make room for it)
+.rink-card .rink-card-header .shot-filter {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid $gray-01;
+  border-radius: 20px;
+  background-color: $black-03;
+}
 
-  // The black puck on a light disc, like the goals on the rink
-  .toggle-icon {
-    box-sizing: border-box;
-    padding: 2px;
-    border-radius: 50%;
-    background-color: $gray-03;
-    object-fit: contain;
+.shot-filter-option {
+  @include button-reset;
+  height: 22px;
+  padding: 0 $spacing-large;
+  border-radius: 20px;
+  color: $gray-04;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 0.15s, background-color 0.15s;
+  @include focus-ring;
+
+  @include hover {
+    color: white;
   }
 
-  &.showing-goals {
-    border-color: $green-01;
+  &.selected {
+    background-color: $gray-01;
     color: white;
-
-    .toggle-icon {
-      background-color: white;
-    }
   }
 }
 
@@ -140,6 +157,10 @@ $standing-aspect-ratio: 1.6;
     &.goal {
       color: $green-01;
     }
+
+    &.missed {
+      color: $gray-04;
+    }
   }
 }
 
@@ -178,6 +199,7 @@ $standing-aspect-ratio: 1.6;
 .shot-layer {
   position: absolute;
   inset: 0;
+  isolation: isolate;
 }
 
 .shot-line-layer {
@@ -194,6 +216,17 @@ $standing-aspect-ratio: 1.6;
     stroke-opacity: 0.85;
     stroke-linecap: round;
     vector-effect: non-scaling-stroke;
+
+    // A missed shot's: dashed and fainter, stopping at the crease (ShotMapComponent.selectedShotLine)
+    &.missed {
+      stroke-dasharray: 4 5;
+      stroke-opacity: 0.6;
+    }
+  }
+
+  // The standing rink's line is shown on phones (below)
+  .standing-shot-line {
+    display: none;
   }
 }
 
@@ -239,9 +272,22 @@ $standing-aspect-ratio: 1.6;
     }
   }
 
+  // An empty circle in the team's color, with the rink showing through, under the shots on goal (the shot layer
+  // isolates the z-index)
+  &.missed {
+    z-index: -1;
+    border: 2px solid var(--team-color);
+    background-color: transparent;
+  }
+
   &.selected {
     z-index: 2;
     box-shadow: 0 0 0 2px $black-03, 0 0 0 4px white;
+
+    // The rink's own color, so the shot line starts at the circle's edge instead of showing through it
+    &.missed {
+      background-color: $black-03;
+    }
   }
 }
 
@@ -289,6 +335,11 @@ $standing-aspect-ratio: 1.6;
     gap: $spacing-large;
   }
 
+  // The title moves to the left, so the shot filter fits beside it
+  .rink-card .rink-card-header {
+    justify-content: flex-start;
+  }
+
   .shot-layer {
     inset: auto;
     top: 50%;
@@ -300,6 +351,16 @@ $standing-aspect-ratio: 1.6;
 
   .shot-marker .puck-icon {
     transform: rotate(-90deg);
+  }
+
+  .shot-line-layer {
+    .lying-shot-line {
+      display: none;
+    }
+
+    .standing-shot-line {
+      display: inline;
+    }
   }
 
   // The rink stays phone sized (rink.component.scss), so the counts sit at its top and bottom ends instead

@@ -36,9 +36,29 @@ export interface ShotMarker {
 }
 
 /**
- * The game's shots on goal and goals on a rink, home's shots at the left end and away's at the right (standing up on
- * phones, home's at the top). A shot clicked on the rink (the last one to start with) shows its shooter, time, shot
- * type, result and goalie above the rink, and a goal with a posted clip can open its highlight.
+ * The selected shot's line, from the shot (x1, y1) towards the net, in percent of the shot layer. Its end depends on
+ * how the rink is drawn, since the crease is a different size in percent on the lying rink and the standing one
+ * (phones): `lyingEnd` and `standingEnd`, or null where a missed shot's line has nowhere to go.
+ */
+export interface ShotLine {
+  x1: number;
+  y1: number;
+  missed: boolean;
+  lyingEnd: {x: number, y: number};
+  standingEnd: {x: number, y: number};
+}
+
+/**
+ * Which shots the map shows, picked in the card's header: every unblocked shot (missed ones too), the shots on goal and
+ * goals, or only the goals.
+ */
+export type ShotFilter = "all" | "onTarget" | "goals";
+
+/**
+ * The game's shots on a rink, home's shots at the left end and away's at the right (standing up on phones, home's at
+ * the top): the shots on goal and goals to start with, and the header's filter adds the missed shots or keeps only the
+ * goals. A shot clicked on the rink (the last one to start with) shows its shooter, time, shot type, result and goalie
+ * above the rink, and a goal with a posted clip can open its highlight.
  */
 @Component({
   selector: 'app-shot-map',
@@ -91,9 +111,18 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   public markers: ShotMarker[] = [];
 
   /**
-   * Whether the map only shows the goals. The header toggle switches it.
+   * The header's filter options, in the order they're shown.
    */
-  public showGoalsOnly = false;
+  public readonly shotFilters: {value: ShotFilter, label: string, title: string}[] = [
+    {value: "all", label: "All", title: "Show every shot, missed ones too"},
+    {value: "onTarget", label: "On target", title: "Show the shots on goal and goals"},
+    {value: "goals", label: "Goals", title: "Show only the goals"}
+  ];
+
+  /**
+   * Which shots the map shows. The header's filter picks it.
+   */
+  public shotFilter: ShotFilter = "onTarget";
 
   /**
    * The selected shot's event ID. Kept across refreshes, and falls back to the last shown shot when it isn't shown.
@@ -136,7 +165,7 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.rosterSpots = PlayByPlayUtils.getRosterSpotMap(this.playByPlay);
     const homeColor = NhlTeamColorUtils.getTeamPrimaryColor(this.homeTeamId);
     const awayColor = NhlTeamColorUtils.getTeamSecondaryColor(this.homeTeamId, this.awayTeamId);
-    this.markers = ShotMapUtils.getShots(this.playByPlay, this.advancedStats).map(shot => ({
+    this.markers = ShotMapUtils.getShots(this.playByPlay, this.advancedStats, true).map(shot => ({
       shot,
       ...ShotMapComponent.getRinkPosition(shot),
       color: shot.isHomeTeam ? homeColor : awayColor
@@ -201,10 +230,18 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   /**
-   * The shots shown on the rink, in play order: all of them, or only the goals.
+   * The shots shown on the rink, in play order: every shot, the shots on goal and goals, or only the goals
+   * (shotFilter).
    */
   public get shownMarkers(): ShotMarker[] {
-    return this.showGoalsOnly ? this.markers.filter(marker => marker.shot.isGoal) : this.markers;
+    switch (this.shotFilter) {
+      case "all":
+        return this.markers;
+      case "goals":
+        return this.markers.filter(marker => marker.shot.isGoal);
+      default:
+        return this.markers.filter(marker => !marker.shot.isMissed);
+    }
   }
 
   /**
@@ -220,15 +257,48 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   /**
-   * The line from the selected shot to the net it was shot at, in percent of the lying rink.
+   * The line from the selected shot towards the net it was shot at. A shot on goal's reaches the middle of the net. A
+   * missed shot's is dashed (missed) and stops where it meets the crease, since the puck didn't get to the net
+   * (getCreaseEnd).
    */
-  public get selectedShotLine(): {x1: number, y1: number, x2: number, y2: number} {
+  public get selectedShotLine(): ShotLine {
     const marker = this.selectedMarker;
     if (!marker) {
       return undefined;
     }
     const net = ShotMapComponent.getRinkPosition({...marker.shot, x: ShotMapComponent.goalLineX, y: 0});
-    return {x1: marker.along, y1: marker.across, x2: net.along, y2: net.across};
+    const end = (standing: boolean) => marker.shot.isMissed ?
+        ShotMapComponent.getCreaseEnd(marker, net, standing) : {x: net.along, y: net.across};
+    return {
+      x1: marker.along,
+      y1: marker.across,
+      missed: marker.shot.isMissed,
+      lyingEnd: end(false),
+      standingEnd: end(true)
+    };
+  }
+
+  /**
+   * Where the line from a shot to the middle of the net meets the edge of the drawn crease, in percent of the shot
+   * layer, or null for a shot from inside the crease. The crease is round on the drawn rink, so in percent it's an
+   * ellipse, of a different size on the lying rink and the standing one.
+   *
+   * @param marker - The shot.
+   * @param net - The middle of the net it was shot at, in percent (getRinkPosition).
+   * @param standing - Whether the rink stands up, as on phones.
+   */
+  public static getCreaseEnd(marker: ShotMarker, net: {along: number, across: number},
+                             standing: boolean): {x: number, y: number} {
+    const radius = RinkComponent.getCreaseRadiusPercent(standing);
+    const along = marker.along - net.along;
+    const across = marker.across - net.across;
+    // How far along the line from the net to the shot the crease's edge is, as a share of the whole line
+    const edge = 1 / Math.hypot(along / radius.along, across / radius.across);
+    if (!(edge < 1)) {
+      return null;
+    }
+    const round = (value: number) => Math.round(value * 100) / 100;
+    return {x: round(net.along + along * edge), y: round(net.across + across * edge)};
   }
 
   public get homeShotsLabel(): string {
@@ -259,13 +329,13 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
     return ShotMapUtils.getShotTypeLabel(this.selectedShot?.shotType);
   }
 
+  /**
+   * "Goal", "Saved", or why a missed shot missed, like "Wide" or "Hit the post".
+   */
   public get resultLabel(): string {
-    return this.selectedShot?.isGoal ? "Goal" : "Saved";
+    return ShotMapUtils.getResultLabel(this.selectedShot);
   }
 
-  /**
-   * The goalie the shot was on, or "Empty net".
-   */
   /**
    * Whether the shots have Natural Stat Trick's xG, so the details show it and the card credits NST.
    */
@@ -299,6 +369,9 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
     return this.hasExpectedGoals ? NstStatsUtils.getGamePageUrl(this.advancedStats?.gameId) : "";
   }
 
+  /**
+   * The goalie the shot was on, or "Empty net".
+   */
   public get goalieLabel(): string {
     const goalieId = this.selectedShot?.goalieId;
     if (goalieId == null) {
@@ -319,8 +392,11 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
     return !!NhlVideoUtils.getGoalHighlightVideo(goal);
   }
 
-  public toggleGoalsOnly(): void {
-    this.showGoalsOnly = !this.showGoalsOnly;
+  /**
+   * Shows the filter's shots. The selected shot stays selected if it's still shown, else the last shown shot is.
+   */
+  public selectShotFilter(filter: ShotFilter): void {
+    this.shotFilter = filter;
     this.fitShotDetails();
   }
 
@@ -343,11 +419,13 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Describes a shot for screen readers, like "Kyle Connor, 2nd 4:12, goal".
+   * Describes a shot for screen readers, like "Kyle Connor, 2nd 4:12, goal" or "Kyle Connor, 2nd 5:30, missed, wide".
    */
   public getMarkerLabel(marker: ShotMarker): string {
     const name = PlayByPlayUtils.getFullName(this.rosterSpots.get(marker.shot.shooterId)) || "Unknown";
-    return name + ", " + ShotMapUtils.getTimeLabel(marker.shot) + ", " + (marker.shot.isGoal ? "goal" : "saved");
+    const result = ShotMapUtils.getResultLabel(marker.shot).toLowerCase();
+    const resultLabel = marker.shot.isMissed && result !== "missed" ? "missed, " + result : result;
+    return name + ", " + ShotMapUtils.getTimeLabel(marker.shot) + ", " + resultLabel;
   }
 
   public showBlankHeadshot(event: Event): void {
@@ -364,11 +442,18 @@ export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   }
 
   /**
-   * A team's shots on goal and goals, like "28 shots · 3 goals" or "1 shot · 0 goals".
+   * A team's shots on goal and goals, like "28 shots · 3 goals" or "1 shot · 0 goals", with its missed shots between
+   * them while the map shows every shot ("28 shots · 12 missed · 3 goals"). Shots count goals, like the boxscore.
    */
   private getShotsLabel(isHomeTeam: boolean): string {
     const shots = this.markers.filter(marker => marker.shot.isHomeTeam === isHomeTeam).map(marker => marker.shot);
+    const missed = shots.filter(shot => shot.isMissed).length;
+    const onTarget = shots.length - missed;
     const goals = shots.filter(shot => shot.isGoal).length;
-    return shots.length + (shots.length === 1 ? " shot" : " shots") + " · " + goals + (goals === 1 ? " goal" : " goals");
+    return [
+      onTarget + (onTarget === 1 ? " shot" : " shots"),
+      ...(this.shotFilter === "all" ? [missed + " missed"] : []),
+      goals + (goals === 1 ? " goal" : " goals")
+    ].join(" · ");
   }
 }

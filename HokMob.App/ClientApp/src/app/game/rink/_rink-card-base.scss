@@ -8,7 +8,7 @@ $star-blue: #0e87e0;
 $rink-line: $gray-01;
 
 // A pill toggle in the top right corner of a card's header, so the title stays centered on the card: the top players'
-// lineup toggle and the shot map's goals toggle. Its icon is a .toggle-icon.
+// lineup toggle. Its icon is a .toggle-icon. The shot map's filter sits in the same corner.
 @mixin header-toggle {
   position: absolute;
   top: 50%;

@@ -71,6 +71,16 @@ describe('RinkComponent', () => {
     expect(standing.refereeCreasePath).toBe('M69.87 0 A8.87 8.87 0 0 0 87.61 0');
   });
 
+  it("should give the drawn crease's radius in percent along and across each rink", () => {
+    // 6ft on the 200.13ft by 78.74ft lying rink, and 5.32ft on the 157.47ft by 98.42ft standing one
+    const lying = RinkComponent.getCreaseRadiusPercent(false);
+    expect(lying.along).toBeCloseTo(6 / 200.13 * 100, 3);
+    expect(lying.across).toBeCloseTo(6 / 78.74 * 100, 3);
+    const standing = RinkComponent.getCreaseRadiusPercent(true);
+    expect(standing.along).toBeCloseTo(5.32 / 157.47 * 100, 2);
+    expect(standing.across).toBeCloseTo(5.32 / 98.42 * 100, 2);
+  });
+
   it('should keep the faceoff dots 22ft from the middle of a full width rink, and closer on the narrower one', () => {
     const [lying, standing] = component.rinkDrawings;
     expect(standing.faceoffCircles.map(circle => [circle.x, circle.y]))

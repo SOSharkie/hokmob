@@ -8,8 +8,8 @@ import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 /**
- * Helpers for the game page's shot maps: the shots on goal and goals of the play-by-play, turned so each shooter
- * attacks the same end.
+ * Helpers for the game page's shot maps: the shots on goal, goals and missed shots of the play-by-play, turned so each
+ * shooter attacks the same end.
  */
 export class ShotMapUtils {
 
@@ -25,25 +25,44 @@ export class ShotMapUtils {
   };
 
   /**
-   * Returns the game's shots on goal and goals, in play order, turned so every shooter attacks the net at x = 89. The
-   * teams switch ends each period (homeTeamDefendingSide), and a shot taken towards the left end (negative x) is
-   * turned half a turn, so it keeps its side of the net. The shootout, and plays without a shooter or coordinates, are
-   * left out. Each shot gets its xG from Natural Stat Trick's shots, when they're given (addExpectedGoals).
+   * Missed shot reasons, without the side of the net: api-web doesn't say whose left "wide-left" is.
+   */
+  private static readonly missReasonLabels: Record<string, string> = {
+    "wide-left": "Wide",
+    "wide-right": "Wide",
+    "above-crossbar": "Over the net",
+    "high-and-wide-left": "High and wide",
+    "high-and-wide-right": "High and wide",
+    "hit-left-post": "Hit the post",
+    "hit-right-post": "Hit the post",
+    "hit-crossbar": "Hit the crossbar",
+    "short": "Short"
+  };
+
+  /**
+   * Returns the game's shots on goal and goals, and its missed shots when asked for, in play order, turned so every
+   * shooter attacks the net at x = 89. The teams switch ends each period (homeTeamDefendingSide), and a shot taken
+   * towards the left end (negative x) is turned half a turn, so it keeps its side of the net. Blocked shots, the
+   * shootout, and plays without a shooter or coordinates are left out. Each shot gets its xG from Natural Stat Trick's
+   * shots, when they're given (addExpectedGoals).
    *
    * @param playByPlay - The game's play-by-play.
    * @param nstStats - The game's NST stats, for each shot's xG.
+   * @param includeMissed - Whether to list the missed shots too, for the game's shot map. The player shot map leaves
+   *   them out.
    */
-  public static getShots(playByPlay: PlayByPlay, nstStats?: NstGameStats): GameShot[] {
+  public static getShots(playByPlay: PlayByPlay, nstStats?: NstGameStats, includeMissed = false): GameShot[] {
     const homeTeamId = playByPlay?.homeTeam?.id;
     const rosterSpots = PlayByPlayUtils.getRosterSpotMap(playByPlay);
     const fullName = (playerId: number) => PlayByPlayUtils.getFullName(rosterSpots.get(playerId));
     const shots: GameShot[] = (playByPlay?.plays ?? [])
-        .filter(play => ShotMapUtils.isShot(play))
+        .filter(play => ShotMapUtils.isShot(play, includeMissed))
         .sort((playA, playB) => playA.sortOrder - playB.sortOrder)
         .map(play => {
           const details = play.details;
           const isHomeTeam = details.eventOwnerTeamId === homeTeamId;
           const isGoal = play.typeDescKey === NhlPlayTypeEnum.GOAL;
+          const isMissed = play.typeDescKey === NhlPlayTypeEnum.MISSED_SHOT;
           const turn = ShotMapUtils.attacksLeftEnd(play, isHomeTeam) ? -1 : 1;
           const shooterId = isGoal ? details.scoringPlayerId : details.shootingPlayerId;
           return {
@@ -55,6 +74,8 @@ export class ShotMapUtils {
             goalieId: details.goalieInNetId,
             shooterName: fullName(shooterId),
             isGoal,
+            isMissed,
+            missReason: isMissed ? details.reason : undefined,
             shotType: details.shotType,
             periodDescriptor: play.periodDescriptor,
             timeInPeriod: play.timeInPeriod,
@@ -67,16 +88,16 @@ export class ShotMapUtils {
   }
 
   /**
-   * Gives each shot the xG of its Natural Stat Trick shot: the one by the same shooter, of the same type (goal or shot
-   * on goal), at the same period and time. A shooter's shots in the same second are paired up nearest to the net
+   * Gives each shot the xG of its Natural Stat Trick shot: the one by the same shooter, of the same type (goal, shot on
+   * goal or miss), at the same period and time. A shooter's shots in the same second are paired up nearest to the net
    * first, by NST's distance and the shot's own. A shot NST doesn't list keeps no xG: in 13 games checked that was only
    * goalies' shots and one from behind the net. While NST is behind a live game, a shot after how far its stats go is
    * marked pending instead.
    */
   private static addExpectedGoals(shots: GameShot[], nstStats: NstGameStats): void {
     const nstShotsByKey = new Map<string, NstShot[]>();
-    (nstStats?.shots ?? []).filter(nstShot => nstShot?.type !== "miss").forEach(nstShot => {
-      const key = [nstShot.playerId, nstShot.period, nstShot.time, nstShot.type === "goal"].join("|");
+    (nstStats?.shots ?? []).filter(nstShot => !!nstShot).forEach(nstShot => {
+      const key = [nstShot.playerId, nstShot.period, nstShot.time, nstShot.type].join("|");
       nstShotsByKey.set(key, [...(nstShotsByKey.get(key) ?? []), nstShot]);
     });
     if (nstShotsByKey.size === 0) {
@@ -85,7 +106,8 @@ export class ShotMapUtils {
     const shotsByKey = new Map<string, GameShot[]>();
     shots.forEach(shot => {
       const time = PeriodUtils.formatTimeRemaining(shot.timeInPeriod);
-      const key = [shot.shooterId, shot.periodDescriptor?.number, time, shot.isGoal].join("|");
+      const type = shot.isGoal ? "goal" : shot.isMissed ? "miss" : "shot";
+      const key = [shot.shooterId, shot.periodDescriptor?.number, time, type].join("|");
       shotsByKey.set(key, [...(shotsByKey.get(key) ?? []), shot]);
     });
     const distance = (shot: GameShot) => Math.hypot(89 - shot.x, shot.y);
@@ -122,6 +144,24 @@ export class ShotMapUtils {
   }
 
   /**
+   * Returns a missed shot's reason, like "Wide", "Over the net" or "Hit the post", or "Missed" for a reason without a
+   * label (a failed bank attempt) or none.
+   */
+  public static getMissReasonLabel(reason: string): string {
+    return ShotMapUtils.missReasonLabels[reason] ?? "Missed";
+  }
+
+  /**
+   * Returns the shot's result: "Goal", "Saved", or a missed shot's reason (getMissReasonLabel).
+   */
+  public static getResultLabel(shot: GameShot): string {
+    if (shot?.isGoal) {
+      return "Goal";
+    }
+    return shot?.isMissed ? ShotMapUtils.getMissReasonLabel(shot.missReason) : "Saved";
+  }
+
+  /**
    * Returns when the shot was taken, like "2nd 4:12" or "OT 0:45", with the time elapsed in the period.
    */
   public static getTimeLabel(shot: GameShot): string {
@@ -129,8 +169,10 @@ export class ShotMapUtils {
         .filter(label => !!label).join(" ");
   }
 
-  private static isShot(play: Play): boolean {
-    const isShotType = play?.typeDescKey === NhlPlayTypeEnum.GOAL || play?.typeDescKey === NhlPlayTypeEnum.SHOT_ON_GOAL;
+  private static isShot(play: Play, includeMissed: boolean): boolean {
+    const type = play?.typeDescKey;
+    const isShotType = type === NhlPlayTypeEnum.GOAL || type === NhlPlayTypeEnum.SHOT_ON_GOAL ||
+        (includeMissed && type === NhlPlayTypeEnum.MISSED_SHOT);
     const details = play?.details;
     return isShotType && play.periodDescriptor?.periodType !== NhlPeriodTypeEnum.SHOOTOUT &&
         details?.eventOwnerTeamId != null && details.xCoord != null && details.yCoord != null &&
