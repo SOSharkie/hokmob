@@ -58,6 +58,10 @@ import { LeagueStandingsComponent } from './league-standings/league-standings.co
 import {SingleTeamFormComponent} from "@app/team/single-team-form/single-team-form.component";
 import { TeamScheduleComponent } from './team/team-schedule/team-schedule.component';
 import { TeamStatsComponent } from './team/team-stats/team-stats.component';
+import { TeamStatsTabComponent } from './team/team-stats-tab/team-stats-tab.component';
+import { TeamPowerRatingComponent } from './team/team-power-rating/team-power-rating.component';
+import { TeamAdvancedStatsComponent } from './team/team-advanced-stats/team-advanced-stats.component';
+import { TeamRatingChartComponent } from './shared/components/team-rating-chart/team-rating-chart.component';
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
 import { TeamStandingsComponent } from './team/team-standings/team-standings.component';
 import { TeamPlayerStatsComponent } from './team/team-player-stats/team-player-stats.component';
@@ -125,6 +129,10 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
     SingleTeamFormComponent,
     TeamScheduleComponent,
     TeamStatsComponent,
+    TeamStatsTabComponent,
+    TeamPowerRatingComponent,
+    TeamAdvancedStatsComponent,
+    TeamRatingChartComponent,
     TeamNextGameComponent,
     TeamStandingsComponent,
     TeamPlayerStatsComponent,

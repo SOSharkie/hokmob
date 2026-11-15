@@ -1,0 +1,19 @@
+@if (rows.length) {
+  <div class="team-stats">
+    <div class="team-stats-header">
+      <span>{{title}}</span>
+    </div>
+    @for (row of rows; track row.label) {
+      <div class="team-stat-row" [title]="row.description">
+        <span class="stat-label">{{row.label}}</span>
+        <div class="stat-values">
+          <span class="stat-value">{{row.value}}</span>
+          <span class="stat-rank">{{row.rank}}</span>
+        </div>
+      </div>
+    }
+    @if (hasExpectedGoals) {
+      <a class="stats-source" [href]="nstUrl" target="_blank" rel="noopener">xGF% from Natural Stat Trick</a>
+    }
+  </div>
+}

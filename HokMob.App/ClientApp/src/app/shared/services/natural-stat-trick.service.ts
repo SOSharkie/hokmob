@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
+import {NstTeamSeasonStats, NstTeamTable} from "@shared/models/natural-stat-trick/nst-team-stats.model";
 
 /**
  * Corsi and expected goals (xG) from Natural Stat Trick, through the backend (/api/nst/*), which holds the access key
@@ -10,6 +11,8 @@ import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.mod
 export class NaturalStatTrickService {
 
   private readonly nstGameUrl = "/api/nst/game/";
+
+  private readonly nstTeamsUrl = "/api/nst/teams";
 
   constructor(private http: HttpClient) { }
 
@@ -29,6 +32,31 @@ export class NaturalStatTrickService {
         error: (error: HttpErrorResponse) => {
           if (error?.status === 404) {
             resolve(undefined);
+            return;
+          }
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+   * Gets every team's 5v5 expected goals over a regular season. Resolves an empty list when NST has no table for the
+   * season (no games yet). Rejects when they can't be loaded, including when the backend has no key or is pausing for
+   * NST's limits (503).
+   *
+   * @param season - The season ID, like 20262027.
+   */
+  public getTeamStats(season: number | string): Promise<NstTeamSeasonStats[]> {
+    return new Promise((resolve, reject) => {
+      return this.http.get<NstTeamTable>(this.nstTeamsUrl + "?season=" + season).subscribe({
+        next: (response) => {
+          resolve(response?.teams ?? []);
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error?.status === 404) {
+            resolve([]);
             return;
           }
           console.error(error);

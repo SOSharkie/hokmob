@@ -1,4 +1,5 @@
 @import "variables";
+@import "segmented-toggle";
 
 // A card of the history page, in the look of the ratings page's cards, with a title and toggles on one line
 .history-card {
@@ -42,36 +43,7 @@
 
 // A segmented pill, like the ratings page's Skater / Goalie toggle
 .position-toggle {
-  display: flex;
-  flex: none;
-  gap: $spacing-x-small;
-  padding: $spacing-small;
-  border-radius: 20px;
-  background-color: $black-03;
-
-  .toggle-option {
-    min-width: 44px;
-    height: 28px;
-    padding: 0 $spacing-large;
-    border: none;
-    border-radius: 16px;
-    background-color: transparent;
-    color: $gray-04;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s, color 0.15s;
-
-    &:hover {
-      color: white;
-    }
-
-    &.selected {
-      background-color: white;
-      color: #222222;
-    }
-  }
+  @include segmented-toggle;
 }
 
 // A rating in its HokMob color, like the game page's
@@ -185,10 +157,5 @@
       width: 32px;
       height: 32px;
     }
-  }
-
-  // A tap target at least 44px tall
-  .position-toggle .toggle-option {
-    height: 36px;
   }
 }

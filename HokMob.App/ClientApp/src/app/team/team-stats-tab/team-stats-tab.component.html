@@ -1,0 +1,44 @@
+<div class="team-stats-tab">
+  <div class="stats-cards">
+    <div class="stats-column">
+      @if (hasRating) {
+        <app-team-power-rating
+            [teamId]="teamId"
+            [ratings]="ratings"
+            [timeline]="timeline"
+        ></app-team-power-rating>
+      }
+      <app-team-stats
+          [teamId]="teamId"
+          [teamStats]="teamStats"
+      ></app-team-stats>
+    </div>
+    <div class="stats-column">
+      @if (isLoading) {
+        <div class="team-stats-tab-card loading-card">
+          <app-loading-spinner></app-loading-spinner>
+        </div>
+      }
+      @if (hasRating) {
+        <app-team-advanced-stats
+            [teamId]="teamId"
+            [ratings]="ratings"
+            [season]="season"
+            [nstTeams]="nstTeams"
+        ></app-team-advanced-stats>
+      }
+      @if (hasError) {
+        <div class="team-stats-tab-card team-stats-tab-message">
+          <span>The power rating and advanced stats couldn't be loaded</span>
+        </div>
+      }
+    </div>
+  </div>
+  @if (hasRating) {
+    <app-team-rating-chart
+        title="Power Rating Over the Season"
+        [games]="games"
+        [teamIds]="teamIds"
+    ></app-team-rating-chart>
+  }
+</div>

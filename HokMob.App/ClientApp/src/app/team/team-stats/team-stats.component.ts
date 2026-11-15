@@ -1,6 +1,7 @@
 import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
 import {TeamSeasonStats} from "@shared/models/nhl-stats-api/team-stats.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {TeamRatingUtils} from "@shared/utils/team-rating-utils";
 
 /**
  * One row of the team stats card: a stat's value and the team's rank in the league for it.
@@ -10,6 +11,8 @@ export interface TeamStatRow {
   value: string;
   /** Like "9th". */
   rank: string;
+  /** What the stat is, for a tooltip. */
+  description?: string;
 }
 
 /**
@@ -44,6 +47,7 @@ export class TeamStatsComponent implements OnChanges {
    * better for goals and shots against.
    */
   private static readonly stats: {label: string, field: keyof TeamSeasonStats, percentage?: boolean, decimals?: number, lowerIsBetter?: boolean}[] = [
+    {label: "Points %", field: "pointPct", percentage: true},
     {label: "Power Play %", field: "powerPlayPct", percentage: true},
     {label: "Penalty Kill %", field: "penaltyKillPct", percentage: true},
     {label: "Goals For / Game", field: "goalsForPerGame"},
@@ -89,26 +93,6 @@ export class TeamStatsComponent implements OnChanges {
       const otherValue = stats[field] as number;
       return otherValue != null && (lowerIsBetter ? otherValue < value : otherValue > value);
     });
-    return TeamStatsComponent.getOrdinal(better.length + 1);
-  }
-
-  /**
-   * A rank with its suffix, like 1 to "1st", 2 to "2nd" and 11 to "11th".
-   */
-  private static getOrdinal(rank: number): string {
-    const lastTwoDigits = rank % 100;
-    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
-      return rank + "th";
-    }
-    switch (rank % 10) {
-      case 1:
-        return rank + "st";
-      case 2:
-        return rank + "nd";
-      case 3:
-        return rank + "rd";
-      default:
-        return rank + "th";
-    }
+    return TeamRatingUtils.getOrdinal(better.length + 1);
   }
 }

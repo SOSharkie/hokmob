@@ -18,6 +18,9 @@ namespace HokMob.App.Services
 
     public record NstLookupResult(NstLookupStatus Status, NstGameStats? Stats = null);
 
+    /// <summary>How a team table lookup went, with the table when it was found.</summary>
+    public record NstTeamTableResult(NstLookupStatus Status, NstTeamTable? Table = null);
+
     /// <summary>
     /// Typed HttpClient for data.naturalstattrick.com, the bot mirror of Natural Stat Trick. Every request needs the
     /// access key (the "NaturalStatTrick:Key" setting, sent as the nst-key header) and spends 10 of each of two usage
@@ -73,6 +76,20 @@ namespace HokMob.App.Services
         /// transient; the Lazy keeps GetOrAdd from starting a fetch more than once (see NhlApiClient.InFlightRequests).
         /// </summary>
         private static readonly ConcurrentDictionary<long, Lazy<Task<NstLookupResult>>> InFlightRequests = new();
+
+        /// <summary>The team table fetch in flight for each season, like InFlightRequests for games.</summary>
+        private static readonly ConcurrentDictionary<int, Lazy<Task<NstTeamTableResult>>> InFlightTeamTables = new();
+
+        private const string TeamTableCacheKeyPrefix = "nst-teams:";
+
+        /// <summary>
+        /// How long a season's team table is kept. It only changes as games end, and NST runs a few minutes behind, so an
+        /// hour keeps it current enough at one page an hour per season asked for.
+        /// </summary>
+        private static readonly TimeSpan TeamTableCacheDuration = TimeSpan.FromHours(1);
+
+        /// <summary>The size a cached team table counts for against the memory cache limit, roughly its JSON size.</summary>
+        private const long CachedTeamTableSize = 4 * 1024;
 
         /// <summary>Until when requests are paused (ticks of a UTC DateTime), shared by every instance.</summary>
         private static long _pausedUntilTicks;
@@ -142,12 +159,103 @@ namespace HokMob.App.Services
         /// </summary>
         private async Task<NstLookupResult> FetchAsync(long gameId, string cacheKey)
         {
-            if (DateTime.UtcNow.Ticks < Interlocked.Read(ref _pausedUntilTicks))
+            var html = await GetPageAsync(GetGamePath(gameId));
+            if (html == null)
             {
                 return new NstLookupResult(NstLookupStatus.Unavailable);
             }
 
-            var path = GetGamePath(gameId);
+            var stats = NaturalStatTrickGameParser.Parse(gameId, html);
+            var result = stats == null
+                ? new NstLookupResult(NstLookupStatus.NotFound)
+                : new NstLookupResult(NstLookupStatus.Found, stats);
+            var options = new MemoryCacheEntryOptions { Size = CachedGameSize };
+            if (stats?.IsFinal == true)
+            {
+                options.SlidingExpiration = FinalGameSlidingExpiration;
+            }
+            else
+            {
+                options.AbsoluteExpirationRelativeToNow = Volatile.Read(ref _standardTokensRemaining) < LowStandardTokens
+                    ? SlowPendingGameCacheDuration
+                    : PendingGameCacheDuration;
+            }
+            _cache.Set(cacheKey, result, options);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets every team's 5v5 expected goals for a regular season, from NST's team table: one page for the whole
+        /// league, kept for an hour (TeamTableCacheDuration), so it costs at most 24 pages a day per season asked for.
+        /// </summary>
+        /// <param name="season">The season ID, like 20262027.</param>
+        public async Task<NstTeamTableResult> GetTeamTableAsync(int season)
+        {
+            var cacheKey = TeamTableCacheKeyPrefix + season;
+            if (_cache.TryGetValue(cacheKey, out NstTeamTableResult? cached) && cached != null)
+            {
+                return cached;
+            }
+            if (string.IsNullOrWhiteSpace(_key))
+            {
+                _logger.LogWarning("No Natural Stat Trick key is configured ({Setting})", KeySetting);
+                return new NstTeamTableResult(NstLookupStatus.Unavailable);
+            }
+
+            var fetch = InFlightTeamTables.GetOrAdd(season, _ => new Lazy<Task<NstTeamTableResult>>(
+                () => FetchTeamTableAsync(season, cacheKey), LazyThreadSafetyMode.ExecutionAndPublication));
+            try
+            {
+                return await fetch.Value;
+            }
+            finally
+            {
+                InFlightTeamTables.TryRemove(new KeyValuePair<int, Lazy<Task<NstTeamTableResult>>>(season, fetch));
+            }
+        }
+
+        /// <summary>
+        /// The team table's path: a regular season's 5v5 counts (not per 60) for every team, home and road, over the
+        /// whole season (empty fd and td dates).
+        /// </summary>
+        public static string GetTeamTablePath(int season)
+        {
+            return "teamtable.php?fromseason=" + season + "&thruseason=" + season +
+                   "&stype=2&sit=5v5&score=all&rate=n&team=all&loc=B&gpf=410&fd=&td=";
+        }
+
+        private async Task<NstTeamTableResult> FetchTeamTableAsync(int season, string cacheKey)
+        {
+            var html = await GetPageAsync(GetTeamTablePath(season));
+            if (html == null)
+            {
+                return new NstTeamTableResult(NstLookupStatus.Unavailable);
+            }
+
+            var table = NaturalStatTrickTeamTableParser.Parse(season, html);
+            var result = table == null
+                ? new NstTeamTableResult(NstLookupStatus.NotFound)
+                : new NstTeamTableResult(NstLookupStatus.Found, table);
+            _cache.Set(cacheKey, result, new MemoryCacheEntryOptions
+            {
+                Size = CachedTeamTableSize,
+                AbsoluteExpirationRelativeToNow = TeamTableCacheDuration
+            });
+            return result;
+        }
+
+        /// <summary>
+        /// Fetches one NST page with the key, or returns null when it can't be had: requests are paused, NST answered
+        /// an error, or it can't be reached. Pauses requests when the tokens run low or NST rejects the key. Every caller
+        /// waiting on a page shares the call, so it takes no caller's cancellation token; HttpClient.Timeout bounds it.
+        /// </summary>
+        private async Task<string?> GetPageAsync(string path)
+        {
+            if (DateTime.UtcNow.Ticks < Interlocked.Read(ref _pausedUntilTicks))
+            {
+                return null;
+            }
+
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, path);
@@ -162,32 +270,14 @@ namespace HokMob.App.Services
                     {
                         Pause();
                     }
-                    return new NstLookupResult(NstLookupStatus.Unavailable);
+                    return null;
                 }
-
-                var html = await response.Content.ReadAsStringAsync(CancellationToken.None);
-                var stats = NaturalStatTrickGameParser.Parse(gameId, html);
-                var result = stats == null
-                    ? new NstLookupResult(NstLookupStatus.NotFound)
-                    : new NstLookupResult(NstLookupStatus.Found, stats);
-                var options = new MemoryCacheEntryOptions { Size = CachedGameSize };
-                if (stats?.IsFinal == true)
-                {
-                    options.SlidingExpiration = FinalGameSlidingExpiration;
-                }
-                else
-                {
-                    options.AbsoluteExpirationRelativeToNow = Volatile.Read(ref _standardTokensRemaining) < LowStandardTokens
-                        ? SlowPendingGameCacheDuration
-                        : PendingGameCacheDuration;
-                }
-                _cache.Set(cacheKey, result, options);
-                return result;
+                return await response.Content.ReadAsStringAsync(CancellationToken.None);
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
             {
                 _logger.LogError(ex, "Failed to reach Natural Stat Trick for {Path}", path);
-                return new NstLookupResult(NstLookupStatus.Unavailable);
+                return null;
             }
         }
 

@@ -56,7 +56,7 @@ namespace HokMob.App.Services
 
         private static readonly Regex RowRegex = new(@"<tr[^>]*>([\s\S]*?)</tr>", RegexOptions.Compiled);
 
-        private static readonly Regex CellRegex = new(@"<t[hd][^>]*>([\s\S]*?)</t[hd]>", RegexOptions.Compiled);
+        internal static readonly Regex CellRegex = new(@"<t[hd][^>]*>([\s\S]*?)</t[hd]>", RegexOptions.Compiled);
 
         private static readonly Regex LineBreakRegex = new(@"<br\s*/?>|<hr\s*/?>", RegexOptions.Compiled);
 
@@ -285,7 +285,7 @@ namespace HokMob.App.Services
                 .ToList();
         }
 
-        private static string CleanText(string html)
+        internal static string CleanText(string html)
         {
             var text = WebUtility.HtmlDecode(TagRegex.Replace(html, "")).Replace(' ', ' ');
             return string.Join("\n", text.Split('\n').Select(line => line.Trim())).Trim();
@@ -305,7 +305,7 @@ namespace HokMob.App.Services
             return cell?.Split('\n', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
         }
 
-        private static int? ToInt(string? value)
+        internal static int? ToInt(string? value)
         {
             return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number) ? number : null;
         }
@@ -313,7 +313,7 @@ namespace HokMob.App.Services
         /// <summary>
         /// Parses a number, or null for NST's "-" (a percentage without attempts) and missing cells.
         /// </summary>
-        private static double? ToDouble(string? value)
+        internal static double? ToDouble(string? value)
         {
             return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
                 ? Math.Round(number, 2)

@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {TeamSeasonStats, TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
+import {TeamGameStats, TeamGamesResponse} from "@shared/models/nhl-stats-api/team-games.model";
 import {GoalieSeasonStats, PlayerStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {SeasonPlayersResponse} from "@shared/models/nhl-stats-api/season-players.model";
 import {TeamPlayersResponse} from "@shared/models/nhl-stats-api/team-players.model";
@@ -17,6 +18,8 @@ import {DraftPlayerStats, DraftStatsResponse} from "@shared/models/nhl-stats-api
 export class NhlStatsApiService {
 
   private readonly nhlTeamStatsUrl = "/api/nhl-stats/teams";
+
+  private readonly nhlTeamGamesUrl = "/api/nhl-stats/team-games";
 
   private readonly nhlPlayerStatsUrl = "/api/nhl-stats/player/";
 
@@ -168,6 +171,43 @@ export class NhlStatsApiService {
         }
       });
     });
+  }
+
+  /**
+   * Gets every team's game by game stats for a season, one row per team and game, sorted by date. A season with no
+   * games yet resolves an empty list.
+   *
+   * @param season - The season ID, like 20262027.
+   * @param gameType - 2 for the regular season (the default), 3 for the playoffs.
+   */
+  public getTeamGames(season: number | string, gameType: number = 2): Promise<TeamGameStats[]> {
+    const url = this.nhlTeamGamesUrl + "?season=" + season + "&gameType=" + gameType;
+    return new Promise((resolve, reject) => {
+      return this.http.get<TeamGamesResponse>(url).subscribe({
+        next: (response) => {
+          resolve(NhlStatsApiService.toTeamGameRows(response?.games));
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+   * Turns the team games' columns into one object per row.
+   */
+  private static toTeamGameRows(columns: TeamGamesResponse["games"]): TeamGameStats[] {
+    const fields = Object.keys(columns ?? {}) as (keyof TeamGameStats)[];
+    const count = columns?.gameId?.length ?? 0;
+    const rows: TeamGameStats[] = [];
+    for (let i = 0; i < count; i++) {
+      const row = {} as Record<keyof TeamGameStats, unknown>;
+      fields.forEach(field => row[field] = columns[field][i]);
+      rows.push(row as unknown as TeamGameStats);
+    }
+    return rows;
   }
 
   /**

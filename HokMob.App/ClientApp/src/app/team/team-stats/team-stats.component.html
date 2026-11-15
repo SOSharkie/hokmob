@@ -3,7 +3,7 @@
     <div class="team-stats-header">
       <span>{{title}}</span>
     </div>
-    @for (row of rows; track row) {
+    @for (row of rows; track row.label) {
       <div class="team-stat-row">
         <span class="stat-label">{{row.label}}</span>
         <div class="stat-values">
