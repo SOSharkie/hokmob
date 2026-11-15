@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({name: 'savePercentage'})
+@Pipe({
+    name: 'savePercentage',
+    standalone: false
+})
 export class SavePercentagePipe implements PipeTransform {
   public transform(value: number): string {
     if (value === null || value === undefined) {

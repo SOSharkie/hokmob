@@ -1,6 +1,6 @@
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import * as dayjs from 'dayjs';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
+import dayjs from 'dayjs';
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
@@ -19,6 +19,7 @@ import {
   mockRegularSeasonScoreResponse,
   mockScoreResponse
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {provideHttpClient} from '@angular/common/http';
 
 describe('NhlGameService', () => {
   let service: NhlGameService;
@@ -32,8 +33,7 @@ describe('NhlGameService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [NhlGameService, NhlStatsApiService]
+      providers: [NhlGameService, NhlStatsApiService, provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(NhlGameService);
     httpMock = TestBed.inject(HttpTestingController);

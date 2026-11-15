@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { PlayoffCarouselSeries } from '@shared/models/nhl-web-api/playoffs.model';
 import { NhlGameScheduleStateEnum } from '@shared/enums/nhl-game-schedule-state.enum';

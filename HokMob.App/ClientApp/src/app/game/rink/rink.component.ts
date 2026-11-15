@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, ChangeDetectionStrategy} from '@angular/core';
 
 export type RinkLine = 'goalies' | 'defense' | 'forwards';
 
@@ -44,9 +44,11 @@ export interface RinkDrawing {
  * positions them from their --length and --across (see _rink-card.scss).
  */
 @Component({
-  selector: 'app-rink',
-  templateUrl: './rink.component.html',
-  styleUrls: ['./rink.component.scss']
+    selector: 'app-rink',
+    templateUrl: './rink.component.html',
+    styleUrls: ['./rink.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RinkComponent {
 

@@ -2,82 +2,112 @@
   <div class="rink-card-header">
     <span>Shot Map</span>
     <div class="shot-filter" role="group" aria-label="Shots shown">
-      <button *ngFor="let filter of shotFilters" type="button" class="shot-filter-option"
-              [class.selected]="filter.value === shotFilter" [attr.aria-pressed]="filter.value === shotFilter"
-              [title]="filter.title" (click)="selectShotFilter(filter.value)">{{filter.label}}</button>
+      @for (filter of shotFilters; track filter) {
+        <button type="button" class="shot-filter-option"
+                [class.selected]="filter.value === shotFilter" [attr.aria-pressed]="filter.value === shotFilter"
+                [title]="filter.title" (click)="selectShotFilter(filter.value)">{{filter.label}}</button>
+      }
     </div>
   </div>
-  <div *ngIf="selectedShot" #shotDetails class="shot-details">
-    <button type="button" class="shooter" (click)="clickShooter()" [attr.aria-label]="'Open ' + shooterName + '\'s game stats'">
-      <span class="shooter-avatar">
-        <span class="shooter-headshot-container">
-          <img class="shooter-headshot" [src]="shooterHeadshot" (error)="showBlankHeadshot($event)" alt="">
+  @if (selectedShot) {
+    <div #shotDetails class="shot-details">
+      <button type="button" class="shooter" (click)="clickShooter()" [attr.aria-label]="'Open ' + shooterName + '\'s game stats'">
+        <span class="shooter-avatar">
+          <span class="shooter-headshot-container">
+            <img class="shooter-headshot" [src]="shooterHeadshot" (error)="showBlankHeadshot($event)" alt="">
+          </span>
+          @if (shooterTeamLogo) {
+            <app-team-logo class="shooter-team-logo" [src]="shooterTeamLogo"
+                           [size]="logoSize"></app-team-logo>
+          }
         </span>
-        <app-team-logo *ngIf="shooterTeamLogo" class="shooter-team-logo" [src]="shooterTeamLogo"
-                       [size]="logoSize"></app-team-logo>
-      </span>
-      <span class="shooter-name">{{shooterName}}</span>
-    </button>
-    <dl class="shot-facts">
-      <div class="shot-fact">
-        <dt>Time</dt>
-        <dd class="shot-time">{{timeLabel}}</dd>
-      </div>
-      <div *ngIf="isFactShown('shotType')" class="shot-fact">
-        <dt>Shot type</dt>
-        <dd class="shot-type">{{shotTypeLabel}}</dd>
-      </div>
-      <div class="shot-fact">
-        <dt>Result</dt>
-        <dd class="shot-result" [class.goal]="selectedShot.isGoal" [class.missed]="selectedShot.isMissed">
-          <span>{{resultLabel}}</span>
-          <button *ngIf="selectedGoalHasClip" type="button" class="watch-goal-button" title="Watch the goal"
-                  aria-label="Watch the goal" (click)="clickWatchGoal()">
-            <mat-icon fontIcon="smart_display"></mat-icon>
-          </button>
-        </dd>
-      </div>
-      <div *ngIf="hasExpectedGoals" class="shot-fact">
-        <dt title="Expected goals: how likely the shot was to score, from Natural Stat Trick">xG</dt>
-        <dd class="shot-xg" [attr.title]="expectedGoalsTitle">{{expectedGoalsLabel}}</dd>
-      </div>
-      <div *ngIf="isFactShown('goalie')" class="shot-fact">
-        <dt>Goalie</dt>
-        <dd class="shot-goalie">{{goalieLabel}}</dd>
-      </div>
-    </dl>
-  </div>
+        <span class="shooter-name">{{shooterName}}</span>
+      </button>
+      <dl class="shot-facts">
+        <div class="shot-fact">
+          <dt>Time</dt>
+          <dd class="shot-time">{{timeLabel}}</dd>
+        </div>
+        @if (isFactShown('shotType')) {
+          <div class="shot-fact">
+            <dt>Shot type</dt>
+            <dd class="shot-type">{{shotTypeLabel}}</dd>
+          </div>
+        }
+        <div class="shot-fact">
+          <dt>Result</dt>
+          <dd class="shot-result" [class.goal]="selectedShot.isGoal" [class.missed]="selectedShot.isMissed">
+            <span>{{resultLabel}}</span>
+            @if (selectedGoalHasClip) {
+              <button type="button" class="watch-goal-button" title="Watch the goal"
+                      aria-label="Watch the goal" (click)="clickWatchGoal()">
+                <mat-icon fontIcon="smart_display"></mat-icon>
+              </button>
+            }
+          </dd>
+        </div>
+        @if (hasExpectedGoals) {
+          <div class="shot-fact">
+            <dt title="Expected goals: how likely the shot was to score, from Natural Stat Trick">xG</dt>
+            <dd class="shot-xg" [attr.title]="expectedGoalsTitle">{{expectedGoalsLabel}}</dd>
+          </div>
+        }
+        @if (isFactShown('goalie')) {
+          <div class="shot-fact">
+            <dt>Goalie</dt>
+            <dd class="shot-goalie">{{goalieLabel}}</dd>
+          </div>
+        }
+      </dl>
+    </div>
+  }
   <app-rink class="rink">
     <!-- Laid out on the lying rink, and stood up with the markings on phones -->
     <div class="shot-layer">
-      <svg *ngIf="selectedShotLine as line" class="shot-line-layer" viewBox="0 0 100 100" preserveAspectRatio="none"
-           aria-hidden="true">
-        <!-- One line per way the rink is drawn, since a missed shot's stops at the crease (ShotLine) -->
-        <line *ngIf="line.lyingEnd as end" class="shot-line lying-shot-line" [class.missed]="line.missed"
-              [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="end.x" [attr.y2]="end.y"/>
-        <line *ngIf="line.standingEnd as end" class="shot-line standing-shot-line" [class.missed]="line.missed"
-              [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="end.x" [attr.y2]="end.y"/>
-      </svg>
-      <button *ngFor="let marker of shownMarkers; trackBy: trackByShot" type="button" class="shot-marker"
-              [class.goal]="marker.shot.isGoal" [class.missed]="marker.shot.isMissed"
-              [class.selected]="marker === selectedMarker"
-              [style.left.%]="marker.along" [style.top.%]="marker.across" [style.--team-color]="marker.color"
-              [attr.aria-label]="getMarkerLabel(marker)" [attr.aria-pressed]="marker === selectedMarker"
-              (click)="selectShot(marker)">
-        <img *ngIf="marker.shot.isGoal" class="puck-icon" src="assets/puck.png" alt="">
-      </button>
+      @if (selectedShotLine; as line) {
+        <svg class="shot-line-layer" viewBox="0 0 100 100" preserveAspectRatio="none"
+             aria-hidden="true">
+          <!-- One line per way the rink is drawn, since a missed shot's stops at the crease (ShotLine) -->
+          @if (line.lyingEnd; as end) {
+            <line class="shot-line lying-shot-line" [class.missed]="line.missed"
+                  [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="end.x" [attr.y2]="end.y"/>
+          }
+          @if (line.standingEnd; as end) {
+            <line class="shot-line standing-shot-line" [class.missed]="line.missed"
+                  [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="end.x" [attr.y2]="end.y"/>
+          }
+        </svg>
+      }
+      @for (marker of shownMarkers; track trackByShot($index, marker)) {
+        <button type="button" class="shot-marker"
+                [class.goal]="marker.shot.isGoal" [class.missed]="marker.shot.isMissed"
+                [class.selected]="marker === selectedMarker"
+                [style.left.%]="marker.along" [style.top.%]="marker.across" [style.--team-color]="marker.color"
+                [attr.aria-label]="getMarkerLabel(marker)" [attr.aria-pressed]="marker === selectedMarker"
+                (click)="selectShot(marker)">
+          @if (marker.shot.isGoal) {
+            <img class="puck-icon" src="assets/puck.png" alt="">
+          }
+        </button>
+      }
     </div>
   </app-rink>
   <div class="team-shots">
     <div class="team-shot-count home-shot-count">
-      <app-team-logo *ngIf="homeTeamLogo" [src]="homeTeamLogo" [size]="logoSize"></app-team-logo>
+      @if (homeTeamLogo) {
+        <app-team-logo [src]="homeTeamLogo" [size]="logoSize"></app-team-logo>
+      }
       <span>{{homeShotsLabel}}</span>
     </div>
     <div class="team-shot-count away-shot-count">
       <span>{{awayShotsLabel}}</span>
-      <app-team-logo *ngIf="awayTeamLogo" [src]="awayTeamLogo" [size]="logoSize"></app-team-logo>
+      @if (awayTeamLogo) {
+        <app-team-logo [src]="awayTeamLogo" [size]="logoSize"></app-team-logo>
+      }
     </div>
   </div>
-  <a *ngIf="expectedGoalsSourceUrl" class="shots-source" [href]="expectedGoalsSourceUrl" target="_blank"
-     rel="noopener">Expected goals from Natural Stat Trick</a>
+  @if (expectedGoalsSourceUrl) {
+    <a class="shots-source" [href]="expectedGoalsSourceUrl" target="_blank"
+       rel="noopener">Expected goals from Natural Stat Trick</a>
+  }
 </div>

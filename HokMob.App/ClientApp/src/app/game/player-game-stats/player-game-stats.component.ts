@@ -8,9 +8,10 @@ import {
   OnChanges,
   OnDestroy,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
@@ -25,9 +26,11 @@ import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
  * A player's bio and game stats, shown at the top of the player game dialog and the goal highlight dialog.
  */
 @Component({
-  selector: 'app-player-game-stats',
-  templateUrl: './player-game-stats.component.html',
-  styleUrls: ['./player-game-stats.component.scss']
+    selector: 'app-player-game-stats',
+    templateUrl: './player-game-stats.component.html',
+    styleUrls: ['./player-game-stats.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
 

@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
+import {Component, Inject, OnInit, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Router} from "@angular/router";
 import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
@@ -22,10 +22,12 @@ export interface PlayerGameDialogData {
 }
 
 @Component({
-  selector: 'app-player-game-dialog',
-  templateUrl: './player-game-dialog.component.html',
-  styleUrls: ['./player-game-dialog.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-player-game-dialog',
+    templateUrl: './player-game-dialog.component.html',
+    styleUrls: ['./player-game-dialog.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayerGameDialogComponent implements OnInit {
 

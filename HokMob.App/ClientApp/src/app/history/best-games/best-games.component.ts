@@ -1,5 +1,5 @@
-import {Component, EventEmitter, Input, OnChanges, Output} from '@angular/core';
-import * as dayjs from "dayjs";
+import {Component, EventEmitter, Input, OnChanges, Output, ChangeDetectionStrategy} from '@angular/core';
+import dayjs from "dayjs";
 import {PositionGroup, RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -34,9 +34,11 @@ export interface BestGameRow {
  * to the player page and to the game page.
  */
 @Component({
-  selector: 'app-best-games',
-  templateUrl: './best-games.component.html',
-  styleUrls: ['./best-games.component.scss']
+    selector: 'app-best-games',
+    templateUrl: './best-games.component.html',
+    styleUrls: ['./best-games.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class BestGamesComponent implements OnChanges {
 

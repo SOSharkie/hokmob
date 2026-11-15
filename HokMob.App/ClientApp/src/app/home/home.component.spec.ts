@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
 

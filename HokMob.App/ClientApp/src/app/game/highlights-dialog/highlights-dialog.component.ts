@@ -1,4 +1,4 @@
-import {Component, Inject, ViewEncapsulation} from '@angular/core';
+import {Component, Inject, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
 import {HighlightVideo, NhlVideoUtils} from "@shared/utils/nhl-video-utils";
@@ -15,10 +15,12 @@ export interface HighlightsDialogData {
  * Plays a finished game's highlights in the NHL's embedded Brightcove player, with a tab per video.
  */
 @Component({
-  selector: 'app-highlights-dialog',
-  templateUrl: './highlights-dialog.component.html',
-  styleUrls: ['./highlights-dialog.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-highlights-dialog',
+    templateUrl: './highlights-dialog.component.html',
+    styleUrls: ['./highlights-dialog.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class HighlightsDialogComponent {
 

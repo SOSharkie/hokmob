@@ -46,50 +46,59 @@
         (pointerleave)="onChartPointerLeave()"
         (pointercancel)="onChartPointerLeave()"
     ></canvas>
-    <div
-        *ngIf="hoveredMinute && hoveredGoals.length === 0 && !goalData[hoveredMinute.index]"
-        class="minute-dot"
-        [style.left.px]="minuteDotPosition.x"
-        [style.top.px]="minuteDotPosition.y"
-    ></div>
-    <div
-        *ngIf="hoveredMinute && hoveredGoals.length === 0"
-        #minuteTooltip
-        class="minute-tooltip"
-        [style.left.px]="minuteTooltipPosition.left"
-        [style.top.px]="minuteTooltipPosition.top"
-        [style.bottom.px]="minuteTooltipPosition.bottom"
-    >
-      <div class="minute-label">{{hoveredMinute.label}}</div>
-      <div *ngFor="let team of hoveredMinute.teams; trackBy: trackTeam" class="minute-team">
-        <app-team-logo class="team-logo" [src]="getTeamLogoById(team.teamId)" [size]="minuteLogoSize"></app-team-logo>
-        <span class="minute-plays">{{team.playsLabel}}</span>
-        <span class="minute-momentum">+{{team.momentum}}</span>
+    @if (hoveredMinute && hoveredGoals.length === 0 && !goalData[hoveredMinute.index]) {
+      <div
+          class="minute-dot"
+          [style.left.px]="minuteDotPosition.x"
+          [style.top.px]="minuteDotPosition.y"
+      ></div>
+    }
+    @if (hoveredMinute && hoveredGoals.length === 0) {
+      <div
+          #minuteTooltip
+          class="minute-tooltip"
+          [style.left.px]="minuteTooltipPosition.left"
+          [style.top.px]="minuteTooltipPosition.top"
+          [style.bottom.px]="minuteTooltipPosition.bottom"
+      >
+        <div class="minute-label">{{hoveredMinute.label}}</div>
+        @for (team of hoveredMinute.teams; track trackTeam($index, team)) {
+          <div class="minute-team">
+            <app-team-logo class="team-logo" [src]="getTeamLogoById(team.teamId)" [size]="minuteLogoSize"></app-team-logo>
+            <span class="minute-plays">{{team.playsLabel}}</span>
+            <span class="minute-momentum">+{{team.momentum}}</span>
+          </div>
+        }
+        @if (hoveredMinute.teams.length === 0) {
+          <div class="minute-empty">No shot attempts</div>
+        }
       </div>
-      <div *ngIf="hoveredMinute.teams.length === 0" class="minute-empty">No shot attempts</div>
-    </div>
-    <div
-        *ngIf="hoveredGoals.length > 0"
-        class="goal-tooltip"
-        [style.left.px]="tooltipPosition.left"
-        [style.top.px]="tooltipPosition.top"
-        [style.bottom.px]="tooltipPosition.bottom"
-        [style.width.px]="tooltipPosition.width"
-    >
-      <div *ngFor="let goal of hoveredGoals; trackBy: trackGoal" class="goal">
-        <div class="goal-header">
-          <app-team-logo class="team-logo" [src]="getTeamLogo(goal)" [size]="logoSize"></app-team-logo>
-          <span class="goal-time">{{hoveredPeriodLabel}} · {{getGoalTime(goal)}}</span>
-        </div>
-        <div class="goal-scorer">
-          <span class="color-green">{{getScorerName(goal)}}</span>
-          <span class="score-update">
-            (<span [class.color-green]="isHomeGoal(goal)">{{goal.details?.homeScore}}</span>
-            - <span [class.color-green]="!isHomeGoal(goal)">{{goal.details?.awayScore}}</span>)
-          </span>
-        </div>
-        <div class="goal-assists">{{getAssistsLabel(goal)}}</div>
+    }
+    @if (hoveredGoals.length > 0) {
+      <div
+          class="goal-tooltip"
+          [style.left.px]="tooltipPosition.left"
+          [style.top.px]="tooltipPosition.top"
+          [style.bottom.px]="tooltipPosition.bottom"
+          [style.width.px]="tooltipPosition.width"
+      >
+        @for (goal of hoveredGoals; track trackGoal($index, goal)) {
+          <div class="goal">
+            <div class="goal-header">
+              <app-team-logo class="team-logo" [src]="getTeamLogo(goal)" [size]="logoSize"></app-team-logo>
+              <span class="goal-time">{{hoveredPeriodLabel}} · {{getGoalTime(goal)}}</span>
+            </div>
+            <div class="goal-scorer">
+              <span class="color-green">{{getScorerName(goal)}}</span>
+              <span class="score-update">
+                (<span [class.color-green]="isHomeGoal(goal)">{{goal.details?.homeScore}}</span>
+                - <span [class.color-green]="!isHomeGoal(goal)">{{goal.details?.awayScore}}</span>)
+              </span>
+            </div>
+            <div class="goal-assists">{{getAssistsLabel(goal)}}</div>
+          </div>
+        }
       </div>
-    </div>
+    }
   </div>
 </div>

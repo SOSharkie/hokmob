@@ -8,12 +8,12 @@ publicly available NHL API data.
 
 The app has two parts:
 - **`HokMob.App/`** – ASP.NET Core (.NET 7) backend. It serves the built Angular app and proxies the NHL APIs.
-- **`HokMob.App/ClientApp/`** – Angular 15 frontend.
+- **`HokMob.App/ClientApp/`** – Angular 22 frontend.
 
 ## Prerequisites
 
 - [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0) or newer
-- [Node.js](https://nodejs.org/) and npm
+- [Node.js](https://nodejs.org/) 24 and npm
 
 ## NHL API proxy
 

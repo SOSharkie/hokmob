@@ -19,15 +19,21 @@
       <mat-icon svgIcon="lucide:chevron-right"></mat-icon>
     </button>
   </div>
-  <div *ngFor="let game of currentDayGames; let last = last" class="games-container" [ngClass]="{'last-scorecard': last}">
-    <app-scorecard
-      [game]="game"
-    ></app-scorecard>
-  </div>
-  <div *ngIf="isLoading" class="loading-container">
-    <app-loading-spinner [size]="40" class="loading-spinner"></app-loading-spinner>
-  </div>
-  <div *ngIf="!isLoading && currentDayGames && currentDayGames.length === 0" class="no-games-container">
-    <span>No Games</span>
-  </div>
+  @for (game of currentDayGames; track game; let last = $last) {
+    <div class="games-container" [ngClass]="{'last-scorecard': last}">
+      <app-scorecard
+        [game]="game"
+      ></app-scorecard>
+    </div>
+  }
+  @if (isLoading) {
+    <div class="loading-container">
+      <app-loading-spinner [size]="40" class="loading-spinner"></app-loading-spinner>
+    </div>
+  }
+  @if (!isLoading && currentDayGames && currentDayGames.length === 0) {
+    <div class="no-games-container">
+      <span>No Games</span>
+    </div>
+  }
 </div>

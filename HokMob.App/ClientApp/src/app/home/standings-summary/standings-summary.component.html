@@ -3,12 +3,14 @@
     <span>NHL Standings</span>
     <mat-icon class="title-chevron" svgIcon="lucide:chevron-right" aria-hidden="true"></mat-icon>
   </a>
-  <div *ngIf="standings" class="mini-standings">
-    <app-standings
-        [standings]="standings"
-        [showFormAndNext]="false"
-        [miniStandings]="true"
-        [defaultStandingsType]="standingsType"
-    ></app-standings>
-  </div>
+  @if (standings) {
+    <div class="mini-standings">
+      <app-standings
+          [standings]="standings"
+          [showFormAndNext]="false"
+          [miniStandings]="true"
+          [defaultStandingsType]="standingsType"
+      ></app-standings>
+    </div>
+  }
 </div>

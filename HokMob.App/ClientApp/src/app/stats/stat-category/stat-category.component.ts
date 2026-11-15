@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {combineLatest, Subscription} from "rxjs";
 import {NhlLeadersService} from "@shared/services/nhl-leaders.service";
@@ -58,9 +58,11 @@ export interface StatCategoryColumn extends StatColumn {
  * page's.
  */
 @Component({
-  selector: 'app-stat-category',
-  templateUrl: './stat-category.component.html',
-  styleUrls: ['./stat-category.component.scss']
+    selector: 'app-stat-category',
+    templateUrl: './stat-category.component.html',
+    styleUrls: ['./stat-category.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class StatCategoryComponent implements OnInit, OnDestroy {
 

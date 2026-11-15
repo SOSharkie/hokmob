@@ -5,44 +5,50 @@
     <mat-icon class="stat-title-chevron" svgIcon="lucide:chevron-right" aria-hidden="true"></mat-icon>
   </a>
   <div class="stat-players">
-    <div *ngIf="statLeader" class="stat-leader stat-player" [routerLink]="['/player', statLeader.playerId]">
-      <div class="player-container">
-        <div class="leader-headshot-container">
-          <img [src]="statLeader.headshot" (error)="showBlankHeadshot($event)" alt="" class="leader-headshot">
-        </div>
-        <div class="player-info">
-          <span class="leader-name">{{statLeader.name}}</span>
-          <div class="leader-team">
-            <app-team-logo class="leader-team-logo" [teamId]="statLeader.teamId" [size]="leaderLogoSize"
-                           [width]="leaderLogoMaxWidth"></app-team-logo>
-            <span class="leader-team-label">{{statLeader.teamName}}</span>
+    @if (statLeader) {
+      <div class="stat-leader stat-player" [routerLink]="['/player', statLeader.playerId]">
+        <div class="player-container">
+          <div class="leader-headshot-container">
+            <img [src]="statLeader.headshot" (error)="showBlankHeadshot($event)" alt="" class="leader-headshot">
+          </div>
+          <div class="player-info">
+            <span class="leader-name">{{statLeader.name}}</span>
+            <div class="leader-team">
+              <app-team-logo class="leader-team-logo" [teamId]="statLeader.teamId" [size]="leaderLogoSize"
+                             [width]="leaderLogoMaxWidth"></app-team-logo>
+              <span class="leader-team-label">{{statLeader.teamName}}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="stat-container" [ngStyle]="{'background-color': statLeader.teamColor, 'color': statLeader.teamTextColor}">
-        <span>{{statLeader.value}}</span>
-      </div>
-    </div>
-    <div *ngFor="let player of statRunnerUps" class="stat-player" [routerLink]="['/player', player.playerId]">
-      <div class="player-container">
-        <div class="player-headshot-container">
-          <img [src]="player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
+        <div class="stat-container" [ngStyle]="{'background-color': statLeader.teamColor, 'color': statLeader.teamTextColor}">
+          <span>{{statLeader.value}}</span>
         </div>
-        <div class="player-info">
-          <span class="player-name">{{player.name}}</span>
-          <div class="player-team">
-            <app-team-logo class="player-team-logo" [teamId]="player.teamId" [size]="playerLogoSize"
-                           [width]="playerLogoMaxWidth"></app-team-logo>
-            <span class="player-team-label">{{player.teamName}}</span>
+      </div>
+    }
+    @for (player of statRunnerUps; track player) {
+      <div class="stat-player" [routerLink]="['/player', player.playerId]">
+        <div class="player-container">
+          <div class="player-headshot-container">
+            <img [src]="player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
+          </div>
+          <div class="player-info">
+            <span class="player-name">{{player.name}}</span>
+            <div class="player-team">
+              <app-team-logo class="player-team-logo" [teamId]="player.teamId" [size]="playerLogoSize"
+                             [width]="playerLogoMaxWidth"></app-team-logo>
+              <span class="player-team-label">{{player.teamName}}</span>
+            </div>
           </div>
         </div>
+        <div class="stat-container">
+          <span>{{player.value}}</span>
+        </div>
       </div>
-      <div class="stat-container">
-        <span>{{player.value}}</span>
+    }
+    @if (!statLeader) {
+      <div class="no-stats">
+        <span>No stats yet</span>
       </div>
-    </div>
-    <div *ngIf="!statLeader" class="no-stats">
-      <span>No stats yet</span>
-    </div>
+    }
   </div>
 </div>

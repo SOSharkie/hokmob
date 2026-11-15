@@ -5,24 +5,30 @@
   <!-- One grid for both teams, so each home game shares its row with the away game beside it -->
   <div class="previous-games-container">
     <div class="home-games">
-      <app-previous-game
-          *ngFor="let game of homeTeamGames; let index = index; let isLast = last"
-          [style.grid-row]="index + 1"
-          [game]="game"
-          [teamId]="homeTeamId"
-          [isLast]="isLast"
-      ></app-previous-game>
-      <div *ngIf="!homeTeamGames?.length" class="no-games">No recent games</div>
+      @for (game of homeTeamGames; track game; let index = $index; let isLast = $last) {
+        <app-previous-game
+            [style.grid-row]="index + 1"
+            [game]="game"
+            [teamId]="homeTeamId"
+            [isLast]="isLast"
+        ></app-previous-game>
+      }
+      @if (!homeTeamGames?.length) {
+        <div class="no-games">No recent games</div>
+      }
     </div>
     <div class="away-games">
-      <app-previous-game
-          *ngFor="let game of awayTeamGames; let index = index; let isLast = last"
-          [style.grid-row]="index + 1"
-          [game]="game"
-          [teamId]="awayTeamId"
-          [isLast]="isLast"
-      ></app-previous-game>
-      <div *ngIf="!awayTeamGames?.length" class="no-games">No recent games</div>
+      @for (game of awayTeamGames; track game; let index = $index; let isLast = $last) {
+        <app-previous-game
+            [style.grid-row]="index + 1"
+            [game]="game"
+            [teamId]="awayTeamId"
+            [isLast]="isLast"
+        ></app-previous-game>
+      }
+      @if (!awayTeamGames?.length) {
+        <div class="no-games">No recent games</div>
+      }
     </div>
   </div>
 </div>

@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {NavMenuItemModel} from "@shared/models/nav-menu-item.model";
 import {LUCIDE_ICON_NAMESPACE} from "@shared/icons/lucide-icons";
 
 @Component({
-  selector: 'app-navigation-menu',
-  templateUrl: './navigation-menu.component.html',
-  styleUrls: ['./navigation-menu.component.scss']
+    selector: 'app-navigation-menu',
+    templateUrl: './navigation-menu.component.html',
+    styleUrls: ['./navigation-menu.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NavigationMenuComponent {
 

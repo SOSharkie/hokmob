@@ -2,7 +2,9 @@
   <div class="series-header">
     <app-team-logo class="team-logo" [src]="logoA" [size]="logoSize"
                    [ngClass]="{'placeholder-logo': !isLogoALoaded, 'loser': teamALost}"></app-team-logo>
-    <span *ngIf="!smallerVersion" class="next-game">{{nextGameDay}}</span>
+    @if (!smallerVersion) {
+      <span class="next-game">{{nextGameDay}}</span>
+    }
     <app-team-logo class="team-logo" [src]="logoB" [size]="logoSize"
                    [ngClass]="{'placeholder-logo': !isLogoBLoaded, 'loser': teamBLost}"></app-team-logo>
   </div>

@@ -9,7 +9,8 @@ import {
   OnDestroy,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {PlayByPlay, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {GameLandingScoringPeriod} from "@shared/models/nhl-web-api/gamecenter-landing.model";
@@ -61,9 +62,11 @@ export type ShotFilter = "all" | "onTarget" | "goals";
  * above the rink, and a goal with a posted clip can open its highlight.
  */
 @Component({
-  selector: 'app-shot-map',
-  templateUrl: './shot-map.component.html',
-  styleUrls: ['./shot-map.component.scss']
+    selector: 'app-shot-map',
+    templateUrl: './shot-map.component.html',
+    styleUrls: ['./shot-map.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ShotMapComponent implements OnChanges, AfterViewInit, OnDestroy {
 

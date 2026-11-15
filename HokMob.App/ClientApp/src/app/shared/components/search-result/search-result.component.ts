@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {SearchResultModel} from "@shared/models/search-result.model";
 import {SearchResultTypeEnum} from "@shared/enums/search-result-type.enum";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
@@ -7,9 +7,11 @@ import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
  * One header search result: a team with its logo, or a player with their headshot and position.
  */
 @Component({
-  selector: 'app-search-result',
-  templateUrl: './search-result.component.html',
-  styleUrls: ['./search-result.component.scss']
+    selector: 'app-search-result',
+    templateUrl: './search-result.component.html',
+    styleUrls: ['./search-result.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SearchResultComponent {
 

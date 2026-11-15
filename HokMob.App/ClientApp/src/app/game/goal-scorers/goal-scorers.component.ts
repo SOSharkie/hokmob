@@ -1,13 +1,15 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output, ChangeDetectionStrategy} from '@angular/core';
 import {GameLandingGoal, GameLandingScoringPeriod} from "@shared/models/nhl-web-api/gamecenter-landing.model";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
 import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
-  selector: 'app-goal-scorers',
-  templateUrl: './goal-scorers.component.html',
-  styleUrls: ['./goal-scorers.component.scss']
+    selector: 'app-goal-scorers',
+    templateUrl: './goal-scorers.component.html',
+    styleUrls: ['./goal-scorers.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GoalScorersComponent {
 

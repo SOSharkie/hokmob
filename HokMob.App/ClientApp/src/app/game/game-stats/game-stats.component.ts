@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {TeamGameStat} from "@shared/models/nhl-web-api/right-rail.model";
@@ -34,9 +34,11 @@ interface GameStatRowDefinition {
 }
 
 @Component({
-  selector: 'app-game-stats',
-  templateUrl: './game-stats.component.html',
-  styleUrls: ['./game-stats.component.scss']
+    selector: 'app-game-stats',
+    templateUrl: './game-stats.component.html',
+    styleUrls: ['./game-stats.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
 

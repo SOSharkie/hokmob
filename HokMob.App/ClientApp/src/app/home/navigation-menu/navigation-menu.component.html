@@ -1,13 +1,17 @@
 <nav class="nav-menu-card" aria-labelledby="nav-menu-title">
   <h2 id="nav-menu-title" class="nav-menu-title">Explore</h2>
-  <ng-container *ngFor="let menuItem of navMenuItems">
-    <a *ngIf="menuItem.route" class="nav-menu-item" [routerLink]="menuItem.route">
-      <ng-container *ngTemplateOutlet="itemContent; context: {$implicit: menuItem}"></ng-container>
-    </a>
-    <a *ngIf="menuItem.url" class="nav-menu-item" [href]="menuItem.url">
-      <ng-container *ngTemplateOutlet="itemContent; context: {$implicit: menuItem}"></ng-container>
-    </a>
-  </ng-container>
+  @for (menuItem of navMenuItems; track menuItem) {
+    @if (menuItem.route) {
+      <a class="nav-menu-item" [routerLink]="menuItem.route">
+        <ng-container *ngTemplateOutlet="itemContent; context: {$implicit: menuItem}"></ng-container>
+      </a>
+    }
+    @if (menuItem.url) {
+      <a class="nav-menu-item" [href]="menuItem.url">
+        <ng-container *ngTemplateOutlet="itemContent; context: {$implicit: menuItem}"></ng-container>
+      </a>
+    }
+  }
 </nav>
 
 <ng-template #itemContent let-menuItem>

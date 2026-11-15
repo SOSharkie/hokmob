@@ -8,15 +8,23 @@
       <mat-icon fontIcon="close"></mat-icon>
     </button>
   </div>
-  <div *ngIf="videos.length > 1" class="video-tabs">
-    <button *ngFor="let video of videos" type="button" class="video-tab" [class.selected]="video === selectedVideo"
-            (click)="selectVideo(video)">{{video.label}}</button>
-  </div>
-  <div *ngIf="selectedVideo" class="video-frame-container">
-    <iframe class="video-frame" [src]="embedUrl" [title]="selectedVideo.label"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
-  </div>
-  <div *ngIf="selectedVideo" class="highlights-footer">
-    <a class="nhl-link" [href]="selectedVideo.nhlUrl" target="_blank" rel="noopener">Watch on NHL.com</a>
-  </div>
+  @if (videos.length > 1) {
+    <div class="video-tabs">
+      @for (video of videos; track video) {
+        <button type="button" class="video-tab" [class.selected]="video === selectedVideo"
+                (click)="selectVideo(video)">{{video.label}}</button>
+      }
+    </div>
+  }
+  @if (selectedVideo) {
+    <div class="video-frame-container">
+      <iframe class="video-frame" [src]="embedUrl" [title]="selectedVideo.label"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  }
+  @if (selectedVideo) {
+    <div class="highlights-footer">
+      <a class="nhl-link" [href]="selectedVideo.nhlUrl" target="_blank" rel="noopener">Watch on NHL.com</a>
+    </div>
+  }
 </div>

@@ -4,14 +4,18 @@
   </div>
   <div class="previous-games-container">
     <div class="prev-games">
-      <div *ngFor="let game of games; let isLast = last">
-        <app-previous-game
-            [teamId]="teamId"
-            [game]="game"
-            [isLast]="isLast"
-        ></app-previous-game>
-      </div>
-      <div *ngIf="!games?.length" class="no-games">No recent games</div>
+      @for (game of games; track game; let isLast = $last) {
+        <div>
+          <app-previous-game
+              [teamId]="teamId"
+              [game]="game"
+              [isLast]="isLast"
+          ></app-previous-game>
+        </div>
+      }
+      @if (!games?.length) {
+        <div class="no-games">No recent games</div>
+      }
     </div>
   </div>
 </div>

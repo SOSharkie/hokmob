@@ -7,7 +7,8 @@ import {
   OnChanges,
   OnDestroy,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Chart, ChartDataset, registerables, TooltipModel } from 'chart.js';
 import {Play, PlayByPlay, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
@@ -57,9 +58,11 @@ export interface MomentumMinute {
 export type MomentumChartView = "line" | "bar";
 
 @Component({
-  selector: 'app-momentum',
-  templateUrl: './momentum.component.html',
-  styleUrls: ['./momentum.component.scss']
+    selector: 'app-momentum',
+    templateUrl: './momentum.component.html',
+    styleUrls: ['./momentum.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class MomentumComponent implements OnChanges, AfterViewInit, AfterViewChecked, OnDestroy {
 

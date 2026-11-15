@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import {NhlLeadersService} from "@shared/services/nhl-leaders.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
@@ -25,9 +25,11 @@ export interface Leaderboard {
  * category for. The season is the standings season, so the off-season shows the last season played.
  */
 @Component({
-  selector: 'app-stats',
-  templateUrl: './stats.component.html',
-  styleUrls: ['./stats.component.scss']
+    selector: 'app-stats',
+    templateUrl: './stats.component.html',
+    styleUrls: ['./stats.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class StatsComponent implements OnInit {
 

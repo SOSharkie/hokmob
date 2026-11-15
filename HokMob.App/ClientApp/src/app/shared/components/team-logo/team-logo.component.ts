@@ -1,4 +1,4 @@
-import {Component, HostBinding, Input} from '@angular/core';
+import {Component, HostBinding, Input, ChangeDetectionStrategy} from '@angular/core';
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 /**
@@ -11,9 +11,11 @@ import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
  * Pass either a `teamId` or, for callers that are already handed a URL, a `src`.
  */
 @Component({
-  selector: 'app-team-logo',
-  templateUrl: './team-logo.component.html',
-  styleUrls: ['./team-logo.component.scss']
+    selector: 'app-team-logo',
+    templateUrl: './team-logo.component.html',
+    styleUrls: ['./team-logo.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TeamLogoComponent {
 

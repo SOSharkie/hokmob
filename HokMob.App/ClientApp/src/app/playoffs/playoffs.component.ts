@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import {Subscription} from "rxjs";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
@@ -23,9 +23,11 @@ export interface PlayoffSeasonOption {
  * card era, and the season picked is the "season" query parameter.
  */
 @Component({
-  selector: 'app-playoffs',
-  templateUrl: './playoffs.component.html',
-  styleUrls: ['./playoffs.component.scss']
+    selector: 'app-playoffs',
+    templateUrl: './playoffs.component.html',
+    styleUrls: ['./playoffs.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayoffsComponent implements OnInit, OnDestroy {
 

@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy} from '@angular/core';
 import {ClubStats, ClubStatsGoalie, ClubStatsSkater} from "@shared/models/nhl-web-api/club-stats.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {NhlStarPlayerUtils} from "@shared/utils/nhl-star-player-utils";
@@ -28,9 +28,11 @@ export interface SeasonLeader {
  * switches the skaters to the team's stars (NhlStarPlayerUtils). A player opens his player page.
  */
 @Component({
-  selector: 'app-game-season-leaders',
-  templateUrl: './game-season-leaders.component.html',
-  styleUrls: ['./game-season-leaders.component.scss']
+    selector: 'app-game-season-leaders',
+    templateUrl: './game-season-leaders.component.html',
+    styleUrls: ['./game-season-leaders.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GameSeasonLeadersComponent implements OnChanges {
 

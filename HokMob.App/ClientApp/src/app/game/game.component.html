@@ -11,138 +11,165 @@
           [isIntermission]="isIntermission"
       ></app-game-header>
     </div>
-    <div *ngIf="loadFailed" class="game-load-error">
-      <button type="button" class="games-back-button" (click)="backToPrevious()">
-        <span class="back-icon" aria-hidden="true">
-          <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
-        </span>
-        <span class="games-label">{{backButtonLabel}}</span>
-      </button>
-      <span class="game-load-error-message">This game couldn't be loaded.</span>
-    </div>
-    <div class="game-header" *ngIf="landing">
-      <div class="league-info">
+    @if (loadFailed) {
+      <div class="game-load-error">
         <button type="button" class="games-back-button" (click)="backToPrevious()">
           <span class="back-icon" aria-hidden="true">
             <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
           </span>
           <span class="games-label">{{backButtonLabel}}</span>
         </button>
-        <a class="league-info-container" [routerLink]="[leagueRouterLink]" [attr.aria-label]="gameInfoLabel">
-          <img class="nhl-logo" src="assets/nhl_logo.png" alt="">
-          <span class="league-info-label">{{gameInfoLabel}}</span>
-        </a>
-        <button *ngIf="showHighlightsDialog" type="button" class="watch-button" (click)="openHighlightsDialog()">
-          <mat-icon class="watch-icon" [fontIcon]="watchIcon"></mat-icon>
-          <span class="watch-link">{{watchLabel}}</span>
-        </button>
-        <a *ngIf="!showHighlightsDialog" class="watch-button" [href]="watchLink" target="_blank" rel="noopener">
-          <mat-icon class="watch-icon" [fontIcon]="watchIcon"></mat-icon>
-          <span class="watch-link">{{watchLabel}}</span>
-        </a>
+        <span class="game-load-error-message">This game couldn't be loaded.</span>
       </div>
-      <div class="expanded-scorecard-container">
-        <app-game-header
-            [isDropdownHeader]="false"
-            [landing]="landing"
-            [seriesStatus]="seriesStatus"
-            [intermissionTimeRemaining]="intermissionTimeRemaining"
+    }
+    @if (landing) {
+      <div class="game-header">
+        <div class="league-info">
+          <button type="button" class="games-back-button" (click)="backToPrevious()">
+            <span class="back-icon" aria-hidden="true">
+              <mat-icon svgIcon="lucide:chevron-left"></mat-icon>
+            </span>
+            <span class="games-label">{{backButtonLabel}}</span>
+          </button>
+          <a class="league-info-container" [routerLink]="[leagueRouterLink]" [attr.aria-label]="gameInfoLabel">
+            <img class="nhl-logo" src="assets/nhl_logo.png" alt="">
+            <span class="league-info-label">{{gameInfoLabel}}</span>
+          </a>
+          @if (showHighlightsDialog) {
+            <button type="button" class="watch-button" (click)="openHighlightsDialog()">
+              <mat-icon class="watch-icon" [fontIcon]="watchIcon"></mat-icon>
+              <span class="watch-link">{{watchLabel}}</span>
+            </button>
+          }
+          @if (!showHighlightsDialog) {
+            <a class="watch-button" [href]="watchLink" target="_blank" rel="noopener">
+              <mat-icon class="watch-icon" [fontIcon]="watchIcon"></mat-icon>
+              <span class="watch-link">{{watchLabel}}</span>
+            </a>
+          }
+        </div>
+        <div class="expanded-scorecard-container">
+          <app-game-header
+              [isDropdownHeader]="false"
+              [landing]="landing"
+              [seriesStatus]="seriesStatus"
+              [intermissionTimeRemaining]="intermissionTimeRemaining"
+              [homeTeamLogo]="homeTeamLogo"
+              [awayTeamLogo]="awayTeamLogo"
+              [isIntermission]="isIntermission"
+          ></app-game-header>
+          @if (haveGoalsBeenScored) {
+            <app-goal-scorers
+                [scoring]="scoringPeriods"
+                (scorerClicked)="openGoalOrPlayerDialog($event)"
+                (playerHovered)="highlightPlayer($event)">
+            </app-goal-scorers>
+          }
+        </div>
+        <div class="game-info-container">
+          <div class="game-info-item game-date-time">
+            <mat-icon fontIcon="calendar_today"></mat-icon>
+            <span>{{gameDateTime}}</span>
+          </div>
+          <div class="game-info-item game-venue-container">
+            <mat-icon fontIcon="stadium"></mat-icon>
+            <span>{{gameVenue}}</span>
+          </div>
+          @if (tvInfo) {
+            <div class="game-info-item game-tv-container">
+              <mat-icon fontIcon="tv"></mat-icon>
+              <span class="info-label">{{tvInfo}}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @if (showTopPlayers) {
+      <div class="game-container">
+        <app-game-top-players
+            [homePlayers]="homePlayers"
+            [awayPlayers]="awayPlayers"
+            [homeCoach]="homeCoach"
+            [awayCoach]="awayCoach"
             [homeTeamLogo]="homeTeamLogo"
             [awayTeamLogo]="awayTeamLogo"
-            [isIntermission]="isIntermission"
-        ></app-game-header>
-        <app-goal-scorers
-            *ngIf="haveGoalsBeenScored"
+            [highlightedPlayer]="highlightedPlayer"
+            (playerClicked)="openPlayerGameDialog($event)"
+        ></app-game-top-players>
+      </div>
+    }
+    @if (showSeasonLeaders) {
+      <div class="game-container">
+        <app-game-season-leaders
+            [homeStats]="homeSeasonStats"
+            [awayStats]="awaySeasonStats"
+            [homeTeamId]="landing.homeTeam.id"
+            [awayTeamId]="landing.awayTeam.id"
+        ></app-game-season-leaders>
+      </div>
+    }
+    @if (!futureGame && playByPlay) {
+      <div class="game-container">
+        <app-momentum [playByPlay]="playByPlay"></app-momentum>
+      </div>
+    }
+    @if (showGameStats) {
+      <div class="game-container">
+        <app-game-stats
+            [teamGameStats]="rightRail.teamGameStats"
+            [advancedStats]="advancedStats"
+            [gameType]="landing.gameType"
+            [homeTeamId]="landing.homeTeam.id"
+            [awayTeamId]="landing.awayTeam.id"
+            [homeTeamLogo]="homeTeamLogo"
+            [awayTeamLogo]="awayTeamLogo"
+        ></app-game-stats>
+      </div>
+    }
+    @if (showShotMap) {
+      <div class="game-container">
+        <app-shot-map
+            [playByPlay]="playByPlay"
             [scoring]="scoringPeriods"
-            (scorerClicked)="openGoalOrPlayerDialog($event)"
-            (playerHovered)="highlightPlayer($event)">
-        </app-goal-scorers>
+            [advancedStats]="advancedStats"
+            [homeTeamLogo]="homeTeamLogo"
+            [awayTeamLogo]="awayTeamLogo"
+            (playerClicked)="openPlayerGameDialog($event)"
+            (goalClicked)="openGoalOrPlayerDialog($event)"
+        ></app-shot-map>
       </div>
-      <div class="game-info-container">
-        <div class="game-info-item game-date-time">
-          <mat-icon fontIcon="calendar_today"></mat-icon>
-          <span>{{gameDateTime}}</span>
-        </div>
-        <div class="game-info-item game-venue-container">
-          <mat-icon fontIcon="stadium"></mat-icon>
-          <span>{{gameVenue}}</span>
-        </div>
-        <div *ngIf="tvInfo" class="game-info-item game-tv-container">
-          <mat-icon fontIcon="tv"></mat-icon>
-          <span class="info-label">{{tvInfo}}</span>
-        </div>
-      </div>
-    </div>
-    <div *ngIf="showTopPlayers" class="game-container">
-      <app-game-top-players
-          [homePlayers]="homePlayers"
-          [awayPlayers]="awayPlayers"
-          [homeCoach]="homeCoach"
-          [awayCoach]="awayCoach"
-          [homeTeamLogo]="homeTeamLogo"
-          [awayTeamLogo]="awayTeamLogo"
-          [highlightedPlayer]="highlightedPlayer"
-          (playerClicked)="openPlayerGameDialog($event)"
-      ></app-game-top-players>
-    </div>
-    <div *ngIf="showSeasonLeaders" class="game-container">
-      <app-game-season-leaders
-          [homeStats]="homeSeasonStats"
-          [awayStats]="awaySeasonStats"
-          [homeTeamId]="landing.homeTeam.id"
-          [awayTeamId]="landing.awayTeam.id"
-      ></app-game-season-leaders>
-    </div>
-    <div *ngIf="!futureGame && playByPlay" class="game-container">
-      <app-momentum [playByPlay]="playByPlay"></app-momentum>
-    </div>
-    <div *ngIf="showGameStats" class="game-container">
-      <app-game-stats
-          [teamGameStats]="rightRail.teamGameStats"
-          [advancedStats]="advancedStats"
-          [gameType]="landing.gameType"
-          [homeTeamId]="landing.homeTeam.id"
-          [awayTeamId]="landing.awayTeam.id"
-          [homeTeamLogo]="homeTeamLogo"
-          [awayTeamLogo]="awayTeamLogo"
-      ></app-game-stats>
-    </div>
-    <div *ngIf="showShotMap" class="game-container">
-      <app-shot-map
-          [playByPlay]="playByPlay"
-          [scoring]="scoringPeriods"
-          [advancedStats]="advancedStats"
-          [homeTeamLogo]="homeTeamLogo"
-          [awayTeamLogo]="awayTeamLogo"
-          (playerClicked)="openPlayerGameDialog($event)"
-          (goalClicked)="openGoalOrPlayerDialog($event)"
-      ></app-shot-map>
-    </div>
+    }
     <!-- Without the side column the event timeline goes below the stats and shot map, second to last before the team
-         form -->
-    <div *ngIf="!futureGame && playByPlay" class="game-container mobile-only">
+    form -->
+    @if (!futureGame && playByPlay) {
+      <div class="game-container mobile-only">
+        <app-mini-event-timeline
+            [playByPlay]="playByPlay"
+            (playerClicked)="openGoalOrPlayerDialog($event)"
+            (playerHovered)="highlightPlayer($event)"
+        ></app-mini-event-timeline>
+      </div>
+    }
+    @if (landing && showTeamForm) {
+      <div class="game-container">
+        <app-team-form
+            [homeTeamId]="landing.homeTeam.id"
+            [awayTeamId]="landing.awayTeam.id"
+            [homeTeamGames]="homeTeamFormGames"
+            [awayTeamGames]="awayTeamFormGames"
+        ></app-team-form>
+      </div>
+    }
+  </div>
+  @if (!futureGame && playByPlay) {
+    <div class="side-game">
       <app-mini-event-timeline
           [playByPlay]="playByPlay"
+          [homeTeamLogo]="homeTeamLogo"
+          [awayTeamLogo]="awayTeamLogo"
           (playerClicked)="openGoalOrPlayerDialog($event)"
           (playerHovered)="highlightPlayer($event)"
       ></app-mini-event-timeline>
     </div>
-    <div *ngIf="landing && showTeamForm" class="game-container">
-      <app-team-form
-          [homeTeamId]="landing.homeTeam.id"
-          [awayTeamId]="landing.awayTeam.id"
-          [homeTeamGames]="homeTeamFormGames"
-          [awayTeamGames]="awayTeamFormGames"
-      ></app-team-form>
-    </div>
-  </div>
-  <div *ngIf="!futureGame && playByPlay" class="side-game">
-    <app-mini-event-timeline
-        [playByPlay]="playByPlay"
-        [homeTeamLogo]="homeTeamLogo"
-        [awayTeamLogo]="awayTeamLogo"
-        (playerClicked)="openGoalOrPlayerDialog($event)"
-        (playerHovered)="highlightPlayer($event)"
-    ></app-mini-event-timeline>
-  </div>
+  }
 </div>

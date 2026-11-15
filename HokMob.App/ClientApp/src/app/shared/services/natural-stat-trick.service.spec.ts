@@ -1,7 +1,8 @@
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {NaturalStatTrickService} from '@shared/services/natural-stat-trick.service';
 import {mockNstGameStats} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {provideHttpClient} from '@angular/common/http';
 
 describe('NaturalStatTrickService', () => {
   let service: NaturalStatTrickService;
@@ -9,8 +10,7 @@ describe('NaturalStatTrickService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [NaturalStatTrickService]
+      providers: [NaturalStatTrickService, provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(NaturalStatTrickService);
     httpMock = TestBed.inject(HttpTestingController);

@@ -1,9 +1,10 @@
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {NhlSearchService} from '@shared/services/nhl-search.service';
 import {SearchResultTypeEnum} from '@shared/enums/search-result-type.enum';
 import {NhlPlayerHeadshotUtils} from '@shared/utils/nhl-player-headshot-utils';
 import {mockPlayerSearchResults} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {provideHttpClient} from '@angular/common/http';
 
 describe('NhlSearchService', () => {
   let service: NhlSearchService;
@@ -13,8 +14,7 @@ describe('NhlSearchService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [NhlSearchService]
+      providers: [NhlSearchService, provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(NhlSearchService);
     httpMock = TestBed.inject(HttpTestingController);

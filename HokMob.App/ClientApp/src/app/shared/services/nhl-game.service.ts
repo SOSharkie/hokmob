@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import {ScoreGame, ScoreResponse} from "@shared/models/nhl-web-api/score.model";
 import {GameBundle} from "@shared/models/nhl-web-api/game-bundle.model";
 import {GameLanding} from "@shared/models/nhl-web-api/gamecenter-landing.model";

@@ -1,13 +1,19 @@
 <div [routerLink]="[searchResult.link]">
-  <div class="search-result-container" *ngIf="isPlayer">
-    <div class="player-headshot-container">
-      <img [src]="playerHeadshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
+  @if (isPlayer) {
+    <div class="search-result-container">
+      <div class="player-headshot-container">
+        <img [src]="playerHeadshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
+      </div>
+      <span class="result-text">{{searchResult.displayValue}}</span>
+      @if (searchResult.positionCode) {
+        <span class="result-detail">{{searchResult.positionCode}}</span>
+      }
     </div>
-    <span class="result-text">{{searchResult.displayValue}}</span>
-    <span *ngIf="searchResult.positionCode" class="result-detail">{{searchResult.positionCode}}</span>
-  </div>
-  <div class="search-result-container" *ngIf="isTeam">
-    <app-team-logo class="team-logo" [teamId]="teamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
-    <span class="result-text">{{searchResult.teamName}}</span>
-  </div>
+  }
+  @if (isTeam) {
+    <div class="search-result-container">
+      <app-team-logo class="team-logo" [teamId]="teamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
+      <span class="result-text">{{searchResult.teamName}}</span>
+    </div>
+  }
 </div>

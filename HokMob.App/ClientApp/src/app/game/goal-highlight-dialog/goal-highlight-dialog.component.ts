@@ -1,4 +1,4 @@
-import {Component, Inject, ViewEncapsulation} from '@angular/core';
+import {Component, Inject, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
 import {HighlightVideo, NhlVideoUtils} from "@shared/utils/nhl-video-utils";
@@ -17,10 +17,12 @@ export interface GoalHighlightDialogData {
  * game dialog) on top, and the goal's video below, in the same embedded Brightcove player as the highlights dialog.
  */
 @Component({
-  selector: 'app-goal-highlight-dialog',
-  templateUrl: './goal-highlight-dialog.component.html',
-  styleUrls: ['./goal-highlight-dialog.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-goal-highlight-dialog',
+    templateUrl: './goal-highlight-dialog.component.html',
+    styleUrls: ['./goal-highlight-dialog.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GoalHighlightDialogComponent {
 

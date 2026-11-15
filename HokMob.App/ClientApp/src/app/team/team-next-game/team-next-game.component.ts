@@ -1,5 +1,5 @@
-import {Component, Input} from '@angular/core';
-import * as dayjs from "dayjs";
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
+import dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -14,9 +14,11 @@ import {PeriodUtils} from "@shared/utils/period-utils";
  * TeamComponent.retrieveLiveNextGame).
  */
 @Component({
-  selector: 'app-team-next-game',
-  templateUrl: './team-next-game.component.html',
-  styleUrls: ['./team-next-game.component.scss']
+    selector: 'app-team-next-game',
+    templateUrl: './team-next-game.component.html',
+    styleUrls: ['./team-next-game.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TeamNextGameComponent {
 

@@ -7,7 +7,8 @@ import {
   OnChanges,
   OnDestroy,
   Output,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {Chart, Plugin, registerables, TooltipItem} from 'chart.js';
 import {PositionGroup, RatedGame} from "@shared/models/nhl-history/season-history.model";
@@ -21,9 +22,11 @@ Chart.register(...registerables);
  * of green and blue games.
  */
 @Component({
-  selector: 'app-rating-distribution',
-  templateUrl: './rating-distribution.component.html',
-  styleUrls: ['./rating-distribution.component.scss']
+    selector: 'app-rating-distribution',
+    templateUrl: './rating-distribution.component.html',
+    styleUrls: ['./rating-distribution.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RatingDistributionComponent implements OnChanges, AfterViewInit, OnDestroy {
 

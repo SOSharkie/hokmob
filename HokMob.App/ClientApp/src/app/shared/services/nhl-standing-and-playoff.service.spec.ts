@@ -1,5 +1,5 @@
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {StandingsGroup} from "@shared/models/nhl-web-api/standings.model";
@@ -10,6 +10,7 @@ import {
   mockPlayoffSeriesSchedule,
   mockStandingsResponse
 } from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {provideHttpClient} from '@angular/common/http';
 
 describe('NhlStandingAndPlayoffService', () => {
   let service: NhlStandingAndPlayoffService;
@@ -21,8 +22,7 @@ describe('NhlStandingAndPlayoffService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [NhlStandingAndPlayoffService]
+      providers: [NhlStandingAndPlayoffService, provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(NhlStandingAndPlayoffService);
     httpMock = TestBed.inject(HttpTestingController);

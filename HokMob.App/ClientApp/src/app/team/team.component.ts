@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, ParamMap, Params} from "@angular/router";
 import {Location} from "@angular/common";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
@@ -18,7 +18,7 @@ import {NhlTeamCustomModel} from "@shared/models/nhl-team.model";
 import {StandingsTypeUtils} from "@shared/utils/standings-type-utils";
 import {TeamStandingsComponent} from "@app/team/team-standings/team-standings.component";
 import {TeamTab, TeamTabId, TeamTabs} from "@app/team/team-tabs";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 
 /**
  * The team page: a header with the team's tabs (TeamTabs), and the picked tab below it. One
@@ -30,9 +30,11 @@ import * as dayjs from "dayjs";
  * on the standings page. Picking a tab rewrites the URL without the router (see saveTabToUrl).
  */
 @Component({
-  selector: 'app-team',
-  templateUrl: './team.component.html',
-  styleUrls: ['./team.component.scss']
+    selector: 'app-team',
+    templateUrl: './team.component.html',
+    styleUrls: ['./team.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TeamComponent implements OnInit, OnDestroy {
 

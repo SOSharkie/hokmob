@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {GoalieSeasonStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
@@ -10,9 +10,11 @@ import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-
  * saved above average.
  */
 @Component({
-  selector: 'app-player-stats',
-  templateUrl: './player-stats.component.html',
-  styleUrls: ['./player-stats.component.scss']
+    selector: 'app-player-stats',
+    templateUrl: './player-stats.component.html',
+    styleUrls: ['./player-stats.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayerStatsComponent {
 

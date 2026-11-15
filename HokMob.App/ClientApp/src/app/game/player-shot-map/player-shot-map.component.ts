@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy} from '@angular/core';
 import {GameShot} from "@shared/models/game-shot.model";
 import {ShotMapUtils} from "@shared/utils/shot-map-utils";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
@@ -42,9 +42,11 @@ export interface ShotTooltipPosition {
  * when the game has it) and, for a goalie's shots, the shooter.
  */
 @Component({
-  selector: 'app-player-shot-map',
-  templateUrl: './player-shot-map.component.html',
-  styleUrls: ['./player-shot-map.component.scss']
+    selector: 'app-player-shot-map',
+    templateUrl: './player-shot-map.component.html',
+    styleUrls: ['./player-shot-map.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayerShotMapComponent implements OnChanges {
 

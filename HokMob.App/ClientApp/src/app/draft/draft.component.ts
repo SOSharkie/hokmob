@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import {Subscription} from "rxjs";
 import {NhlGameService} from "@shared/services/nhl-game.service";
@@ -40,9 +40,11 @@ export interface DraftPickRow {
  * the "year" and "round" query parameters, from 2006 on (see docs/draft-page.md).
  */
 @Component({
-  selector: 'app-draft',
-  templateUrl: './draft.component.html',
-  styleUrls: ['./draft.component.scss']
+    selector: 'app-draft',
+    templateUrl: './draft.component.html',
+    styleUrls: ['./draft.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DraftComponent implements OnInit, OnDestroy {
 

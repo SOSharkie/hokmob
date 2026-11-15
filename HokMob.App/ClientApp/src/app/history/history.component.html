@@ -6,25 +6,33 @@
         Every HokMob rating of a season, from each player's stat line in every game, rated with the same formula as
         the game and player pages.
       </p>
-      <p *ngIf="progressNote" class="history-progress">{{progressNote}}</p>
+      @if (progressNote) {
+        <p class="history-progress">{{progressNote}}</p>
+      }
     </div>
     <button type="button" class="pill-picker season-picker"
             [attr.aria-label]="'Season, ' + getSeasonLabel(selectedSeason)"
             [matMenuTriggerFor]="seasonMenu"
             (menuOpened)="scrollToSelectedSeason()">{{getSeasonLabel(selectedSeason)}}</button>
     <mat-menu #seasonMenu="matMenu" class="pill-picker-menu season-menu" xPosition="before">
-      <button *ngFor="let option of seasonOptions" mat-menu-item role="menuitemradio" class="pill-picker-option"
-              [class.selected]="isSelected(option)" [attr.aria-checked]="isSelected(option)"
-              (click)="selectSeason(option)">{{getSeasonLabel(option)}}</button>
+      @for (option of seasonOptions; track option) {
+        <button mat-menu-item role="menuitemradio" class="pill-picker-option"
+                [class.selected]="isSelected(option)" [attr.aria-checked]="isSelected(option)"
+                (click)="selectSeason(option)">{{getSeasonLabel(option)}}</button>
+      }
     </mat-menu>
   </div>
-  <div *ngIf="isLoading" class="loading-container">
-    <app-loading-spinner class="loading-spinner"></app-loading-spinner>
-  </div>
-  <div *ngIf="hasError" class="history-message">
-    <span>The season couldn't be loaded</span>
-  </div>
-  <ng-container *ngIf="ratedSeason">
+  @if (isLoading) {
+    <div class="loading-container">
+      <app-loading-spinner class="loading-spinner"></app-loading-spinner>
+    </div>
+  }
+  @if (hasError) {
+    <div class="history-message">
+      <span>The season couldn't be loaded</span>
+    </div>
+  }
+  @if (ratedSeason) {
     <app-rating-distribution class="history-section" [ratedGames]="ratedSeason.ratedGames"
                              [position]="distributionPosition"
                              (positionChange)="distributionPosition = $event; saveFilters()"></app-rating-distribution>
@@ -36,5 +44,5 @@
       <app-best-games [ratedSeason]="ratedSeason" [position]="bestGamesPosition"
                       (positionChange)="bestGamesPosition = $event; saveFilters()"></app-best-games>
     </div>
-  </ng-container>
+  }
 </div>

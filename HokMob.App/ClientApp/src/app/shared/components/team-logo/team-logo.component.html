@@ -1,1 +1,3 @@
-<img *ngIf="logoSrc" [src]="logoSrc" [alt]="alt">
+@if (logoSrc) {
+  <img [src]="logoSrc" [alt]="alt">
+}

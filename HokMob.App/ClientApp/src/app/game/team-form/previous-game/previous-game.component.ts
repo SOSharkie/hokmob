@@ -1,12 +1,14 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {ClubScheduleGame, ClubScheduleTeam} from "@shared/models/nhl-web-api/club-schedule.model";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Component({
-  selector: 'app-previous-game',
-  templateUrl: './previous-game.component.html',
-  styleUrls: ['./previous-game.component.scss']
+    selector: 'app-previous-game',
+    templateUrl: './previous-game.component.html',
+    styleUrls: ['./previous-game.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PreviousGameComponent {
 

@@ -21,32 +21,38 @@
     <div class="lab-grid">
       <div class="lab-card stat-line-card">
         <h3 class="card-title">Stat line</h3>
-        <p class="game-stat-line" *ngIf="showGameStatLine">
-          From a game: <span class="game-player-name">{{gameStatLine.name}}</span><ng-container
-            *ngIf="gameStatLine.rating != null">, rated {{gameStatLine.rating}} on the game page</ng-container>
-        </p>
+        @if (showGameStatLine) {
+          <p class="game-stat-line">
+            From a game: <span class="game-player-name">{{gameStatLine.name}}</span>@if (gameStatLine.rating != null) {, rated
+              {{gameStatLine.rating}} on the game page}
+          </p>
+        }
 
         <div class="preset-row">
-          <button *ngFor="let preset of presets" type="button" class="preset-button"
-                  [class.selected]="isPresetSelected(preset)" (click)="selectPreset(preset)">{{preset.name}}</button>
+          @for (preset of presets; track preset) {
+            <button type="button" class="preset-button"
+                    [class.selected]="isPresetSelected(preset)" (click)="selectPreset(preset)">{{preset.name}}</button>
+          }
           <button type="button" class="clear-button" [disabled]="isStatLineClear"
                   (click)="clearStatLine()">Clear</button>
         </div>
 
         <div class="stat-controls">
-          <div *ngFor="let control of statControls" class="stat-control">
-            <span class="stat-label">
-              <span class="stat-name">{{control.label}}</span>
-              <span class="stat-weight">{{control.weight}}</span>
-            </span>
-            <span class="stepper">
-              <button type="button" class="stepper-button" [attr.aria-label]="'One fewer ' + control.label"
-                      [disabled]="isStepDisabled(control, -1)" (click)="step(control, -1)">&minus;</button>
-              <span class="stepper-value">{{control.format ? control.format(statLine[control.key]) : statLine[control.key]}}</span>
-              <button type="button" class="stepper-button" [attr.aria-label]="'One more ' + control.label"
-                      [disabled]="isStepDisabled(control, 1)" (click)="step(control, 1)">+</button>
-            </span>
-          </div>
+          @for (control of statControls; track control) {
+            <div class="stat-control">
+              <span class="stat-label">
+                <span class="stat-name">{{control.label}}</span>
+                <span class="stat-weight">{{control.weight}}</span>
+              </span>
+              <span class="stepper">
+                <button type="button" class="stepper-button" [attr.aria-label]="'One fewer ' + control.label"
+                        [disabled]="isStepDisabled(control, -1)" (click)="step(control, -1)">&minus;</button>
+                <span class="stepper-value">{{control.format ? control.format(statLine[control.key]) : statLine[control.key]}}</span>
+                <button type="button" class="stepper-button" [attr.aria-label]="'One more ' + control.label"
+                        [disabled]="isStepDisabled(control, 1)" (click)="step(control, 1)">+</button>
+              </span>
+            </div>
+          }
         </div>
       </div>
 
@@ -55,57 +61,71 @@
           <div class="rating-badge" [style.background-color]="ratingColor">{{breakdown.rating}}</div>
           <div class="rating-readout">
             <span class="rating-caption">HokMob rating</span>
-            <span class="rating-note" *ngIf="breakdown.clampNote">{{breakdown.clampNote}}, from
+            @if (breakdown.clampNote) {
+              <span class="rating-note">{{breakdown.clampNote}}, from
               {{breakdown.rawTotal}}</span>
-            <span class="rating-note" *ngIf="!breakdown.clampNote">The terms below add up to it</span>
+            }
+            @if (!breakdown.clampNote) {
+              <span class="rating-note">The terms below add up to it</span>
+            }
           </div>
         </div>
 
         <!-- On the waterfall's axis, so the marker sits right above the rating line -->
         <div class="rating-scale">
           <div class="scale-track">
-            <span *ngFor="let band of ratingBands" class="scale-band" [style.background-color]="band.color"
-                  [style.left.%]="getAxisPercent(band.from)"
-                  [style.width.%]="getAxisPercent(band.to) - getAxisPercent(band.from)"></span>
+            @for (band of ratingBands; track band) {
+              <span class="scale-band" [style.background-color]="band.color"
+                    [style.left.%]="getAxisPercent(band.from)"
+                    [style.width.%]="getAxisPercent(band.to) - getAxisPercent(band.from)"></span>
+            }
             <span class="scale-marker" [style.left.%]="getAxisPercent(breakdown.rating)"
                   [style.border-color]="ratingColor"></span>
           </div>
           <div class="scale-labels">
             <span class="scale-label" [style.left.%]="getAxisPercent(0)">0</span>
-            <span *ngFor="let band of ratingBands" class="scale-label"
-                  [style.left.%]="getAxisPercent(band.to)">{{band.to}}</span>
+            @for (band of ratingBands; track band) {
+              <span class="scale-label"
+                    [style.left.%]="getAxisPercent(band.to)">{{band.to}}</span>
+            }
           </div>
         </div>
 
         <div class="waterfall">
           <div #waterfallPlot class="waterfall-plot" aria-hidden="true">
-            <span *ngFor="let tick of axisTicks" class="gridline" [class.zero-line]="tick === 0"
-                  [style.left.%]="getAxisPercent(tick)"></span>
+            @for (tick of axisTicks; track tick) {
+              <span class="gridline" [class.zero-line]="tick === 0"
+                    [style.left.%]="getAxisPercent(tick)"></span>
+            }
             <span class="rating-line" [style.left.%]="getAxisPercent(breakdown.rating)"
                   [style.background-color]="ratingColor"></span>
           </div>
 
-          <div *ngFor="let term of breakdown.terms; let index = index" class="term-row"
-               [class.empty]="!term.value && index > 0">
-            <div class="term-header">
-              <span class="term-label">
-                <span class="term-name">{{term.label}}</span>
-                <span class="term-detail">{{term.detail}}</span>
-              </span>
+          @for (term of breakdown.terms; track term; let index = $index) {
+            <div class="term-row"
+                 [class.empty]="!term.value && index > 0">
+              <div class="term-header">
+                <span class="term-label">
+                  <span class="term-name">{{term.label}}</span>
+                  <span class="term-detail">{{term.detail}}</span>
+                </span>
+              </div>
+              <div class="term-track">
+                <span class="term-bar" [class.base]="index === 0" [class.negative]="term.value < 0"
+                      [style.left.%]="getBarStart(term, index)" [style.width.%]="getBarWidth(term, index)"></span>
+                <span class="term-value" [class.positive]="term.value > 0" [class.negative]="term.value < 0"
+                      [class.before-bar]="isValueBeforeBar(term, index)"
+                      [style.left.%]="isValueBeforeBar(term, index) ? getBarStart(term, index) : getBarEnd(term, index)">
+                  {{getSignedValue(term.value)}}
+                </span>
+              </div>
             </div>
-            <div class="term-track">
-              <span class="term-bar" [class.base]="index === 0" [class.negative]="term.value < 0"
-                    [style.left.%]="getBarStart(term, index)" [style.width.%]="getBarWidth(term, index)"></span>
-              <span class="term-value" [class.positive]="term.value > 0" [class.negative]="term.value < 0"
-                    [class.before-bar]="isValueBeforeBar(term, index)"
-                    [style.left.%]="isValueBeforeBar(term, index) ? getBarStart(term, index) : getBarEnd(term, index)">
-                {{getSignedValue(term.value)}}
-              </span>
-            </div>
-          </div>
+          }
 
           <div class="axis">
-            <span *ngFor="let tick of axisTicks" class="axis-tick" [style.left.%]="getAxisPercent(tick)">{{tick}}</span>
+            @for (tick of axisTicks; track tick) {
+              <span class="axis-tick" [style.left.%]="getAxisPercent(tick)">{{tick}}</span>
+            }
           </div>
         </div>
       </div>
@@ -115,7 +135,9 @@
   <section class="ratings-notes">
     <h2 class="ratings-section-title">Worth knowing</h2>
     <ul class="quirk-list">
-      <li *ngFor="let quirk of quirks">{{quirk}}</li>
+      @for (quirk of quirks; track quirk) {
+        <li>{{quirk}}</li>
+      }
     </ul>
     <p class="notes-footer">
       The ratings show up on a game page's top players card, in a player's game stats dialog and on a player's recent
