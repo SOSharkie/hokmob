@@ -1,4 +1,4 @@
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import {SeasonDates} from "@shared/models/nhl-stats-api/season-dates.model";
 
 export class DateTimeUtils {

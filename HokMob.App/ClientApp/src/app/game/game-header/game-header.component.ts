@@ -1,5 +1,5 @@
-import {Component, Input} from '@angular/core';
-import * as dayjs from "dayjs";
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
+import dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {GameLanding} from "@shared/models/nhl-web-api/gamecenter-landing.model";
@@ -8,9 +8,11 @@ import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
 
 @Component({
-  selector: 'app-game-header',
-  templateUrl: './game-header.component.html',
-  styleUrls: ['./game-header.component.scss']
+    selector: 'app-game-header',
+    templateUrl: './game-header.component.html',
+    styleUrls: ['./game-header.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GameHeaderComponent {
 

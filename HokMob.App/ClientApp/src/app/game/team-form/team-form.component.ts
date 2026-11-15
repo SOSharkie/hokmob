@@ -1,10 +1,12 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
 
 @Component({
-  selector: 'app-team-form',
-  templateUrl: './team-form.component.html',
-  styleUrls: ['./team-form.component.scss']
+    selector: 'app-team-form',
+    templateUrl: './team-form.component.html',
+    styleUrls: ['./team-form.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TeamFormComponent {
 

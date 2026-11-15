@@ -19,7 +19,9 @@
     <div class="bio-item">
       <span class="item-title">Country</span>
       <div class="country-container">
-        <img *ngIf="countryFlagPath" [src]="countryFlagPath" alt="" class="country-flag">
+        @if (countryFlagPath) {
+          <img [src]="countryFlagPath" alt="" class="country-flag">
+        }
         <span class="item-value">{{birthCountry}}</span>
       </div>
     </div>

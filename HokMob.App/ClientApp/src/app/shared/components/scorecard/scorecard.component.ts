@@ -1,5 +1,5 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import * as dayjs from 'dayjs'
+import {Component, EventEmitter, Input, Output, ChangeDetectionStrategy} from '@angular/core';
+import dayjs from 'dayjs'
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
@@ -10,9 +10,11 @@ import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {PeriodUtils} from "@shared/utils/period-utils";
 
 @Component({
-  selector: 'app-scorecard',
-  templateUrl: './scorecard.component.html',
-  styleUrls: ['./scorecard.component.scss']
+    selector: 'app-scorecard',
+    templateUrl: './scorecard.component.html',
+    styleUrls: ['./scorecard.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ScorecardComponent {
 

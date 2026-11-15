@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ScoreGame } from '@shared/models/nhl-web-api/score.model';
 import { NhlGameScheduleStateEnum } from '@shared/enums/nhl-game-schedule-state.enum';

@@ -1,5 +1,5 @@
-import {Component, Input, OnChanges, SimpleChanges, ViewEncapsulation} from '@angular/core';
-import * as dayjs from "dayjs";
+import {Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
+import dayjs from "dayjs";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {MatDialog} from "@angular/material/dialog";
 import {
@@ -12,10 +12,12 @@ import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {NhlGameScheduleStateEnum} from "@shared/enums/nhl-game-schedule-state.enum";
 
 @Component({
-  selector: 'app-playoff-series',
-  templateUrl: './playoff-series.component.html',
-  styleUrls: ['./playoff-series.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-playoff-series',
+    templateUrl: './playoff-series.component.html',
+    styleUrls: ['./playoff-series.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayoffSeriesComponent implements OnChanges {
 

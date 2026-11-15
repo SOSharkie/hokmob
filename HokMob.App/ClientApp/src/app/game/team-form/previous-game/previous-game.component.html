@@ -1,22 +1,26 @@
-<div *ngIf="game" class="previous-game-container" [ngClass]="{'last-previous-game': isLast}" [routerLink]="['/game', game.id]">
-  <div class="home-team">
-    <span class="home team-name">{{homeTeamShortName}}</span>
-    <span class="home team-abbrev">{{homeTeamAbbrev}}</span>
-    <div class="logo-container">
-      <app-team-logo [teamId]="homeTeamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
+@if (game) {
+  <div class="previous-game-container" [ngClass]="{'last-previous-game': isLast}" [routerLink]="['/game', game.id]">
+    <div class="home-team">
+      <span class="home team-name">{{homeTeamShortName}}</span>
+      <span class="home team-abbrev">{{homeTeamAbbrev}}</span>
+      <div class="logo-container">
+        <app-team-logo [teamId]="homeTeamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
+      </div>
+    </div>
+    <div class="score-column">
+      @if (gameTypeLabel) {
+        <span class="game-type-label">{{gameTypeLabel}}</span>
+      }
+      <div class="score-container" [ngClass]="scoreColor">
+        <span>{{score}}</span>
+      </div>
+    </div>
+    <div class="away-team">
+      <div class="logo-container">
+        <app-team-logo [teamId]="awayTeamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
+      </div>
+      <span class="away team-name">{{awayTeamShortName}}</span>
+      <span class="away team-abbrev">{{awayTeamAbbrev}}</span>
     </div>
   </div>
-  <div class="score-column">
-    <span *ngIf="gameTypeLabel" class="game-type-label">{{gameTypeLabel}}</span>
-    <div class="score-container" [ngClass]="scoreColor">
-      <span>{{score}}</span>
-    </div>
-  </div>
-  <div class="away-team">
-    <div class="logo-container">
-      <app-team-logo [teamId]="awayTeamId" [size]="logoSize" [width]="logoMaxWidth"></app-team-logo>
-    </div>
-    <span class="away team-name">{{awayTeamShortName}}</span>
-    <span class="away team-abbrev">{{awayTeamAbbrev}}</span>
-  </div>
-</div>
+}

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, Params} from "@angular/router";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {NhlGameService} from "@shared/services/nhl-game.service";
@@ -24,9 +24,11 @@ import {
  * file (SeasonHistoryService), it's loaded too, for the regular season card's average HokMob rating.
  */
 @Component({
-  selector: 'app-player',
-  templateUrl: './player.component.html',
-  styleUrls: ['./player.component.scss']
+    selector: 'app-player',
+    templateUrl: './player.component.html',
+    styleUrls: ['./player.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayerComponent implements OnInit {
 

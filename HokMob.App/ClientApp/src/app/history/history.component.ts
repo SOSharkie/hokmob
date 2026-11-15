@@ -1,8 +1,8 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {Location} from "@angular/common";
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
 import {Subscription} from "rxjs";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import {PositionGroup, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {HistorySeasonOption, SeasonHistoryService} from "@shared/services/season-history.service";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
@@ -18,9 +18,11 @@ import {SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
  * picked. A season in progress says how far its file goes.
  */
 @Component({
-  selector: 'app-history',
-  templateUrl: './history.component.html',
-  styleUrls: ['./history.component.scss']
+    selector: 'app-history',
+    templateUrl: './history.component.html',
+    styleUrls: ['./history.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class HistoryComponent implements OnInit, OnDestroy {
 

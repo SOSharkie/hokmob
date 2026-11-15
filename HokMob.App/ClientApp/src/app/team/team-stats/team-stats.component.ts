@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges} from '@angular/core';
+import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
 import {TeamSeasonStats} from "@shared/models/nhl-stats-api/team-stats.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 
@@ -17,9 +17,11 @@ export interface TeamStatRow {
  * isn't shown when the team has no row for the season, like a season before its first game or a former team.
  */
 @Component({
-  selector: 'app-team-stats',
-  templateUrl: './team-stats.component.html',
-  styleUrls: ['./team-stats.component.scss']
+    selector: 'app-team-stats',
+    templateUrl: './team-stats.component.html',
+    styleUrls: ['./team-stats.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TeamStatsComponent implements OnChanges {
 

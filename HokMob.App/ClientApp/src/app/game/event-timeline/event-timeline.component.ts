@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ChangeDetectionStrategy} from "@angular/core";
 import {KeyEventPeriod, Play, PlayByPlay, RosterSpot} from "@shared/models/nhl-web-api/play-by-play.model";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {PeriodUtils} from "@shared/utils/period-utils";
@@ -6,9 +6,11 @@ import {PlayByPlayUtils} from "@shared/utils/play-by-play-utils";
 import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.model";
 
 @Component({
-  selector: 'app-event-timeline',
-  templateUrl: './event-timeline.component.html',
-  styleUrls: ['./event-timeline.component.scss']
+    selector: 'app-event-timeline',
+    templateUrl: './event-timeline.component.html',
+    styleUrls: ['./event-timeline.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class EventTimelineComponent implements OnChanges {
 

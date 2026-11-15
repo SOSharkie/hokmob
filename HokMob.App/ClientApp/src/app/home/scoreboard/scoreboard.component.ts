@@ -9,20 +9,23 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {MatDatepicker} from "@angular/material/datepicker";
 import {NhlGameService} from "@shared/services/nhl-game.service";
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 
 @Component({
-  selector: 'app-scores',
-  templateUrl: './scoreboard.component.html',
-  styleUrls: ['./scoreboard.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-scores',
+    templateUrl: './scoreboard.component.html',
+    styleUrls: ['./scoreboard.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ScoreboardComponent implements OnInit, OnChanges, OnDestroy {
 

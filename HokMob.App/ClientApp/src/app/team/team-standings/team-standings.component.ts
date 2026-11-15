@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy} from '@angular/core';
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {StandingsGroup} from "@shared/models/nhl-web-api/standings.model";
@@ -10,9 +10,11 @@ import {StandingsTypeFilter, StandingsTypeUtils} from "@shared/utils/standings-t
  * asks for a new one (standingsTypeChange) and loads whatever type it's given.
  */
 @Component({
-  selector: 'app-team-standings',
-  templateUrl: './team-standings.component.html',
-  styleUrls: ['./team-standings.component.scss']
+    selector: 'app-team-standings',
+    templateUrl: './team-standings.component.html',
+    styleUrls: ['./team-standings.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TeamStandingsComponent implements OnInit, OnChanges {
 

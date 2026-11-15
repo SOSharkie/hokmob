@@ -7,7 +7,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
 import { registerLucideIcons } from '@shared/icons/lucide-icons';
 import { BehaviorSubject } from 'rxjs';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { RouterExtensionService } from '@shared/services/router-extension.service';
 import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';

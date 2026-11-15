@@ -1,19 +1,24 @@
 <div class="event-timeline-container">
-  <div *ngFor="let period of periods" class="period-events">
-    <div class="period-start-container">
-      <span class="period-label">{{getPeriodLabel(period)}}</span>
+  @for (period of periods; track period) {
+    <div class="period-events">
+      <div class="period-start-container">
+        <span class="period-label">{{getPeriodLabel(period)}}</span>
+      </div>
+      @for (play of period.plays; track trackPlay($index, play)) {
+        <app-event
+            [play]="play"
+            [homeTeamId]="homeTeamId"
+            [rosterSpots]="rosterSpots"
+            [goalIndex]="goalIndexes.get(play.eventId)"
+            (playerClicked)="onPlayerClicked($event)"
+            (playerHovered)="onPlayerHovered($event)"
+        ></app-event>
+      }
     </div>
-    <app-event
-        *ngFor="let play of period.plays; trackBy: trackPlay"
-        [play]="play"
-        [homeTeamId]="homeTeamId"
-        [rosterSpots]="rosterSpots"
-        [goalIndex]="goalIndexes.get(play.eventId)"
-        (playerClicked)="onPlayerClicked($event)"
-        (playerHovered)="onPlayerHovered($event)"
-    ></app-event>
-  </div>
-  <div *ngIf="isGameFinal" class="period-start-container">
-    <span class="period-label">End</span>
-  </div>
+  }
+  @if (isGameFinal) {
+    <div class="period-start-container">
+      <span class="period-label">End</span>
+    </div>
+  }
 </div>

@@ -10,10 +10,12 @@
          (input)="onInput()"
          [matAutocomplete]="auto">
   <mat-autocomplete #auto="matAutocomplete" [panelWidth]="panelWidth" (optionSelected)="resultSelected.emit()">
-    <mat-option *ngFor="let result of filterResults" [value]="result.displayValue">
-      <app-search-result
-          [searchResult]="result"
-      ></app-search-result>
-    </mat-option>
+    @for (result of filterResults; track result) {
+      <mat-option [value]="result.displayValue">
+        <app-search-result
+            [searchResult]="result"
+        ></app-search-result>
+      </mat-option>
+    }
   </mat-autocomplete>
 </div>

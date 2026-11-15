@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy} from '@angular/core';
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -9,9 +9,11 @@ import {StandingsGroup, StandingsTeam} from "@shared/models/nhl-web-api/standing
 export type StandingsSortColumn = "points" | "pointPctg";
 
 @Component({
-  selector: 'app-standings',
-  templateUrl: './standings.component.html',
-  styleUrls: ['./standings.component.scss']
+    selector: 'app-standings',
+    templateUrl: './standings.component.html',
+    styleUrls: ['./standings.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class StandingsComponent implements OnChanges {
 

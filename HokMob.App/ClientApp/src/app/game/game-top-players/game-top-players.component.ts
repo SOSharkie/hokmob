@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ChangeDetectionStrategy} from '@angular/core';
 import {GamePlayer} from "@shared/models/nhl-web-api/boxscore.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
@@ -10,9 +10,11 @@ import {RinkComponent, RinkSpot} from "@app/game/rink/rink.component";
 export type TopPlayerSpot = RinkSpot<GamePlayer>;
 
 @Component({
-  selector: 'app-game-top-players',
-  templateUrl: './game-top-players.component.html',
-  styleUrls: ['./game-top-players.component.scss']
+    selector: 'app-game-top-players',
+    templateUrl: './game-top-players.component.html',
+    styleUrls: ['./game-top-players.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GameTopPlayersComponent implements OnChanges {
 

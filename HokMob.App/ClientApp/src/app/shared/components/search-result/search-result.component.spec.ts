@@ -1,5 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { RouterLink } from '@angular/router';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { SearchResultModel } from '@shared/models/search-result.model';
@@ -45,6 +47,11 @@ describe('SearchResultComponent', () => {
     return (fixture.nativeElement as HTMLElement).querySelector('.team-logo');
   }
 
+  /** The URL the result's routerLink navigates to. */
+  function routerLinkUrl(): string {
+    return fixture.debugElement.query(By.directive(RouterLink)).injector.get(RouterLink).urlTree.toString();
+  }
+
   function text(selector: string): string {
     return fixture.nativeElement.querySelector(selector)?.textContent.trim();
   }
@@ -57,8 +64,7 @@ describe('SearchResultComponent', () => {
     expect(text('.result-text')).toBe('Boston Bruins');
     expect(teamLogo().teamId).toBe(6);
     expect(fixture.nativeElement.querySelector('.player-headshot')).toBeNull();
-    expect(fixture.nativeElement.querySelector('[ng-reflect-router-link]').getAttribute('ng-reflect-router-link'))
-        .toBe('team/6');
+    expect(routerLinkUrl()).toBe('/team/6');
   });
 
   it('should show a player with their headshot and position', async () => {
@@ -70,8 +76,7 @@ describe('SearchResultComponent', () => {
     expect(fixture.nativeElement.querySelector('.player-headshot').getAttribute('src'))
         .toBe('https://assets.nhle.com/mugs/nhl/20262027/SJS/8484801.png');
     expect(fixture.nativeElement.querySelector('.team-logo')).toBeNull();
-    expect(fixture.nativeElement.querySelector('[ng-reflect-router-link]').getAttribute('ng-reflect-router-link'))
-        .toBe('player/8484801');
+    expect(routerLinkUrl()).toBe('/player/8484801');
   });
 
   it('should show the blank headshot for a player who has not played a game', async () => {

@@ -1,5 +1,6 @@
 import {NgModule} from '@angular/core';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {provideHttpClientTesting} from "@angular/common/http/testing";
+import {provideHttpClient} from "@angular/common/http";
 import {RouterTestingModule} from "@angular/router/testing";
 import {NoopAnimationsModule} from "@angular/platform-browser/animations";
 import {NgOptimizedImage} from "@angular/common";
@@ -19,7 +20,6 @@ import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
 import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe";
 
 const modules = [
-  HttpClientTestingModule,
   RouterTestingModule,
   NoopAnimationsModule,
   NgOptimizedImage,
@@ -31,7 +31,7 @@ const modules = [
 ];
 
 /**
- * Imports, pipes and services for component unit tests, mirroring AppModule. HTTP requests go to HttpClientTestingModule,
+ * Imports, pipes and services for component unit tests, mirroring AppModule. HTTP requests go to provideHttpClientTesting(),
  * so tests never call the backend. Specs declare the component under test and add CUSTOM_ELEMENTS_SCHEMA so child
  * components don't need to be declared.
  */
@@ -40,6 +40,8 @@ const modules = [
   declarations: [SavePercentagePipe, GoalsAgainstAveragePipe],
   exports: [...modules, SavePercentagePipe, GoalsAgainstAveragePipe],
   providers: [
+    provideHttpClient(),
+    provideHttpClientTesting(),
     NhlGameService,
     NhlStandingAndPlayoffService,
     NhlStatsApiService,

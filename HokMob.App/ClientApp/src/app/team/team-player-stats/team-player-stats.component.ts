@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy} from '@angular/core';
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {GoalieSeasonStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
@@ -58,9 +58,11 @@ export interface TeamPlayerStatsTable {
  * above average, from the same games.
  */
 @Component({
-  selector: 'app-team-player-stats',
-  templateUrl: './team-player-stats.component.html',
-  styleUrls: ['./team-player-stats.component.scss']
+    selector: 'app-team-player-stats',
+    templateUrl: './team-player-stats.component.html',
+    styleUrls: ['./team-player-stats.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TeamPlayerStatsComponent implements OnChanges {
 

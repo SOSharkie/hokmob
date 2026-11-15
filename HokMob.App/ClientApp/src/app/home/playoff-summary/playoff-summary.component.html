@@ -4,12 +4,14 @@
     <mat-icon class="title-chevron" svgIcon="lucide:chevron-right" aria-hidden="true"></mat-icon>
   </a>
   <div class="series-summaries-container">
-    <div *ngFor="let series of currentSeries" class="series-summary">
-      <app-playoff-series
-          [seriesData]="series"
-          [season]="playoffsData.seasonId"
-          [smallerVersion]="true"
-      ></app-playoff-series>
-    </div>
+    @for (series of currentSeries; track series) {
+      <div class="series-summary">
+        <app-playoff-series
+            [seriesData]="series"
+            [season]="playoffsData.seasonId"
+            [smallerVersion]="true"
+        ></app-playoff-series>
+      </div>
+    }
   </div>
 </div>

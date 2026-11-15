@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import {Location} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {BoxscoreGoalie, BoxscoreSkater} from "@shared/models/nhl-web-api/boxscore.model";
@@ -62,9 +62,11 @@ export interface RatingBand {
  * through the query parameters of {@link RatingStatLineUtils.getQueryParams}.
  */
 @Component({
-  selector: 'app-ratings',
-  templateUrl: './ratings.component.html',
-  styleUrls: ['./ratings.component.scss']
+    selector: 'app-ratings',
+    templateUrl: './ratings.component.html',
+    styleUrls: ['./ratings.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RatingsComponent implements OnInit, AfterViewInit {
 

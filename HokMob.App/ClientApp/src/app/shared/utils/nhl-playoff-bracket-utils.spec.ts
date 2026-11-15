@@ -1,17 +1,17 @@
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {NhlPlayoffBracketUtils, PlayoffBracketSlots} from '@shared/utils/nhl-playoff-bracket-utils';
 import {NhlStandingAndPlayoffService} from '@shared/services/nhl-standing-and-playoff.service';
 import {PlayoffCarouselSeries} from '@shared/models/nhl-web-api/playoffs.model';
 import {MockBracketYear, mockPlayoffBracket} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {provideHttpClient} from '@angular/common/http';
 
 describe('NhlPlayoffBracketUtils', () => {
   const allSlots = 'ABCDEFGHIJKLMNO'.split('');
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [NhlStandingAndPlayoffService]
+      providers: [NhlStandingAndPlayoffService, provideHttpClient(), provideHttpClientTesting()]
     });
   });
 

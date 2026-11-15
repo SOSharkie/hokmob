@@ -1,24 +1,32 @@
 <div class="stats-container">
-  <div *ngIf="showFilters" class="stat-filters-container" role="group" aria-label="Game type">
-    <button type="button" class="stat-filter-button" [class.selected-filter]="playoffsSelected"
-            [attr.aria-pressed]="playoffsSelected" (click)="updateGameType(true)">
-      Playoffs
-    </button>
-    <button type="button" class="stat-filter-button" [class.selected-filter]="!playoffsSelected"
-            [attr.aria-pressed]="!playoffsSelected" (click)="updateGameType(false)">
-      Regular Season
-    </button>
-  </div>
-  <div *ngIf="leaderboards.length" class="leaderboards-container" [class.reloading]="isLoading"
-       [attr.aria-busy]="isLoading">
-    <app-stat-leaderboard *ngFor="let leaderboard of leaderboards"
-        [categoryId]="leaderboard.categoryId"
-        [statTitle]="leaderboard.title"
-        [entries]="leaderboard.entries"
-        [format]="leaderboard.format"
-    ></app-stat-leaderboard>
-  </div>
-  <div *ngIf="isLoading && !leaderboards.length" class="loading-container">
-    <app-loading-spinner class="loading-spinner"></app-loading-spinner>
-  </div>
+  @if (showFilters) {
+    <div class="stat-filters-container" role="group" aria-label="Game type">
+      <button type="button" class="stat-filter-button" [class.selected-filter]="playoffsSelected"
+              [attr.aria-pressed]="playoffsSelected" (click)="updateGameType(true)">
+        Playoffs
+      </button>
+      <button type="button" class="stat-filter-button" [class.selected-filter]="!playoffsSelected"
+              [attr.aria-pressed]="!playoffsSelected" (click)="updateGameType(false)">
+        Regular Season
+      </button>
+    </div>
+  }
+  @if (leaderboards.length) {
+    <div class="leaderboards-container" [class.reloading]="isLoading"
+         [attr.aria-busy]="isLoading">
+      @for (leaderboard of leaderboards; track leaderboard) {
+        <app-stat-leaderboard
+            [categoryId]="leaderboard.categoryId"
+            [statTitle]="leaderboard.title"
+            [entries]="leaderboard.entries"
+            [format]="leaderboard.format"
+        ></app-stat-leaderboard>
+      }
+    </div>
+  }
+  @if (isLoading && !leaderboards.length) {
+    <div class="loading-container">
+      <app-loading-spinner class="loading-spinner"></app-loading-spinner>
+    </div>
+  }
 </div>

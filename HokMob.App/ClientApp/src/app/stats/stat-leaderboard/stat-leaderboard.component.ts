@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges} from '@angular/core';
+import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
@@ -27,9 +27,11 @@ export interface LeaderboardRow {
  * page's game type.
  */
 @Component({
-  selector: 'app-stat-leaderboard',
-  templateUrl: './stat-leaderboard.component.html',
-  styleUrls: ['./stat-leaderboard.component.scss']
+    selector: 'app-stat-leaderboard',
+    templateUrl: './stat-leaderboard.component.html',
+    styleUrls: ['./stat-leaderboard.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class StatLeaderboardComponent implements OnChanges {
 

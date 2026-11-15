@@ -1,12 +1,14 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {PlayoffCarousel, PlayoffCarouselRound, PlayoffCarouselSeries} from "@shared/models/nhl-web-api/playoffs.model";
 
 @Component({
-  selector: 'app-playoff-summary',
-  templateUrl: './playoff-summary.component.html',
-  styleUrls: ['./playoff-summary.component.scss']
+    selector: 'app-playoff-summary',
+    templateUrl: './playoff-summary.component.html',
+    styleUrls: ['./playoff-summary.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayoffSummaryComponent implements OnInit {
 

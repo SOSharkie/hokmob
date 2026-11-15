@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 
@@ -6,7 +6,9 @@ import { RinkComponent } from './rink.component';
 
 /** A card putting its players on the rink. */
 @Component({
-  template: '<app-rink><div class="team-players home-players">Home</div></app-rink>'
+    template: '<app-rink><div class="team-players home-players">Home</div></app-rink>',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 class RinkHostComponent {}
 

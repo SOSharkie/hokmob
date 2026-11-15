@@ -10,7 +10,7 @@ import { HeaderComponent } from '@header/header.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
 import { ScorecardComponent } from '@shared/components/scorecard/scorecard.component';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {HttpClientModule} from "@angular/common/http";
+import {provideHttpClient, withXhr} from "@angular/common/http";
 import { MaterialModule } from '@shared/modules/material.module';
 import {NgOptimizedImage} from "@angular/common";
 import { AboutComponent } from './about/about.component';
@@ -146,7 +146,6 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
   ],
   imports: [
     BrowserModule,
-    HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     FormsModule,
@@ -157,6 +156,7 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
     ReactiveFormsModule
   ],
   providers: [
+    provideHttpClient(withXhr()),
     NhlGameService,
     NhlStandingAndPlayoffService,
     NhlStatsApiService,

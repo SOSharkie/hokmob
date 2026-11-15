@@ -1,4 +1,4 @@
-import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
 import {NhlSearchService} from "@shared/services/nhl-search.service";
 import {SearchResultModel} from "@shared/models/search-result.model";
 import {MatAutocompleteTrigger} from "@angular/material/autocomplete";
@@ -8,10 +8,12 @@ import {MatAutocompleteTrigger} from "@angular/material/autocomplete";
  * the search proxy finds: teams first, 10 results in total.
  */
 @Component({
-  selector: 'app-search-input',
-  templateUrl: './search-input.component.html',
-  styleUrls: ['./search-input.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-search-input',
+    templateUrl: './search-input.component.html',
+    styleUrls: ['./search-input.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SearchInputComponent implements OnDestroy {
 

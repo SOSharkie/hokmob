@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {ActivatedRoute, ParamMap, Router} from "@angular/router";
@@ -6,9 +6,11 @@ import {StandingsGroup} from "@shared/models/nhl-web-api/standings.model";
 import {StandingsTypeFilter, StandingsTypeUtils} from "@shared/utils/standings-type-utils";
 
 @Component({
-  selector: 'app-league-standings',
-  templateUrl: './league-standings.component.html',
-  styleUrls: ['./league-standings.component.scss']
+    selector: 'app-league-standings',
+    templateUrl: './league-standings.component.html',
+    styleUrls: ['./league-standings.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class LeagueStandingsComponent implements OnInit {
 

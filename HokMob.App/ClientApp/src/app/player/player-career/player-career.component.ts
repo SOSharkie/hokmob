@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges} from '@angular/core';
+import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -27,9 +27,11 @@ export interface CareerSeasonRow {
  * logo.
  */
 @Component({
-  selector: 'app-player-career',
-  templateUrl: './player-career.component.html',
-  styleUrls: ['./player-career.component.scss']
+    selector: 'app-player-career',
+    templateUrl: './player-career.component.html',
+    styleUrls: ['./player-career.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayerCareerComponent implements OnChanges {
 

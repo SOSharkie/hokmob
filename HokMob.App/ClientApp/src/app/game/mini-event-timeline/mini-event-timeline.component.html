@@ -1,28 +1,37 @@
 <div class="mini-event-timeline-container">
   <div class="mini-event-timeline-header">
-    <div *ngIf="homeTeamLogo" class="">
-      <img [src]="homeTeamLogo" alt="" class="team-logo">
-    </div>
+    @if (homeTeamLogo) {
+      <div class="">
+        <img [src]="homeTeamLogo" alt="" class="team-logo">
+      </div>
+    }
     <span>Event Timeline</span>
-    <div *ngIf="awayTeamLogo" class="">
-      <img [src]="awayTeamLogo" alt="" class="team-logo">
-    </div>
+    @if (awayTeamLogo) {
+      <div class="">
+        <img [src]="awayTeamLogo" alt="" class="team-logo">
+      </div>
+    }
   </div>
-  <div *ngFor="let period of periods" class="period-events">
+  @for (period of periods; track period) {
+    <div class="period-events">
+      <div class="period-start-container">
+        <span class="period-label">{{getPeriodLabel(period)}}</span>
+      </div>
+      @for (play of period.plays; track trackPlay($index, play)) {
+        <app-mini-event
+            [play]="play"
+            [homeTeamId]="homeTeamId"
+            [rosterSpots]="rosterSpots"
+            [goalIndex]="goalIndexes.get(play.eventId)"
+            (playerClicked)="onPlayerClicked($event)"
+            (playerHovered)="onPlayerHovered($event)"
+        ></app-mini-event>
+      }
+    </div>
+  }
+  @if (isGameFinal) {
     <div class="period-start-container">
-      <span class="period-label">{{getPeriodLabel(period)}}</span>
+      <span class="period-label">End</span>
     </div>
-    <app-mini-event
-        *ngFor="let play of period.plays; trackBy: trackPlay"
-        [play]="play"
-        [homeTeamId]="homeTeamId"
-        [rosterSpots]="rosterSpots"
-        [goalIndex]="goalIndexes.get(play.eventId)"
-        (playerClicked)="onPlayerClicked($event)"
-        (playerHovered)="onPlayerHovered($event)"
-    ></app-mini-event>
-  </div>
-  <div *ngIf="isGameFinal" class="period-start-container">
-    <span class="period-label">End</span>
-  </div>
+  }
 </div>

@@ -1,6 +1,6 @@
-import {Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
+import {Component, Inject, OnInit, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-playoff.service";
 import {NhlGameInfoUtils} from "@shared/utils/nhl-game-info-utils";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
@@ -23,10 +23,12 @@ export interface PlayoffSeriesDialogData {
 }
 
 @Component({
-  selector: 'app-playoff-series-dialog',
-  templateUrl: './playoff-series-dialog.component.html',
-  styleUrls: ['./playoff-series-dialog.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-playoff-series-dialog',
+    templateUrl: './playoff-series-dialog.component.html',
+    styleUrls: ['./playoff-series-dialog.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayoffSeriesDialogComponent implements OnInit {
 

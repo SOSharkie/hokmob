@@ -1,17 +1,25 @@
 <div class="goal-details-container">
   <div class="goals-container">
-    <div *ngFor="let period of periods" class="period-goals">
-      <div class="home-goals-label">
-        <ng-container *ngFor="let goal of getHomeTeamGoals(period); let isLast = last">
-          <button type="button" (click)="clickScorer(goal)" (mouseenter)="hoverScorer(goal)" (mouseleave)="leaveScorer()" (focus)="hoverScorer(goal)" (blur)="leaveScorer()" class="scorer-label">{{getScorerName(goal)}} <span class="goal-time">({{getGoalTime(goal)}})</span></button><span *ngIf="!isLast">, </span>
-        </ng-container>
+    @for (period of periods; track period) {
+      <div class="period-goals">
+        <div class="home-goals-label">
+          @for (goal of getHomeTeamGoals(period); track goal; let isLast = $last) {
+            <button type="button" (click)="clickScorer(goal)" (mouseenter)="hoverScorer(goal)" (mouseleave)="leaveScorer()" (focus)="hoverScorer(goal)" (blur)="leaveScorer()" class="scorer-label">{{getScorerName(goal)}} <span class="goal-time">({{getGoalTime(goal)}})</span></button>
+            @if (!isLast) {
+              <span>, </span>
+            }
+          }
+        </div>
+        <span class="period-label">{{getPeriodLabel(period)}}</span>
+        <div class="away-goals-label">
+          @for (goal of getAwayTeamGoals(period); track goal; let isLast = $last) {
+            <button type="button" (click)="clickScorer(goal)" (mouseenter)="hoverScorer(goal)" (mouseleave)="leaveScorer()" (focus)="hoverScorer(goal)" (blur)="leaveScorer()" class="scorer-label">{{getScorerName(goal)}} <span class="goal-time">({{getGoalTime(goal)}})</span></button>
+            @if (!isLast) {
+              <span>, </span>
+            }
+          }
+        </div>
       </div>
-      <span class="period-label">{{getPeriodLabel(period)}}</span>
-      <div class="away-goals-label">
-        <ng-container *ngFor="let goal of getAwayTeamGoals(period); let isLast = last">
-          <button type="button" (click)="clickScorer(goal)" (mouseenter)="hoverScorer(goal)" (mouseleave)="leaveScorer()" (focus)="hoverScorer(goal)" (blur)="leaveScorer()" class="scorer-label">{{getScorerName(goal)}} <span class="goal-time">({{getGoalTime(goal)}})</span></button><span *ngIf="!isLast">, </span>
-        </ng-container>
-      </div>
-    </div>
+    }
   </div>
 </div>

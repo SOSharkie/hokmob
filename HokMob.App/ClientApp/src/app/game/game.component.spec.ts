@@ -5,7 +5,7 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { GameBundle } from '@shared/models/nhl-web-api/game-bundle.model';
 import { ClubScheduleSeason } from '@shared/models/nhl-web-api/club-schedule.model';

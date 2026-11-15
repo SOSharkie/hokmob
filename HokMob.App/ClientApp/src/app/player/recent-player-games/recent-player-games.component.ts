@@ -1,5 +1,5 @@
-import {Component, Input, OnChanges} from '@angular/core';
-import * as dayjs from "dayjs";
+import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
+import dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -39,9 +39,11 @@ export interface RecentGameRow {
  * StatsUtils.calculateSkaterGameRating / calculateGoalieGameRating, like the history page.
  */
 @Component({
-  selector: 'app-recent-player-games',
-  templateUrl: './recent-player-games.component.html',
-  styleUrls: ['./recent-player-games.component.scss']
+    selector: 'app-recent-player-games',
+    templateUrl: './recent-player-games.component.html',
+    styleUrls: ['./recent-player-games.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RecentPlayerGamesComponent implements OnChanges {
 

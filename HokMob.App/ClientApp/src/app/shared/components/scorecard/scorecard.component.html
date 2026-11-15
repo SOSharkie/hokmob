@@ -5,30 +5,46 @@
   <div class="home-team" [ngClass]="{'smaller-text': smallerScorecard}">
     <span>{{homeTeamName}}</span>
     <div class="logo-container">
-      <app-team-logo *ngIf="homeTeamId" [teamId]="homeTeamId" [size]="logoSize" [width]="logoMaxWidth">
-      </app-team-logo>
+      @if (homeTeamId) {
+        <app-team-logo [teamId]="homeTeamId" [size]="logoSize" [width]="logoMaxWidth">
+        </app-team-logo>
+      }
     </div>
   </div>
   <div class="central-info">
-    <span *ngIf="isPlayoffGame" class="playoff-series">{{playoffSeriesDetails}}</span>
-    <span *ngIf="gameTypeLabel" class="game-type-label">{{gameTypeLabel}}</span>
-    <div *ngIf="futureGame" class="game-time">
-      <span *ngIf="smallerScorecard">{{gameDate}}</span>
-      <span>{{gameTime}} {{gameAmPm}}</span>
-    </div>
-    <div *ngIf="completedGame" class="game-score">
-      <span>{{gameScore}}</span>
-      <span class="completed-status-label">{{completedGameStatus}}</span>
-    </div>
-    <div *ngIf="liveGame" class="game-score">
-      <span>{{gameScore}}</span>
-      <span class="live-status-label">{{liveGameStatus}}</span>
-    </div>
+    @if (isPlayoffGame) {
+      <span class="playoff-series">{{playoffSeriesDetails}}</span>
+    }
+    @if (gameTypeLabel) {
+      <span class="game-type-label">{{gameTypeLabel}}</span>
+    }
+    @if (futureGame) {
+      <div class="game-time">
+        @if (smallerScorecard) {
+          <span>{{gameDate}}</span>
+        }
+        <span>{{gameTime}} {{gameAmPm}}</span>
+      </div>
+    }
+    @if (completedGame) {
+      <div class="game-score">
+        <span>{{gameScore}}</span>
+        <span class="completed-status-label">{{completedGameStatus}}</span>
+      </div>
+    }
+    @if (liveGame) {
+      <div class="game-score">
+        <span>{{gameScore}}</span>
+        <span class="live-status-label">{{liveGameStatus}}</span>
+      </div>
+    }
   </div>
   <div class="away-team" [ngClass]="{'smaller-text': smallerScorecard}">
     <div class="logo-container">
-      <app-team-logo *ngIf="awayTeamId" [teamId]="awayTeamId" [size]="logoSize" [width]="logoMaxWidth">
-      </app-team-logo>
+      @if (awayTeamId) {
+        <app-team-logo [teamId]="awayTeamId" [size]="logoSize" [width]="logoMaxWidth">
+        </app-team-logo>
+      }
     </div>
     <span>{{awayTeamName}}</span>
   </div>

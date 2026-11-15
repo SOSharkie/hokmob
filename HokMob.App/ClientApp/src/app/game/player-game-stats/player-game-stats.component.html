@@ -4,7 +4,9 @@
       <div class="player-headshot-container">
         <img [src]="playerHeadshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
       </div>
-      <img *ngIf="teamLogo" [src]="teamLogo" alt="" class="team-logo">
+      @if (teamLogo) {
+        <img [src]="teamLogo" alt="" class="team-logo">
+      }
     </div>
     <div class="player-details">
       <div class="player-name">
@@ -18,7 +20,9 @@
         <div class="info-item country-info">
           <span class="info-item-label">Country</span>
           <div class="country-container">
-            <img *ngIf="countryFlagPath" [src]="countryFlagPath" alt="" class="country-flag">
+            @if (countryFlagPath) {
+              <img [src]="countryFlagPath" alt="" class="country-flag">
+            }
             <span>{{birthCountry}}</span>
           </div>
         </div>
@@ -33,97 +37,117 @@
     <div class="stats-label">
       <span>Top Stats</span>
     </div>
-    <div *ngIf="skaterStats" class="player-game-stats">
-      <div class="game-stat-item">
-        <span class="game-stat-label">HokMob Rating</span>
-        <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.hokmobRating)}">{{player.hokmobRating}}</span>
+    @if (skaterStats) {
+      <div class="player-game-stats">
+        <div class="game-stat-item">
+          <span class="game-stat-label">HokMob Rating</span>
+          <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.hokmobRating)}">{{player.hokmobRating}}</span>
+        </div>
+        <div class="game-stat-item">
+          <span class="game-stat-label" title="Time On Ice">{{compact ? 'TOI' : 'Time On Ice'}}</span>
+          <span>{{skaterStats.toi}}</span>
+        </div>
+        <div class="game-stat-item">
+          <span class="game-stat-label">Goals</span>
+          <span class="game-stat-value">{{skaterStats.goals}}</span>
+        </div>
+        <div class="game-stat-item">
+          <span class="game-stat-label">Assists</span>
+          <span class="game-stat-value">{{skaterStats.assists}}</span>
+        </div>
+        <div class="game-stat-item">
+          <span class="game-stat-label">Shots</span>
+          <span class="game-stat-value">{{skaterStats.sog}}</span>
+        </div>
+        @if (showAdvancedStats) {
+          <div class="game-stat-item expected-goals-stat" [title]="expectedGoalsDescription">
+            <span class="game-stat-label">Expected Goals</span>
+            <span class="game-stat-value">{{individualExpectedGoals}}</span>
+          </div>
+        }
+        @if (showAdvancedStats) {
+          <div class="game-stat-item corsi-stat" [title]="corsiDescription">
+            <span class="game-stat-label">Corsi %</span>
+            <span class="game-stat-value">{{onIceCorsiPercentage}}</span>
+          </div>
+        }
+        <div class="game-stat-item">
+          <span class="game-stat-label">Hits</span>
+          <span class="game-stat-value">{{skaterStats.hits}}</span>
+        </div>
+        @if (isStatShown('blocks')) {
+          <div class="game-stat-item">
+            <span class="game-stat-label">Blocks</span>
+            <span class="game-stat-value">{{skaterStats.blockedShots}}</span>
+          </div>
+        }
+        @if (showFaceoffs) {
+          <div class="game-stat-item faceoff-stat">
+            <span class="game-stat-label">Faceoff %</span>
+            <span class="game-stat-value">{{faceoffPercentage}}</span>
+          </div>
+        }
+        <div class="game-stat-item">
+          <span class="game-stat-label" title="Plus/Minus">{{compact ? '+/-' : 'Plus/Minus'}}</span>
+          <span class="game-stat-value">{{skaterStats.plusMinus}}</span>
+        </div>
+        <div class="game-stat-item penalty-stat">
+          <span class="game-stat-label" title="Penalty Minutes">{{compact ? 'PMs' : 'Penalty Minutes'}}</span>
+          <span class="game-stat-value" [ngStyle]="{'color': skaterStats.pim > 0 ? '#e34d53' : ''}">{{skaterStats.pim}}</span>
+        </div>
+        @if (isStatShown('takeaways')) {
+          <div class="game-stat-item">
+            <span class="game-stat-label">Takeaways</span>
+            <span class="game-stat-value">{{skaterStats.takeaways}}</span>
+          </div>
+        }
+        @if (isStatShown('giveaways')) {
+          <div class="game-stat-item">
+            <span class="game-stat-label">Giveaways</span>
+            <span class="game-stat-value">{{skaterStats.giveaways}}</span>
+          </div>
+        }
       </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label" title="Time On Ice">{{compact ? 'TOI' : 'Time On Ice'}}</span>
-        <span>{{skaterStats.toi}}</span>
+    }
+    @if (goalieStats) {
+      <div class="player-game-stats">
+        <div class="game-stat-item">
+          <span class="game-stat-label">HokMob Rating</span>
+          <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.hokmobRating)}">{{player.hokmobRating}}</span>
+        </div>
+        <div class="game-stat-item">
+          <span class="game-stat-label" title="Time On Ice">{{compact ? 'TOI' : 'Time On Ice'}}</span>
+          <span class="game-stat-value">{{goalieStats.toi}}</span>
+        </div>
+        @if (goalieGoals > 0) {
+          <div class="game-stat-item goalie-goals-stat">
+            <span class="game-stat-label">Goals</span>
+            <span class="game-stat-value">{{goalieGoals}}</span>
+          </div>
+        }
+        @if (goalieAssists > 0) {
+          <div class="game-stat-item goalie-assists-stat">
+            <span class="game-stat-label">Assists</span>
+            <span class="game-stat-value">{{goalieAssists}}</span>
+          </div>
+        }
+        <div class="game-stat-item">
+          <span class="game-stat-label">Save %</span>
+          <span class="game-stat-value">{{goalieStats.savePctg | savePercentage}}</span>
+        </div>
+        <div class="game-stat-item">
+          <span class="game-stat-label">Saves</span>
+          <span class="game-stat-value">{{goalieStats.saves}}</span>
+        </div>
+        <div class="game-stat-item">
+          <span class="game-stat-label">Shots Against</span>
+          <span class="game-stat-value">{{goalieStats.shotsAgainst}}</span>
+        </div>
+        <div class="game-stat-item penalty-stat">
+          <span class="game-stat-label" title="Penalty Minutes">{{compact ? 'PMs' : 'Penalty Minutes'}}</span>
+          <span class="game-stat-value">{{goalieStats.pim}}</span>
+        </div>
       </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label">Goals</span>
-        <span class="game-stat-value">{{skaterStats.goals}}</span>
-      </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label">Assists</span>
-        <span class="game-stat-value">{{skaterStats.assists}}</span>
-      </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label">Shots</span>
-        <span class="game-stat-value">{{skaterStats.sog}}</span>
-      </div>
-      <div *ngIf="showAdvancedStats" class="game-stat-item expected-goals-stat" [title]="expectedGoalsDescription">
-        <span class="game-stat-label">Expected Goals</span>
-        <span class="game-stat-value">{{individualExpectedGoals}}</span>
-      </div>
-      <div *ngIf="showAdvancedStats" class="game-stat-item corsi-stat" [title]="corsiDescription">
-        <span class="game-stat-label">Corsi %</span>
-        <span class="game-stat-value">{{onIceCorsiPercentage}}</span>
-      </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label">Hits</span>
-        <span class="game-stat-value">{{skaterStats.hits}}</span>
-      </div>
-      <div *ngIf="isStatShown('blocks')" class="game-stat-item">
-        <span class="game-stat-label">Blocks</span>
-        <span class="game-stat-value">{{skaterStats.blockedShots}}</span>
-      </div>
-      <div *ngIf="showFaceoffs" class="game-stat-item faceoff-stat">
-        <span class="game-stat-label">Faceoff %</span>
-        <span class="game-stat-value">{{faceoffPercentage}}</span>
-      </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label" title="Plus/Minus">{{compact ? '+/-' : 'Plus/Minus'}}</span>
-        <span class="game-stat-value">{{skaterStats.plusMinus}}</span>
-      </div>
-      <div class="game-stat-item penalty-stat">
-        <span class="game-stat-label" title="Penalty Minutes">{{compact ? 'PMs' : 'Penalty Minutes'}}</span>
-        <span class="game-stat-value" [ngStyle]="{'color': skaterStats.pim > 0 ? '#e34d53' : ''}">{{skaterStats.pim}}</span>
-      </div>
-      <div *ngIf="isStatShown('takeaways')" class="game-stat-item">
-        <span class="game-stat-label">Takeaways</span>
-        <span class="game-stat-value">{{skaterStats.takeaways}}</span>
-      </div>
-      <div *ngIf="isStatShown('giveaways')" class="game-stat-item">
-        <span class="game-stat-label">Giveaways</span>
-        <span class="game-stat-value">{{skaterStats.giveaways}}</span>
-      </div>
-    </div>
-    <div *ngIf="goalieStats" class="player-game-stats">
-      <div class="game-stat-item">
-        <span class="game-stat-label">HokMob Rating</span>
-        <span class="game-stat-value" [ngStyle]="{'background-color': StatsUtils.getHokmobRatingColor(player.hokmobRating)}">{{player.hokmobRating}}</span>
-      </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label" title="Time On Ice">{{compact ? 'TOI' : 'Time On Ice'}}</span>
-        <span class="game-stat-value">{{goalieStats.toi}}</span>
-      </div>
-      <div *ngIf="goalieGoals > 0" class="game-stat-item goalie-goals-stat">
-        <span class="game-stat-label">Goals</span>
-        <span class="game-stat-value">{{goalieGoals}}</span>
-      </div>
-      <div *ngIf="goalieAssists > 0" class="game-stat-item goalie-assists-stat">
-        <span class="game-stat-label">Assists</span>
-        <span class="game-stat-value">{{goalieAssists}}</span>
-      </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label">Save %</span>
-        <span class="game-stat-value">{{goalieStats.savePctg | savePercentage}}</span>
-      </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label">Saves</span>
-        <span class="game-stat-value">{{goalieStats.saves}}</span>
-      </div>
-      <div class="game-stat-item">
-        <span class="game-stat-label">Shots Against</span>
-        <span class="game-stat-value">{{goalieStats.shotsAgainst}}</span>
-      </div>
-      <div class="game-stat-item penalty-stat">
-        <span class="game-stat-label" title="Penalty Minutes">{{compact ? 'PMs' : 'Penalty Minutes'}}</span>
-        <span class="game-stat-value">{{goalieStats.pim}}</span>
-      </div>
-    </div>
+    }
   </div>
 </div>

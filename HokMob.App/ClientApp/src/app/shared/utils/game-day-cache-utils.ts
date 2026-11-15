@@ -1,6 +1,6 @@
-import * as dayjs from "dayjs";
-import * as utc from "dayjs/plugin/utc";
-import * as timezone from "dayjs/plugin/timezone";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {CurrentSeason} from "@shared/models/nhl-stats-api/season-dates.model";

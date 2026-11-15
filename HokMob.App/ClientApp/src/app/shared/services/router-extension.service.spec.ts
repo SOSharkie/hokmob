@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
 import { NavigationEnd, Router } from '@angular/router';
@@ -7,7 +7,11 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { RouterExtensionService } from './router-extension.service';
 
-@Component({template: ''})
+@Component({
+    template: '',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
+})
 class EmptyComponent {
 }
 

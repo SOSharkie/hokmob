@@ -10,18 +10,24 @@
       </div>
     </div>
     <div class="stat-category-pickers">
-      <button *ngIf="category" type="button" class="pill-picker category-picker"
-              [attr.aria-label]="'Stat, ' + category.title"
-              [matMenuTriggerFor]="categoryMenu"
-              (menuOpened)="scrollToSelectedOption('category-menu')">{{category.title}}</button>
+      @if (category) {
+        <button type="button" class="pill-picker category-picker"
+                [attr.aria-label]="'Stat, ' + category.title"
+                [matMenuTriggerFor]="categoryMenu"
+                (menuOpened)="scrollToSelectedOption('category-menu')">{{category.title}}</button>
+      }
       <mat-menu #categoryMenu="matMenu" class="pill-picker-menu category-menu" xPosition="before">
-        <button *ngFor="let option of categories" mat-menu-item role="menuitemradio" class="pill-picker-option"
-                [class.selected]="option.id === category?.id" [attr.aria-checked]="option.id === category?.id"
-                (click)="selectCategory(option)">{{option.title}}</button>
+        @for (option of categories; track option) {
+          <button mat-menu-item role="menuitemradio" class="pill-picker-option"
+                  [class.selected]="option.id === category?.id" [attr.aria-checked]="option.id === category?.id"
+                  (click)="selectCategory(option)">{{option.title}}</button>
+        }
       </mat-menu>
-      <button *ngIf="showGameTypePicker" type="button" class="pill-picker game-type-picker"
-              [attr.aria-label]="'Game type, ' + gameTypeLabel"
-              [matMenuTriggerFor]="gameTypeMenu">{{gameTypeLabel}}</button>
+      @if (showGameTypePicker) {
+        <button type="button" class="pill-picker game-type-picker"
+                [attr.aria-label]="'Game type, ' + gameTypeLabel"
+                [matMenuTriggerFor]="gameTypeMenu">{{gameTypeLabel}}</button>
+      }
       <mat-menu #gameTypeMenu="matMenu" class="pill-picker-menu game-type-menu" xPosition="before">
         <button mat-menu-item role="menuitemradio" class="pill-picker-option"
                 [class.selected]="playoffsSelected" [attr.aria-checked]="playoffsSelected"
@@ -32,58 +38,77 @@
       </mat-menu>
     </div>
   </div>
-  <div *ngIf="isLoading" class="loading-container">
-    <app-loading-spinner class="loading-spinner"></app-loading-spinner>
-  </div>
-  <div *ngIf="!isLoading && hasError" class="stat-category-message">
-    <span>The stats couldn't be loaded</span>
-  </div>
-  <div *ngIf="!isLoading && !hasError && !rows.length" class="stat-category-message">
-    <span>No stats yet</span>
-  </div>
-  <div *ngIf="!isLoading && rows.length" class="stat-category-table-container">
-    <table class="stat-category-table">
-      <thead>
-        <tr class="stat-category-table-header">
-          <th class="rank-header" title="Rank"><span>#</span></th>
-          <th class="player-header"><span>Player</span></th>
-          <th *ngFor="let column of columns" class="stat-header" [title]="column.title"
-              [class.selected-column]="column.isSelected" [class.phone-hidden]="column.isPhoneHidden"
-              [attr.aria-sort]="column.isSelected ? sortDirection : null">
-            <span>{{column.label}}</span>
-            <span *ngIf="column.isSelected" class="sort-indicator" [class.ascending]="sortDirection === 'ascending'"
-                  aria-hidden="true"></span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of rows; trackBy: trackPlayer; let isFirst = first" class="stat-category-row"
-            [class.leader-row]="isFirst">
-          <td class="rank-cell"><span>{{row.rank}}</span></td>
-          <td class="player-cell">
-            <a class="player-link" [routerLink]="['/player', row.playerId]">
-              <span class="player-headshot-container">
-                <img [src]="row.headshot" (error)="showBlankHeadshot($event)" alt="" loading="lazy"
-                     class="player-headshot">
-              </span>
-              <span class="player-info">
-                <span class="player-name">{{row.name}}</span>
-                <span class="player-team">
-                  <app-team-logo class="player-team-logo" [teamId]="row.teamId" [size]="logoSize"
-                                 [width]="logoMaxWidth"></app-team-logo>
-                  <span class="player-team-label">{{row.teamAbbrev}}</span>
-                </span>
-              </span>
-            </a>
-          </td>
-          <td *ngFor="let column of columns; let i = index" class="stat-cell"
-              [class.selected-column]="column.isSelected" [class.phone-hidden]="column.isPhoneHidden">
-            <span *ngIf="column.isSelected && isFirst; else plainValue" class="leader-value"
-                  [ngStyle]="{'background-color': row.teamColor, 'color': row.teamTextColor}">{{row.values[i]}}</span>
-            <ng-template #plainValue><span>{{row.values[i]}}</span></ng-template>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  @if (isLoading) {
+    <div class="loading-container">
+      <app-loading-spinner class="loading-spinner"></app-loading-spinner>
+    </div>
+  }
+  @if (!isLoading && hasError) {
+    <div class="stat-category-message">
+      <span>The stats couldn't be loaded</span>
+    </div>
+  }
+  @if (!isLoading && !hasError && !rows.length) {
+    <div class="stat-category-message">
+      <span>No stats yet</span>
+    </div>
+  }
+  @if (!isLoading && rows.length) {
+    <div class="stat-category-table-container">
+      <table class="stat-category-table">
+        <thead>
+          <tr class="stat-category-table-header">
+            <th class="rank-header" title="Rank"><span>#</span></th>
+            <th class="player-header"><span>Player</span></th>
+            @for (column of columns; track column) {
+              <th class="stat-header" [title]="column.title"
+                  [class.selected-column]="column.isSelected" [class.phone-hidden]="column.isPhoneHidden"
+                  [attr.aria-sort]="column.isSelected ? sortDirection : null">
+                <span>{{column.label}}</span>
+                @if (column.isSelected) {
+                  <span class="sort-indicator" [class.ascending]="sortDirection === 'ascending'"
+                        aria-hidden="true"></span>
+                }
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track trackPlayer($index, row); let isFirst = $first) {
+            <tr class="stat-category-row"
+                [class.leader-row]="isFirst">
+              <td class="rank-cell"><span>{{row.rank}}</span></td>
+              <td class="player-cell">
+                <a class="player-link" [routerLink]="['/player', row.playerId]">
+                  <span class="player-headshot-container">
+                    <img [src]="row.headshot" (error)="showBlankHeadshot($event)" alt="" loading="lazy"
+                         class="player-headshot">
+                  </span>
+                  <span class="player-info">
+                    <span class="player-name">{{row.name}}</span>
+                    <span class="player-team">
+                      <app-team-logo class="player-team-logo" [teamId]="row.teamId" [size]="logoSize"
+                                     [width]="logoMaxWidth"></app-team-logo>
+                      <span class="player-team-label">{{row.teamAbbrev}}</span>
+                    </span>
+                  </span>
+                </a>
+              </td>
+              @for (column of columns; track column; let i = $index) {
+                <td class="stat-cell"
+                    [class.selected-column]="column.isSelected" [class.phone-hidden]="column.isPhoneHidden">
+                  @if (column.isSelected && isFirst) {
+                    <span class="leader-value"
+                          [ngStyle]="{'background-color': row.teamColor, 'color': row.teamTextColor}">{{row.values[i]}}</span>
+                  } @else {
+                    <span>{{row.values[i]}}</span>
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

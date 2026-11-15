@@ -1,5 +1,5 @@
-import {Component, Input} from '@angular/core';
-import * as dayjs from "dayjs";
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
+import dayjs from "dayjs";
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
 
 /**
@@ -7,9 +7,11 @@ import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
  * "Captain / Rookie" tile shows the draft instead.
  */
 @Component({
-  selector: 'app-player-bio',
-  templateUrl: './player-bio.component.html',
-  styleUrls: ['./player-bio.component.scss']
+    selector: 'app-player-bio',
+    templateUrl: './player-bio.component.html',
+    styleUrls: ['./player-bio.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PlayerBioComponent {
 

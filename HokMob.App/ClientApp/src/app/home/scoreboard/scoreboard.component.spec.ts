@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ScoreGame, ScoreResponse } from '@shared/models/nhl-web-api/score.model';
 import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
@@ -329,8 +329,9 @@ describe('ScoreboardComponent', () => {
 
     component.shiftDateLeft();
     httpMock.expectOne('/api/nhl/score/2026-03-09').flush(scoreResponse([]));
-    openDay('20260301');
-    httpMock.expectOne('/api/nhl/score/2026-03-01').flush(mockScoreResponse());
+    // A new day from the page (setInput, like a binding, ignores an unchanged value)
+    openDay('20260305');
+    httpMock.expectOne('/api/nhl/score/2026-03-05').flush(scoreResponse([]));
     await settle();
     expect(containerClasses()).toContain('enter-fade');
   });

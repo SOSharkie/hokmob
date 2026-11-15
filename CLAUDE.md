@@ -1,7 +1,7 @@
 # HokMob
 
 Hockey stats site (like Fotmob, for the NHL). `HokMob.App/` is an ASP.NET Core (.NET 7) backend that serves the Angular
-app and proxies the NHL API. `HokMob.App/ClientApp/` is the Angular 15 frontend (Angular Material, dayjs, chart.js).
+app and proxies the NHL API. `HokMob.App/ClientApp/` is the Angular 22 frontend (Angular Material, dayjs, chart.js).
 
 ## NHL APIs
 

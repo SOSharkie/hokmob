@@ -1,7 +1,7 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, Params} from "@angular/router";
 import {NhlGameService} from "@shared/services/nhl-game.service";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {RouterExtensionService} from "@shared/services/router-extension.service";
 import {MatDialog} from "@angular/material/dialog";
@@ -44,10 +44,12 @@ import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.mod
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 @Component({
-  selector: 'app-game',
-  templateUrl: './game.component.html',
-  styleUrls: ['./game.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-game',
+    templateUrl: './game.component.html',
+    styleUrls: ['./game.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
 

@@ -1,5 +1,5 @@
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {SeasonHistoryService} from '@shared/services/season-history.service';
 import {
   derivedSeasonHistoryInProgress,
@@ -9,6 +9,7 @@ import {
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {RatedGame, RatedSeason} from '@shared/models/nhl-history/season-history.model';
 import {RecentPlayerGamesComponent} from '@app/player/recent-player-games/recent-player-games.component';
+import {provideHttpClient} from '@angular/common/http';
 
 describe('SeasonHistoryService', () => {
   let service: SeasonHistoryService;
@@ -18,8 +19,7 @@ describe('SeasonHistoryService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [SeasonHistoryService]
+      providers: [SeasonHistoryService, provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(SeasonHistoryService);
     httpMock = TestBed.inject(HttpTestingController);

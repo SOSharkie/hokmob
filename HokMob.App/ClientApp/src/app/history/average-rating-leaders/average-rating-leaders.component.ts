@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnChanges, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output, ChangeDetectionStrategy} from '@angular/core';
 import {PositionGroup, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
@@ -34,9 +34,11 @@ export interface AverageRatingRow {
  * player's games for that team count.
  */
 @Component({
-  selector: 'app-average-rating-leaders',
-  templateUrl: './average-rating-leaders.component.html',
-  styleUrls: ['./average-rating-leaders.component.scss']
+    selector: 'app-average-rating-leaders',
+    templateUrl: './average-rating-leaders.component.html',
+    styleUrls: ['./average-rating-leaders.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class AverageRatingLeadersComponent implements OnChanges {
 

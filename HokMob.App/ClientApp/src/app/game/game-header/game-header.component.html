@@ -1,33 +1,61 @@
 <div class="score-container" [ngClass]="{'dropdown-score-container' : isDropdownHeader}">
   <div class="home-team-header" [routerLink]="['/team', this.homeTeamId]">
-    <span *ngIf="homeTeamPP" class="home-team-pp">PP</span>
+    @if (homeTeamPP) {
+      <span class="home-team-pp">PP</span>
+    }
     <div class="home-team-banner">
-      <span *ngIf="isDropdownHeader">{{homeTeamShortName}}</span>
-      <span *ngIf="!isDropdownHeader">{{homeTeamName}}</span>
-      <img [src]="homeTeamLogo" alt="" class="home-team-logo" *ngIf="homeTeamLogo">
+      @if (isDropdownHeader) {
+        <span>{{homeTeamShortName}}</span>
+      }
+      @if (!isDropdownHeader) {
+        <span>{{homeTeamName}}</span>
+      }
+      @if (homeTeamLogo) {
+        <img [src]="homeTeamLogo" alt="" class="home-team-logo">
+      }
     </div>
   </div>
-  <div *ngIf="futureGame" class="game-day-time-container future-game">
-    <span class="game-time-label">{{gameTime}}</span>
-    <span class="game-day-label">{{gameDay}}</span>
-    <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
-  </div>
-  <div *ngIf="completedGame" class="game-score">
-    <span class="game-score-label">{{gameScore}}</span>
-    <span class="completed-status-label">{{completedGameStatus}}</span>
-    <span *ngIf="isPlayoffGame" class="playoff-series-label">{{playoffSeriesDetails}}</span>
-  </div>
-  <div *ngIf="liveGame" class="game-score">
-    <span class="game-score-label">{{gameScore}}</span>
-    <span class="live-status-label">{{liveGameStatus}}</span>
-    <span *ngIf="isIntermission" title="Intermission Countdown" class="intermission-countdown">{{intermissionTimeRemaining}}</span>
-  </div>
+  @if (futureGame) {
+    <div class="game-day-time-container future-game">
+      <span class="game-time-label">{{gameTime}}</span>
+      <span class="game-day-label">{{gameDay}}</span>
+      @if (isPlayoffGame) {
+        <span class="playoff-series-label">{{playoffSeriesDetails}}</span>
+      }
+    </div>
+  }
+  @if (completedGame) {
+    <div class="game-score">
+      <span class="game-score-label">{{gameScore}}</span>
+      <span class="completed-status-label">{{completedGameStatus}}</span>
+      @if (isPlayoffGame) {
+        <span class="playoff-series-label">{{playoffSeriesDetails}}</span>
+      }
+    </div>
+  }
+  @if (liveGame) {
+    <div class="game-score">
+      <span class="game-score-label">{{gameScore}}</span>
+      <span class="live-status-label">{{liveGameStatus}}</span>
+      @if (isIntermission) {
+        <span title="Intermission Countdown" class="intermission-countdown">{{intermissionTimeRemaining}}</span>
+      }
+    </div>
+  }
   <div class="away-team-header" [routerLink]="['/team', this.awayTeamId]">
     <div class="away-team-banner">
-      <img [src]="awayTeamLogo" alt="" class="away-team-logo" *ngIf="awayTeamLogo">
-      <span *ngIf="isDropdownHeader">{{awayTeamShortName}}</span>
-      <span *ngIf="!isDropdownHeader">{{awayTeamName}}</span>
+      @if (awayTeamLogo) {
+        <img [src]="awayTeamLogo" alt="" class="away-team-logo">
+      }
+      @if (isDropdownHeader) {
+        <span>{{awayTeamShortName}}</span>
+      }
+      @if (!isDropdownHeader) {
+        <span>{{awayTeamName}}</span>
+      }
     </div>
-    <span *ngIf="awayTeamPP" class="away-team-pp">PP</span>
+    @if (awayTeamPP) {
+      <span class="away-team-pp">PP</span>
+    }
   </div>
 </div>

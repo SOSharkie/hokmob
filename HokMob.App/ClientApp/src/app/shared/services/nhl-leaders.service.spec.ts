@@ -1,7 +1,8 @@
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {NhlLeadersService} from '@shared/services/nhl-leaders.service';
 import {mockGoalieStatsLeaders, mockSkaterStatsLeaders} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {provideHttpClient} from '@angular/common/http';
 
 describe('NhlLeadersService', () => {
   let service: NhlLeadersService;
@@ -9,8 +10,7 @@ describe('NhlLeadersService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [NhlLeadersService]
+      providers: [NhlLeadersService, provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(NhlLeadersService);
     httpMock = TestBed.inject(HttpTestingController);
