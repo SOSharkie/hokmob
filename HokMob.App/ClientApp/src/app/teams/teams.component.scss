@@ -1,0 +1,374 @@
+@use "variables" as *;
+@use "interaction" as *;
+@use "sortable-table" as *;
+@use "standings-filters" as *;
+
+// The space between the card's left edge and its content, smaller on phones
+$table-edge: $spacing-xx-large;
+$table-edge-phone: $spacing-x-large;
+
+// The divider between the header groups' columns
+$group-divider: 1px solid $black-04;
+
+.teams-container {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 auto;
+  padding: $spacing-page-gap;
+  color: white;
+}
+
+// clip, not hidden, which would make the card the sticky scrollbar's scroll container, so it would never stick to the
+// bottom of the screen
+.teams-card {
+  background-color: $black-02;
+  border-radius: 25px;
+  overflow: hidden;
+  overflow: clip;
+}
+
+// Waits a moment before fading in, so a quick load doesn't flash the spinner
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-huge;
+  animation: teams-spinner-in 200ms ease-out 150ms both;
+}
+
+@keyframes teams-spinner-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.teams-message {
+  padding: $spacing-huge $spacing-xx-large;
+  text-align: center;
+  color: $gray-03;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: $spacing-large;
+  padding: $spacing-x-large $table-edge $spacing-small;
+
+  .table-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .table-season {
+    font-size: small;
+    color: $gray-03;
+    white-space: nowrap;
+  }
+}
+
+// The section pills, only below $small-display-breakpoint, where the table shows one section at a time. They scroll
+// sideways on a phone too narrow for all five.
+.section-picker {
+  @include standings-filters;
+  display: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// One section of stats at a time beside the team and its rating, instead of scrolling through all of them. The pills
+// pick the section, so the group headers go. The fraction keeps it off at 1200px itself, a desktop width.
+@media only screen and (max-width: #{$small-display-breakpoint - 0.02px}) {
+  .section-picker {
+    display: flex;
+  }
+
+  .teams-table {
+    .group-row, .out-of-section {
+      display: none;
+    }
+  }
+}
+
+// Scrolls sideways inside the card, with the team column kept in view. Its scrollbar is hidden: the sticky one below
+// the table stands in for it
+.table-scroll-container {
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// The table's scrollbar, stuck to the bottom of the screen while the table is in view, and under the table once its
+// end is. Only shown while the table is wider than the card (TeamsComponent adds .overflowing). Its content is as wide
+// as the table, so it scrolls the same distance.
+.sticky-scrollbar {
+  display: none;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background-color: $black-02;
+  border-top: 1px solid $black-04;
+  scrollbar-color: $gray-02 transparent;
+
+  &.overflowing {
+    display: block;
+  }
+
+  .sticky-scrollbar-content {
+    height: 1px;
+  }
+}
+
+.teams-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  thead th {
+    padding: $spacing-medium $spacing-small;
+    color: $gray-03;
+    font-weight: normal;
+    white-space: nowrap;
+  }
+
+  .group-row th {
+    padding-top: $spacing-large;
+    padding-bottom: 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .group-header.labeled-group {
+    border-left: $group-divider;
+  }
+
+  // The card's left edge: the title, the Team header and the positions line up on it. thead th is named again, so this
+  // beats its padding above.
+  thead th.team-header, tbody th.team-cell {
+    padding-left: $table-edge;
+    text-align: left;
+  }
+
+  .team-header, .team-cell {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: $black-02;
+  }
+
+  .stat-header {
+    min-width: 44px;
+    text-align: center;
+  }
+
+  .group-start {
+    border-left: $group-divider;
+  }
+
+  @include sortable-table-headers;
+
+  // Tighter than the shared headers, since the table has 24 stat columns: just room for the sort arrow (8px wide,
+  // $spacing-small from the edge)
+  .sort-button {
+    padding: $spacing-small 12px;
+  }
+
+  .team-row {
+    border-top: 1px solid $black-04;
+
+    @include hover {
+      background-color: rgba(255, 255, 255, 0.03);
+
+      .team-cell {
+        background-color: #202020;
+      }
+    }
+  }
+
+  .team-cell {
+    padding-top: $spacing-small;
+    padding-bottom: $spacing-small;
+    padding-right: $spacing-large;
+    font-weight: normal;
+  }
+
+  .team-link {
+    display: flex;
+    align-items: center;
+    gap: $spacing-large;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    white-space: nowrap;
+    @include pressable(opacity);
+    @include focus-ring;
+    @include hover {
+      .team-name, .team-tricode {
+        text-decoration: underline;
+      }
+    }
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
+
+  .team-position {
+    min-width: 18px;
+    color: $gray-03;
+    font-size: 14px;
+    text-align: right;
+  }
+
+  // app-team-logo fits the crest in a logoSize box, so wide ones (Anaheim) aren't squished
+  .team-logo {
+    flex-shrink: 0;
+  }
+
+  .team-tricode {
+    display: none;
+  }
+
+  .stat-cell {
+    padding: $spacing-medium $spacing-small;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: lighter;
+  }
+
+  .stat-cell.sorted-column {
+    font-weight: 500;
+  }
+
+  .rating-badge {
+    display: inline-block;
+    min-width: 34px;
+    padding: $spacing-x-small $spacing-medium;
+    border-radius: 8px;
+    font-weight: 500;
+    color: white;
+  }
+}
+
+.table-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-small;
+  padding: $spacing-large $table-edge $spacing-x-large;
+
+  &:empty {
+    padding: 0 0 $spacing-large;
+  }
+
+  .table-note {
+    color: $gray-03;
+    font-size: small;
+  }
+
+  // Credits Natural Stat Trick for the xGF% column, like the team page's advanced stats card
+  .stats-source {
+    color: $gray-03;
+    font-size: 10px;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// On a phone the app's menu is at the bottom of the screen (the same query as app.component.scss), so the scrollbar
+// sits on top of it, and follows it down when it slides off while the page scrolls down
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .sticky-scrollbar {
+    bottom: $mobile-menu-space;
+    transition: bottom 0.2s ease-in-out;
+
+    &.menu-hidden {
+      bottom: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-scrollbar {
+    transition: none;
+  }
+}
+
+// Phones: the abbreviation instead of the full name, a smaller logo and tighter cells, so more columns fit before the
+// table scrolls
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .table-header {
+    padding: $spacing-large $table-edge-phone $spacing-small;
+
+    .table-title {
+      font-size: 17px;
+    }
+  }
+
+  .teams-table {
+    thead th.team-header, tbody th.team-cell {
+      padding-left: $table-edge-phone;
+    }
+
+    .team-cell {
+      padding-right: $spacing-medium;
+    }
+
+    .team-link {
+      gap: $spacing-medium;
+    }
+
+    // The box size is an inline style on app-team-logo, so it takes !important to override
+    .team-logo {
+      width: 26px !important;
+      height: 26px !important;
+    }
+
+    .team-name {
+      display: none;
+    }
+
+    .team-tricode {
+      display: inline;
+    }
+
+    // Tighter headers, so more of a section fits: the sort arrow goes after the label instead of in its own padding,
+    // so only the sorted header widens for it
+    .stat-header {
+      min-width: 32px;
+    }
+
+    .sort-button {
+      padding: $spacing-small $spacing-medium;
+    }
+
+    .sort-indicator {
+      position: static;
+      transform: none;
+      margin-left: $spacing-x-small;
+      display: none;
+
+      &.visible {
+        display: inline-block;
+      }
+    }
+
+    .stat-cell {
+      padding-left: $spacing-x-small;
+      padding-right: $spacing-x-small;
+    }
+  }
+}

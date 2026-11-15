@@ -52,7 +52,7 @@ describe('NavigationMenuComponent', () => {
     expect(links.size).toBe(component.navMenuItems.length);
     expect(links.get('Standings').getAttribute('href')).toBe('/standings');
     expect(links.get('Stats').getAttribute('href')).toBe('/stats');
-    expect(links.get('Teams').getAttribute('href')).toBe('/standings');
+    expect(links.get('Teams').getAttribute('href')).toBe('/teams');
   });
 
   it('should link News to the external page', () => {
