@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 .game-stats-container {
   background-color: $black-02;

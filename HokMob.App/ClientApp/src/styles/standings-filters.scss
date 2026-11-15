@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // The standings type pills above a standings card (the standings page and the team page's standings tab), like
 // Fotmob's league tables. Include it on the row that holds the .standings-type-filter buttons.

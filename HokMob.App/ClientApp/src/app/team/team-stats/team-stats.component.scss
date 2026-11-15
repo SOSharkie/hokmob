@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 .team-stats {
   background-color: $black-02;

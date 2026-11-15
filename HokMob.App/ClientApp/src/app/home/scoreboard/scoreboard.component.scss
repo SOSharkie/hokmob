@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // A new day's games come in from the side the user moved toward, like turning a page. Critically damped (no
 // overshoot), since a click carries no momentum

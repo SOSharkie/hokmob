@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // Styled like Fotmob's league tables. The spacing scales with the card's width (cqi units) between its phone and desktop
 // sizes, so the table resizes smoothly instead of jumping at a breakpoint

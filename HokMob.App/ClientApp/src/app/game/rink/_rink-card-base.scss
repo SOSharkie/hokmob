@@ -1,7 +1,7 @@
-// A card around a rink (app-rink) and its header, with a pill toggle in the header's corner. Imported by _rink-card.scss
-// for the cards with players on the rink, and by the shot map card.
-@import "variables";
-@import "interaction";
+// A card around a rink (app-rink) and its header, with a pill toggle in the header's corner. Forwarded by _rink-card.scss
+// for the cards with players on the rink, and used by the shot map card.
+@use "variables" as *;
+@use "interaction" as *;
 
 // The rating blue the starred player is highlighted in (StatsUtils.hokmobRatingBlue), for the lineup toggle
 $star-blue: #0e87e0;

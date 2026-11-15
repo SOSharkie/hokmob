@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // A player's name in an event: a button that opens the player or their goal, and underlines on hover
 @mixin event-player-button {

@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // Fills its cell, so the game page's paired rows keep their separators level when one of them has a wrapped name
 :host {

@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // Styled like Fotmob's header: an 80px bar with the logo and search pill on the left and bold links on the right. On
 // phones the search collapses to an icon that swaps the bar's content for the search pill and a Cancel button.

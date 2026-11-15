@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // The dialog is exactly as wide as its 16:9 video, so the video fills the width and the whole dialog comes close to
 // the top and bottom edges of the window. The subtracted height is the header and the stats above the video.
