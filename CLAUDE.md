@@ -32,11 +32,13 @@ A request to one of them is a regression.
 - `HokMob.App/Controllers/NhlSearchController.cs`: `/api/nhl-search/player?q=…` → the player search
   (`NhlSearchApiClient`). Only allowlisted query parameters are forwarded.
 - `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/season-players`,
-  `/team-players?teamId=&season=&gameType=`, `/teams`, `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
+  `/team-players?teamId=&season=&gameType=`, `/teams`, `/team-games?season=&gameType=` (every team's games, for the
+  power rating), `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
   into one response.
 - `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, and each
-  shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page. `NaturalStatTrickClient` caches it and stays under the token
-  limits.
+  shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page, and `/api/nst/teams?season=`,
+  every team's season 5v5 xG from NST's team table (`NaturalStatTrickTeamTableParser`). `NaturalStatTrickClient` caches
+  them and stays under the token limits.
 - `ClientApp/src/app/shared/`:
   - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the
     `/api/nhl-stats/*` responses. `models/nhl-history/`: the history page's season files and rated games.
@@ -46,7 +48,8 @@ A request to one of them is a regression.
     from the name: `NhlStarPlayerUtils` holds each team's three star forwards and two star defensemen, who fill the
     star lineup of the game page's top players and season leaders cards and break their ties; `PickerMenuUtils`
     goes with the `.pill-picker` styles in `styles.scss`, for the draft, playoffs and stats category pickers.
-    `StatCategoryUtils` defines the stats page's categories and the columns of their top 25 tables.
+    `StatCategoryUtils` defines the stats page's categories and the columns of their top 25 tables. `TeamRatingUtils`
+    holds the team power rating and advanced stats, for any team (see "Team power rating" in `docs/nhl-api.md`).
 - `ClientApp/src/app/game/rink/`: the rink drawing (`RinkComponent`, which places players with `placeLine`) and
   `_rink-card.scss`, shared by the top players card and a future game's season leaders card. Its card and header
   toggle are in `_rink-card-base.scss`, which the shot map card imports. The player game dialog's shot map

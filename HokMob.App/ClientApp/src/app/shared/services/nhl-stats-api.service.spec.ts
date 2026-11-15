@@ -9,6 +9,7 @@ import {
   mockSeasonPlayersGoalieSavePctg,
   mockSeasonPlayersSkaterPoints,
   mockTeamPlayers,
+  mockTeamGames,
   mockTeamStats
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {
@@ -296,6 +297,46 @@ describe('NhlStatsApiService', () => {
       const rejection = expectAsync(teamStats).toBeRejectedWith(jasmine.objectContaining({status: 502}));
       httpMock.expectOne('/api/nhl-stats/teams?season=20252026&gameType=2')
           .flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getTeamGames', () => {
+    const teamGamesUrl = '/api/nhl-stats/team-games?season=20262027&gameType=2';
+
+    it('should turn the real columns into one row per team and game', async () => {
+      const teamGames = service.getTeamGames(20262027);
+      const response = mockTeamGames();
+      httpMock.expectOne(teamGamesUrl).flush(response);
+
+      const games = await teamGames;
+      expect(games.length).toBe(650);
+      expect(games[0].gameId).toBe(response.games.gameId[0]);
+      expect(games[0].gameDate).toBe('2026-09-29');
+      expect(games[649].gameDate).toBe('2026-11-14');
+      const sharks = games.filter(game => game.teamId === 28);
+      expect(sharks.length).toBe(22);
+      expect(sharks.reduce((points, game) => points + game.points, 0)).toBe(20);
+      expect(sharks.reduce((goals, game) => goals + game.goalsAgainst, 0)).toBe(77);
+    });
+
+    it('should ask for the playoffs when that game type is given', async () => {
+      const teamGames = service.getTeamGames('20252026', 3);
+      httpMock.expectOne('/api/nhl-stats/team-games?season=20252026&gameType=3').flush({games: {gameId: []}});
+      expect(await teamGames).toEqual([]);
+    });
+
+    it('should resolve no games without columns', async () => {
+      const teamGames = service.getTeamGames(20262027);
+      httpMock.expectOne(teamGamesUrl).flush({});
+      expect(await teamGames).toEqual([]);
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const teamGames = service.getTeamGames(20262027);
+      const rejection = expectAsync(teamGames).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne(teamGamesUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
     });

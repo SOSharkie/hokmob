@@ -50,6 +50,7 @@ describe('TeamStatsComponent', () => {
     show(6);
     expect(text('.team-stats-header')).toBe('2025-2026 Team Stats');
     expect(rows()).toEqual([
+      {label: 'Points %', value: '61.0%', rank: '8th'},
       {label: 'Power Play %', value: '23.4%', rank: '9th'},
       {label: 'Penalty Kill %', value: '77.0%', rank: '24th'},
       {label: 'Goals For / Game', value: '3.27', rank: '10th'},
@@ -65,9 +66,9 @@ describe('TeamStatsComponent', () => {
     const bestPowerPlay = [...teams].sort((teamA, teamB) => teamB.powerPlayPct - teamA.powerPlayPct)[0];
     const fewestGoalsAgainst = [...teams].sort((teamA, teamB) => teamA.goalsAgainstPerGame - teamB.goalsAgainstPerGame)[0];
     show(bestPowerPlay.teamId);
-    expect(rows()[0].rank).toBe('1st');
+    expect(rows()[1].rank).toBe('1st');
     show(fewestGoalsAgainst.teamId);
-    expect(rows()[3].rank).toBe('1st');
+    expect(rows()[4].rank).toBe('1st');
   });
 
   it('should give teams with the same value the same rank', () => {
@@ -78,9 +79,9 @@ describe('TeamStatsComponent', () => {
     second.powerPlayPct = 0.8;
     third.powerPlayPct = 0.8;
     show(second.teamId, teams);
-    expect(rows()[0].rank).toBe('2nd');
+    expect(rows()[1].rank).toBe('2nd');
     show(third.teamId, teams);
-    expect(rows()[0].rank).toBe('2nd');
+    expect(rows()[1].rank).toBe('2nd');
   });
 
   it('should name the season of the rows, not the current one', () => {
@@ -107,6 +108,6 @@ describe('TeamStatsComponent', () => {
     const teams = mockTeamStats().teams;
     teams.find(team => team.teamId === 6).faceoffWinPct = null;
     show(6, teams);
-    expect(rows()[6]).toEqual({label: 'Faceoff %', value: '-', rank: ''});
+    expect(rows()[7]).toEqual({label: 'Faceoff %', value: '-', rank: ''});
   });
 });

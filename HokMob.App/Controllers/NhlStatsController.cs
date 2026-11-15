@@ -290,6 +290,176 @@ namespace HokMob.App.Controllers
         }
 
         /// <summary>
+        /// Returns every team's game by game stats for one season, as { games: { gameId: [...], teamId: [...], ... } }:
+        /// one row per team and game, as columns of equally long arrays so the field names aren't repeated over the
+        /// season's 2,600 rows. Each row merges the team reports a power rating needs (results, shots, special teams
+        /// and the 5v5 shot attempts and goals) and the opponent's 5v5 shots, sorted by date. Only games with both
+        /// teams in every report are kept, so a game the stats API has only partly is left out.
+        /// </summary>
+        /// <param name="season">The season ID, like 20252026.</param>
+        /// <param name="gameType">2 for the regular season, 3 for the playoffs. Defaults to the regular season.</param>
+        [HttpGet("team-games")]
+        public async Task<IActionResult> GetTeamGames(int season, int? gameType, CancellationToken cancellationToken)
+        {
+            var teamGameType = gameType ?? 2;
+            if (!IsValidSeason(season) || !IsValidGameType(teamGameType))
+            {
+                return BadRequest();
+            }
+
+            var parameters = new[]
+            {
+                new KeyValuePair<string, string>("isAggregate", "false"),
+                new KeyValuePair<string, string>("isGame", "true"),
+                new KeyValuePair<string, string>("limit", "-1"),
+                new KeyValuePair<string, string>("cayenneExp", $"seasonId={season} and gameTypeId={teamGameType}")
+            };
+            var reportTasks = TeamGameReports
+                .Select(report => _nhlStatsApiClient.GetReportAsync(report, parameters, cancellationToken))
+                .ToList();
+            await Task.WhenAll(reportTasks);
+            // A missing report would rate every team on part of the stats, so every call is required.
+            if (reportTasks.Any(task => task.Result == null))
+            {
+                return StatusCode(StatusCodes.Status502BadGateway);
+            }
+
+            var reports = reportTasks.Select(task => IndexByTeamGame(task.Result!)).ToList();
+            var summaries = reports[0];
+            var games = new List<(JsonObject Row, JsonObject?[] Reports, JsonObject?[] OpponentReports)>();
+            foreach (var gameRows in summaries.Values.GroupBy(row => GetLongValue(row["gameId"])))
+            {
+                var pair = gameRows.ToList();
+                if (pair.Count != 2)
+                {
+                    continue;
+                }
+                var teamReports = pair.Select(row => FindTeamGameRows(reports, row)).ToList();
+                if (teamReports.Any(rows => rows == null))
+                {
+                    continue;
+                }
+                games.Add((pair[0], teamReports[0]!, teamReports[1]!));
+                games.Add((pair[1], teamReports[1]!, teamReports[0]!));
+            }
+            games.Sort((gameA, gameB) =>
+            {
+                var byDate = string.CompareOrdinal(gameA.Row["gameDate"]?.GetValue<string>(), gameB.Row["gameDate"]?.GetValue<string>());
+                return byDate != 0 ? byDate : (GetLongValue(gameA.Row["gameId"]) ?? 0).CompareTo(GetLongValue(gameB.Row["gameId"]) ?? 0);
+            });
+
+            var columns = new JsonObject();
+            foreach (var field in TeamGameFields)
+            {
+                columns[field.Name] = new JsonArray(games
+                    .Select(game => CopyValue(GetTeamGameValue(game.Reports, game.OpponentReports, field)))
+                    .ToArray());
+            }
+            return new JsonResult(new JsonObject {["games"] = columns});
+        }
+
+        /// <summary>
+        /// The team reports of /team-games, in the order TeamGameFields refers to them by index. The summary comes
+        /// first: its rows are the games. The goals by strength reports leave out a team that scored no goals (a
+        /// shutout loss has no goalsforbystrength row), so they're optional (OptionalTeamGameReports).
+        /// </summary>
+        private static readonly string[] TeamGameReports =
+        {
+            "team/summary", "team/summaryshooting", "team/powerplay", "team/penaltykill", "team/goalsforbystrength",
+            "team/goalsagainstbystrength"
+        };
+
+        /// <summary>The reports of TeamGameReports, by index, whose missing row counts as 0 goals.</summary>
+        private static readonly HashSet<int> OptionalTeamGameReports = new() {4, 5};
+
+        /// <summary>
+        /// The columns of /team-games: the name sent, the report it comes from (an index into TeamGameReports), the
+        /// report's field, and whether it's read from the opponent's row of the same game.
+        /// </summary>
+        private static readonly (string Name, int Report, string Field, bool Opponent)[] TeamGameFields =
+        {
+            ("gameId", 0, "gameId", false),
+            ("gameDate", 0, "gameDate", false),
+            ("teamId", 0, "teamId", false),
+            ("opponentTeamId", 0, "teamId", true),
+            ("homeRoad", 0, "homeRoad", false),
+            ("wins", 0, "wins", false),
+            ("losses", 0, "losses", false),
+            ("otLosses", 0, "otLosses", false),
+            ("points", 0, "points", false),
+            ("goalsFor", 0, "goalsFor", false),
+            ("goalsAgainst", 0, "goalsAgainst", false),
+            // A single game's "per game" values are the game's counts
+            ("shotsFor", 0, "shotsForPerGame", false),
+            ("shotsAgainst", 0, "shotsAgainstPerGame", false),
+            ("satFor", 1, "satFor", false),
+            ("satAgainst", 1, "satAgainst", false),
+            ("usatFor", 1, "usatFor", false),
+            ("usatAgainst", 1, "usatAgainst", false),
+            ("shots5v5For", 1, "shots5v5", false),
+            ("shots5v5Against", 1, "shots5v5", true),
+            ("ppGoalsFor", 2, "powerPlayGoalsFor", false),
+            ("ppOpportunities", 2, "ppOpportunities", false),
+            ("shGoalsAgainst", 2, "shGoalsAgainst", false),
+            ("ppGoalsAgainst", 3, "ppGoalsAgainst", false),
+            ("timesShorthanded", 3, "timesShorthanded", false),
+            ("shGoalsFor", 3, "shGoalsFor", false),
+            ("goalsFor5v5", 4, "goalsFor5On5", false),
+            ("goalsAgainst5v5", 5, "goalsAgainst5On5", false)
+        };
+
+        /// <summary>
+        /// A report's per game rows by game and team ID.
+        /// </summary>
+        private static Dictionary<(long GameId, long TeamId), JsonObject> IndexByTeamGame(List<JsonObject> rows)
+        {
+            var index = new Dictionary<(long, long), JsonObject>();
+            foreach (var row in rows)
+            {
+                var gameId = GetLongValue(row["gameId"]);
+                var teamId = GetLongValue(row["teamId"]);
+                if (gameId.HasValue && teamId.HasValue)
+                {
+                    index[(gameId.Value, teamId.Value)] = row;
+                }
+            }
+            return index;
+        }
+
+        /// <summary>
+        /// A team's row of the same game in every report, or null when a required report doesn't have it. An optional
+        /// report's missing row is null in the array.
+        /// </summary>
+        private static JsonObject?[]? FindTeamGameRows(List<Dictionary<(long GameId, long TeamId), JsonObject>> reports,
+            JsonObject summaryRow)
+        {
+            var key = (GetLongValue(summaryRow["gameId"]) ?? 0, GetLongValue(summaryRow["teamId"]) ?? 0);
+            var rows = new JsonObject?[reports.Count];
+            for (var i = 0; i < reports.Count; i++)
+            {
+                if (reports[i].TryGetValue(key, out var row))
+                {
+                    rows[i] = row;
+                }
+                else if (!OptionalTeamGameReports.Contains(i))
+                {
+                    return null;
+                }
+            }
+            return rows;
+        }
+
+        /// <summary>
+        /// A column's value for one team and game: 0 when an optional report has no row for it.
+        /// </summary>
+        private static JsonNode? GetTeamGameValue(JsonObject?[] reports, JsonObject?[] opponentReports,
+            (string Name, int Report, string Field, bool Opponent) field)
+        {
+            var row = (field.Opponent ? opponentReports : reports)[field.Report];
+            return row == null ? JsonValue.Create(0) : row[field.Field];
+        }
+
+        /// <summary>
         /// Returns the regular season career stats of the players drafted in one round, as { players: [{ draftOverall,
         /// playerId, name, lastName, positionCode, gamesPlayed, goals, assists, points }] }, sorted by overall pick. The
         /// NHL web API's draft picks have no player IDs, so the client matches them to these rows by overall pick.

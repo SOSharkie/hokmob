@@ -71,19 +71,18 @@
           </div>
         }
         @case ('team-stats') {
-          <div class="team-stats-tab">
-            @if (hasTeamStats) {
-              <app-team-stats
-                  [teamId]="teamId"
-                  [teamStats]="teamStats"
-              ></app-team-stats>
-            }
-            @if (teamStatsLoaded && !hasTeamStats) {
-              <div class="team-tab-message">
-                <span>No team stats yet</span>
-              </div>
-            }
-          </div>
+          @if (hasTeamStats) {
+            <app-team-stats-tab
+                [teamId]="teamId"
+                [season]="season"
+                [teamStats]="teamStats"
+            ></app-team-stats-tab>
+          }
+          @if (teamStatsLoaded && !hasTeamStats) {
+            <div class="team-tab-message">
+              <span>No team stats yet</span>
+            </div>
+          }
         }
         @case ('games') {
           <div class="games-tab">

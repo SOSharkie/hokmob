@@ -358,7 +358,10 @@ describe('TeamComponent', () => {
       tab('Team Stats').click();
       fixture.detectChanges();
       expect(path()).toBe('/team/6?tab=team-stats');
-      expect(child('.team-stats-tab app-team-stats').teamStats.length).toBe(32);
+      const statsTab = child('#team-tab-panel app-team-stats-tab');
+      expect(statsTab.teamId).toBe(6);
+      expect(statsTab.season).toBe(20252026);
+      expect(statsTab.teamStats.length).toBe(32);
 
       tab('Overview').click();
       fixture.detectChanges();
@@ -417,7 +420,7 @@ describe('TeamComponent', () => {
       httpMock.match(scheduleUrl + 'BOS/20252026')
           .forEach(request => request.flush(mockClubScheduleSeason('BOS', 20252026)));
       await settle();
-      expect(child('app-team-stats')).toBeNull();
+      expect(child('app-team-stats-tab')).toBeNull();
       expect(text('.team-tab-message')).toBe('No team stats yet');
     });
 

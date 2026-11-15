@@ -1,0 +1,189 @@
+@use "variables" as *;
+
+.power-rating-card {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0 $spacing-xx-large $spacing-large;
+  border-radius: 25px;
+  background-color: $black-02;
+  color: white;
+}
+
+// Like the team page's other cards
+.power-rating-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+
+  .power-rating-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+  }
+}
+
+.power-rating-summary {
+  display: flex;
+  align-items: center;
+  gap: $spacing-x-large;
+  padding: $spacing-medium 0 $spacing-x-large;
+  border-bottom: 1px solid $gray-01;
+
+  // A rating in its HokMob color, like the history page's, but the card's headline
+  .rating-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    min-width: 76px;
+    height: 48px;
+    padding: 0 $spacing-large;
+    box-sizing: border-box;
+    border-radius: 12px;
+    font-size: 26px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rating-details {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-small;
+    min-width: 0;
+
+    .rating-rank {
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .rating-games {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: $spacing-small $spacing-large;
+      color: $gray-03;
+      font-size: 13px;
+    }
+
+    .rating-change {
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+
+      &.change-up {
+        color: $green-02;
+      }
+
+      &.change-down {
+        color: $red-01;
+      }
+    }
+  }
+}
+
+// Each rated stat: its name and weight, value and rank on one line, and a bar from the league average below
+.rating-parts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  .rating-part {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 35px;
+    grid-template-areas:
+      "label value rank"
+      "bar bar bar";
+    align-items: baseline;
+    column-gap: $spacing-medium;
+    padding: $spacing-medium 0 $spacing-large;
+    border-bottom: 1px solid $gray-01;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  // A long name wraps rather than being cut off in a narrow column
+  .part-label {
+    grid-area: label;
+    min-width: 0;
+    color: $gray-03;
+
+    .part-weight {
+      margin-left: $spacing-medium;
+      color: $gray-02;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+  }
+
+  .part-value {
+    grid-area: value;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .part-rank {
+    grid-area: rank;
+    color: $gray-03;
+    text-align: right;
+  }
+
+  // The track is 0 to 100, with the league average marked in the middle
+  .part-bar {
+    grid-area: bar;
+    position: relative;
+    height: 6px;
+    margin-top: $spacing-medium;
+    border-radius: 3px;
+    background-color: $black-04;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -2px;
+      bottom: -2px;
+      width: 2px;
+      margin-left: -1px;
+      border-radius: 1px;
+      background-color: $gray-02;
+    }
+
+    .part-bar-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      // Rounded at the end away from the average only
+      border-radius: 3px 0 0 3px;
+
+      &.above-average {
+        border-radius: 0 3px 3px 0;
+      }
+    }
+  }
+}
+
+.power-rating-note {
+  margin: $spacing-small 0 $spacing-medium;
+  color: $gray-03;
+  font-size: 12px;
+}
+
+@media only screen and (min-width: $mobile-screen-breakpoint) {
+  .rating-parts .rating-part {
+    font-size: medium;
+  }
+}
+
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .rating-parts .rating-part {
+    font-size: small;
+  }
+
+  .power-rating-summary .rating-badge {
+    min-width: 68px;
+    height: 44px;
+    font-size: 23px;
+  }
+}

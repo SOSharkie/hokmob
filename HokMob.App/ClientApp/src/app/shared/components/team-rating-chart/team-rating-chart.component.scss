@@ -1,0 +1,140 @@
+@use "variables" as *;
+@use "interaction" as *;
+@use "segmented-toggle" as *;
+
+.rating-chart-card {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0 $spacing-xx-large $spacing-xx-large;
+  border-radius: 25px;
+  background-color: $black-02;
+  color: white;
+}
+
+// Like the team page's other cards
+.rating-chart-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+
+  .rating-chart-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+  }
+}
+
+.rating-chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $spacing-large $spacing-xx-large;
+  margin: $spacing-medium 0 $spacing-xx-large;
+}
+
+// The lines' toggles, which are also the legend: each has its line's color
+.line-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-medium;
+  min-width: 0;
+
+  .line-toggle {
+    @include button-reset;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-medium;
+    height: 30px;
+    padding: 0 $spacing-large;
+    border: 1px solid $gray-01;
+    border-radius: 16px;
+    color: $gray-04;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    @include pressable(color, background-color, border-color);
+    @include focus-ring;
+    @include hover {
+      color: white;
+      border-color: $gray-02;
+    }
+
+    .line-swatch {
+      flex: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: $gray-02;
+      opacity: 0.45;
+    }
+
+    &.selected {
+      color: white;
+      border-color: $gray-02;
+      background-color: $black-04;
+
+      .line-swatch {
+        opacity: 1;
+      }
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.45;
+
+      @include hover {
+        color: $gray-04;
+        border-color: $gray-01;
+      }
+    }
+  }
+}
+
+.window-toggle {
+  @include segmented-toggle;
+}
+
+.chart-container {
+  position: relative;
+  height: 320px;
+
+  &.empty canvas {
+    visibility: hidden;
+  }
+
+  .chart-message {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: $gray-03;
+  }
+}
+
+.chart-note {
+  margin: $spacing-large 0 0;
+  color: $gray-03;
+  font-size: 12px;
+}
+
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .rating-chart-card {
+    padding: 0 $spacing-x-large $spacing-x-large;
+  }
+
+  .rating-chart-controls {
+    margin-bottom: $spacing-x-large;
+  }
+
+  // A tap target close to 44px tall, without making the wrapped rows too tall
+  .line-toggles .line-toggle {
+    height: 36px;
+  }
+
+  .chart-container {
+    height: 240px;
+  }
+}

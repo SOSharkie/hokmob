@@ -1,0 +1,43 @@
+@use "variables" as *;
+
+// A segmented pill of options, one picked, like the ratings page's Skater / Goalie toggle. Put it on the group, with a
+// .toggle-option button per option and .selected on the picked one.
+@mixin segmented-toggle {
+  display: flex;
+  flex: none;
+  gap: $spacing-x-small;
+  padding: $spacing-small;
+  border-radius: 20px;
+  background-color: $black-03;
+
+  .toggle-option {
+    min-width: 44px;
+    height: 28px;
+    padding: 0 $spacing-large;
+    border: none;
+    border-radius: 16px;
+    background-color: transparent;
+    color: $gray-04;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+
+    &:hover {
+      color: white;
+    }
+
+    &.selected {
+      background-color: white;
+      color: #222222;
+    }
+  }
+
+  // A tap target at least 44px tall
+  @media only screen and (max-width: $mobile-screen-breakpoint) {
+    .toggle-option {
+      height: 36px;
+    }
+  }
+}

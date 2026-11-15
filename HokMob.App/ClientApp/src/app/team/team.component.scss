@@ -133,14 +133,6 @@
     }
   }
 
-  // Each tab lays its cards out in a grid, so more cards can be added next to the current ones
-  .team-stats-tab {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
-    gap: $spacing-page-gap;
-    align-items: start;
-  }
-
   .games-tab {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));

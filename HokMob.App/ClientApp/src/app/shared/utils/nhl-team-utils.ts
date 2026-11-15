@@ -18,6 +18,8 @@ export class NhlTeamUtils {
 
   private static teamIdsByAbbrev: Map<string, number>;
 
+  private static teamIdsByName: Map<string, number>;
+
   /**
    * Gets the IDs of the 32 active teams, for the search results and for validating a team page's route.
    */
@@ -36,6 +38,25 @@ export class NhlTeamUtils {
       NhlTeamUtils.teamIdsByAbbrev = new Map(NhlTeamUtils.teamIds.map(id => [NhlTeamUtils.getTeam(id).triCode, id]));
     }
     return NhlTeamUtils.teamIdsByAbbrev.get(abbrev?.toUpperCase());
+  }
+
+  /**
+   * Gets a team ID from its full name, ignoring accents, periods and case, so Natural Stat Trick's "St Louis Blues" and
+   * "Montreal Canadiens" match "St. Louis Blues" and "Montréal Canadiens". Former names have their own IDs ("Utah Hockey
+   * Club" is 59, "Arizona Coyotes" 53). Returns undefined for an unknown name.
+   *
+   * @param name - The team's full name, like "San Jose Sharks".
+   */
+  public static getTeamIdByName(name: string): number {
+    if (!NhlTeamUtils.teamIdsByName) {
+      NhlTeamUtils.teamIdsByName = new Map(NhlTeamUtils.teamIds.map(id => [NhlTeamUtils.toNameKey(NhlTeamUtils.getTeam(id).name), id]));
+    }
+    return NhlTeamUtils.teamIdsByName.get(NhlTeamUtils.toNameKey(name));
+  }
+
+  /** A name's letters only, lower case and without accents: "St. Louis Blues" to "stlouisblues". */
+  private static toNameKey(name: string): string {
+    return (name ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/gi, "").toLowerCase();
   }
 
   public static getTeam(teamId: number): NhlTeamCustomModel {
