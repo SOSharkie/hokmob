@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 .mat-mdc-dialog-container .mdc-dialog__title {
   display: flex;

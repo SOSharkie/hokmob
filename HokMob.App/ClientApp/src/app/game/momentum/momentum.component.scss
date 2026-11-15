@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 .momentum-container {
   background-color: $black-02;

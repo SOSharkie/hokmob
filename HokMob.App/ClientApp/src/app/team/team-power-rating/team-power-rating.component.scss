@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 .power-rating-card {
   box-sizing: border-box;

@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // Fills the card slot on the player page, so cards in a row are the same height
 :host {

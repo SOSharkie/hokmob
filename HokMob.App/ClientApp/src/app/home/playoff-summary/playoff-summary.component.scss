@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 .playoff-summary-container {
   // Keeps the last child's bottom margin inside the card, so it doesn't add to the gap below it

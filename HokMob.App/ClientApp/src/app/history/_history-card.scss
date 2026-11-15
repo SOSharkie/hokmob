@@ -1,5 +1,5 @@
-@import "variables";
-@import "segmented-toggle";
+@use "variables" as *;
+@use "segmented-toggle" as *;
 
 // A card of the history page, in the look of the ratings page's cards, with a title and toggles on one line
 .history-card {

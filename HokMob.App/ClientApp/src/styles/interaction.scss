@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // Interaction states for rows and buttons (home, about). Press feedback shows the instant the pointer goes down, and
 // fades back out on release, so a tap always gets a response.

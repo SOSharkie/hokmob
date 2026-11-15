@@ -1,6 +1,6 @@
-@import "variables";
-@import "interaction";
-@import "segmented-toggle";
+@use "variables" as *;
+@use "interaction" as *;
+@use "segmented-toggle" as *;
 
 .rating-chart-card {
   box-sizing: border-box;

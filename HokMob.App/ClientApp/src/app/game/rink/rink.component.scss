@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 $rink-surface: $black-03;
 $rink-line: $gray-01;

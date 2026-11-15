@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // The nav menu grows from 160px up to 200px as the window widens, and the side padding stays 16px. The columns stay
 // centered, so the menu stays against the scores.

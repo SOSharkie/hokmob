@@ -1,9 +1,12 @@
 // A card with players on a rink (app-rink): the card and its header with the lineup toggle, and the players standing
-// on the rink. Imported by the top players and the season leaders cards, whose templates hold these elements.
-@import "variables";
-@import "interaction";
+// on the rink. Used by the top players and the season leaders cards, whose templates hold these elements.
+// Forwards the base, so those cards also get its $rink-line and header-toggle
+@forward "rink-card-base";
 
-@import "rink-card-base";
+@use "variables" as *;
+@use "interaction" as *;
+
+@use "rink-card-base" as *;
 
 // A player's headshot with the goalie mask badge, and their name below it, on the rink or elsewhere on the card
 @mixin player-avatar {

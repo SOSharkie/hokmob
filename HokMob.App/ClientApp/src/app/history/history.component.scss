@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // Below it the leaderboard and the best games stack
 $history-columns-breakpoint: $tiny-display-breakpoint;

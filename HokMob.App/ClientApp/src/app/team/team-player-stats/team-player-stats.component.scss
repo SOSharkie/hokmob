@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // The space between the card's left edge and its content, smaller on phones
 $table-edge: $spacing-xx-large;

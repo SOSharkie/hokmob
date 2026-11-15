@@ -1,4 +1,6 @@
-@import "../rink/rink-card-base";
+@use "variables" as *;
+@use "interaction" as *;
+@use "../rink/rink-card-base" as *;
 
 // A block, so the component's resize observer sees the card's width
 :host {

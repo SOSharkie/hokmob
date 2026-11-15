@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // The type is in rem, so it follows the browser's text size setting, and scales smoothly between its phone and desktop
 // sizes instead of jumping at the breakpoint. Larger text gets tighter tracking and leading, as Apple's type does: at

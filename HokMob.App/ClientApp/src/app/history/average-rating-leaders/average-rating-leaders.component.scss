@@ -1,4 +1,5 @@
-@import "../history-card";
+@use "variables" as *;
+@use "../history-card" as *;
 
 .team-picker {
   max-width: 220px;

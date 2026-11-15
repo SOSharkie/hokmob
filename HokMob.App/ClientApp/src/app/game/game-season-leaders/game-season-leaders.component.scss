@@ -1,4 +1,5 @@
-@import "../rink/rink-card";
+@use "variables" as *;
+@use "../rink/rink-card" as *;
 
 // The title, with the season the totals are from below it
 .rink-card .rink-card-header {

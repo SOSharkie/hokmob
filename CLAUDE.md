@@ -76,6 +76,9 @@ A request to one of them is a regression.
 - `tsconfig.json` has `strict` and `strictTemplates` on, but `strictNullChecks` off. Guard with `?.` / `??` anyway,
   because API fields go missing (TBD series, future games).
 - Style: 2-space indent, JSDoc on public methods and non-obvious helpers, getters for template-bound values.
+- Stylesheets load shared partials with `@use "variables" as *;` (and `interaction`, a card partial, ...), never
+  `@import`, which Dart Sass deprecates and the dev server warns about. `@use` doesn't pass on a partial's own `@use`s,
+  so a stylesheet uses `variables` itself even when a partial it uses does.
 - Line endings: the repo uses CRLF with `core.autocrlf=true`. Files rewritten with LF only trigger "LF will be replaced
   by CRLF" warnings; the diff stays clean. When scripting edits, preserve the file's existing line endings.
 - Stage new files with `git add` right after creating them.

@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // Card styled like Fotmob's "Followed teams" sidebar: a bold title, then full-width rows with an icon and a label.
 .nav-menu-card {

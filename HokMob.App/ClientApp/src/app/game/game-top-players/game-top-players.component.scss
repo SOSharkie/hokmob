@@ -1,4 +1,6 @@
-@import "../rink/rink-card";
+@use "variables" as *;
+@use "interaction" as *;
+@use "../rink/rink-card" as *;
 
 // The benches, 39.5ft long, sit 53.9ft from each end
 $bench-start: 26.93%;
@@ -11,9 +13,9 @@ $bench-height: 44px;
 $bench-players-height: 78px;
 $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
-// The rating, goal pucks and hover highlight of a player on the rink or on a bench
-.top-player,
-.bench-player {
+// The rating and goal pucks on the avatar of a player on the rink or on a bench. Written under .player-avatar, which
+// both share, instead of under each, to keep this card's styles inside the component style budget.
+.player-avatar {
   .hokmob-score-container {
     position: absolute;
     top: -5px;
@@ -65,7 +67,10 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       }
     }
   }
+}
 
+.top-player,
+.bench-player {
   // The player hovered in the goal scorers or the event timeline, in their --highlight-color
   &.highlighted .player-headshot-container {
     box-shadow: 0 0 0 2px var(--highlight-color), 0 0 10px 2px color-mix(in srgb, var(--highlight-color) 60%, transparent);

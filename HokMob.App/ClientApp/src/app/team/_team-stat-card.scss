@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // A team page card of stats, one row each with its value and league rank: the team stats and advanced stats cards
 .team-stats {

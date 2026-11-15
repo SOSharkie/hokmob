@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // app-team-logo sizes the logo itself (see logoSize / logoMaxWidth on the component). This is the slot it is centred
 // in: a fixed width whatever the logo's shape, so the team names all start in the same place

@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // Below it the waterfall is too narrow for a term's detail beside its label
 $term-detail-breakpoint: 550px;

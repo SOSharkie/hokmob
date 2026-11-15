@@ -1,4 +1,5 @@
-@import "../team-stat-card";
+@use "variables" as *;
+@use "../team-stat-card" as *;
 
 // Credits Natural Stat Trick for the xGF% row, like the shot map's credit
 .stats-source {

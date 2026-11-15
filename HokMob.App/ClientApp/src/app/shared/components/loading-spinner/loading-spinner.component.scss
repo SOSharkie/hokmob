@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // The circle's circumference: 2π × its radius of 20
 $circumference: 125.66;

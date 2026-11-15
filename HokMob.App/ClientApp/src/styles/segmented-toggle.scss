@@ -1,4 +1,4 @@
-@import "variables";
+@use "variables" as *;
 
 // A segmented pill of options, one picked, like the ratings page's Skater / Goalie toggle. Put it on the group, with a
 // .toggle-option button per option and .selected on the picked one.

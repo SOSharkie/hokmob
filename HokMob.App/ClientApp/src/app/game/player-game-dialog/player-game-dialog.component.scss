@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 .cdk-overlay-pane {
   // svh, not vh, so iOS Safari's toolbars don't push the dialog off the bottom of the screen

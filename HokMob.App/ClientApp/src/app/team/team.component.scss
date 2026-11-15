@@ -1,5 +1,5 @@
-@import "variables";
-@import "interaction";
+@use "variables" as *;
+@use "interaction" as *;
 
 // The same gap around the page, between the header and the columns, between the columns and between the cards, so the
 // spacing stays even at every width
