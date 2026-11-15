@@ -299,8 +299,8 @@ file holds the rating's inputs, not ratings, so a formula change shows up on the
   unfinished games, and holds the day of its last final game. With it, the page says "Season in progress, through
   November 5", and the leaderboard's 20 game minimum becomes the same share of the games played so far, from the most
   games any team has played (`SeasonRatingStatsUtils.getMinGames`): 5 games when the most is 18.
-  `20262027-2.json` runs through 2026-11-08: 282 games, 833 players, 10,151 skater rows and 594 goalie rows, 628 KB
-  (119 KB gzipped).
+  `20262027-2.json` runs through 2026-11-14: 325 games, 851 players, 11,699 skater rows and 685 goalie rows, 721 KB
+  (136 KB gzipped).
 - **Player page:** when the landing's featured season has a regular season file, the season card gets a fifth column:
   the player's average HokMob rating over their rated games, and below it a skater's 5v5 Corsi For % (`satFor` /
   (`satFor` + `satAgainst`)) or a goalie's goals saved above average (`StatsUtils.getGoalsSavedAboveAverage`, summed
