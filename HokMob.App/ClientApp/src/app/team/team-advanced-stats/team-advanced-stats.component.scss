@@ -1,0 +1,15 @@
+@import "../team-stat-card";
+
+// Credits Natural Stat Trick for the xGF% row, like the shot map's credit
+.stats-source {
+  display: block;
+  padding-top: $spacing-medium;
+  color: $gray-03;
+  font-size: 10px;
+  text-align: center;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

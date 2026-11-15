@@ -1,5 +1,5 @@
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
-import {mockFutureGame, mockStandingsTeams} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {mockFutureGame, mockNstTeamTable, mockStandingsTeams} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 
 describe('NhlTeamUtils', () => {
 
@@ -75,6 +75,36 @@ describe('NhlTeamUtils', () => {
 
     it('should return an unknown team for an unknown ID', () => {
       expect(NhlTeamUtils.getTeam(999)).toEqual(jasmine.objectContaining({id: 100, name: 'Unknown', triCode: '-'}));
+    });
+  });
+
+  describe('getTeamIdByName', () => {
+    it('should find a team by its full name', () => {
+      expect(NhlTeamUtils.getTeamIdByName('San Jose Sharks')).toBe(28);
+      expect(NhlTeamUtils.getTeamIdByName('Montréal Canadiens')).toBe(8);
+    });
+
+    it('should ignore accents, periods and case, as Natural Stat Trick spells names', () => {
+      expect(NhlTeamUtils.getTeamIdByName('St Louis Blues')).toBe(19);
+      expect(NhlTeamUtils.getTeamIdByName('Montreal Canadiens')).toBe(8);
+      expect(NhlTeamUtils.getTeamIdByName('san jose sharks')).toBe(28);
+    });
+
+    it("should tell Utah's names and Arizona apart", () => {
+      expect(NhlTeamUtils.getTeamIdByName('Utah Mammoth')).toBe(68);
+      expect(NhlTeamUtils.getTeamIdByName('Utah Hockey Club')).toBe(59);
+      expect(NhlTeamUtils.getTeamIdByName('Arizona Coyotes')).toBe(53);
+    });
+
+    it('should find every team of a real Natural Stat Trick table', () => {
+      const ids = mockNstTeamTable().teams.map(team => NhlTeamUtils.getTeamIdByName(team.name));
+      expect(ids).not.toContain(undefined);
+      expect(new Set(ids).size).toBe(32);
+    });
+
+    it('should not find an unknown or missing name', () => {
+      expect(NhlTeamUtils.getTeamIdByName('Hartford Whalers')).toBeUndefined();
+      expect(NhlTeamUtils.getTeamIdByName(null)).toBeUndefined();
     });
   });
 });

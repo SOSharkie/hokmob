@@ -1,4 +1,6 @@
 import {NstGameStats, NstPlayerGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
+import {NstTeamSeasonStats} from "@shared/models/natural-stat-trick/nst-team-stats.model";
+import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {NhlPeriodTypeEnum} from "@shared/enums/nhl-period-type.enum";
 import {PeriodUtils} from "@shared/utils/period-utils";
@@ -20,6 +22,29 @@ export class NstStatsUtils {
     const startYear = Number(id.substring(0, 4));
     return "https://www.naturalstattrick.com/game.php?season=" + startYear + (startYear + 1) + "&game=" +
         Number(id.substring(4));
+  }
+
+  /** The public Natural Stat Trick team table, credited where its team stats are shown. */
+  public static readonly teamTableUrl = "https://www.naturalstattrick.com/teamtable.php";
+
+  /**
+   * Each team's share of the 5v5 expected goals (xGF%), from 0 to 1, and its league rank (1 for the highest, teams with
+   * the same share sharing a rank), by NHL team ID. A team NST names in a way NhlTeamUtils doesn't know, or without xG,
+   * is left out.
+   *
+   * @param teams - Every team's row of NST's team table (NaturalStatTrickService.getTeamStats).
+   */
+  public static getTeamExpectedGoalsShares(teams: NstTeamSeasonStats[]): Map<number, {share: number, rank: number}> {
+    const shares = (teams ?? []).map(team => ({
+      teamId: NhlTeamUtils.getTeamIdByName(team.name),
+      share: NstStatsUtils.getCorsiShare(team.expectedGoalsFor, team.expectedGoalsAgainst)
+    })).filter(team => team.teamId !== undefined && team.share !== undefined);
+    // Rounded, so float noise can't split a tie
+    const key = (share: number) => Math.round(share * 1e6);
+    return new Map(shares.map(team => [team.teamId, {
+      share: team.share,
+      rank: shares.filter(other => key(other.share) > key(team.share)).length + 1
+    }]));
   }
 
   /**

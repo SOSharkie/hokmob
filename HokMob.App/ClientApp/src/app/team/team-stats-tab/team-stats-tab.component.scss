@@ -1,0 +1,66 @@
+@import "variables";
+
+// Where the cards fit two (each at least 340px wide) and three across, in the team page's 1200px column, with room
+// for a scrollbar
+$two-column-breakpoint: 744px;
+$three-column-breakpoint: 1100px;
+
+// The cards, then the chart across all of them
+.team-stats-tab {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-page-gap;
+}
+
+// One column on a phone. Two columns of stacked cards on a tablet, the power rating and season stats on the left and
+// the advanced stats on the right, so a short card doesn't leave a hole beside a tall one. Three across on a desktop.
+.stats-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $spacing-page-gap;
+  align-items: start;
+
+  .stats-column {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-page-gap;
+    min-width: 0;
+
+    &:empty {
+      display: none;
+    }
+  }
+}
+
+.team-stats-tab-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: $spacing-huge $spacing-xx-large;
+  border-radius: 25px;
+  background-color: $black-02;
+  color: $gray-03;
+  text-align: center;
+
+  &.loading-card {
+    min-height: 200px;
+  }
+}
+
+@media only screen and (min-width: $two-column-breakpoint) {
+  .stats-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media only screen and (min-width: $three-column-breakpoint) {
+  .stats-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    // Each card is a column of its own
+    .stats-column {
+      display: contents;
+    }
+  }
+}

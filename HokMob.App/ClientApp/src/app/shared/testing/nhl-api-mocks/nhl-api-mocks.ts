@@ -85,12 +85,14 @@ import hitsAndShotsLeaders20252026 from './leaders-hits-shots-20252026-2.json';
 import teamStats20252026 from './team-stats-20252026-2.json';
 import teamPlayersBos20252026 from './team-players-bos-20252026-2.json';
 import teamStats20262027 from './team-stats-20262027-2.json';
+import teamGames20262027 from './team-games-20262027-2.json';
 import seasonDates from './seasons-2026-09-16.json';
 import {GoalieStatsLeaders, SkaterStatsLeaders} from "@shared/models/nhl-web-api/stats-leaders.model";
 import {PlayerSearchResult} from "@shared/models/nhl-web-api/player-search.model";
 import {PlayerStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {TeamStatsResponse} from "@shared/models/nhl-stats-api/team-stats.model";
+import {TeamGameStats, TeamGamesResponse} from "@shared/models/nhl-stats-api/team-games.model";
 import {TeamPlayersResponse} from "@shared/models/nhl-stats-api/team-players.model";
 import {SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.model";
 import {SeasonPlayersResponse} from "@shared/models/nhl-stats-api/season-players.model";
@@ -117,6 +119,8 @@ import nstGame2025030414 from './nst-game-2025030414.json';
 import nstGame2026020144Live from './nst-game-2026020144-live.json';
 import gamecenter2026020144PlayByPlayLive from './gamecenter-2026020144-play-by-play-live.json';
 import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
+import {NstTeamTable} from "@shared/models/natural-stat-trick/nst-team-stats.model";
+import nstTeams20262027 from './nst-teams-20262027.json';
 
 /*
  * Real responses for unit tests, captured on 2026-09-15: api-web.nhle.com responses, the player search
@@ -493,6 +497,27 @@ export function mockTeamStats(season: MockTeamStatsSeason = 20252026): TeamStats
 }
 
 /**
+ * /api/nhl-stats/team-games?season=20262027&gameType=2, captured from a running app on 2026-11-15: every team's games
+ * of the 2026-27 regular season through 2026-11-14, 650 rows (325 games) from 2026-09-29 on, as columns. San Jose (28)
+ * has played 22 games, with 20 points, 56 goals for and 77 against.
+ */
+export function mockTeamGames(): TeamGamesResponse {
+  return copy(teamGames20262027 as TeamGamesResponse);
+}
+
+/**
+ * mockTeamGames() as one object per row, the way NhlStatsApiService.getTeamGames resolves them.
+ */
+export function mockTeamGameRows(): TeamGameStats[] {
+  const columns = mockTeamGames().games;
+  return columns.gameId.map((gameId, i) => {
+    const row = {} as Record<keyof TeamGameStats, unknown>;
+    (Object.keys(columns) as (keyof TeamGameStats)[]).forEach(field => row[field] = columns[field][i]);
+    return row as unknown as TeamGameStats;
+  });
+}
+
+/**
  * /api/nhl-stats/team-players?teamId=6&season=20252026&gameType=2, captured from a running app on 2026-11-10: Boston's
  * 32 skaters and 3 goalies. David Pastrnak (RW) leads with 100 points in 77 games (29 goals, 71 assists, 86 hits); Morgan
  * Geekie has the most goals (39) and Charlie McAvoy (D) took no faceoffs (faceoffWinPct null), like 13 other skaters.
@@ -721,6 +746,15 @@ export type MockNstGameId = 2026020010 | 2025030414;
  * (17:34 of the 1st) and Igor Shesterkin's empty net goal (a goalie has no event map). 2026020010 has two shots by
  * Pontus Holmberg at 2:05 of the 2nd, 5ft and 6ft out, both 0.3 xG.
  */
+/**
+ * /api/nst/teams?season=20262027, captured from a running app on 2026-11-15: every team's 5v5 xG through 2026-11-14,
+ * in NST's order (Florida first). San Jose (22 games) had 36.54 xG for and 55.97 against (39.5% xGF), Boston (20 games)
+ * 46.33 and 42.06. NST names St. Louis "St Louis Blues" and Montréal "Montreal Canadiens".
+ */
+export function mockNstTeamTable(): NstTeamTable {
+  return copy(nstTeams20262027);
+}
+
 export function mockNstGameStats(gameId: MockNstGameId): NstGameStats {
   return copy(gameId === 2026020010 ? nstGame2026020010 : nstGame2025030414);
 }
