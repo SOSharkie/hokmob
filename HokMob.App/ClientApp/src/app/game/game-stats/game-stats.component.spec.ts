@@ -137,6 +137,26 @@ describe('GameStatsComponent', () => {
     expect(chart().data.datasets[0].data).toEqual([0, 0]);
   });
 
+  it("should not show a negative power play when api-web counts one short as a penalty is called", () => {
+    // Live, api-web sent Calgary's power plays as "0/-1" right as Anaheim's penalty was called
+    const stats = mockGameRightRail(2025021057).teamGameStats.map(stat =>
+        stat.category === 'powerPlay' ? {...stat, awayValue: '0/-1'} :
+            stat.category === 'powerPlayPctg' ? {...stat, awayValue: -1} : stat);
+    show(stats);
+    expect(rows()[1]).toEqual(['0/3', 'Power Plays', '0/0']);
+    expect(highlighted('home')).not.toContain('Power Plays');
+    expect(highlighted('away')).not.toContain('Power Plays');
+  });
+
+  it('should keep a power play within its goals and opportunities', () => {
+    expect(GameStatsComponent.formatPowerPlay('1/3')).toBe('1/3');
+    expect(GameStatsComponent.formatPowerPlay('0/0')).toBe('0/0');
+    expect(GameStatsComponent.formatPowerPlay('0/-1')).toBe('0/0');
+    expect(GameStatsComponent.formatPowerPlay('1/0')).toBe('1/1');
+    expect(GameStatsComponent.formatPowerPlay('-1/2')).toBe('0/2');
+    expect(GameStatsComponent.formatPowerPlay('n/a')).toBe('n/a');
+  });
+
   it('should show a dash for a missing category', () => {
     const stats = mockGameRightRail(2025021057).teamGameStats.filter(stat => stat.category !== 'hits');
     show(stats);

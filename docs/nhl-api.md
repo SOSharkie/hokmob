@@ -472,7 +472,10 @@ final with `npm run capture-live-fixtures -- --watch` from `HokMob.App/ClientApp
 - **A `situation` object** is on the landing and the play-by-play while a team is short-handed, and drives the game
   header's power play badge. The short-handed team has no `situationDescriptions`. The key is **absent** at even
   strength and after the game, so read it with `?.`. It stays through an intermission when a penalty carries over,
-  and the right-rail `powerPlay` stat counts the power play as soon as it starts (`"0/1"`).
+  and the right-rail `powerPlay` stat counts the power play as soon as it starts (`"0/1"`). Right as a penalty is
+  called, though, it can briefly count one short: Calgary's first power play of game 2026020328 showed `"0/-1"` (it
+  ended the game `"0/1"`). `GameStatsComponent.formatPowerPlay` keeps both numbers at 0 or more, and an out-of-range
+  `powerPlayPctg` highlights neither team.
 
   ```json
   {"homeTeam": {"abbrev": "STL", "situationDescriptions": ["PP"], "strength": 5},
