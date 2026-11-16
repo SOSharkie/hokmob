@@ -1,5 +1,5 @@
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
-import {mockFutureGame, mockNstTeamTable, mockStandingsTeams} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
+import {mockFutureGame, mockNstTeamGames, mockStandingsTeams} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 
 describe('NhlTeamUtils', () => {
 
@@ -96,8 +96,8 @@ describe('NhlTeamUtils', () => {
       expect(NhlTeamUtils.getTeamIdByName('Arizona Coyotes')).toBe(53);
     });
 
-    it('should find every team of a real Natural Stat Trick table', () => {
-      const ids = mockNstTeamTable().teams.map(team => NhlTeamUtils.getTeamIdByName(team.name));
+    it('should find every team of real Natural Stat Trick game logs', () => {
+      const ids = mockNstTeamGames().teams.map(name => NhlTeamUtils.getTeamIdByName(name));
       expect(ids).not.toContain(undefined);
       expect(new Set(ids).size).toBe(32);
     });

@@ -6,7 +6,8 @@ import { ActivatedRoute, convertToParamMap, ParamMap, Params } from '@angular/ro
 import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import {
-  mockNstTeamTable,
+  mockNstTeamGames,
+  mockRatedTeamGameRows,
   mockStandingsResponse,
   mockTeamGameRows,
   mockTeamGames,
@@ -94,11 +95,14 @@ describe('TeamsComponent', () => {
     return {
       stats: '/api/nhl-stats/teams?season=' + season + '&gameType=2',
       games: '/api/nhl-stats/team-games?season=' + season + '&gameType=2',
-      nst: '/api/nst/teams?season=' + season
+      nst: '/api/nst/team-games?season=' + season
     };
   }
 
-  /** Opens 2026-27 with every team's real games and NST's table, and the season's (still empty) stats API rows. */
+  /**
+   * Opens 2026-27 with every team's real games and their expected goals from NST, and the season's (still empty) stats
+   * API rows.
+   */
   async function openCurrentSeason(params: Params = {}): Promise<void> {
     open(params);
     httpMock.expectOne(standingsUrl).flush(standingsIn(20262027));
@@ -106,7 +110,7 @@ describe('TeamsComponent', () => {
     const {stats, games, nst} = urls(20262027);
     httpMock.expectOne(stats).flush(mockTeamStats(20262027));
     httpMock.expectOne(games).flush(mockTeamGames());
-    httpMock.expectOne(nst).flush(mockNstTeamTable());
+    httpMock.expectOne(nst).flush(mockNstTeamGames());
     await settle();
   }
 
@@ -149,10 +153,10 @@ describe('TeamsComponent', () => {
     httpMock.expectOne(standingsUrl);
   });
 
-  it('should list every team by power rating, from the season\'s real games', async () => {
+  it('should list every team by power rating, from the season\'s real games and expected goals', async () => {
     await openCurrentSeason();
 
-    const expected = TeamRatingUtils.getLeagueRatings(mockTeamGameRows()).map(rating => rating.teamId);
+    const expected = TeamRatingUtils.getLeagueRatings(mockRatedTeamGameRows()).map(rating => rating.teamId);
     expect(component.rows.length).toBe(32);
     expect(teamIds()).toEqual(expected);
     expect(fixture.nativeElement.querySelectorAll('.team-row').length).toBe(32);
@@ -188,9 +192,51 @@ describe('TeamsComponent', () => {
     await openCurrentSeason();
 
     expect(headers()).toContain('xGF%');
-    // Florida: 38.64 xGF against 35.75 xGA in NST's table
+    // Florida: 38.64 xGF against 35.74 xGA over its games on NST
     expect(cell(teamIds().indexOf(13), 'xg')).toBe('51.9%');
     expect(fixture.nativeElement.querySelector('.stats-source').textContent).toContain('Natural Stat Trick');
+  });
+
+  it('should rate on the NHL\'s stats alone, without the xGF% column, when NST fails', async () => {
+    open();
+    httpMock.expectOne(standingsUrl).flush(standingsIn(20262027));
+    await settle();
+    const {stats, games, nst} = urls(20262027);
+    httpMock.expectOne(stats).flush(mockTeamStats(20262027));
+    httpMock.expectOne(games).flush(mockTeamGames());
+    httpMock.expectOne(nst).flush('error', {status: 503, statusText: 'Service Unavailable'});
+    await settle();
+
+    expect(component.hasError).toBeFalse();
+    expect(component.hasRatingError).toBeFalse();
+    expect(teamIds()).toEqual(TeamRatingUtils.getLeagueRatings(mockTeamGameRows()).map(rating => rating.teamId));
+    // San Jose, 3.4 on the NHL's stats alone and 2.9 with NST's expected goals
+    expect(cell(teamIds().indexOf(sharks), 'rating')).toBe('3.4');
+    expect(headers()).not.toContain('xGF%');
+    expect(fixture.nativeElement.querySelector('.stats-source')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.table-note')).toBeNull();
+  });
+
+  it('should wait for NST before it shows the table, so the rating doesn\'t change under the reader', async () => {
+    open();
+    httpMock.expectOne(standingsUrl).flush(standingsIn(20262027));
+    await settle();
+    const {stats, games, nst} = urls(20262027);
+    httpMock.expectOne(stats).flush(mockTeamStats(20262027));
+    httpMock.expectOne(games).flush(mockTeamGames());
+    const nstRequest = httpMock.expectOne(nst);
+    await settle();
+    expect(component.isLoading).toBeTrue();
+
+    nstRequest.flush(mockNstTeamGames());
+    await settle();
+    expect(component.isLoading).toBeFalse();
+    expect(cell(teamIds().indexOf(sharks), 'rating')).toBe('2.9');
+  });
+
+  it('should explain the rating without the standings in its tooltip', () => {
+    expect(TeamsComponent.getColumn('rating').title).toContain('Nothing in it comes from the standings');
+    expect(TeamsComponent.getColumn('rating').title).not.toContain('points %');
   });
 
   it('should group the columns under the section headers', async () => {
@@ -350,7 +396,7 @@ describe('TeamsComponent', () => {
     await openCurrentSeason({sort: 'nope'});
 
     expect(component.sortColumn.id).toBe('rating');
-    expect(teamIds()).toEqual(TeamRatingUtils.getLeagueRatings(mockTeamGameRows()).map(rating => rating.teamId));
+    expect(teamIds()).toEqual(TeamRatingUtils.getLeagueRatings(mockRatedTeamGameRows()).map(rating => rating.teamId));
   });
 
   it('should fall back to points % without the games, and say the rating failed', async () => {

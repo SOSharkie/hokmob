@@ -1,20 +1,25 @@
 import {TeamGameStats} from "@shared/models/nhl-stats-api/team-games.model";
+import {NstTeamGameStats} from "@shared/models/natural-stat-trick/nst-team-games.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
 
 /**
- * A team's stats added up over some games: every count of TeamGameStats, and the games played.
+ * A team's stats added up over some games: every count of TeamGameStats, and the games played. The expected goals
+ * counts only add up the games that have them.
  */
-export type TeamStatTotals = {[field in TeamCountField]: number} & {gamesPlayed: number};
+export type TeamStatTotals = {[field in TeamCountField]-?: number} & {gamesPlayed: number};
 
 /** The fields of TeamGameStats that are counts, so they add up over games. */
 export type TeamCountField = Exclude<keyof TeamGameStats, "gameId" | "gameDate" | "teamId" | "opponentTeamId" | "homeRoad">;
 
-export type TeamMetricId = "pointPct" | "goalDiff" | "fenwick" | "specialTeams" | "corsi" | "shotShare" | "goalShare5v5"
-    | "shooting5v5" | "save5v5" | "pdo";
+export type TeamMetricId = "corsi" | "expectedGoals" | "shooting5v5" | "save5v5" | "powerPlay" | "penaltyDiff"
+    | "pointPct" | "goalDiff" | "specialTeams" | "fenwick" | "shotShare" | "goalShare5v5" | "pdo";
+
+/** Each rated metric's share of the power rating, from 0 to 1. A metric that isn't in it isn't rated. */
+export type TeamRatingWeights = Partial<Record<TeamMetricId, number>>;
 
 /**
- * A team stat worked out from a team's totals: one of the power rating's parts when it has a weight, and a line the
- * rating chart can plot when it has a color. Every metric is better when it's higher.
+ * A team stat worked out from a team's totals: one of the power rating's parts when the rating's weights have it, and a
+ * line the rating chart can plot when it has a color. Every metric is better when it's higher.
  */
 export interface TeamMetric {
   id: TeamMetricId;
@@ -24,11 +29,9 @@ export interface TeamMetric {
   shortLabel: string;
   /** What the stat is, for a tooltip. */
   description: string;
-  /** The metric's share of the power rating, from 0 to 1. 0 for a stat that isn't rated. */
-  weight: number;
   /** The chart line's color. A metric without one isn't offered in the chart. */
   color?: string;
-  /** The stat, or null when the totals can't give it (no shots yet). */
+  /** The stat, or null when the totals can't give it (no shots yet, or no expected goals). */
   getValue: (totals: TeamStatTotals) => number;
   /** The stat as shown, like "52.3%" or "+0.45". */
   format: (value: number) => string;
@@ -54,6 +57,13 @@ export interface TeamRating {
   rating: number;
   /** The power rating's league rank. */
   rank: number;
+  /**
+   * The weights the rating was worked out with: TeamRatingUtils.expectedGoalsWeights, or TeamRatingUtils.nhlWeights
+   * when a team has no expected goals over these games.
+   */
+  weights: TeamRatingWeights;
+  /** Whether the rating counts Natural Stat Trick's expected goals (expectedGoalsWeights). */
+  hasExpectedGoals: boolean;
 }
 
 /**
@@ -76,17 +86,21 @@ export interface TeamRatingOptions {
 
 /**
  * The HokMob team power rating, and the advanced team stats it's built from, worked out from every team's game by game
- * stats (/api/nhl-stats/team-games). Every stat is compared to the other teams' over the same games: a team's score for
- * a stat is 5 plus 1.5 points per standard deviation it's above the league average, and the rating is the weighted sum
- * of the rated stats' deviations, scaled the same way. So the rating is 0 to 10 like a HokMob player rating, 5 is an
- * average team, and about 2 in 3 teams are between 3.5 and 6.5.
+ * stats (/api/nhl-stats/team-games), with Natural Stat Trick's expected goals merged in (withExpectedGoals). Every stat
+ * is compared to the other teams' over the same games: a team's score for a stat is 5 plus 1.5 points per standard
+ * deviation it's above the league average, and the rating is the weighted sum of the rated stats' deviations,
+ * scaled the same way. So the rating is 0 to 10 like a HokMob player rating, 5 is an average team, and about 2 in 3
+ * teams are between 3.5 and 6.5.
  *
- * The weights were picked by how well a team's rating after 10, 20, 30, 41 and 55 games tracked its points % over the
- * rest of the season, for the 2022-23 to 2025-26 regular seasons: 30% points %, 20% goal differential, 30% 5v5 Corsi %
- * and 20% special teams goal differential correlated 0.52 to 0.67 with it, more than points % alone (0.43 to 0.64) or an
- * even split of five stats. Fenwick (unblocked shot attempts) in place of Corsi tracked the same within noise (0.006
- * better on average), so the rating uses Corsi, like the rest of the site. 5v5 save % and shooting % added nothing, so
- * they're shown but not rated. See "Team power rating" in docs/nhl-api.md.
+ * The rating is a statistical look at how a team plays, so nothing in it comes from the standings: no points, wins or
+ * goal differential. Its weights (expectedGoalsWeights) are 30% 5v5 Corsi %, 15% 5v5 xGF%, 15% 5v5 shooting %, 10% 5v5
+ * save %, 20% net power play % and 10% penalty differential. Over games where a team has no expected goals (NST can't
+ * be asked, or hasn't got its games yet), every team is rated on the NHL's stats alone (nhlWeights): Corsi takes
+ * xGF%'s share. The penalty kill isn't rated: neither its net % nor its expected goals against added anything.
+ *
+ * The weights were picked by how well a team's rating after 10, 20, 30, 41, 55 and 70 games tracked its strength over
+ * every game it played afterwards, the playoffs included and counted double, adjusted for its opponents, for the
+ * 2021-22 to 2025-26 seasons. See "Team power rating" in docs/nhl-api.md.
  *
  * Nothing here is specific to one team, so a league page can rate every team the same way.
  */
@@ -104,63 +118,94 @@ export class TeamRatingUtils {
   /** The fewest games a team needs before the chart plots its rating, since a couple of games say little. */
   public static readonly minChartGames = 3;
 
+  /** The rating's weights when every team has Natural Stat Trick's expected goals. */
+  public static readonly expectedGoalsWeights: TeamRatingWeights = {
+    corsi: 0.30, expectedGoals: 0.15, shooting5v5: 0.15, save5v5: 0.10, powerPlay: 0.20, penaltyDiff: 0.10
+  };
+
+  /** The rating's weights from the NHL's stats alone, the fallback without expected goals. */
+  public static readonly nhlWeights: TeamRatingWeights = {
+    corsi: 0.45, shooting5v5: 0.15, save5v5: 0.10, powerPlay: 0.20, penaltyDiff: 0.10
+  };
+
   /** The fields summed into a team's totals. */
   private static readonly countFields: TeamCountField[] = [
     "wins", "losses", "otLosses", "points", "goalsFor", "goalsAgainst", "shotsFor", "shotsAgainst", "satFor",
     "satAgainst", "usatFor", "usatAgainst", "shots5v5For", "shots5v5Against", "ppGoalsFor", "ppOpportunities",
-    "shGoalsAgainst", "ppGoalsAgainst", "timesShorthanded", "shGoalsFor", "goalsFor5v5", "goalsAgainst5v5"
+    "shGoalsAgainst", "ppGoalsAgainst", "timesShorthanded", "shGoalsFor", "goalsFor5v5", "goalsAgainst5v5",
+    "expectedGoalsFor5v5", "expectedGoalsAgainst5v5"
   ];
 
   /**
-   * Every metric, the rated ones first. The colors are the chart's categorical palette (dark mode), in a fixed order,
-   * so a metric keeps its color whichever lines are shown.
+   * Every metric: the ones a rating can count first, in the power rating card's order, then the rest. The colors are
+   * the chart's categorical palette (dark mode), in a fixed order, so a metric keeps its color whichever lines are shown.
    */
   public static readonly metrics: TeamMetric[] = [
     {
-      id: "pointPct", label: "Points %", shortLabel: "Points %", weight: 0.3, color: "#3987e5",
-      description: "The share of the possible standings points the team has earned",
-      getValue: totals => TeamRatingUtils.ratio(totals.points, 2 * totals.gamesPlayed),
-      format: value => TeamRatingUtils.formatPercentage(value)
-    },
-    {
-      id: "goalDiff", label: "Goal Diff / Game", shortLabel: "Goal diff", weight: 0.2, color: "#d95926",
-      description: "Goals for minus goals against, per game",
-      getValue: totals => TeamRatingUtils.ratio(totals.goalsFor - totals.goalsAgainst, totals.gamesPlayed),
-      format: value => TeamRatingUtils.formatSigned(value)
-    },
-    {
-      id: "corsi", label: "5v5 Corsi %", shortLabel: "Corsi %", weight: 0.3, color: "#199e70",
+      id: "corsi", label: "5v5 Corsi %", shortLabel: "Corsi %", color: "#199e70",
       description: "The team's share of all shot attempts at 5 on 5, blocked ones included, a measure of who controls the play",
       getValue: totals => TeamRatingUtils.ratio(totals.satFor, totals.satFor + totals.satAgainst),
       format: value => TeamRatingUtils.formatPercentage(value)
     },
     {
-      id: "specialTeams", label: "Special Teams Diff / Game", shortLabel: "Special teams", weight: 0.2, color: "#c98500",
+      id: "expectedGoals", label: "5v5 xGF%", shortLabel: "xGF%", color: "#d55181",
+      description: "The team's share of the expected goals at 5 on 5, from Natural Stat Trick: like Fenwick, but each " +
+          "unblocked shot attempt counts by how likely it was to score",
+      getValue: totals => TeamRatingUtils.ratio(totals.expectedGoalsFor5v5,
+          totals.expectedGoalsFor5v5 + totals.expectedGoalsAgainst5v5),
+      format: value => TeamRatingUtils.formatPercentage(value)
+    },
+    {
+      id: "shooting5v5", label: "5v5 Shooting %", shortLabel: "Shooting %", color: "#9085e9",
+      description: "The share of the team's shots on goal that went in at 5 on 5",
+      getValue: totals => TeamRatingUtils.ratio(totals.goalsFor5v5, totals.shots5v5For),
+      format: value => TeamRatingUtils.formatPercentage(value)
+    },
+    {
+      id: "save5v5", label: "5v5 Save %", shortLabel: "Save %", color: "#0ca30c",
+      description: "The share of the opponents' shots on goal saved at 5 on 5",
+      getValue: totals => TeamRatingUtils.ratio(totals.shots5v5Against - totals.goalsAgainst5v5, totals.shots5v5Against),
+      format: value => TeamRatingUtils.formatPercentage(value)
+    },
+    {
+      id: "powerPlay", label: "Net Power Play %", shortLabel: "Power play", color: "#c98500",
+      description: "Power play goals minus the short-handed goals given up, per power play",
+      getValue: totals => TeamRatingUtils.ratio(totals.ppGoalsFor - totals.shGoalsAgainst, totals.ppOpportunities),
+      format: value => TeamRatingUtils.formatPercentage(value)
+    },
+    {
+      id: "penaltyDiff", label: "Penalty Diff / Game", shortLabel: "Penalties", color: "#e66767",
+      description: "Power plays drawn minus times short-handed, per game",
+      getValue: totals => TeamRatingUtils.ratio(totals.ppOpportunities - totals.timesShorthanded, totals.gamesPlayed),
+      format: value => TeamRatingUtils.formatSigned(value)
+    },
+    {
+      id: "pointPct", label: "Points %", shortLabel: "Points %", color: "#3987e5",
+      description: "The share of the possible standings points the team has earned",
+      getValue: totals => TeamRatingUtils.ratio(totals.points, 2 * totals.gamesPlayed),
+      format: value => TeamRatingUtils.formatPercentage(value)
+    },
+    {
+      id: "goalDiff", label: "Goal Diff / Game", shortLabel: "Goal diff", color: "#d95926",
+      description: "Goals for minus goals against, per game",
+      getValue: totals => TeamRatingUtils.ratio(totals.goalsFor - totals.goalsAgainst, totals.gamesPlayed),
+      format: value => TeamRatingUtils.formatSigned(value)
+    },
+    {
+      id: "specialTeams", label: "Special Teams Diff / Game", shortLabel: "Special teams",
       description: "Power play and short-handed goals for, minus those against, per game",
       getValue: totals => TeamRatingUtils.ratio(
           totals.ppGoalsFor + totals.shGoalsFor - totals.ppGoalsAgainst - totals.shGoalsAgainst, totals.gamesPlayed),
       format: value => TeamRatingUtils.formatSigned(value)
     },
     {
-      id: "fenwick", label: "5v5 Fenwick %", shortLabel: "Fenwick %", weight: 0, color: "#d55181",
+      id: "fenwick", label: "5v5 Fenwick %", shortLabel: "Fenwick %",
       description: "The team's share of the unblocked shot attempts at 5 on 5: Corsi without the blocked shots",
       getValue: totals => TeamRatingUtils.ratio(totals.usatFor, totals.usatFor + totals.usatAgainst),
       format: value => TeamRatingUtils.formatPercentage(value)
     },
     {
-      id: "save5v5", label: "5v5 Save %", shortLabel: "Save %", weight: 0, color: "#0ca30c",
-      description: "The share of the opponents' shots on goal saved at 5 on 5",
-      getValue: totals => TeamRatingUtils.ratio(totals.shots5v5Against - totals.goalsAgainst5v5, totals.shots5v5Against),
-      format: value => TeamRatingUtils.formatPercentage(value)
-    },
-    {
-      id: "shooting5v5", label: "5v5 Shooting %", shortLabel: "Shooting %", weight: 0, color: "#9085e9",
-      description: "The share of the team's shots on goal that went in at 5 on 5",
-      getValue: totals => TeamRatingUtils.ratio(totals.goalsFor5v5, totals.shots5v5For),
-      format: value => TeamRatingUtils.formatPercentage(value)
-    },
-    {
-      id: "pdo", label: "PDO", shortLabel: "PDO", weight: 0, color: "#e66767",
+      id: "pdo", label: "PDO", shortLabel: "PDO",
       description: "5v5 shooting % plus save %. Around 100 is normal; far from it usually doesn't last",
       getValue: totals => {
         const shooting = TeamRatingUtils.ratio(totals.goalsFor5v5, totals.shots5v5For);
@@ -170,22 +215,26 @@ export class TeamRatingUtils {
       format: value => value.toFixed(1)
     },
     {
-      id: "shotShare", label: "Shots For %", shortLabel: "Shots %", weight: 0,
+      id: "shotShare", label: "Shots For %", shortLabel: "Shots %",
       description: "The team's share of the shots on goal, in all situations",
       getValue: totals => TeamRatingUtils.ratio(totals.shotsFor, totals.shotsFor + totals.shotsAgainst),
       format: value => TeamRatingUtils.formatPercentage(value)
     },
     {
-      id: "goalShare5v5", label: "5v5 Goals For %", shortLabel: "Goals %", weight: 0,
+      id: "goalShare5v5", label: "5v5 Goals For %", shortLabel: "Goals %",
       description: "The team's share of the goals scored at 5 on 5",
       getValue: totals => TeamRatingUtils.ratio(totals.goalsFor5v5, totals.goalsFor5v5 + totals.goalsAgainst5v5),
       format: value => TeamRatingUtils.formatPercentage(value)
     }
   ];
 
-  /** The metrics that are part of the power rating. */
-  public static get ratedMetrics(): TeamMetric[] {
-    return TeamRatingUtils.metrics.filter(metric => metric.weight > 0);
+  /**
+   * The metrics that are part of a power rating, in the card's order.
+   *
+   * @param weights - The rating's weights (TeamRating.weights). The expected goals weights without them.
+   */
+  public static getRatedMetrics(weights: TeamRatingWeights = TeamRatingUtils.expectedGoalsWeights): TeamMetric[] {
+    return TeamRatingUtils.metrics.filter(metric => weights?.[metric.id] > 0);
   }
 
   /** The metrics the rating chart can plot. */
@@ -195,6 +244,28 @@ export class TeamRatingUtils {
 
   public static getMetric(id: TeamMetricId): TeamMetric {
     return TeamRatingUtils.metrics.find(metric => metric.id === id);
+  }
+
+  /**
+   * Adds Natural Stat Trick's 5v5 expected goals to the games that have them, matched by game and team. A game NST doesn't
+   * have is returned as it is, without them.
+   *
+   * @param games - Every team's games of the season, from /api/nhl-stats/team-games.
+   * @param expectedGoals - Every team's expected goals per game (NaturalStatTrickService.getTeamGames).
+   */
+  public static withExpectedGoals(games: TeamGameStats[], expectedGoals: NstTeamGameStats[]): TeamGameStats[] {
+    if (!expectedGoals?.length) {
+      return games ?? [];
+    }
+    const byTeamGame = new Map(expectedGoals.map(game => [game.gameId + ":" + game.teamId, game]));
+    return (games ?? []).map(game => {
+      const nstGame = byTeamGame.get(game.gameId + ":" + game.teamId);
+      return nstGame ? {
+        ...game,
+        expectedGoalsFor5v5: nstGame.expectedGoalsFor,
+        expectedGoalsAgainst5v5: nstGame.expectedGoalsAgainst
+      } : game;
+    });
   }
 
   /**
@@ -211,7 +282,8 @@ export class TeamRatingUtils {
    * Rates every team that has played, from its games of the season, or only some of them (see TeamRatingOptions).
    * Sorted best first.
    *
-   * @param games - Every team's games of the season, from /api/nhl-stats/team-games.
+   * @param games - Every team's games of the season, from /api/nhl-stats/team-games, with NST's expected goals merged
+   * in when there are any (withExpectedGoals).
    * @param options - Which games count.
    */
   public static getLeagueRatings(games: TeamGameStats[], options: TeamRatingOptions = {}): TeamRating[] {
@@ -229,7 +301,8 @@ export class TeamRatingUtils {
    * rates every team on its games up to that day, so a point is where the team stood that night. With lastGames, each
    * point counts only every team's last games up to that day: the team's form rather than its season.
    *
-   * @param games - Every team's games of the season, from /api/nhl-stats/team-games.
+   * @param games - Every team's games of the season, from /api/nhl-stats/team-games, with NST's expected goals merged
+   * in when there are any (withExpectedGoals).
    * @param teamIds - The teams to chart.
    * @param options - lastGames, to rate each day on every team's last games only.
    */
@@ -308,10 +381,15 @@ export class TeamRatingUtils {
   }
 
   /**
-   * Rates teams against each other: each metric's score and rank, and the power rating and its rank.
+   * Rates teams against each other: each metric's score and rank, and the power rating and its rank. The rating counts
+   * expected goals only when every team has some over these games, so the teams are always rated on the same stats.
    */
   private static rateTeams(teams: {teamId: number, totals: TeamStatTotals}[]): TeamRating[] {
-    const rated = teams.filter(team => team.totals.gamesPlayed > 0).map(team => ({
+    const played = teams.filter(team => team.totals.gamesPlayed > 0);
+    const hasExpectedGoals = played.length > 0
+        && played.every(team => team.totals.expectedGoalsFor5v5 + team.totals.expectedGoalsAgainst5v5 > 0);
+    const weights = hasExpectedGoals ? TeamRatingUtils.expectedGoalsWeights : TeamRatingUtils.nhlWeights;
+    const rated: TeamRating[] = played.map(team => ({
       teamId: team.teamId,
       gamesPlayed: team.totals.gamesPlayed,
       totals: team.totals,
@@ -319,17 +397,20 @@ export class TeamRatingUtils {
       scores: {} as Record<TeamMetricId, number>,
       ranks: {} as Record<TeamMetricId, number>,
       rating: TeamRatingUtils.averageRating,
-      rank: 1
+      rank: 1,
+      weights,
+      hasExpectedGoals
     }));
     const composites = rated.map(() => 0);
     TeamRatingUtils.metrics.forEach(metric => {
       const values = rated.map(team => TeamRatingUtils.toNumber(metric.getValue(team.totals)));
       const deviations = TeamRatingUtils.getDeviations(values);
+      const weight = weights[metric.id] ?? 0;
       rated.forEach((team, i) => {
         team.values[metric.id] = values[i];
         team.scores[metric.id] = TeamRatingUtils.toScore(deviations[i]);
         team.ranks[metric.id] = TeamRatingUtils.getRank(values[i], values);
-        composites[i] += metric.weight * deviations[i];
+        composites[i] += weight * deviations[i];
       });
     });
     // The weighted sum is scaled back to one deviation, so the rating spreads like each stat's score

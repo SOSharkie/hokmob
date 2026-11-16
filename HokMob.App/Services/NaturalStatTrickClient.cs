@@ -18,8 +18,8 @@ namespace HokMob.App.Services
 
     public record NstLookupResult(NstLookupStatus Status, NstGameStats? Stats = null);
 
-    /// <summary>How a team table lookup went, with the table when it was found.</summary>
-    public record NstTeamTableResult(NstLookupStatus Status, NstTeamTable? Table = null);
+    /// <summary>How a team game logs lookup went, with the games when they were found.</summary>
+    public record NstTeamGamesResult(NstLookupStatus Status, NstTeamGames? Games = null);
 
     /// <summary>
     /// Typed HttpClient for data.naturalstattrick.com, the bot mirror of Natural Stat Trick. Every request needs the
@@ -77,19 +77,25 @@ namespace HokMob.App.Services
         /// </summary>
         private static readonly ConcurrentDictionary<long, Lazy<Task<NstLookupResult>>> InFlightRequests = new();
 
-        /// <summary>The team table fetch in flight for each season, like InFlightRequests for games.</summary>
-        private static readonly ConcurrentDictionary<int, Lazy<Task<NstTeamTableResult>>> InFlightTeamTables = new();
+        /// <summary>The team game logs fetch in flight for each season, like InFlightRequests for games.</summary>
+        private static readonly ConcurrentDictionary<int, Lazy<Task<NstTeamGamesResult>>> InFlightTeamGames = new();
 
-        private const string TeamTableCacheKeyPrefix = "nst-teams:";
+        private const string TeamGamesCacheKeyPrefix = "nst-team-games:";
 
         /// <summary>
-        /// How long a season's team table is kept. It only changes as games end, and NST runs a few minutes behind, so an
-        /// hour keeps it current enough at one page an hour per season asked for.
+        /// How long a season's team game logs are kept. They only change as games end, and NST runs a few minutes
+        /// behind, so an hour keeps them current enough at one page an hour per season asked for.
         /// </summary>
-        private static readonly TimeSpan TeamTableCacheDuration = TimeSpan.FromHours(1);
+        private static readonly TimeSpan TeamGamesCacheDuration = TimeSpan.FromHours(1);
 
-        /// <summary>The size a cached team table counts for against the memory cache limit, roughly its JSON size.</summary>
-        private const long CachedTeamTableSize = 4 * 1024;
+        /// <summary>
+        /// How long a failed team game logs lookup is kept, so a page that can't be had isn't asked for again by every
+        /// visitor: the power rating falls back to the NHL's stats meanwhile.
+        /// </summary>
+        private static readonly TimeSpan FailedTeamGamesCacheDuration = TimeSpan.FromMinutes(5);
+
+        /// <summary>The size a season's cached team game logs count for against the memory cache limit, roughly their size.</summary>
+        private const long CachedTeamGamesSize = 96 * 1024;
 
         /// <summary>Until when requests are paused (ticks of a UTC DateTime), shared by every instance.</summary>
         private static long _pausedUntilTicks;
@@ -185,61 +191,68 @@ namespace HokMob.App.Services
         }
 
         /// <summary>
-        /// Gets every team's 5v5 expected goals for a regular season, from NST's team table: one page for the whole
-        /// league, kept for an hour (TeamTableCacheDuration), so it costs at most 24 pages a day per season asked for.
+        /// Gets every team's games of a regular season with their 5v5 expected goals, from NST's team game logs: one
+        /// page for the whole league and season, kept for an hour (TeamGamesCacheDuration), so it costs at most 24
+        /// pages a day per season asked for.
         /// </summary>
         /// <param name="season">The season ID, like 20262027.</param>
-        public async Task<NstTeamTableResult> GetTeamTableAsync(int season)
+        public async Task<NstTeamGamesResult> GetTeamGamesAsync(int season)
         {
-            var cacheKey = TeamTableCacheKeyPrefix + season;
-            if (_cache.TryGetValue(cacheKey, out NstTeamTableResult? cached) && cached != null)
+            var cacheKey = TeamGamesCacheKeyPrefix + season;
+            if (_cache.TryGetValue(cacheKey, out NstTeamGamesResult? cached) && cached != null)
             {
                 return cached;
             }
             if (string.IsNullOrWhiteSpace(_key))
             {
                 _logger.LogWarning("No Natural Stat Trick key is configured ({Setting})", KeySetting);
-                return new NstTeamTableResult(NstLookupStatus.Unavailable);
+                return new NstTeamGamesResult(NstLookupStatus.Unavailable);
             }
 
-            var fetch = InFlightTeamTables.GetOrAdd(season, _ => new Lazy<Task<NstTeamTableResult>>(
-                () => FetchTeamTableAsync(season, cacheKey), LazyThreadSafetyMode.ExecutionAndPublication));
+            var fetch = InFlightTeamGames.GetOrAdd(season, _ => new Lazy<Task<NstTeamGamesResult>>(
+                () => FetchTeamGamesAsync(season, cacheKey), LazyThreadSafetyMode.ExecutionAndPublication));
             try
             {
                 return await fetch.Value;
             }
             finally
             {
-                InFlightTeamTables.TryRemove(new KeyValuePair<int, Lazy<Task<NstTeamTableResult>>>(season, fetch));
+                InFlightTeamGames.TryRemove(new KeyValuePair<int, Lazy<Task<NstTeamGamesResult>>>(season, fetch));
             }
         }
 
         /// <summary>
-        /// The team table's path: a regular season's 5v5 counts (not per 60) for every team, home and road, over the
-        /// whole season (empty fd and td dates).
+        /// The team game logs path: every team and game of a regular season at 5v5, as counts (not per 60), home and
+        /// road.
         /// </summary>
-        public static string GetTeamTablePath(int season)
+        public static string GetTeamGamesPath(int season)
         {
-            return "teamtable.php?fromseason=" + season + "&thruseason=" + season +
-                   "&stype=2&sit=5v5&score=all&rate=n&team=all&loc=B&gpf=410&fd=&td=";
+            return "games.php?fromseason=" + season + "&thruseason=" + season +
+                   "&stype=2&sit=5v5&loc=B&team=All&rate=n";
         }
 
-        private async Task<NstTeamTableResult> FetchTeamTableAsync(int season, string cacheKey)
+        private async Task<NstTeamGamesResult> FetchTeamGamesAsync(int season, string cacheKey)
         {
-            var html = await GetPageAsync(GetTeamTablePath(season));
+            var html = await GetPageAsync(GetTeamGamesPath(season));
             if (html == null)
             {
-                return new NstTeamTableResult(NstLookupStatus.Unavailable);
+                var unavailable = new NstTeamGamesResult(NstLookupStatus.Unavailable);
+                _cache.Set(cacheKey, unavailable, new MemoryCacheEntryOptions
+                {
+                    Size = 1,
+                    AbsoluteExpirationRelativeToNow = FailedTeamGamesCacheDuration
+                });
+                return unavailable;
             }
 
-            var table = NaturalStatTrickTeamTableParser.Parse(season, html);
-            var result = table == null
-                ? new NstTeamTableResult(NstLookupStatus.NotFound)
-                : new NstTeamTableResult(NstLookupStatus.Found, table);
+            var games = NaturalStatTrickTeamGamesParser.Parse(season, html);
+            var result = games == null
+                ? new NstTeamGamesResult(NstLookupStatus.NotFound)
+                : new NstTeamGamesResult(NstLookupStatus.Found, games);
             _cache.Set(cacheKey, result, new MemoryCacheEntryOptions
             {
-                Size = CachedTeamTableSize,
-                AbsoluteExpirationRelativeToNow = TeamTableCacheDuration
+                Size = CachedTeamGamesSize,
+                AbsoluteExpirationRelativeToNow = TeamGamesCacheDuration
             });
             return result;
         }

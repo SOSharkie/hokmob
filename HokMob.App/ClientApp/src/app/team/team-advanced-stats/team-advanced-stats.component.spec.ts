@@ -1,8 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
-import { mockNstTeamTable, mockTeamGameRows } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
-import { NstStatsUtils } from '@shared/utils/nst-stats-utils';
+import { mockRatedTeamGameRows, mockTeamGameRows } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import { TeamRating, TeamRatingUtils } from '@shared/utils/team-rating-utils';
 
 import { TeamAdvancedStatsComponent } from './team-advanced-stats.component';
@@ -12,7 +11,7 @@ describe('TeamAdvancedStatsComponent', () => {
   let fixture: ComponentFixture<TeamAdvancedStatsComponent>;
   let ratings: TeamRating[];
 
-  /** San Jose, 22 games into 2026-27: 20 points, 56 goals for and 77 against. */
+  /** San Jose, 22 games into 2026-27: 20 points, 56 goals for and 77 against, and 36.56 5v5 xG for and 55.96 against. */
   const sharks = 28;
 
   beforeEach(async () => {
@@ -25,7 +24,7 @@ describe('TeamAdvancedStatsComponent', () => {
 
     fixture = TestBed.createComponent(TeamAdvancedStatsComponent);
     component = fixture.componentInstance;
-    ratings = TeamRatingUtils.getLeagueRatings(mockTeamGameRows());
+    ratings = TeamRatingUtils.getLeagueRatings(mockRatedTeamGameRows());
   });
 
   afterEach(() => {
@@ -54,7 +53,7 @@ describe('TeamAdvancedStatsComponent', () => {
     expect(fixture.nativeElement.querySelector('.team-stats-header').textContent.trim())
         .toBe('2026-2027 Advanced Stats');
     expect(rows().map(row => row.label)).toEqual([
-      'Goal Diff / Game', 'Special Teams Diff / Game', '5v5 Corsi %', '5v5 Fenwick %', 'Shots For %',
+      'Goal Diff / Game', 'Special Teams Diff / Game', '5v5 Corsi %', '5v5 Fenwick %', '5v5 xGF%', 'Shots For %',
       '5v5 Goals For %', '5v5 Shooting %', '5v5 Save %', 'PDO'
     ]);
   });
@@ -77,7 +76,7 @@ describe('TeamAdvancedStatsComponent', () => {
     const team = ratings.find(rating => rating.teamId === sharks);
     const withoutShots = {...team, values: {...team.values, pdo: null}, ranks: {...team.ranks, pdo: null}};
     show(sharks, 20262027, [withoutShots]);
-    const pdo = rows()[8];
+    const pdo = rows()[9];
     expect(pdo.value).toBe('-');
     expect(pdo.rank).toBe('');
   });
@@ -89,41 +88,45 @@ describe('TeamAdvancedStatsComponent', () => {
   });
 
   describe('5v5 xGF% from Natural Stat Trick', () => {
-    function showWithNst(teamId: number = sharks, nstTeams = mockNstTeamTable().teams): void {
-      fixture.componentRef.setInput('nstTeams', nstTeams);
-      show(teamId);
+    /** The ratings when NST can't be asked: worked out from the NHL's stats alone. */
+    function showWithoutNst(teamId: number = sharks): void {
+      show(teamId, 20262027, TeamRatingUtils.getLeagueRatings(mockTeamGameRows()));
     }
 
     it("should show the team's real xGF% and rank after the other shot shares", () => {
-      showWithNst();
+      show(sharks);
       const labels = rows().map(row => row.label);
       expect(labels.indexOf('5v5 xGF%')).toBe(labels.indexOf('5v5 Fenwick %') + 1);
       const xg = rows().find(row => row.label === '5v5 xGF%');
-      // San Jose: 36.54 xG for and 55.97 against
+      // San Jose: 36.56 xG for and 55.96 against
       expect(xg.value).toBe('39.5%');
-      const rank = NstStatsUtils.getTeamExpectedGoalsShares(mockNstTeamTable().teams).get(sharks).rank;
-      expect(xg.rank).toBe(TeamRatingUtils.getOrdinal(rank));
+      const team = ratings.find(rating => rating.teamId === sharks);
+      const higher = ratings.filter(rating => rating.values.expectedGoals > team.values.expectedGoals + 1e-9).length;
+      expect(xg.rank).toBe(TeamRatingUtils.getOrdinal(higher + 1));
       expect(xg.title).toContain('Natural Stat Trick');
     });
 
     it('should credit Natural Stat Trick with a link to its team table', () => {
-      showWithNst();
+      show(sharks);
       const credit: HTMLAnchorElement = fixture.nativeElement.querySelector('.stats-source');
       expect(credit.textContent.trim()).toBe('xGF% from Natural Stat Trick');
       expect(credit.href).toBe('https://www.naturalstattrick.com/teamtable.php');
       expect(credit.target).toBe('_blank');
     });
 
-    it("should leave the row and the credit out without NST's table", () => {
-      show(sharks);
+    it("should leave the row and the credit out without NST's expected goals", () => {
+      showWithoutNst();
+      expect(component.hasExpectedGoals).toBeFalse();
       expect(rows().map(row => row.label)).not.toContain('5v5 xGF%');
+      expect(rows().length).toBe(9);
       expect(fixture.nativeElement.querySelector('.stats-source')).toBeNull();
     });
 
-    it("should leave the row out when NST's table doesn't have the team", () => {
-      showWithNst(sharks, mockNstTeamTable().teams.filter(team => team.name !== 'San Jose Sharks'));
-      expect(rows().length).toBe(9);
-      expect(fixture.nativeElement.querySelector('.stats-source')).toBeNull();
+    it('should keep the other stats the same without them', () => {
+      show(sharks);
+      const withNst = rows().filter(row => row.label !== '5v5 xGF%');
+      showWithoutNst();
+      expect(rows()).toEqual(withNst);
     });
   });
 });

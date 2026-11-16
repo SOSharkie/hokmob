@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
-import { mockTeamGameRows } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockRatedTeamGameRows, mockTeamGameRows } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import { TeamGameStats } from '@shared/models/nhl-stats-api/team-games.model';
 import { TeamRatingUtils } from '@shared/utils/team-rating-utils';
 
@@ -25,7 +25,7 @@ describe('TeamRatingChartComponent', () => {
 
     fixture = TestBed.createComponent(TeamRatingChartComponent);
     component = fixture.componentInstance;
-    games = mockTeamGameRows();
+    games = mockRatedTeamGameRows();
   });
 
   afterEach(() => {
@@ -68,7 +68,7 @@ describe('TeamRatingChartComponent', () => {
   it('should offer the power rating and 8 stats, each in its own color', () => {
     show();
     expect(component.lines.map(item => item.label)).toEqual([
-      'Power rating', 'Points %', 'Goal diff', 'Corsi %', 'Special teams', 'Fenwick %', 'Save %', 'Shooting %', 'PDO'
+      'Power rating', 'Corsi %', 'xGF%', 'Shooting %', 'Save %', 'Power play', 'Penalties', 'Points %', 'Goal diff'
     ]);
     expect(new Set(component.lines.map(item => item.color)).size).toBe(9);
     expect(toggle('Power rating').getAttribute('aria-pressed')).toBe('true');
@@ -76,28 +76,51 @@ describe('TeamRatingChartComponent', () => {
 
   it('should add a stat\'s line on its scale, in the toggles\' order', () => {
     show();
-    toggle('Fenwick %').click();
     toggle('Points %').click();
+    toggle('xGF%').click();
     fixture.detectChanges();
-    expect(datasets().map(dataset => dataset.label)).toEqual(['Power rating', 'Points %', 'Fenwick %']);
+    expect(datasets().map(dataset => dataset.label)).toEqual(['Power rating', 'xGF%', 'Points %']);
     const season = TeamRatingUtils.getLeagueRatings(games).find(rating => rating.teamId === sharks);
-    expect(datasets()[2].data[19].y).toBeCloseTo(season.scores.fenwick, 10);
-    expect(datasets()[2].borderColor).toBe(TeamRatingUtils.getMetric('fenwick').color);
+    expect(datasets()[1].data[19].y).toBeCloseTo(season.scores.expectedGoals, 10);
+    expect(datasets()[1].borderColor).toBe(TeamRatingUtils.getMetric('expectedGoals').color);
+  });
+
+  it('should not offer xGF% without expected goals', () => {
+    show([sharks], mockTeamGameRows());
+    expect(component.lines.map(item => item.label)).toEqual([
+      'Power rating', 'Corsi %', 'Shooting %', 'Save %', 'Power play', 'Penalties', 'Points %', 'Goal diff'
+    ]);
+    expect(toggle('xGF%')).toBeUndefined();
+    // The rating is the one worked out from the NHL's stats alone
+    const season = TeamRatingUtils.getLeagueRatings(mockTeamGameRows()).find(rating => rating.teamId === sharks);
+    expect(season.hasExpectedGoals).toBeFalse();
+    expect(datasets()[0].data[19].y).toBeCloseTo(season.rating, 10);
+  });
+
+  it('should drop the xGF% line when the games no longer have expected goals', () => {
+    show();
+    toggle('xGF%').click();
+    fixture.detectChanges();
+    expect(component.selectedLines).toEqual(['rating', 'expectedGoals']);
+
+    show([sharks], mockTeamGameRows());
+    expect(component.selectedLines).toEqual(['rating']);
+    expect(datasets().map(dataset => dataset.label)).toEqual(['Power rating']);
   });
 
   it('should show up to 4 lines', () => {
     show();
-    ['Points %', 'Goal diff', 'Fenwick %'].forEach(label => toggle(label).click());
+    ['Points %', 'Goal diff', 'xGF%'].forEach(label => toggle(label).click());
     fixture.detectChanges();
     expect(component.selectedLines.length).toBe(4);
-    expect(toggle('PDO').disabled).toBeTrue();
-    expect(toggle('PDO').title).toContain('Up to 4 lines');
-    component.toggleLine(line('pdo'));
-    expect(component.selectedLines).not.toContain('pdo');
+    expect(toggle('Penalties').disabled).toBeTrue();
+    expect(toggle('Penalties').title).toContain('Up to 4 lines');
+    component.toggleLine(line('penaltyDiff'));
+    expect(component.selectedLines).not.toContain('penaltyDiff');
 
     toggle('Goal diff').click();
     fixture.detectChanges();
-    expect(toggle('PDO').disabled).toBeFalse();
+    expect(toggle('Penalties').disabled).toBeFalse();
   });
 
   it('should keep the last line shown', () => {
@@ -143,9 +166,9 @@ describe('TeamRatingChartComponent', () => {
     show([sharks, 6]);
     expect(component.isMultiTeam).toBeTrue();
     expect(datasets().map(dataset => dataset.label)).toEqual(['SJS', 'BOS']);
-    toggle('Fenwick %').click();
+    toggle('xGF%').click();
     fixture.detectChanges();
-    expect(component.selectedLines).toEqual(['fenwick']);
+    expect(component.selectedLines).toEqual(['expectedGoals']);
     expect(datasets().length).toBe(2);
   });
 

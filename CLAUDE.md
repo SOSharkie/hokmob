@@ -36,9 +36,12 @@ A request to one of them is a regression.
   power rating), `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
   into one response.
 - `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, and each
-  shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page, and `/api/nst/teams?season=`,
-  every team's season 5v5 xG from NST's team table (`NaturalStatTrickTeamTableParser`). `NaturalStatTrickClient` caches
-  them and stays under the token limits.
+  shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page, and
+  `/api/nst/team-games?season=`, every team's xG in each game of a season, for the power rating, from NST's team game
+  logs (`NaturalStatTrickTeamGamesParser`). `NaturalStatTrickClient` caches them and stays under the token limits.
+- `data/natural-stat-trick/team-games/`: whole seasons of NST's team game logs as CSV, for backtesting the power
+  rating without asking NST again (see "Team game logs" in `docs/nhl-api.md`). It's in `.gitignore` and must stay out
+  of git: the repo is public, and NST's data isn't republished in it. The app doesn't read the files.
 - `ClientApp/src/app/shared/`:
   - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the
     `/api/nhl-stats/*` responses. `models/nhl-history/`: the history page's season files and rated games.
@@ -49,7 +52,8 @@ A request to one of them is a regression.
     star lineup of the game page's top players and season leaders cards and break their ties; `PickerMenuUtils`
     goes with the `.pill-picker` styles in `styles.scss`, for the draft, playoffs and stats category pickers.
     `StatCategoryUtils` defines the stats page's categories and the columns of their top 25 tables. `TeamRatingUtils`
-    holds the team power rating and advanced stats, for any team (see "Team power rating" in `docs/nhl-api.md`).
+    holds the team power rating and advanced stats, for any team (see "Team power rating" in `docs/nhl-api.md`). The
+    rating counts NST's xG and falls back to the NHL's stats without it, and nothing in it comes from the standings.
 - `ClientApp/src/app/game/rink/`: the rink drawing (`RinkComponent`, which places players with `placeLine`) and
   `_rink-card.scss`, shared by the top players card and a future game's season leaders card. Its card and header
   toggle are in `_rink-card-base.scss`, which the shot map card imports. The player game dialog's shot map

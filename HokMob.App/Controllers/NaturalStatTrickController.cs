@@ -48,14 +48,14 @@ namespace HokMob.App.Controllers
         }
 
         /// <summary>
-        /// Returns every team's 5v5 expected goals for a regular season, as { season, teams: [{ name, gamesPlayed,
-        /// expectedGoalsFor, expectedGoalsAgainst }] }, from NST's team table, kept for an hour. Teams are named as NST
-        /// names them ("St Louis Blues"), with no ID. 404 when NST has no table for the season (no games yet), 503 when
-        /// NST can't be asked right now, as for a game.
+        /// Returns every team's games of a regular season with their 5v5 expected goals, as { season, teams: [names],
+        /// games: { gameId, team, expectedGoalsFor, expectedGoalsAgainst } }: columns of equally long arrays, one row
+        /// per team and game, where team is an index into teams. From NST's team game logs, kept for an hour. Teams are named as NST names them ("St Louis Blues"), with no ID. 404 when NST has no games for the
+        /// season yet, 503 when NST can't be asked right now, as for a game.
         /// </summary>
         /// <param name="season">The season ID, like 20262027, from 2007-08 on.</param>
-        [HttpGet("teams")]
-        public async Task<IActionResult> GetTeamStats(int season)
+        [HttpGet("team-games")]
+        public async Task<IActionResult> GetTeamGames(int season)
         {
             var startYear = season / 10000;
             if (startYear < FirstSeasonStartYear || startYear > DateTime.UtcNow.Year || season % 10000 != startYear + 1)
@@ -63,13 +63,14 @@ namespace HokMob.App.Controllers
                 return BadRequest();
             }
 
-            var result = await _naturalStatTrickClient.GetTeamTableAsync(season);
+            var result = await _naturalStatTrickClient.GetTeamGamesAsync(season);
             return result.Status switch
             {
-                NstLookupStatus.Found => Ok(result.Table),
+                NstLookupStatus.Found => Ok(result.Games),
                 NstLookupStatus.NotFound => NotFound(),
                 _ => StatusCode(StatusCodes.Status503ServiceUnavailable)
             };
         }
+
     }
 }

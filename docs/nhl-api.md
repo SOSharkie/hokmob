@@ -9,7 +9,7 @@ expected goals and Corsi from Natural Stat Trick. All of them are called through
 | api-web | `api-web.nhle.com/v1` | `/api/nhl/<path>` | live, game, team, schedule, standings, playoff, draft and leader data |
 | Stats API | `api.nhle.com/stats/rest/en` | `/api/nhl-stats/*` | per-season and per-game player stats, team season stats, hits and shots leaders, season dates, draft career stats |
 | Player search | `search.d3.nhle.com` | `/api/nhl-search/player` | header search |
-| Natural Stat Trick | `data.naturalstattrick.com` | `/api/nst/game/{gameId}`, `/api/nst/teams?season=` | a live or finished game's expected goals (xG) and Corsi, for teams and skaters, and every team's season 5v5 xG (see [Natural Stat Trick](#natural-stat-trick)) |
+| Natural Stat Trick | `data.naturalstattrick.com` | `/api/nst/game/{gameId}`, `/api/nst/team-games?season=` | a live or finished game's expected goals (xG) and Corsi, for teams and skaters, and every team's xG in each game of a season, for the power rating (see [Natural Stat Trick](#natural-stat-trick)) |
 
 Reference: [Zmalski/NHL-API-Reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md). It documents
 api-web well. For the stats API it lists endpoints and query parameters but not the report names, the `cayenneExp`
@@ -26,14 +26,14 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Leaderboards: hits, shots | Stats API | api-web has no such categories (`categories=hits` returns 400) |
 | A leaderboard's top 25 table: the related columns | Stats API, for the 25 leaders' IDs | The leaders only carry their own `value`; the order still comes from the leaderboard's source, so it matches the card |
 | Team season stats (PP%, PK%, goals and shots per game) | Stats API `team/summary` | All 32 teams in one call, so league ranks come for free |
-| Team power rating and advanced stats (Corsi, Fenwick, 5v5 percentages, PDO) | Stats API team reports, per game (`/api/nhl-stats/team-games`) | Every team's game by game counts in one response, so the browser can rate the league on any day of the season; api-web has no shot attempts by strength |
+| Team power rating and advanced stats (Corsi, Fenwick, 5v5 percentages, PDO) | Stats API team reports, per game (`/api/nhl-stats/team-games`), with Natural Stat Trick's xG per game | Every team's game by game counts in one response, so the browser can rate the league on any day of the season; api-web has no shot attempts by strength |
 | Standings, schedules, team form, next game, live games | api-web | The stats API has no schedules, and whether it has rows during a live game is unverified |
 | Playoff bracket and series | api-web `playoff-bracket`, `playoff-series/*` | Not in the stats API |
 | Season dates (current season, playoff mode) | Stats API `season` and `game` | Every season, not just the current one |
 | Team IDs, names, logos, colors | `NhlTeamUtils` and the logo and color utils | The stats API's `team` report has no logos or colors, and its `triCode` isn't unique (`UTA` is both Utah Hockey Club 59 and Utah Mammoth 68) |
 | Player search | `search.d3.nhle.com` | Active filter, current team and up to 20 results; the stats API's `players` has none of that |
 | Expected goals (xG), Corsi | Natural Stat Trick | Neither NHL API has them per game, and neither has xG |
-| A team's season 5v5 xGF% (team stats tab) | Natural Stat Trick's team table | Every team in one page, so one fetch an hour covers the league |
+| Each team's xG per game (the power rating, and 5v5 xGF%) | Natural Stat Trick's team game logs | A whole season of every team's games in one page, so one fetch an hour covers the league |
 
 ## What each page loads
 
@@ -47,7 +47,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Stats category (`/stats/{category}`, a card's top 25) | `standings/now`, the card's leaders with `limit=25` and only its category, then `/api/nhl-stats/season-players?season=&gameType=&position=skater` or `goalie` `&ids=` (the 25 IDs) for the other columns, `/api/nhl-stats/seasons`. The categories and their columns are in `StatCategoryUtils` |
 | Playoffs | `playoff-bracket/{year}`, `schedule/playoff-series/{season}/{letter}` for the series dialog, `/api/nhl-stats/seasons` |
 | Standings | `standings/now` |
-| Teams | `standings/now` (for the season ID), `/api/nhl-stats/teams?season=&gameType=2`, `/api/nhl-stats/team-games?season=&gameType=2` and `/api/nst/teams?season=` (see [Teams page](#teams-page)) |
+| Teams | `standings/now` (for the season ID), `/api/nhl-stats/teams?season=&gameType=2`, `/api/nhl-stats/team-games?season=&gameType=2` and `/api/nst/team-games?season=` (see [Teams page](#teams-page)) |
 | Draft | `draft/picks/{year}/{round}` (or `draft/picks/now`), `/api/nhl-stats/draft?year=&round=` — see [`draft-page.md`](draft-page.md) |
 | Header search | `/api/nhl-search/player?q=…`; teams come from `NhlTeamUtils`, with no request |
 | History | `assets/history/{season}-{gameType}.json`, a static file generated from the stats API (see [History data](#history-data)), with no NHL API request |
@@ -159,7 +159,7 @@ upstream returns 502 rather than a partial answer.
 
 `NaturalStatTrickClient` keeps a game NST marks final with a 24-hour sliding expiration, and anything else (a game
 in progress, or no stats yet) for 3 minutes, or 10 once the key's standard tokens are below half. It keeps a season's
-team table for an hour. See [Natural Stat Trick](#natural-stat-trick) for why.
+team game logs for an hour. See [Natural Stat Trick](#natural-stat-trick) for why.
 
 ### Surviving an api-web outage
 
@@ -195,8 +195,9 @@ the back button still leaves the page.
   its `throughDate` (the column's tooltip says so), while the stats are current.
 - **Team stats:** the power rating, the team stats (points % first) and the advanced stats cards, three across on a desktop, in two
   columns on a tablet and stacked on a phone, and the power rating chart below them (see
-  [Team power rating](#team-power-rating)). The team stats card only needs `/api/nhl-stats/teams`, so it shows while
-  the season's games load and when they fail.
+  [Team power rating](#team-power-rating)). The tab loads `/api/nhl-stats/team-games` and NST's
+  `/api/nst/team-games` at once and rates the league when both are back. The team stats card only needs
+  `/api/nhl-stats/teams`, so it shows while the season's games load and when they fail.
 - **Games:** the next game and the schedule, and the form.
 
 ## Team power rating
@@ -210,61 +211,113 @@ from one of the required reports is left out, but a missing goals by strength ro
 table). All six calls are required, or it answers 502. A season is about 2,600 rows per report, under the 10,000 row
 cap.
 
+Each game's expected goals come from Natural Stat Trick's `/api/nst/team-games?season=` (see
+[Team game logs](#team-game-logs)): the team's 5v5 xG for and against. The team stats tab and the teams page ask for both at once, merge them by game and team
+(`TeamRatingUtils.withExpectedGoals`) and rate the league once both are back, so the rating doesn't change under the
+reader when the expected goals come in. NST failing isn't an error: the rating falls back to the NHL's stats (see
+Fallback).
+
 `TeamRatingUtils` (`shared/utils`) works out the totals, the advanced stats and the rating from those rows, for any
 set of teams and days, so a league page can reuse it:
 
-- **Stats:** points %, goal differential per game, special teams goal differential per game (power play and
-  short-handed goals for, minus those against), 5v5 Corsi % and Fenwick %, shots for % (all situations), 5v5 goals for
-  %, 5v5 shooting % and save %, and PDO (5v5 shooting % + save %, × 100). Each is ranked against the other teams over
-  the same games.
+- **Stats:** the ones a rating can count: 5v5 Corsi %, 5v5 xGF% (NST), 5v5 shooting % and save %, net power play %
+  (power play goals minus short-handed goals against, per power play) and the penalty differential per game (power
+  plays drawn minus times short-handed). And the ones shown but not rated: points %, goal differential
+  per game, special teams goal differential per game, 5v5 Fenwick %, shots for % (all situations), 5v5 goals for %
+  and PDO (5v5 shooting % + save %, × 100). Each is ranked against the other teams over the same games.
 - **Scores:** each stat is compared to the league: 5 plus 1.5 points per standard deviation from the teams' mean,
   from 0 to 10.
 - **Rating:** the weighted sum of the rated stats' deviations, scaled back to one deviation the same way, so it's 0 to
-  10 with one decimal like a HokMob player rating (San Jose was 3.7 through 2026-11-14), 5 is an average team, and the
-  spread doesn't depend on how early in the season it is. Colored in the HokMob rating colors, at team thresholds:
-  blue from 7 (about the top 10%), green from 5.5, orange from 4, red below. The player thresholds (green from 7) would
-  make most teams red.
-- **Weights:** 30% points %, 20% goal differential, 30% 5v5 Corsi % and 20% special teams. Picked by backtesting
-  the 2022-23 to 2025-26 regular seasons: each team's rating after 10, 20, 30, 41 and 55 games against its points %
-  over the rest of the season. These weights correlated 0.52, 0.60, 0.65, 0.67 and 0.60 at those checkpoints, against
-  0.43 to 0.64 for points % alone and 0.46 to 0.64 for five stats weighted evenly. Fenwick in place of Corsi tracked
-  the same within noise (0.53, 0.61, 0.65, 0.67 and 0.61: 0.006 better on average), and teams' Corsi % and Fenwick %
-  correlate at 0.97, so the rating uses Corsi like the rest of the site; swapping them moved 2026-27's ratings
-  (through 2026-11-14) by 0.12 on average and no team more than 3 places. 5v5 save % and shooting % tracked
-  hardly at all (under 0.23), so they're shown but not rated.
-- **xG isn't rated.** NST's 5v5 xGF% (see [Team table](#team-table)) was backtested the same way, on 20 team tables
-  through each checkpoint's date: alone it beat Corsi (0.520 against 0.470 on average), but in the rating, 30% xG
-  instead of Corsi averaged 0.608 against 0.607, and the best mix tried (35% xG, 15% Corsi) 0.620, better in the
-  first 20 games and worse from 30 on, and worse in 2 of the 4 seasons. Rating it would also need a stored NST table
-  for every night of the chart, so it's shown on the advanced stats card instead.
+  10 with one decimal like a HokMob player rating (San Jose was 2.9 through 2026-11-14, and 3.4 on the fallback), 5
+  is an average team, and the spread doesn't depend on how early in the season it is. Colored in the HokMob rating
+  colors, at team thresholds: blue from 7 (about the top 10%), green from 5.5, orange from 4, red below. The player
+  thresholds (green from 7) would make most teams red.
+- **Weights** (`expectedGoalsWeights`): 30% 5v5 Corsi %, 15% 5v5 xGF%, 15% 5v5 shooting %, 10% 5v5 save %, 20% net
+  power play % and 10% penalty differential. The penalty kill isn't rated (see below). Nothing comes from the
+  standings: the rating is a statistical look at how a team plays, so points %, wins and goal differential aren't in
+  it (they were until 2026-11: 30% points %, 20% goal differential, 30% Corsi and 20% special teams).
+- **Fallback** (`nhlWeights`): over games where a team has no expected goals, every team is rated on the NHL's stats
+  alone, so the teams are always compared on the same stats: 45% Corsi (it takes xGF%'s share), 15% shooting %, 10%
+  save %, 20% net power play % and 10% penalty differential. That happens when NST can't be
+  asked (503, or no key), when it has no games for the season yet, and on the first day after a team's first game,
+  until NST's hourly copy has it. A team whose latest game NST doesn't have yet still has expected goals from its
+  earlier games, so one missing game doesn't change the weights. `TeamRating.hasExpectedGoals` and `weights` say
+  which a rating used, and each point of the timeline decides for itself.
 - **Timeline:** `getTimeline` rates the league on each of a team's game days, from its 3rd game, counting only the
   games played by then, so a point is where the team stood that night. With `lastGames: 10` each day counts only
   every team's last 10 games (the chart's Last 10).
 
-The power rating card shows the rating, its rank, its change over the last 5 games and each rated stat with a bar from
-the league average. The chart (`TeamRatingChartComponent`, `shared/components`) plots up to 4 of its 9 lines (the
-rating and 8 stats) on the rating's scale, all on one axis, with each stat's value and rank in the tooltip. Given several teams, it
-plots one stat with a line per team, in the teams' colors, for a future league page.
+### How the weights were picked
+
+By backtesting the 2021-22 to 2025-26 seasons (the game has changed too much to weigh older ones the same; 2015-16
+to 2020-21 were only a second check). Each team was rated after 10, 20, 30, 41, 55 and 70 games, and the rating
+compared to the team's **forward strength**: how strong it proved over every game it played afterwards, the rest of
+the regular season and the playoffs, with playoff games counted double, each result adjusted for the opponent and
+home ice (a ridge Bradley-Terry fit), and a shootout counted as a tie. So a deep playoff run against good teams
+counts, and loser points don't. The number below is the correlation between rating and forward strength, averaged
+over the six checkpoints and the five seasons.
+
+| Rating | Tracks forward strength | Tracks points % so far |
+|---|---|---|
+| Points % alone | 0.575 | 1.00 |
+| Goal differential alone | 0.556 | 0.92 |
+| 5v5 Corsi % alone | 0.553 | 0.45 |
+| The rating until 2026-11 (30% points %, 20% goal differential, 30% Corsi, 20% special teams) | 0.645 | 0.90 |
+| The fallback weights (NHL stats only) | 0.664 | 0.71 |
+| The weights with NST's expected goals | 0.669 | 0.74 |
+
+- **The differences are small.** Resampling team-seasons, the fallback weights beat the old rating by 0.017 (90%
+  interval -0.015 to 0.050), the expected goals weights beat the fallback by 0.007 (-0.006 to 0.021), and the old
+  rating by 0.024 (-0.004 to 0.055). What changed for sure is that the rating no longer mirrors the standings. Over
+  2015-16 to 2020-21 the old rating tracked a little better (0.464 against 0.423 and 0.442), and adding 20% points %
+  on top still adds about 0.009.
+- **What each stat adds:** shot share is the backbone, and the only stat that tracks playoff strength at the end of a
+  season. Shooting and save % are noise over 10 games (they repeat at 0.08 and 0.10 from one 10 game block to the
+  next, against 0.58 for Corsi) but add up over a season. xG works as a blend with Corsi:
+  replacing Corsi with it tracked worse (0.644).
+- **The penalty kill isn't rated.** The power play matters, the penalty kill hardly does: 5% net penalty kill %
+  tracked a little worse than none (0.665), and 5% of NST's expected goals against per 60 short-handed, which track
+  better alone (0.31 against 0.18), only added 0.002 (0.670, 90% interval of the difference -0.004 to 0.008) for a
+  second NST page an hour, and moved the ratings by 0.10 on average.
+- **Tested and left out:** score adjusted Corsi and xG, Fenwick, scoring chances (as good as xG, within noise),
+  high danger chances, goals saved and scored above expected, opponent and home ice adjustment, weighting recent
+  games more, weights that grow with games played, faceoffs, hits, blocks, takeaways and giveaways.
+- **Not done:** blending in last season's final rating early on tracked clearly better (0.695, and 0.68 instead of
+  0.59 after 10 games), but it makes the rating about more than this season.
+
+The backtest's NST data is kept locally, outside git (see [Team game logs](#team-game-logs)); the NHL's per game
+team reports come from the stats API with `isGame=true`.
+
+The power rating card shows the rating, its rank, its change over the last 5 games and each rated stat with its
+weight and a bar from the league average: the stats and weights the rating was worked out with. It credits Natural
+Stat Trick for the xG, or says the team is rated without expected goals on the fallback. The chart
+(`TeamRatingChartComponent`, `shared/components`) plots up to 4 of its 9 lines (the rating and 8 stats: Corsi %,
+xGF%, shooting %, save %, power play, penalties, points % and goal differential) on the rating's scale, all on one
+axis, with each stat's value and rank in the tooltip. xGF% isn't offered when the games have no expected goals.
+Given several teams, it plots one stat with a line per team, in the teams' colors, for a future league page.
 
 ## Teams page
 
 `/teams` (`TeamsComponent`, the home page's Teams link) is every team's regular season in one sortable table, by
 the power rating by default. The season is the standings' season, like the stats and team pages. It loads
-`/api/nhl-stats/teams`, `/api/nhl-stats/team-games` and NST's `/api/nst/teams` at once, and shows the table when the
-first two are back:
+`/api/nhl-stats/teams`, `/api/nhl-stats/team-games` and NST's `/api/nst/team-games` at once, and shows the table when
+all three have answered or failed, so the rating doesn't change under the reader when the expected goals come in:
 
 - **Columns:** the power rating, then five sections, each a header group: Record (GP, W, L, OTL, PTS, P%), Scoring
   (GF/GP, GA/GP, goal differential per game, SF/GP, SA/GP), Special Teams (PP%, PK%, special teams goal differential
   per game, FO%), Possession (5v5 CF% and FF%, xGF%, SF% in all situations) and 5v5 (GF%, SH%, SV%, PDO). The record,
   per game, PP%, PK% and FO% come from the stats API rows, the rest from `TeamRatingUtils`. Each header's tooltip says
-  what it is. xGF% only shows once NST answers, credited under the table.
+  what it is. xGF% only shows when the games have NST's expected goals, credited under the table. Its sort ID is
+  still `xg`.
 - **Sections:** below 1200px (`$small-display-breakpoint`) the table shows one section at a time beside the team and
   its rating, picked from pills above it (the standings filters' style), and the group headers go. The CSS hides the
   other sections' columns (`.out-of-section`), so 1200px and up shows every column whatever is picked. Picking a
   section that hides the sorted column sorts by the rating again, and sorting by a column picks its section. On a phone
   the headers are tighter, with the sort arrow after the label, and a section still scrolls a little (Scoring, the
   widest, about 130px at 375px).
-- **Failures:** without the games, the rating and advanced columns show dashes and a note says so, and the default
+- **Failures:** without NST's expected goals, the rating is the fallback from the NHL's stats (see
+  [Team power rating](#team-power-rating)) and the xGF% column and the credit go, with no note. Without the games,
+  the rating and advanced columns show dashes and a note says so, and the default
   sort falls back to points % (ties go to the rating, then points %, then the name). Without the stats API rows (a
   season's first days, before it has any), the record and per game columns come from the games' totals, and PP%,
   PK% and FO% show dashes. Without both, it shows an error.
@@ -544,26 +597,48 @@ player dialog.
 A game NST has no stats for has no `tbtsall` table, and the endpoint answers 404. NST tracks games live, so a game
 that just ended may still have partial numbers: the heading's `<h2>` says "Final" once NST has it all (`isFinal`).
 
-### Team table
+### Team game logs
 
-`/api/nst/teams?season=20262027` reads NST's team table (`NaturalStatTrickTeamTableParser`):
-`teamtable.php?fromseason=20262027&thruseason=20262027&stype=2&sit=5v5&score=all&rate=n&team=all&loc=B&gpf=410&fd=&td=`,
-the whole regular season's 5v5 counts for every team on one 63 KB page, which costs the same 10 tokens as a game
-page. It's kept an hour, so it costs at most 24 pages a day. The advanced stats card shows each team's xGF%
-(`expectedGoalsFor` / (`expectedGoalsFor` + `expectedGoalsAgainst`)) and its rank, credits NST under the card, and
-leaves the row out when NST can't be asked (503) or has no table yet (404).
+`/api/nst/team-games?season=20262027` reads NST's team game logs (`NaturalStatTrickTeamGamesParser`):
+`games.php?fromseason=20262027&thruseason=20262027&stype=2&sit=5v5&loc=B&team=All&rate=n`, every team's every game
+of a regular season at one strength state, on one page (about 3 MB for a full season, the same 10 tokens as any
+page). The endpoint fetches the 5v5 page and reads one row per team and game: the 5v5 xG for and against. It's sent
+as columns, with the teams named once (`{ season, teams: [names], games: { gameId, team, expectedGoalsFor,
+expectedGoalsAgainst } }`, where `team` is an index into `teams`), 16 KB for 650 rows. The page is kept an hour, so
+it costs at most 24 pages a day, like the team table it replaced, and a failed
+fetch is kept 5 minutes, so an outage isn't asked about on every visit. It answers 404 when NST has no games for the
+season yet and 503 when NST can't be asked.
 
-- **Table:** one `<table id=teams>`, a row per team in NST's order (by points %), with 72 columns: GP, TOI, the
-  record and points %, then for, against and % of Corsi (CF), Fenwick (FF), shots, goals, xG, scoring chances and
-  high, medium and low danger chances, then SH%, SV% and PDO. The rows aren't closed (no `</tr>`). The parser reads
-  the team, GP, xGF and xGA.
+The power rating counts these (see [Team power rating](#team-power-rating)), and they give the 5v5 xGF% of the
+advanced stats card and the teams page, which credit NST. `NaturalStatTrickService.getTeamGames` gives each row the
+NHL's team ID.
+
+- **Table:** one `<table id=teams>`, a row per team and game, with the TOI and the for and against counts of Corsi,
+  Fenwick, shots, goals, xG, scoring chances and high, medium and low danger chances, then SH%, SV% and PDO. The rows
+  aren't closed (no `</tr>`). The first cell is the date and score ("2025-10-07 - Blackhawks 2, Panthers 3"), and the
+  report links give the game ID (`game=20001` is 2025020001). The parser reads the team, xGF and xGA.
 - **Teams** are named, with no ID or abbreviation, and without periods or accents: "St Louis Blues", "Montreal
   Canadiens". `NhlTeamUtils.getTeamIdByName` matches them, and tells "Utah Hockey Club" (59) and "Utah Mammoth" (68)
   apart.
-- **Dates:** `fd` and `td` (like `2026-10-31`) limit the table to a date range. Through 2026-10-31 its games played
-  matched the stats API's for every team checked. The endpoint asks for the whole season; the backtest used the dates.
-- **Numbers:** its Fenwick % matches the stats API's (San Jose 46.18% against 46.2%), but its Corsi % differs a little
-  (46.73% against 47.0%), so the card's Corsi comes from the stats API like the rating.
+- **Gaps:** a game NST doesn't have (yet) has no row, and the rating goes without it (one 2021-22 game never got
+  one). The other strength states have gaps of their own: a team that was never short-handed in a game has no row
+  on the `sit=pk` page.
+- **Numbers:** its 5v5 Corsi % correlates 0.997 with the stats API's across teams (2025-26), but isn't the same
+  (San Jose 46.73% against 47.0%), so the Corsi shown and rated comes from the stats API. San Jose's 22 games through
+  2026-11-14 added up to 36.56 xG for and 55.96 against, the team table's 36.54 and 55.97 within rounding.
+- **The team table** (`teamtable.php`, which the app used for xGF% before) is the same counts summed per team, and
+  takes `fd` and `td` dates. It isn't fetched anymore, but it's the public page the cards link to as the credit.
+
+**Local copies.** `data/natural-stat-trick/team-games/{season}-2-{sit}.csv` at the repo root keeps whole seasons
+for backtesting the rating. The folder is in `.gitignore`: the repo is public, and NST's data isn't republished in
+it, so the files only exist on a machine that has fetched them, and a new checkout has none. They're written by
+`npm run build-nst-team-games -- <season>`
+(`ClientApp/build-nst-team-games.js`, which takes the key from `NST_KEY` or the user secrets and stops when the
+tokens run low). Columns: `gameId`, `date`, `teamId` (the NHL's), `toi` in seconds, then every count of the table;
+the percentages are left out. 2021-22 to 2025-26 and 2026-27 through 2026-11-15 have `5v5`, `sva` (score and venue
+adjusted 5v5), `all`, `pp` and `pk`; 2015-16 to 2020-21 have no `sva` (fetched on 2026-11-16, 54 pages). A finished
+season never needs fetching again while the files are kept; rerun the current season's to refresh it (5 pages). The
+app doesn't read these files.
 
 ### Live games
 

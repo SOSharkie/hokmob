@@ -119,8 +119,10 @@ import nstGame2025030414 from './nst-game-2025030414.json';
 import nstGame2026020144Live from './nst-game-2026020144-live.json';
 import gamecenter2026020144PlayByPlayLive from './gamecenter-2026020144-play-by-play-live.json';
 import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
-import {NstTeamTable} from "@shared/models/natural-stat-trick/nst-team-stats.model";
-import nstTeams20262027 from './nst-teams-20262027.json';
+import {NstTeamGameStats, NstTeamGamesResponse} from "@shared/models/natural-stat-trick/nst-team-games.model";
+import nstTeamGames20262027 from './nst-team-games-20262027.json';
+import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
+import {TeamRatingUtils} from "@shared/utils/team-rating-utils";
 
 /*
  * Real responses for unit tests, captured on 2026-09-15: api-web.nhle.com responses, the player search
@@ -747,12 +749,35 @@ export type MockNstGameId = 2026020010 | 2025030414;
  * Pontus Holmberg at 2:05 of the 2nd, 5ft and 6ft out, both 0.3 xG.
  */
 /**
- * /api/nst/teams?season=20262027, captured from a running app on 2026-11-15: every team's 5v5 xG through 2026-11-14,
- * in NST's order (Florida first). San Jose (22 games) had 36.54 xG for and 55.97 against (39.5% xGF), Boston (20 games)
- * 46.33 and 42.06. NST names St. Louis "St Louis Blues" and Montréal "Montreal Canadiens".
+ * /api/nst/team-games?season=20262027, captured from a running app on 2026-11-16 and cut to the 325 games of
+ * mockTeamGames() (through 2026-11-14): every team's 5v5 xG for and against per game, 650 rows as columns. San Jose's
+ * 22 games add up to 36.56 xG for and 55.96 against (39.5% xGF).
+ * NST names St. Louis "St Louis Blues" and Montréal "Montreal Canadiens".
  */
-export function mockNstTeamTable(): NstTeamTable {
-  return copy(nstTeams20262027);
+export function mockNstTeamGames(): NstTeamGamesResponse {
+  return copy(nstTeamGames20262027);
+}
+
+/**
+ * mockNstTeamGames() as one object per row with the NHL's team ID, the way NaturalStatTrickService.getTeamGames
+ * resolves them.
+ */
+export function mockNstTeamGameRows(): NstTeamGameStats[] {
+  const response = mockNstTeamGames();
+  const games = response.games;
+  return games.gameId.map((gameId, i) => ({
+    gameId,
+    teamId: NhlTeamUtils.getTeamIdByName(response.teams[games.team[i]]),
+    expectedGoalsFor: games.expectedGoalsFor[i],
+    expectedGoalsAgainst: games.expectedGoalsAgainst[i]
+  }));
+}
+
+/**
+ * mockTeamGameRows() with NST's expected goals merged in, the games a page rates the league on when NST answers.
+ */
+export function mockRatedTeamGameRows(): TeamGameStats[] {
+  return TeamRatingUtils.withExpectedGoals(mockTeamGameRows(), mockNstTeamGameRows());
 }
 
 export function mockNstGameStats(gameId: MockNstGameId): NstGameStats {

@@ -397,3 +397,7 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /.idea/
+
+# Natural Stat Trick's team game logs, kept locally for backtests (build-nst-team-games.js). NST's data isn't
+# republished in this public repo
+/data/natural-stat-trick/
