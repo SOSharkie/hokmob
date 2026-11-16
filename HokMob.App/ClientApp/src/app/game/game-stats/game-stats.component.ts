@@ -30,6 +30,8 @@ interface GameStatRowDefinition {
   /** The category compared to find the better team, when it isn't the shown one. */
   compareCategory?: string;
   lowerIsBetter?: boolean;
+  /** The highest valid compared value. Outside 0 to this, the row isn't highlighted. */
+  maxCompareValue?: number;
   format?: (value: number | string) => string;
 }
 
@@ -86,7 +88,8 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   private readonly rowDefinitions: GameStatRowDefinition[] = [
     {label: "Faceoff %", category: "faceoffWinningPctg", format: value => (Number(value) * 100).toFixed(1) + "%"},
-    {label: "Power Plays", category: "powerPlay", compareCategory: "powerPlayPctg"},
+    {label: "Power Plays", category: "powerPlay", compareCategory: "powerPlayPctg", maxCompareValue: 1,
+      format: value => GameStatsComponent.formatPowerPlay(value)},
     {label: "Penalty Minutes", category: "pim", lowerIsBetter: true},
     {label: "Hits", category: "hits"}
   ];
@@ -188,7 +191,9 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
       const compared = stats.get(definition.compareCategory ?? definition.category);
       const home = GameStatsComponent.toNumber(compared?.homeValue);
       const away = GameStatsComponent.toNumber(compared?.awayValue);
-      const comparable = home !== undefined && away !== undefined;
+      const inRange = (value: number) => definition.maxCompareValue === undefined ||
+          (value >= 0 && value <= definition.maxCompareValue);
+      const comparable = home !== undefined && away !== undefined && inRange(home) && inRange(away);
       const format = (value: number | string) => value === undefined || value === null ? "-" :
           definition.format ? definition.format(value) : String(value);
       return {
@@ -240,6 +245,21 @@ export class GameStatsComponent implements OnChanges, AfterViewInit, OnDestroy {
     dataset.backgroundColor = [this.awayColor, this.homeColor];
     dataset.data = [this.awayShots, this.homeShots];
     this.shotDoughnutChart.update();
+  }
+
+  /**
+   * A power play's "goals/opportunities", like "1/3". When a penalty is called, api-web briefly counts the other
+   * team's opportunities one short, which can make them negative ("0/-1"), so neither number goes below 0 and the
+   * opportunities never go below the goals. Anything else is shown as it is.
+   */
+  public static formatPowerPlay(value: number | string): string {
+    const match = /^\s*(-?\d+)\s*\/\s*(-?\d+)\s*$/.exec(String(value));
+    if (!match) {
+      return String(value);
+    }
+    const goals = Math.max(0, Number(match[1]));
+    const opportunities = Math.max(goals, Number(match[2]));
+    return goals + "/" + opportunities;
   }
 
   private static toNumber(value: number | string): number {
