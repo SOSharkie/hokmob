@@ -47,6 +47,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Stats category (`/stats/{category}`, a card's top 25) | `standings/now`, the card's leaders with `limit=25` and only its category, then `/api/nhl-stats/season-players?season=&gameType=&position=skater` or `goalie` `&ids=` (the 25 IDs) for the other columns, `/api/nhl-stats/seasons`. The categories and their columns are in `StatCategoryUtils` |
 | Playoffs | `playoff-bracket/{year}`, `schedule/playoff-series/{season}/{letter}` for the series dialog, `/api/nhl-stats/seasons` |
 | Standings | `standings/now` |
+| Teams | `standings/now` (for the season ID), `/api/nhl-stats/teams?season=&gameType=2`, `/api/nhl-stats/team-games?season=&gameType=2` and `/api/nst/teams?season=` (see [Teams page](#teams-page)) |
 | Draft | `draft/picks/{year}/{round}` (or `draft/picks/now`), `/api/nhl-stats/draft?year=&round=` — see [`draft-page.md`](draft-page.md) |
 | Header search | `/api/nhl-search/player?q=…`; teams come from `NhlTeamUtils`, with no request |
 | History | `assets/history/{season}-{gameType}.json`, a static file generated from the stats API (see [History data](#history-data)), with no NHL API request |
@@ -244,6 +245,43 @@ The power rating card shows the rating, its rank, its change over the last 5 gam
 the league average. The chart (`TeamRatingChartComponent`, `shared/components`) plots up to 4 of its 9 lines (the
 rating and 8 stats) on the rating's scale, all on one axis, with each stat's value and rank in the tooltip. Given several teams, it
 plots one stat with a line per team, in the teams' colors, for a future league page.
+
+## Teams page
+
+`/teams` (`TeamsComponent`, the home page's Teams link) is every team's regular season in one sortable table, by
+the power rating by default. The season is the standings' season, like the stats and team pages. It loads
+`/api/nhl-stats/teams`, `/api/nhl-stats/team-games` and NST's `/api/nst/teams` at once, and shows the table when the
+first two are back:
+
+- **Columns:** the power rating, then five sections, each a header group: Record (GP, W, L, OTL, PTS, P%), Scoring
+  (GF/GP, GA/GP, goal differential per game, SF/GP, SA/GP), Special Teams (PP%, PK%, special teams goal differential
+  per game, FO%), Possession (5v5 CF% and FF%, xGF%, SF% in all situations) and 5v5 (GF%, SH%, SV%, PDO). The record,
+  per game, PP%, PK% and FO% come from the stats API rows, the rest from `TeamRatingUtils`. Each header's tooltip says
+  what it is. xGF% only shows once NST answers, credited under the table.
+- **Sections:** below 1200px (`$small-display-breakpoint`) the table shows one section at a time beside the team and
+  its rating, picked from pills above it (the standings filters' style), and the group headers go. The CSS hides the
+  other sections' columns (`.out-of-section`), so 1200px and up shows every column whatever is picked. Picking a
+  section that hides the sorted column sorts by the rating again, and sorting by a column picks its section. On a phone
+  the headers are tighter, with the sort arrow after the label, and a section still scrolls a little (Scoring, the
+  widest, about 130px at 375px).
+- **Failures:** without the games, the rating and advanced columns show dashes and a note says so, and the default
+  sort falls back to points % (ties go to the rating, then points %, then the name). Without the stats API rows (a
+  season's first days, before it has any), the record and per game columns come from the games' totals, and PP%,
+  PK% and FO% show dashes. Without both, it shows an error.
+- **Sort:** clicking a header sorts by it, best first (goals and shots against, losses and OTL lowest first), and
+  again reverses it; teams without a value stay last. It's kept in the URL as `sort` (the column ID, like `corsi`),
+  `order` (`asc` or `desc`) and `section` (like `possession`), each left out at its default (the section's is the sorted
+  column's, or Record for the rating), written with `Location.replaceState` like the team
+  page's tabs, so sorting doesn't scroll or add history entries.
+- **Layout:** the team column (position, logo, name) stays in view while the table scrolls sideways, which from 1200px
+  it always does, since the site's pages are at most 1,400px wide. Phones show the abbreviation instead of the name.
+- **Sticky scrollbar:** the table's own scrollbar is hidden, and a scrollbar below it sticks to the bottom of the screen
+  while the table is in view, so the table can be scrolled sideways without going to its end. The two are kept in step
+  with scroll listeners (outside Angular's zone), and a ResizeObserver sizes the scrollbar's content to the table's
+  width and hides it when the table fits. On a phone it sits on the app's bottom menu and follows it down when it slides
+  off (`ScrollDirectionService`). Sticking needs every ancestor to leave overflow visible or `clip`: `hidden`, as the
+  router outlet in `app.component.scss` and the card had, makes that element the scroll container, and the scrollbar
+  never sticks.
 
 ## Season leaders
 

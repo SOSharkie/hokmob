@@ -65,6 +65,7 @@ import { TeamRatingChartComponent } from './shared/components/team-rating-chart/
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
 import { TeamStandingsComponent } from './team/team-standings/team-standings.component';
 import { TeamPlayerStatsComponent } from './team/team-player-stats/team-player-stats.component';
+import { TeamsComponent } from './teams/teams.component';
 import { StandingsSummaryComponent } from './home/standings-summary/standings-summary.component';
 import { GameTopPlayersComponent } from './game/game-top-players/game-top-players.component';
 import { GameSeasonLeadersComponent } from './game/game-season-leaders/game-season-leaders.component';
@@ -136,6 +137,7 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
     TeamNextGameComponent,
     TeamStandingsComponent,
     TeamPlayerStatsComponent,
+    TeamsComponent,
     StandingsSummaryComponent,
     GameTopPlayersComponent,
     GameSeasonLeadersComponent,

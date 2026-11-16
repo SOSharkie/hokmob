@@ -1,12 +1,10 @@
 @use "variables" as *;
 @use "interaction" as *;
+@use "sortable-table" as *;
 
 // The space between the card's left edge and its content, smaller on phones
 $table-edge: $spacing-xx-large;
 $table-edge-phone: $spacing-x-large;
-
-// A column header's side padding: room for the sort arrow (8px wide, $spacing-small from the edge) and a gap
-$sort-button-side: 14px;
 
 :host {
   display: flex;
@@ -96,55 +94,7 @@ $sort-button-side: 14px;
     text-align: center;
   }
 
-  // The same padding on both sides, so the label centers over its column's values and the hover background stays
-  // even. The sort arrow sits in the right padding.
-  .sort-button {
-    @include button-reset;
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    padding: $spacing-small $sort-button-side;
-    border-radius: 8px;
-    white-space: nowrap;
-    @include pressable(background-color, color);
-    @include focus-ring;
-    @include hover {
-      color: white;
-      background-color: $black-04;
-    }
-  }
-
-  // The sorted column: a brighter header and a tinted column
-  .sorted-column {
-    background-color: rgba(255, 255, 255, 0.04);
-  }
-
-  .stat-header.sorted-column .sort-button {
-    color: white;
-    font-weight: 500;
-  }
-
-  // A small arrow beside the sorted column's header: down for most first, up for least first. It's laid over the
-  // button's right padding, so it takes no room and sorting doesn't shift the headers.
-  .sort-indicator {
-    position: absolute;
-    top: 50%;
-    right: $spacing-small;
-    transform: translateY(-50%);
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid currentColor;
-    visibility: hidden;
-
-    &.visible {
-      visibility: visible;
-    }
-
-    &.ascending {
-      border-top: none;
-      border-bottom: 5px solid currentColor;
-    }
-  }
+  @include sortable-table-headers;
 
   .player-row {
     border-top: 1px solid $black-04;

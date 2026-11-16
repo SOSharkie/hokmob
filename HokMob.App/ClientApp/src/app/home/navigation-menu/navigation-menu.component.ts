@@ -19,7 +19,7 @@ export class NavigationMenuComponent {
     {name: "History", iconName: "history", route: "/history"},
     {name: "Draft", iconName: "clipboard-list", route: "/draft"},
     {name: "News", iconName: "newspaper", url: "https://www.reddit.com/r/hockey/"},
-    {name: "Teams", iconName: "shield", route: "/standings"}
+    {name: "Teams", iconName: "shield", route: "/teams"}
   ];
 
   /**

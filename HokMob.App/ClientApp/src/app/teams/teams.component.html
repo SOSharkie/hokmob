@@ -1,0 +1,111 @@
+<div class="teams-container">
+  @if (isLoading) {
+    <div class="teams-card loading-container">
+      <app-loading-spinner class="loading-spinner"></app-loading-spinner>
+    </div>
+  }
+  @if (!isLoading && hasError) {
+    <div class="teams-card teams-message">
+      <span>The team stats couldn't be loaded</span>
+    </div>
+  }
+  @if (!isLoading && !hasError && !rows.length) {
+    <div class="teams-card teams-message">
+      <span>No team stats yet</span>
+    </div>
+  }
+  @if (!isLoading && rows.length) {
+    <div class="teams-card">
+      <div class="table-header">
+        <h1 class="table-title">Teams</h1>
+        <span class="table-season">{{seasonLabel}} Regular Season</span>
+      </div>
+      <!-- Below 1200px the table shows one section at a time, beside the team and its rating -->
+      <div class="section-picker" role="group" aria-label="Stats section">
+        @for (section of sections; track section.id) {
+          <button
+              type="button" class="standings-type-filter"
+              [class.selected-filter]="section.id === selectedSection"
+              [attr.aria-pressed]="section.id === selectedSection"
+              (click)="selectSection(section)">
+            {{section.label}}
+          </button>
+        }
+      </div>
+      <div class="table-scroll-container" #tableScroll>
+        <table class="teams-table">
+          <thead>
+            <tr class="group-row">
+              <th class="team-header" scope="col"></th>
+              @for (group of headerGroups; track $index) {
+                <th class="group-header" scope="colgroup" [attr.colspan]="group.span"
+                    [class.labeled-group]="group.label">
+                  <span>{{group.label}}</span>
+                </th>
+              }
+            </tr>
+            <tr>
+              <th class="team-header" scope="col"><span>Team</span></th>
+              @for (column of visibleColumns; track trackColumn($index, column)) {
+                <th
+                    class="stat-header" scope="col"
+                    [ngClass]="column.id + '-column'"
+                    [class.group-start]="isGroupStart(column)"
+                    [class.out-of-section]="!isInSection(column)"
+                    [class.sorted-column]="sortColumn?.id === column.id"
+                    [attr.aria-sort]="getAriaSort(column)">
+                  <button type="button" class="sort-button" [title]="column.title" (click)="sortBy(column)">
+                    <span>{{column.label}}</span>
+                    <span class="sort-indicator" aria-hidden="true"
+                          [class.visible]="sortColumn?.id === column.id"
+                          [class.ascending]="sortColumn?.id === column.id && sortDirection === 'ascending'"></span>
+                  </button>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows; track trackTeam($index, row); let index = $index) {
+              <tr class="team-row">
+                <th class="team-cell" scope="row">
+                  <a class="team-link" [routerLink]="['/team', row.teamId]">
+                    <span class="team-position">{{index + 1}}</span>
+                    <app-team-logo class="team-logo" [teamId]="row.teamId" [size]="logoSize"></app-team-logo>
+                    <span class="team-name">{{row.name}}</span>
+                    <span class="team-tricode">{{row.triCode}}</span>
+                  </a>
+                </th>
+                @for (column of visibleColumns; track trackColumn($index, column)) {
+                  <td
+                      class="stat-cell" [ngClass]="column.id + '-column'"
+                      [class.group-start]="isGroupStart(column)"
+                      [class.out-of-section]="!isInSection(column)"
+                      [class.sorted-column]="sortColumn?.id === column.id">
+                    @if (column.isRating && row.rating) {
+                      <span class="rating-badge"
+                            [style.background-color]="getRatingColor(row)">{{formatCell(column, row)}}</span>
+                    } @else {
+                      <span>{{formatCell(column, row)}}</span>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <!-- The table's own scrollbar is hidden; this one stays at the bottom of the screen while the table is in view -->
+      <div class="sticky-scrollbar" #stickyScrollbar aria-hidden="true" [class.menu-hidden]="!isMobileMenuShown">
+        <div class="sticky-scrollbar-content"></div>
+      </div>
+      <div class="table-footer">
+        @if (hasRatingError) {
+          <span class="table-note">The power rating and the advanced stats couldn't be loaded</span>
+        }
+        @if (hasExpectedGoals) {
+          <a class="stats-source" [href]="nstUrl" target="_blank" rel="noopener">xGF% from Natural Stat Trick</a>
+        }
+      </div>
+    </div>
+  }
+</div>

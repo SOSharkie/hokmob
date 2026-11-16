@@ -54,7 +54,7 @@ A request to one of them is a regression.
   `_rink-card.scss`, shared by the top players card and a future game's season leaders card. Its card and header
   toggle are in `_rink-card-base.scss`, which the shot map card imports. The player game dialog's shot map
   (`player-shot-map`) draws its own half rink. See "Shot maps" in `docs/nhl-api.md`.
-- Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team` (tabs in `team-tabs.ts`, see "Team page" in `docs/nhl-api.md`), `player`, `stats`
+- Feature folders under `ClientApp/src/app/`: `home`, `game`, `playoffs`, `league-standings`, `team` (tabs in `team-tabs.ts`, see "Team page" in `docs/nhl-api.md`), `teams` (every team's stats and power rating in one sortable table, see "Teams page"), `player`, `stats`
   (the leaderboards, and each category's top 25 table at `/stats/{category}`),
   `draft`, `ratings` (the HokMob rating explorer, which a game's player dialog can open on a player's stat line),
   `history` (season-wide rating charts of a season, rated in the browser from a preloaded file), `header`,

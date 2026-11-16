@@ -1,0 +1,60 @@
+@use "variables" as *;
+@use "interaction" as *;
+
+// A column header's side padding: room for the sort arrow (8px wide, $spacing-small from the edge) and a gap
+$sort-button-side: 14px;
+
+// The sortable column headers of a stats table (the team page's player stats, the teams page): a button per header,
+// a tinted sorted column and a small arrow beside its header. Included inside the table's selector. The headers are
+// .stat-header > .sort-button > .sort-indicator, and the sorted column's cells have .sorted-column.
+@mixin sortable-table-headers {
+  // The same padding on both sides, so the label centers over its column's values and the hover background stays
+  // even. The sort arrow sits in the right padding.
+  .sort-button {
+    @include button-reset;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: $spacing-small $sort-button-side;
+    border-radius: 8px;
+    white-space: nowrap;
+    @include pressable(background-color, color);
+    @include focus-ring;
+    @include hover {
+      color: white;
+      background-color: $black-04;
+    }
+  }
+
+  // The sorted column: a brighter header and a tinted column
+  .sorted-column {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  .stat-header.sorted-column .sort-button {
+    color: white;
+    font-weight: 500;
+  }
+
+  // A small arrow beside the sorted column's header: down for most first, up for least first. It's laid over the
+  // button's right padding, so it takes no room and sorting doesn't shift the headers.
+  .sort-indicator {
+    position: absolute;
+    top: 50%;
+    right: $spacing-small;
+    transform: translateY(-50%);
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    visibility: hidden;
+
+    &.visible {
+      visibility: visible;
+    }
+
+    &.ascending {
+      border-top: none;
+      border-bottom: 5px solid currentColor;
+    }
+  }
+}

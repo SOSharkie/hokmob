@@ -8,7 +8,11 @@
     // svh, not vh, so iOS Safari's toolbars don't add their height to the page
     min-height: 100vh;
     min-height: 100svh;
+    // clip, not hidden: it cuts off what overflows the same way, but doesn't make this a scroll container, which would
+    // stop a page's position: sticky from sticking to the screen (the teams page's scrollbar). hidden is the fallback
+    // for browsers without clip (Safari before 16)
     overflow: hidden;
+    overflow: clip;
     max-width: 1400px;
     margin: 0 auto;
   }
