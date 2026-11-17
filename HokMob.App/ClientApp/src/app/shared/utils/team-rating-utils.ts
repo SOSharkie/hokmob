@@ -18,6 +18,17 @@ export type TeamMetricId = "corsi" | "expectedGoals" | "shooting5v5" | "save5v5"
 export type TeamRatingWeights = Partial<Record<TeamMetricId, number>>;
 
 /**
+ * A score's bar on the 0 to 10 track, from the league average (5, the middle) to the score, in % of the track.
+ */
+export interface TeamScoreBar {
+  barStart: number;
+  barWidth: number;
+  barColor: string;
+  /** Whether the score is at or above the league average, for the bar's side. */
+  isAboveAverage: boolean;
+}
+
+/**
  * A team stat worked out from a team's totals: one of the power rating's parts when the rating's weights have it, and a
  * line the rating chart can plot when it has a color. Every metric is better when it's higher.
  */
@@ -348,6 +359,32 @@ export class TeamRatingUtils {
    */
   public static getRatingColor(rating: number): string {
     return StatsUtils.getHokmobRatingColor(rating >= 7 ? 8.5 : rating >= 5.5 ? 7 : rating >= 4 ? 6 : 0);
+  }
+
+  /**
+   * Scores any stat of every team on the rating's 0 to 10 scale, like the rated stats: 5 at the league average and 1.5
+   * points per standard deviation from it. A missing value scores average. With `lowerIsBetter`, like goals against, a
+   * value below the average scores above 5.
+   */
+  public static getScores(values: number[], lowerIsBetter: boolean = false): number[] {
+    const sign = lowerIsBetter ? -1 : 1;
+    return TeamRatingUtils.getDeviations(values).map(deviation => TeamRatingUtils.toScore(sign * deviation));
+  }
+
+  /**
+   * A score's bar on a 0 to 10 track with the league average in the middle: where it starts and how wide it is, in %
+   * of the track, from the average to the score, and its rating color.
+   */
+  public static getScoreBar(score: number): TeamScoreBar {
+    const average = TeamRatingUtils.averageRating;
+    const value = score ?? average;
+    const toTrack = (rating: number) => rating / TeamRatingUtils.maxRating * 100;
+    return {
+      barStart: toTrack(Math.min(value, average)),
+      barWidth: toTrack(Math.abs(value - average)),
+      barColor: TeamRatingUtils.getRatingColor(value),
+      isAboveAverage: value >= average
+    };
   }
 
   /**

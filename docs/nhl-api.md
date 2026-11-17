@@ -193,11 +193,16 @@ the back button still leaves the page.
   Corsi For % or a goalie's goals saved above average, from the player's games for this team only
   (`PlayerSeasonRatingUtils.getTeamSeasonRatings`). The file is a snapshot, so a season in progress is rated through
   its `throughDate` (the column's tooltip says so), while the stats are current.
-- **Team stats:** the power rating, the team stats (points % first) and the advanced stats cards, three across on a desktop, in two
+- **Team stats:** the power rating, the team stats and the advanced stats cards, three across on a desktop, in two
   columns on a tablet and stacked on a phone, and the power rating chart below them (see
   [Team power rating](#team-power-rating)). The tab loads `/api/nhl-stats/team-games` and NST's
   `/api/nst/team-games` at once and rates the league when both are back. The team stats card only needs
   `/api/nhl-stats/teams`, so it shows while the season's games load and when they fail.
+  The team stats card (on the overview too) and the advanced stats card list their stats like the power rating card,
+  each with a bar from the league average in the color of its score: the team stats card's points % first, scored
+  like the rating's stats (`TeamRatingUtils.getScores`) with goals and shots against scored lower is better, and the
+  advanced stats card's from `TeamRating.scores`. The power rating card shows each stat's weight only while it's
+  hovered. The advanced stats card leaves out Fenwick and PDO, which the teams page still shows.
 - **Games:** the next game and the schedule, and the form.
 
 ## Team power rating
@@ -708,8 +713,8 @@ fetch is kept 5 minutes, so an outage isn't asked about on every visit. It answe
 season yet and 503 when NST can't be asked.
 
 The power rating counts these (see [Team power rating](#team-power-rating)), and they give the 5v5 xGF% of the
-advanced stats card and the teams page, which credit NST. `NaturalStatTrickService.getTeamGames` gives each row the
-NHL's team ID.
+advanced stats card, credited under the power rating card, and of the teams page, which credits NST.
+`NaturalStatTrickService.getTeamGames` gives each row the NHL's team ID.
 
 - **Table:** one `<table id=teams>`, a row per team and game, with the TOI and the for and against counts of Corsi,
   Fenwick, shots, goals, xG, scoring chances and high, medium and low danger chances, then SH%, SV% and PDO. The rows

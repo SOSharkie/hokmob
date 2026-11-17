@@ -1,14 +1,15 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges} from '@angular/core';
 import {TeamMetricId, TeamRating, TeamRatingUtils} from "@shared/utils/team-rating-utils";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
-import {TeamStatRow} from "@app/team/team-stats/team-stats.component";
-import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
+import {TeamStatBarRow} from "@app/team/team-stats/team-stats.component";
 
 /**
- * The team's advanced stats with their league ranks: goal and special teams differentials, shot share (Corsi and
- * Fenwick), the 5v5 percentages and PDO, worked out from every team's games (TeamRatingUtils). Points % is in the team
- * stats card instead. 5v5 xGF% is Natural Stat Trick's, credited under the card, and left out when the games have no
- * expected goals. Not shown before the team's first game.
+ * The team's advanced stats with their league ranks: goal and special teams differentials, Corsi and the 5v5
+ * percentages, worked out from every team's games (TeamRatingUtils). Laid out like the power rating card's stats, each
+ * with a bar from the league average in the HokMob rating color of its score (TeamRating.scores). Points % is in the
+ * team stats card instead, and Fenwick and PDO are only on the teams page. 5v5 xGF% is Natural Stat Trick's, credited
+ * under the power rating card, and left out when the games have no expected goals. Not shown before the team's first
+ * game.
  */
 @Component({
     selector: 'app-team-advanced-stats',
@@ -30,19 +31,16 @@ export class TeamAdvancedStatsComponent implements OnChanges {
   @Input()
   public season: number;
 
-  public rows: TeamStatRow[] = [];
+  public rows: TeamStatBarRow[] = [];
 
   public title: string = "Advanced Stats";
 
-  /** Whether the xGF% row is shown, so the card credits Natural Stat Trick. */
+  /** Whether the team has Natural Stat Trick's expected goals, so the xGF% row is shown. */
   public hasExpectedGoals: boolean = false;
 
-  public readonly nstUrl: string = NstStatsUtils.teamTableUrl;
-
-  /** The stats shown, in order. NST's 5v5 xGF% comes after the other shot shares. */
+  /** The stats shown, in order. NST's 5v5 xGF% comes after Corsi. */
   public static readonly rowIds: TeamMetricId[] = [
-    "goalDiff", "specialTeams", "corsi", "fenwick", "expectedGoals", "shotShare", "goalShare5v5", "shooting5v5",
-    "save5v5", "pdo"
+    "goalDiff", "specialTeams", "corsi", "expectedGoals", "shotShare", "goalShare5v5", "shooting5v5", "save5v5"
   ];
 
   public ngOnChanges(): void {
@@ -54,14 +52,15 @@ export class TeamAdvancedStatsComponent implements OnChanges {
         .map(id => TeamAdvancedStatsComponent.getMetricRow(team, id)) : [];
   }
 
-  private static getMetricRow(team: TeamRating, id: TeamMetricId): TeamStatRow {
+  private static getMetricRow(team: TeamRating, id: TeamMetricId): TeamStatBarRow {
     const metric = TeamRatingUtils.getMetric(id);
     const value = team.values[id];
     return {
       label: metric.label,
       value: value == null ? "-" : metric.format(value),
       rank: TeamRatingUtils.getOrdinal(team.ranks[id]),
-      description: metric.description
+      description: metric.description,
+      ...TeamRatingUtils.getScoreBar(value == null ? null : team.scores[id])
     };
   }
 }

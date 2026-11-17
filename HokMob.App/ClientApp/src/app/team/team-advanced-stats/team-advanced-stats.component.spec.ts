@@ -39,23 +39,50 @@ describe('TeamAdvancedStatsComponent', () => {
   }
 
   function rows(): {label: string, value: string, rank: string, title: string}[] {
-    const statRows: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.team-stat-row'));
+    const statRows: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.rating-part'));
     return statRows.map(row => ({
-      label: row.querySelector('.stat-label').textContent.trim(),
-      value: row.querySelector('.stat-value').textContent.trim(),
-      rank: row.querySelector('.stat-rank').textContent.trim(),
+      label: row.querySelector('.part-name').textContent.trim(),
+      value: row.querySelector('.part-value').textContent.trim(),
+      rank: row.querySelector('.part-rank').textContent.trim(),
       title: row.title
     }));
   }
 
   it('should show the season\'s advanced stats in order', () => {
     show(sharks);
-    expect(fixture.nativeElement.querySelector('.team-stats-header').textContent.trim())
+    expect(fixture.nativeElement.querySelector('.rating-bar-card-title').textContent.trim())
         .toBe('2026-2027 Advanced Stats');
     expect(rows().map(row => row.label)).toEqual([
-      'Goal Diff / Game', 'Special Teams Diff / Game', '5v5 Corsi %', '5v5 Fenwick %', '5v5 xGF%', 'Shots For %',
-      '5v5 Goals For %', '5v5 Shooting %', '5v5 Save %', 'PDO'
+      'Goal Diff / Game', 'Special Teams Diff / Game', '5v5 Corsi %', '5v5 xGF%', 'Shots For %', '5v5 Goals For %',
+      '5v5 Shooting %', '5v5 Save %'
     ]);
+    expect(rows().map(row => row.label)).not.toContain('5v5 Fenwick %');
+    expect(rows().map(row => row.label)).not.toContain('PDO');
+  });
+
+  it('should draw each stat\'s bar from the league average, in the color of its score', () => {
+    show(sharks);
+    const team = ratings.find(rating => rating.teamId === sharks);
+    const [goalDiff] = component.rows;
+    // San Jose has been outscored by 0.95 goals a game, so its bar ends at the middle of the track
+    expect(team.scores.goalDiff).toBeLessThan(TeamRatingUtils.averageRating);
+    expect(goalDiff.isAboveAverage).toBeFalse();
+    expect(goalDiff.barStart).toBeCloseTo(team.scores.goalDiff * 10, 10);
+    expect(goalDiff.barStart + goalDiff.barWidth).toBeCloseTo(50, 10);
+    expect(goalDiff.barColor).toBe(TeamRatingUtils.getRatingColor(team.scores.goalDiff));
+    const fills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-bar-fill'));
+    expect(fills.length).toBe(rows().length);
+    expect(fills[0].classList).not.toContain('above-average');
+  });
+
+  it('should draw a stat the team is above average at to the right of the middle', () => {
+    show(sharks);
+    const team = ratings.find(rating => rating.teamId === sharks);
+    const save = component.rows.find(row => row.label === '5v5 Save %');
+    // San Jose stops more 5v5 shots than the average team
+    expect(team.scores.save5v5).toBeGreaterThan(TeamRatingUtils.averageRating);
+    expect(save.isAboveAverage).toBeTrue();
+    expect(save.barStart).toBe(50);
   });
 
   it('should show the team\'s real values with their league ranks', () => {
@@ -74,11 +101,13 @@ describe('TeamAdvancedStatsComponent', () => {
 
   it('should show a dash for a stat without a value', () => {
     const team = ratings.find(rating => rating.teamId === sharks);
-    const withoutShots = {...team, values: {...team.values, pdo: null}, ranks: {...team.ranks, pdo: null}};
-    show(sharks, 20262027, [withoutShots]);
-    const pdo = rows()[9];
-    expect(pdo.value).toBe('-');
-    expect(pdo.rank).toBe('');
+    const withoutSaves = {...team, values: {...team.values, save5v5: null}, ranks: {...team.ranks, save5v5: null}};
+    show(sharks, 20262027, [withoutSaves]);
+    const save = rows()[7];
+    expect(save.label).toBe('5v5 Save %');
+    expect(save.value).toBe('-');
+    expect(save.rank).toBe('');
+    expect(component.rows[7].barWidth).toBe(0);
   });
 
   it('should show nothing for a team without a rating', () => {
@@ -93,10 +122,10 @@ describe('TeamAdvancedStatsComponent', () => {
       show(teamId, 20262027, TeamRatingUtils.getLeagueRatings(mockTeamGameRows()));
     }
 
-    it("should show the team's real xGF% and rank after the other shot shares", () => {
+    it("should show the team's real xGF% and rank after Corsi", () => {
       show(sharks);
       const labels = rows().map(row => row.label);
-      expect(labels.indexOf('5v5 xGF%')).toBe(labels.indexOf('5v5 Fenwick %') + 1);
+      expect(labels.indexOf('5v5 xGF%')).toBe(labels.indexOf('5v5 Corsi %') + 1);
       const xg = rows().find(row => row.label === '5v5 xGF%');
       // San Jose: 36.56 xG for and 55.96 against
       expect(xg.value).toBe('39.5%');
@@ -106,20 +135,17 @@ describe('TeamAdvancedStatsComponent', () => {
       expect(xg.title).toContain('Natural Stat Trick');
     });
 
-    it('should credit Natural Stat Trick with a link to its team table', () => {
+    it('should leave the credit to the power rating card', () => {
       show(sharks);
-      const credit: HTMLAnchorElement = fixture.nativeElement.querySelector('.stats-source');
-      expect(credit.textContent.trim()).toBe('xGF% from Natural Stat Trick');
-      expect(credit.href).toBe('https://www.naturalstattrick.com/teamtable.php');
-      expect(credit.target).toBe('_blank');
+      expect(fixture.nativeElement.textContent).not.toContain('from Natural Stat Trick');
+      expect(fixture.nativeElement.querySelector('a')).toBeNull();
     });
 
-    it("should leave the row and the credit out without NST's expected goals", () => {
+    it("should leave the row out without NST's expected goals", () => {
       showWithoutNst();
       expect(component.hasExpectedGoals).toBeFalse();
       expect(rows().map(row => row.label)).not.toContain('5v5 xGF%');
-      expect(rows().length).toBe(9);
-      expect(fixture.nativeElement.querySelector('.stats-source')).toBeNull();
+      expect(rows().length).toBe(7);
     });
 
     it('should keep the other stats the same without them', () => {

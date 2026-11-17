@@ -401,6 +401,54 @@ describe('TeamRatingUtils', () => {
     });
   });
 
+  describe('getScores', () => {
+    it('should give 1.5 points per standard deviation from the league average\'s 5', () => {
+      // A mean of 3 and a standard deviation of 1
+      expect(TeamRatingUtils.getScores([2, 4, 2, 4])).toEqual([3.5, 6.5, 3.5, 6.5]);
+    });
+
+    it('should score a value below the average above 5 when lower is better', () => {
+      expect(TeamRatingUtils.getScores([2, 4, 2, 4], true)).toEqual([6.5, 3.5, 6.5, 3.5]);
+    });
+
+    it('should keep scores between 0 and 10', () => {
+      const values = [...Array(99).fill(0), 100];
+      const scores = TeamRatingUtils.getScores(values);
+      expect(scores[99]).toBe(10);
+      expect(TeamRatingUtils.getScores(values, true)[99]).toBe(0);
+    });
+
+    it('should score a missing value, and values that are all the same, as average', () => {
+      expect(TeamRatingUtils.getScores([2, null, 4])).toEqual([3.5, 5, 6.5]);
+      expect(TeamRatingUtils.getScores([0.5, 0.5])).toEqual([5, 5]);
+      expect(TeamRatingUtils.getScores([])).toEqual([]);
+    });
+  });
+
+  describe('getScoreBar', () => {
+    it('should draw a score below average from the score to the middle of the track', () => {
+      const bar = TeamRatingUtils.getScoreBar(3.2);
+      expect(bar.barStart).toBeCloseTo(32, 10);
+      expect(bar.barWidth).toBeCloseTo(18, 10);
+      expect(bar.isAboveAverage).toBeFalse();
+      expect(bar.barColor).toBe(TeamRatingUtils.getRatingColor(3.2));
+    });
+
+    it('should draw a score above average from the middle of the track', () => {
+      const bar = TeamRatingUtils.getScoreBar(8);
+      expect(bar.barStart).toBe(50);
+      expect(bar.barWidth).toBeCloseTo(30, 10);
+      expect(bar.isAboveAverage).toBeTrue();
+      expect(bar.barColor).toBe('#0e87e0');
+    });
+
+    it('should draw no bar without a score', () => {
+      const bar = TeamRatingUtils.getScoreBar(null);
+      expect(bar.barStart).toBe(50);
+      expect(bar.barWidth).toBe(0);
+    });
+  });
+
   describe('formatRating', () => {
     it('should show one decimal, or a dash without a rating', () => {
       expect(TeamRatingUtils.formatRating(3.649)).toBe('3.6');

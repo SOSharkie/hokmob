@@ -59,7 +59,7 @@ describe('TeamPowerRatingComponent', () => {
     show(sharks);
     const team = ratings.find(rating => rating.teamId === sharks);
     expect(text('.rating-badge')).toBe(team.rating.toFixed(1));
-    expect(text('.rating-rank')).toBe(TeamRatingUtils.getOrdinal(team.rank) + ' of 32 in the NHL');
+    expect(text('.rating-rank')).toBe(TeamRatingUtils.getOrdinal(team.rank) + ' of 32');
     expect(text('.rating-games')).toContain('Through 22 games');
   });
 
@@ -85,7 +85,7 @@ describe('TeamPowerRatingComponent', () => {
     expect(rows[5].rank).toBe(TeamRatingUtils.getOrdinal(team.ranks.penaltyDiff));
     // San Jose, 30th through 2026-11-14
     expect(text('.rating-badge')).toBe('2.9');
-    expect(text('.rating-rank')).toBe('30th of 32 in the NHL');
+    expect(text('.rating-rank')).toBe('30th of 32');
   });
 
   it('should rate nothing from the standings', () => {
@@ -147,7 +147,7 @@ describe('TeamPowerRatingComponent', () => {
     it('should show the rating worked out from them', () => {
       // San Jose, 28th through 2026-11-14 on the NHL's stats alone
       expect(text('.rating-badge')).toBe('3.4');
-      expect(text('.rating-rank')).toBe('28th of 32 in the NHL');
+      expect(text('.rating-rank')).toBe('28th of 32');
     });
 
     it('should say so instead of crediting Natural Stat Trick', () => {

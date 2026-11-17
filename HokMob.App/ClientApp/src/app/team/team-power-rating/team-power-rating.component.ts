@@ -1,26 +1,18 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges} from '@angular/core';
-import {TeamRating, TeamRatingPoint, TeamRatingUtils} from "@shared/utils/team-rating-utils";
+import {TeamRating, TeamRatingPoint, TeamRatingUtils, TeamScoreBar} from "@shared/utils/team-rating-utils";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 /**
- * One part of the power rating: a rated stat, its share of the rating, and how it compares to the league.
+ * One part of the power rating: a rated stat, its share of the rating, and how it compares to the league, with its bar
+ * from the league average.
  */
-export interface PowerRatingPart {
+export interface PowerRatingPart extends TeamScoreBar {
   label: string;
   description: string;
   /** Like "30%". */
   weight: string;
   value: string;
   rank: string;
-  /**
-   * Where the stat's bar starts and how wide it is, in % of the 0 to 10 track: from the league average (5, the middle)
-   * to the score.
-   */
-  barStart: number;
-  barWidth: number;
-  barColor: string;
-  /** Whether the team is above the league average for it, for the bar's side. */
-  isAboveAverage: boolean;
 }
 
 /**
@@ -108,20 +100,14 @@ export class TeamPowerRatingComponent implements OnChanges {
   public ngOnChanges(): void {
     this.team = (this.ratings ?? []).find(rating => rating.teamId === this.teamId);
     this.parts = this.team ? TeamRatingUtils.getRatedMetrics(this.team.weights).map(metric => {
-      const score = this.team.scores[metric.id];
       const value = this.team.values[metric.id];
-      const average = TeamRatingUtils.averageRating;
-      const toTrack = (rating: number) => rating / TeamRatingUtils.maxRating * 100;
       return {
         label: metric.label,
         description: metric.description,
         weight: Math.round(this.team.weights[metric.id] * 100) + "%",
         value: value == null ? "-" : metric.format(value),
         rank: TeamRatingUtils.getOrdinal(this.team.ranks[metric.id]),
-        barStart: toTrack(Math.min(score, average)),
-        barWidth: toTrack(Math.abs(score - average)),
-        barColor: TeamRatingUtils.getRatingColor(score),
-        isAboveAverage: score >= average
+        ...TeamRatingUtils.getScoreBar(this.team.scores[metric.id])
       };
     }) : [];
     const points = this.timeline ?? [];
