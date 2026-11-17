@@ -1,7 +1,10 @@
 @if (team) {
   <section class="rating-bar-card power-rating-card">
     <div class="rating-bar-card-header">
-      <h2 class="rating-bar-card-title">Power Rating</h2>
+      @if (showTeam) {
+        <img class="power-rating-team-logo" [src]="teamLogo" alt="">
+      }
+      <h2 class="rating-bar-card-title">{{title}}</h2>
     </div>
     <div class="rating-summary">
       <span class="rating-badge" [style.background-color]="ratingColor">{{rating}}</span>

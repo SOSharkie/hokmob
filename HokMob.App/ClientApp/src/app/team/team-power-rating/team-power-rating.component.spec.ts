@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { mockRatedTeamGameRows, mockTeamGameRows } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import { TeamRating, TeamRatingPoint, TeamRatingUtils } from '@shared/utils/team-rating-utils';
+import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 
 import { TeamPowerRatingComponent } from './team-power-rating.component';
 
@@ -181,6 +182,21 @@ describe('TeamPowerRatingComponent', () => {
     component.change = 0.02;
     expect(component.changeLabel).toBe('0.0');
     expect(component.changeDirection).toBe('flat');
+  });
+
+  it('should title the card without the team on the team page', () => {
+    show(sharks);
+    expect(text('.rating-bar-card-title')).toBe('Power Rating');
+    expect(fixture.nativeElement.querySelector('.power-rating-team-logo')).toBeNull();
+  });
+
+  it('should name the team with its logo when asked, for a page with more than one card', () => {
+    fixture.componentRef.setInput('showTeam', true);
+    show(sharks);
+    expect(text('.rating-bar-card-title')).toBe('Sharks Power Rating');
+    const logo: HTMLImageElement = fixture.nativeElement.querySelector('.power-rating-team-logo');
+    expect(logo.getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(sharks));
+    expect(logo.alt).toBe('');
   });
 
   it('should show nothing for a team that hasn\'t played', () => {

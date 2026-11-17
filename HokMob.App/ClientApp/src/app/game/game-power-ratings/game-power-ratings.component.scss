@@ -1,0 +1,23 @@
+@use "variables" as *;
+
+// Wide enough for two power rating cards of at least 340px side by side, with the gap between them
+$two-column-width: 700px;
+
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+// Stacked in a narrow column, side by side, the home team's first, when they fit
+.game-power-ratings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $spacing-card-gap;
+  align-items: start;
+}
+
+@container (min-width: #{$two-column-width}) {
+  .game-power-ratings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

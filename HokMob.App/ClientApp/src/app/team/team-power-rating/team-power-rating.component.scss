@@ -1,4 +1,13 @@
+@use "variables" as *;
 @use "../rating-bar-card" as *;
+
+// The team's logo before the title, when the card names the team
+.power-rating-team-logo {
+  width: 28px;
+  height: 28px;
+  margin-right: $spacing-medium;
+  object-fit: contain;
+}
 
 // Each stat's share of the rating shows only while the card is hovered (or tapped on a phone), and keeps its space when
 // hidden, so the rows don't move

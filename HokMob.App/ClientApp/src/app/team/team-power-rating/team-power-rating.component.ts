@@ -1,6 +1,8 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges} from '@angular/core';
 import {TeamRating, TeamRatingPoint, TeamRatingUtils, TeamScoreBar} from "@shared/utils/team-rating-utils";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
+import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
+import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
 /**
  * One part of the power rating: a rated stat, its share of the rating, and how it compares to the league, with its bar
@@ -41,6 +43,13 @@ export class TeamPowerRatingComponent implements OnChanges {
   @Input()
   public timeline: TeamRatingPoint[];
 
+  /**
+   * Whether the header names the team, with its logo, like "Sharks Power Rating", for a page that shows more than one
+   * team's card, like a future game's.
+   */
+  @Input()
+  public showTeam: boolean = false;
+
   /** The games the recent change is over. */
   public static readonly trendGames = 5;
 
@@ -52,6 +61,16 @@ export class TeamPowerRatingComponent implements OnChanges {
 
   /** The change in rating over the last 5 games, or null before the team has played 6. */
   public change: number = null;
+
+  /** "Power Rating", or like "Sharks Power Rating" with showTeam. */
+  public get title(): string {
+    const teamName = this.showTeam ? NhlTeamUtils.getTeam(this.teamId)?.teamName : null;
+    return teamName ? teamName + " Power Rating" : "Power Rating";
+  }
+
+  public get teamLogo(): string {
+    return NhlTeamLogoUtils.getTeamPrimaryLogo(this.teamId);
+  }
 
   public get rating(): string {
     return TeamRatingUtils.formatRating(this.team?.rating);

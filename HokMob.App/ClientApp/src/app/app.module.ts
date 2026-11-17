@@ -69,6 +69,7 @@ import { TeamsComponent } from './teams/teams.component';
 import { StandingsSummaryComponent } from './home/standings-summary/standings-summary.component';
 import { GameTopPlayersComponent } from './game/game-top-players/game-top-players.component';
 import { GameSeasonLeadersComponent } from './game/game-season-leaders/game-season-leaders.component';
+import { GamePowerRatingsComponent } from './game/game-power-ratings/game-power-ratings.component';
 import { RinkComponent } from './game/rink/rink.component';
 import { ShotMapComponent } from './game/shot-map/shot-map.component';
 import { PlayerShotMapComponent } from './game/player-shot-map/player-shot-map.component';
@@ -141,6 +142,7 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
     StandingsSummaryComponent,
     GameTopPlayersComponent,
     GameSeasonLeadersComponent,
+    GamePowerRatingsComponent,
     RinkComponent,
     ShotMapComponent,
     PlayerShotMapComponent,
