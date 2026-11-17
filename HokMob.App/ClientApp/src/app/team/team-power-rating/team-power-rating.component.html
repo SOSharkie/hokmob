@@ -36,6 +36,13 @@
         </li>
       }
     </ul>
-    <p class="power-rating-note">5.0 is league average.</p>
+    <p class="power-rating-note">
+      5.0 is league average.
+      @if (hasExpectedGoals) {
+        <a class="power-rating-source" [href]="nstUrl" target="_blank" rel="noopener">xG from Natural Stat Trick</a>
+      } @else {
+        <span class="power-rating-fallback">Rated without expected goals, which aren't available right now.</span>
+      }
+    </p>
   </section>
 }

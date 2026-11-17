@@ -1,7 +1,7 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {NaturalStatTrickService} from '@shared/services/natural-stat-trick.service';
-import {mockNstGameStats, mockNstTeamTable} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {mockNstGameStats, mockNstTeamGames} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {provideHttpClient} from '@angular/common/http';
 
 describe('NaturalStatTrickService', () => {
@@ -63,37 +63,63 @@ describe('NaturalStatTrickService', () => {
     });
   });
 
-  describe('getTeamStats', () => {
-    const teamsUrl = '/api/nst/teams?season=20262027';
+  describe('getTeamGames', () => {
+    const teamGamesUrl = '/api/nst/team-games?season=20262027';
 
-    it("should resolve every real team's 5v5 xG", async () => {
-      const teamStats = service.getTeamStats(20262027);
-      httpMock.expectOne(teamsUrl).flush(mockNstTeamTable());
+    it("should resolve every real team's expected goals per game, by NHL team ID", async () => {
+      const teamGames = service.getTeamGames(20262027);
+      httpMock.expectOne(teamGamesUrl).flush(mockNstTeamGames());
 
-      const teams = await teamStats;
-      expect(teams.length).toBe(32);
-      expect(teams[0].name).toBe('Florida Panthers');
-      expect(teams.find(team => team.name === 'San Jose Sharks'))
-          .toEqual({name: 'San Jose Sharks', gamesPlayed: 22, expectedGoalsFor: 36.54, expectedGoalsAgainst: 55.97});
+      const games = await teamGames;
+      expect(games.length).toBe(650);
+      expect(new Set(games.map(game => game.teamId)).size).toBe(32);
+      // Carolina (12) hosted Florida (13) in the season's first game
+      expect(games[0]).toEqual({gameId: 2026020001, teamId: 12, expectedGoalsFor: 0.34, expectedGoalsAgainst: 0.82});
+      expect(games[1]).toEqual({gameId: 2026020001, teamId: 13, expectedGoalsFor: 0.82, expectedGoalsAgainst: 0.34});
+      const sharks = games.filter(game => game.teamId === 28);
+      expect(sharks.length).toBe(22);
+      expect(sharks.reduce((total, game) => total + game.expectedGoalsFor, 0)).toBeCloseTo(36.56, 2);
+      expect(sharks.reduce((total, game) => total + game.expectedGoalsAgainst, 0)).toBeCloseTo(55.96, 2);
     });
 
-    it('should resolve no teams without logging when NST has no table for the season', async () => {
-      const teamStats = service.getTeamStats('20272028');
-      httpMock.expectOne('/api/nst/teams?season=20272028').flush('', {status: 404, statusText: 'Not Found'});
-      expect(await teamStats).toEqual([]);
+    it('should find St. Louis and Montréal, which NST spells without the period and the accent', async () => {
+      const teamGames = service.getTeamGames(20262027);
+      httpMock.expectOne(teamGamesUrl).flush(mockNstTeamGames());
+      const teamIds = new Set((await teamGames).map(game => game.teamId));
+      expect(teamIds.has(19)).toBeTrue();
+      expect(teamIds.has(8)).toBeTrue();
+    });
+
+    it('should leave out the games of a team NST names in an unknown way', async () => {
+      const response = mockNstTeamGames();
+      const anaheimGames = response.games.team.filter(team => team === 0).length;
+      response.teams[0] = 'Hartford Whalers';
+      const teamGames = service.getTeamGames(20262027);
+      httpMock.expectOne(teamGamesUrl).flush(response);
+
+      const games = await teamGames;
+      expect(anaheimGames).toBeGreaterThan(0);
+      expect(games.length).toBe(650 - anaheimGames);
+      expect(games.some(game => game.teamId === 24)).toBeFalse();
+    });
+
+    it('should resolve no games without logging when NST has none for the season yet', async () => {
+      const teamGames = service.getTeamGames('20272028');
+      httpMock.expectOne('/api/nst/team-games?season=20272028').flush('', {status: 404, statusText: 'Not Found'});
+      expect(await teamGames).toEqual([]);
       expect(console.error).not.toHaveBeenCalled();
     });
 
-    it('should resolve no teams for a body without them', async () => {
-      const teamStats = service.getTeamStats(20262027);
-      httpMock.expectOne(teamsUrl).flush({season: 20262027});
-      expect(await teamStats).toEqual([]);
+    it('should resolve no games for a body without them', async () => {
+      const teamGames = service.getTeamGames(20262027);
+      httpMock.expectOne(teamGamesUrl).flush({season: 20262027});
+      expect(await teamGames).toEqual([]);
     });
 
     it('should reject and log when the backend cannot ask NST', async () => {
-      const teamStats = service.getTeamStats(20262027);
-      const rejected = expectAsync(teamStats).toBeRejected();
-      httpMock.expectOne(teamsUrl).flush('', {status: 503, statusText: 'Service Unavailable'});
+      const teamGames = service.getTeamGames(20262027);
+      const rejected = expectAsync(teamGames).toBeRejected();
+      httpMock.expectOne(teamGamesUrl).flush('', {status: 503, statusText: 'Service Unavailable'});
       await rejected;
       expect(console.error).toHaveBeenCalled();
     });

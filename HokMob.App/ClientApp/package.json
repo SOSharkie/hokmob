@@ -14,7 +14,9 @@
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
     "clean-cache": "ng cache clean",
     "capture-live-fixtures": "node capture-live-fixtures.js",
-    "build-season-data": "node build-season-data.js"
+    "build-season-data": "node build-season-data.js",
+    "build-nst-team-games": "node build-nst-team-games.js",
+    "build-play-by-play": "node build-play-by-play.js"
   },
   "private": true,
   "dependencies": {

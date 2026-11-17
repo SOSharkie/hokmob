@@ -397,3 +397,14 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /.idea/
+
+# Natural Stat Trick's team game logs, kept locally for backtests (build-nst-team-games.js). NST's data isn't
+# republished in this public repo
+/data/natural-stat-trick/
+
+# The NHL's play-by-play and player game logs, kept locally for research on the power rating
+# (build-play-by-play.js): about 55 MB a season, and fetched again from the NHL when needed
+/data/nhl-play-by-play/
+
+# The power rating backtest: scripts, the stats API team game reports they read and the research plan (local only)
+/data/power-rating-backtest/

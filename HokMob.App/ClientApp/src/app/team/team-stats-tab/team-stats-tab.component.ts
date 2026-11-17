@@ -1,16 +1,17 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
-import {NstTeamSeasonStats} from "@shared/models/natural-stat-trick/nst-team-stats.model";
+import {NstTeamGameStats} from "@shared/models/natural-stat-trick/nst-team-games.model";
 import {TeamSeasonStats} from "@shared/models/nhl-stats-api/team-stats.model";
 import {TeamGameStats} from "@shared/models/nhl-stats-api/team-games.model";
 import {TeamRating, TeamRatingPoint, TeamRatingUtils} from "@shared/utils/team-rating-utils";
 
 /**
  * The team page's team stats tab: the power rating, the season stats and the advanced stats cards, and the power rating
- * chart below them. Every team's games of the season (/api/nhl-stats/team-games) are loaded when the tab opens, since
- * the ratings and ranks compare the team to the league. The season stats card only needs the team stats the page
- * already has, so it's shown while they load and when they fail.
+ * chart below them. Every team's games of the season (/api/nhl-stats/team-games) and their expected goals from Natural
+ * Stat Trick (/api/nst/team-games) are loaded when the tab opens, since the ratings and ranks compare the team to the
+ * league. The expected goals are optional: without them the rating falls back to the NHL's stats. The season stats
+ * card only needs the team stats the page already has, so it's shown while they load and when they fail.
  */
 @Component({
     selector: 'app-team-stats-tab',
@@ -32,7 +33,7 @@ export class TeamStatsTabComponent implements OnChanges {
   @Input()
   public teamStats: TeamSeasonStats[] = [];
 
-  /** Every team's games of the season. */
+  /** Every team's games of the season, with NST's expected goals when it answered. */
   public games: TeamGameStats[] = [];
 
   /** Every team's rating of the season, best first. */
@@ -40,9 +41,6 @@ export class TeamStatsTabComponent implements OnChanges {
 
   /** The team's rating after each of its games. */
   public timeline: TeamRatingPoint[] = [];
-
-  /** Every team's 5v5 xG from Natural Stat Trick, empty until it loads or when it fails. */
-  public nstTeams: NstTeamSeasonStats[] = [];
 
   public isLoading: boolean = false;
 
@@ -71,32 +69,22 @@ export class TeamStatsTabComponent implements OnChanges {
   }
 
   /**
-   * Loads every team's 5v5 xG from Natural Stat Trick, for the advanced stats card's xGF% row. The row is optional: it's
-   * left out while it loads and when NST can't be asked.
+   * Loads every team's games and their expected goals at once, and rates the league when both are back, so the rating
+   * doesn't change under the reader when the expected goals come in.
    */
-  private retrieveNstTeams(season: number): void {
-    this.nstTeams = [];
-    this.naturalStatTrickService.getTeamStats(season).then(teams => {
-      if (season === this.gamesSeason) {
-        this.nstTeams = teams;
-      }
-    }).catch(() => {
-      // The service logs the error. The card shows its other stats
-    });
-  }
-
   private retrieveTeamGames(season: number): void {
     this.gamesSeason = season;
-    this.retrieveNstTeams(season);
     this.isLoading = true;
     this.hasError = false;
     this.games = [];
     this.buildRatings();
-    this.nhlStatsApiService.getTeamGames(season).then(games => {
+    // The service logs the error. Without NST's expected goals the rating falls back to the NHL's stats
+    const expectedGoals = this.naturalStatTrickService.getTeamGames(season).catch(() => [] as NstTeamGameStats[]);
+    Promise.all([this.nhlStatsApiService.getTeamGames(season), expectedGoals]).then(([games, nstGames]) => {
       if (season !== this.gamesSeason) {
         return;
       }
-      this.games = games;
+      this.games = TeamRatingUtils.withExpectedGoals(games, nstGames);
       this.isLoading = false;
       this.buildRatings();
     }).catch(() => {

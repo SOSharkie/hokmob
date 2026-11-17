@@ -9,7 +9,7 @@ export interface TeamGamesResponse {
 
 /**
  * One team's stats in one game, merged by the backend from the stats API's team reports. The 5v5 shot attempts are
- * Corsi (sat) and the unblocked ones Fenwick (usat).
+ * Corsi (sat) and the unblocked ones Fenwick (usat). The expected goals fields aren't in the response.
  */
 export interface TeamGameStats {
   gameId: number;
@@ -42,4 +42,11 @@ export interface TeamGameStats {
   shGoalsFor: number;
   goalsFor5v5: number;
   goalsAgainst5v5: number;
+  /**
+   * The team's 5v5 expected goals for and against in the game, from Natural Stat Trick, which the stats API doesn't
+   * have: merged in by TeamRatingUtils.withExpectedGoals, and undefined for a game NST doesn't have (yet) or when NST
+   * can't be asked.
+   */
+  expectedGoalsFor5v5?: number;
+  expectedGoalsAgainst5v5?: number;
 }

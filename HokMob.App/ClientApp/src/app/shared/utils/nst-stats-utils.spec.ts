@@ -1,5 +1,5 @@
 import {NstStatsUtils} from '@shared/utils/nst-stats-utils';
-import {mockLiveNstGameStats, mockNstGameStats, mockNstTeamTable} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {mockLiveNstGameStats, mockNstGameStats} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {NhlGameTypeEnum} from '@shared/enums/nhl-game-type.enum';
 import {NstGameStats} from '@shared/models/natural-stat-trick/nst-game-stats.model';
 
@@ -107,49 +107,6 @@ describe('NstStatsUtils', () => {
       // Adin Hill isn't among the skaters
       expect(NstStatsUtils.findPlayer(mockNstGameStats(2025030414), 8478499)).toBeUndefined();
       expect(NstStatsUtils.findPlayer(mockNstGameStats(2025030414), null)).toBeUndefined();
-    });
-  });
-
-  describe('getTeamExpectedGoalsShares', () => {
-    it('should give every real team its xGF% by team ID', () => {
-      const shares = NstStatsUtils.getTeamExpectedGoalsShares(mockNstTeamTable().teams);
-      expect(shares.size).toBe(32);
-      expect(shares.get(28).share).toBeCloseTo(36.54 / (36.54 + 55.97), 10);
-      expect(shares.get(6).share).toBeCloseTo(46.33 / (46.33 + 42.06), 10);
-      // St. Louis and Montréal are spelled without the period and the accent on NST
-      expect(shares.has(19)).toBeTrue();
-      expect(shares.has(8)).toBeTrue();
-    });
-
-    it('should rank by how many teams have a higher share', () => {
-      const teams = mockNstTeamTable().teams;
-      const shares = NstStatsUtils.getTeamExpectedGoalsShares(teams);
-      const sharks = shares.get(28).share;
-      const higher = [...shares.values()].filter(team => team.share > sharks).length;
-      expect(shares.get(28).rank).toBe(higher + 1);
-      const best = [...shares.values()].reduce((top, team) => team.share > top.share ? team : top);
-      expect(best.rank).toBe(1);
-    });
-
-    it('should give teams with the same share the same rank', () => {
-      const teams = [
-        {name: 'San Jose Sharks', gamesPlayed: 2, expectedGoalsFor: 3, expectedGoalsAgainst: 1},
-        {name: 'Boston Bruins', gamesPlayed: 2, expectedGoalsFor: 3, expectedGoalsAgainst: 1},
-        {name: 'Florida Panthers', gamesPlayed: 2, expectedGoalsFor: 1, expectedGoalsAgainst: 3}
-      ];
-      const shares = NstStatsUtils.getTeamExpectedGoalsShares(teams);
-      expect(shares.get(28).rank).toBe(1);
-      expect(shares.get(6).rank).toBe(1);
-      expect(shares.get(13).rank).toBe(3);
-    });
-
-    it('should leave out an unknown team and a team without xG', () => {
-      const shares = NstStatsUtils.getTeamExpectedGoalsShares([
-        {name: 'Hartford Whalers', gamesPlayed: 2, expectedGoalsFor: 3, expectedGoalsAgainst: 1},
-        {name: 'San Jose Sharks', gamesPlayed: 0, expectedGoalsFor: 0, expectedGoalsAgainst: 0}
-      ]);
-      expect(shares.size).toBe(0);
-      expect(NstStatsUtils.getTeamExpectedGoalsShares(null).size).toBe(0);
     });
   });
 });

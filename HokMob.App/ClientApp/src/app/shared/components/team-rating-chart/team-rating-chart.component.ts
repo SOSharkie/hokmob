@@ -56,7 +56,10 @@ interface TeamChartPoint {
 })
 export class TeamRatingChartComponent implements OnChanges, AfterViewInit, OnDestroy {
 
-  /** Every team's games of the season, from /api/nhl-stats/team-games. */
+  /**
+   * Every team's games of the season, from /api/nhl-stats/team-games, with NST's expected goals merged in when there
+   * are any (TeamRatingUtils.withExpectedGoals).
+   */
   @Input()
   public games: TeamGameStats[] = [];
 
@@ -75,16 +78,21 @@ export class TeamRatingChartComponent implements OnChanges, AfterViewInit, OnDes
     id: "rating",
     label: "Power rating",
     color: "#ffffff",
-    description: "The HokMob power rating: 30% points %, 20% goal differential, 30% 5v5 Corsi % and 20% special teams"
+    description: "The HokMob power rating: 5v5 shot share and expected goals, shooting and save %, special teams and " +
+        "penalty differential"
   };
 
-  public readonly lines: TeamChartLine[] = [TeamRatingChartComponent.ratingLine,
+  /** Every line the chart can plot: the rating, then the chart's stats. */
+  public static readonly allLines: TeamChartLine[] = [TeamRatingChartComponent.ratingLine,
     ...TeamRatingUtils.chartMetrics.map(metric => ({
       id: metric.id,
       label: metric.shortLabel,
       color: metric.color,
       description: metric.description
     }))];
+
+  /** The lines offered: every line that has a value in the games, so xGF% goes without NST's expected goals. */
+  public lines: TeamChartLine[] = TeamRatingChartComponent.allLines;
 
   public readonly windowOptions: {value: TeamChartWindow, label: string}[] = [
     {value: "season", label: "Season"},
@@ -204,6 +212,12 @@ export class TeamRatingChartComponent implements OnChanges, AfterViewInit, OnDes
         : undefined;
     this.timeline = TeamRatingUtils.getTimeline(games, this.teamIds ?? [],
         {lastGames: this.window === "last10" ? 10 : undefined});
+    const points = [...this.timeline.values()].flat();
+    this.lines = TeamRatingChartComponent.allLines
+        .filter(line => line.id === "rating" || !points.length || points.some(point => point.values[line.id] != null));
+    // A line that's no longer offered is dropped, and the rating shown rather than nothing
+    const selected = this.selectedLines.filter(id => this.lines.some(line => line.id === id));
+    this.selectedLines = selected.length ? selected : ["rating"];
   }
 
   private createChart(): void {

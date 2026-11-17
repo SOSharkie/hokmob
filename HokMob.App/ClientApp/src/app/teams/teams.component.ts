@@ -8,7 +8,7 @@ import {NhlStandingAndPlayoffService} from "@shared/services/nhl-standing-and-pl
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
 import {NhlStandingsTypeEnum} from "@shared/enums/nhl-standings-type.enum";
 import {TeamSeasonStats} from "@shared/models/nhl-stats-api/team-stats.model";
-import {NstTeamSeasonStats} from "@shared/models/natural-stat-trick/nst-team-stats.model";
+import {NstTeamGameStats} from "@shared/models/natural-stat-trick/nst-team-games.model";
 import {TeamGameStats} from "@shared/models/nhl-stats-api/team-games.model";
 import {TeamMetricId, TeamRating, TeamRatingUtils} from "@shared/utils/team-rating-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -27,8 +27,6 @@ export interface TeamTableRow {
   stats?: TeamSeasonStats;
   /** The team's power rating and advanced stats, or undefined when the season's games failed. */
   rating?: TeamRating;
-  /** The team's 5v5 xGF% from Natural Stat Trick, 0 to 1, or undefined without it. */
-  expectedGoalsShare?: number;
 }
 
 /**
@@ -74,9 +72,10 @@ export interface TeamTableHeaderGroup {
 /**
  * The teams page (/teams): every team's season stats in one sortable table, sorted by the HokMob power rating by
  * default. The record, scoring and special teams stats come from the stats API's team rows (/api/nhl-stats/teams), the
- * power rating and the advanced stats from every team's games (/api/nhl-stats/team-games, TeamRatingUtils), and 5v5
- * xGF% from Natural Stat Trick's team table, when it answers. The season is the standings' season, like the stats and
- * team pages, so the off-season shows the last season played. Only the regular season.
+ * power rating and the advanced stats from every team's games (/api/nhl-stats/team-games, TeamRatingUtils), with their
+ * expected goals from Natural Stat Trick's team game logs (/api/nst/team-games) when it answers: the rating counts
+ * them, and they give the 5v5 xGF% column. The season is the standings' season, like the stats and team pages, so the
+ * off-season shows the last season played. Only the regular season.
  *
  * Below $small-display-breakpoint (1200px), the table shows one section of stats at a time beside the team and its
  * power rating, picked from pills above the table, instead of scrolling sideways through all of them. The CSS hides the
@@ -98,11 +97,9 @@ export class TeamsComponent implements OnInit, OnDestroy {
   /** The column sorted by without a sort query parameter. */
   public static readonly defaultSortId = "rating";
 
-  public static readonly expectedGoalsDescription = "The team's share of the expected goals at 5 on 5, from Natural " +
-      "Stat Trick: like Fenwick, but each unblocked shot attempt counts by how likely it was to score";
-
-  public static readonly ratingDescription = "The HokMob power rating, 0 to 10 with 5 for an average team: points %, " +
-      "goal differential, 5v5 Corsi % and special teams, each compared to the league";
+  public static readonly ratingDescription = "The HokMob power rating, 0 to 10 with 5 for an average team: 5v5 shot " +
+      "share and expected goals, shooting and save %, special teams and penalty differential, each compared to the " +
+      "league. Nothing in it comes from the standings";
 
   /** The sections, in the columns' order. Their labels head the column groups too. */
   public static readonly sections: TeamTableSection[] = [
@@ -173,12 +170,8 @@ export class TeamsComponent implements OnInit, OnDestroy {
     },
     TeamsComponent.metricColumn("corsi", "CF%", "possession"),
     TeamsComponent.metricColumn("fenwick", "FF%", "possession"),
-    {
-      id: "xg", label: "xGF%", title: TeamsComponent.expectedGoalsDescription, group: "possession",
-      needsExpectedGoals: true,
-      value: row => row.expectedGoalsShare,
-      format: value => TeamsComponent.formatPercent(value)
-    },
+    // Its ID is the sort query parameter's, which was "xg" before the rating had the metric
+    {...TeamsComponent.metricColumn("expectedGoals", "xGF%", "possession"), id: "xg", needsExpectedGoals: true},
     TeamsComponent.metricColumn("shotShare", "SF%", "possession"),
     // The 5v5 header says it, so the labels don't
     TeamsComponent.metricColumn("goalShare5v5", "GF%", "fiveOnFive"),
@@ -206,7 +199,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
 
   public hasError: boolean = false;
 
-  /** Whether NST's xG came back, so the xGF% column is shown and NST is credited. */
+  /** Whether the games have NST's expected goals, so the xGF% column is shown and NST is credited. */
   public hasExpectedGoals: boolean = false;
 
   /** Whether the season's games failed, so the rating and advanced columns are empty. */
@@ -220,8 +213,6 @@ export class TeamsComponent implements OnInit, OnDestroy {
   private teamStats: TeamSeasonStats[] = [];
 
   private ratings: TeamRating[] = [];
-
-  private nstTeams: NstTeamSeasonStats[] = [];
 
   /**
    * Whether the app's phone menu is shown. It slides off the screen while the page scrolls down, and the sticky
@@ -388,7 +379,8 @@ export class TeamsComponent implements OnInit, OnDestroy {
   /**
    * Loads the season from the standings, then every team's stats, games and NST xG of that season at once. The table
    * shows when the stats and the games are both back, so it opens in the power rating's order; either one alone is
-   * enough for a table.
+   * enough for a table. The games wait for NST's answer, so the rating doesn't change under the reader, but not on it:
+   * without the expected goals the rating falls back to the NHL's stats.
    */
   private retrieveSeason(): void {
     this.isLoading = true;
@@ -418,8 +410,11 @@ export class TeamsComponent implements OnInit, OnDestroy {
       this.teamStats = [];
       return false;
     });
-    const games = this.nhlStatsApiService.getTeamGames(season).then((seasonGames: TeamGameStats[]) => {
-      this.ratings = TeamRatingUtils.getLeagueRatings(seasonGames);
+    // The service logs the error. The rating goes without the expected goals, and the table without the xGF% column
+    const expectedGoals = this.naturalStatTrickService.getTeamGames(season).catch(() => [] as NstTeamGameStats[]);
+    const games = Promise.all([this.nhlStatsApiService.getTeamGames(season), expectedGoals]).then(([seasonGames, nstGames]) => {
+      const ratedGames: TeamGameStats[] = TeamRatingUtils.withExpectedGoals(seasonGames, nstGames);
+      this.ratings = TeamRatingUtils.getLeagueRatings(ratedGames);
       return true;
     }).catch(() => {
       // The service logs the error. The table goes without the rating and the advanced stats
@@ -432,21 +427,12 @@ export class TeamsComponent implements OnInit, OnDestroy {
       this.hasError = !hasStats && !hasGames;
       this.buildRows();
     });
-    this.naturalStatTrickService.getTeamStats(season).then(teams => {
-      this.nstTeams = teams;
-      if (!this.isLoading) {
-        this.buildRows();
-      }
-    }).catch(() => {
-      // The service logs the error. The table goes without the xGF% column
-    });
   }
 
   /**
-   * Builds a row for every team in the stats or the ratings, with NST's xG when it's back, and sorts them.
+   * Builds a row for every team in the stats or the ratings, and sorts them.
    */
   private buildRows(): void {
-    const expectedGoals = NstStatsUtils.getTeamExpectedGoalsShares(this.nstTeams);
     const teamIds = new Set<number>([
       ...this.teamStats.map(stats => stats.teamId),
       ...this.ratings.map(rating => rating.teamId)
@@ -459,11 +445,10 @@ export class TeamsComponent implements OnInit, OnDestroy {
         name: team?.id === teamId ? team.name : stats?.teamFullName ?? "",
         triCode: team?.id === teamId ? team.triCode : "",
         stats,
-        rating: this.ratings.find(rating => rating.teamId === teamId),
-        expectedGoalsShare: expectedGoals.get(teamId)?.share
+        rating: this.ratings.find(rating => rating.teamId === teamId)
       };
     });
-    this.hasExpectedGoals = this.rows.some(row => row.expectedGoalsShare !== undefined);
+    this.hasExpectedGoals = this.rows.some(row => row.rating?.values.expectedGoals != null);
     this.sortRows();
   }
 
@@ -534,7 +519,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
     this.ngZone.runOutsideAngular(() => {
       table.addEventListener("scroll", this.onTableScroll, {passive: true});
       scrollbar.addEventListener("scroll", this.onScrollbarScroll, {passive: true});
-      // The table widens when the xGF% column comes in, and the container with the window
+      // The table widens with the xGF% column, and the container with the window
       this.resizeObserver = new ResizeObserver(() => this.updateStickyScrollbar());
       this.resizeObserver.observe(table);
       if (table.firstElementChild) {

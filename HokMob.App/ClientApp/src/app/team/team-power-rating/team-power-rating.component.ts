@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges} from '@angular/core';
 import {TeamRating, TeamRatingPoint, TeamRatingUtils} from "@shared/utils/team-rating-utils";
+import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 /**
  * One part of the power rating: a rated stat, its share of the rating, and how it compares to the league.
@@ -24,8 +25,9 @@ export interface PowerRatingPart {
 
 /**
  * The team's HokMob power rating card: the rating in its color, its league rank and its change over the last 5 games,
- * and each rated stat with its weight, value, league rank and a bar from the league average. See TeamRatingUtils for
- * how it's worked out.
+ * and each rated stat with its weight, value, league rank and a bar from the league average. The stats and weights are
+ * the ones the rating was worked out with: with Natural Stat Trick's expected goals, credited under the card, or from
+ * the NHL's stats alone when there are none. See TeamRatingUtils for how it's worked out.
  */
 @Component({
     selector: 'app-team-power-rating',
@@ -49,6 +51,8 @@ export class TeamPowerRatingComponent implements OnChanges {
 
   /** The games the recent change is over. */
   public static readonly trendGames = 5;
+
+  public readonly nstUrl: string = NstStatsUtils.teamTableUrl;
 
   public team: TeamRating;
 
@@ -93,9 +97,17 @@ export class TeamPowerRatingComponent implements OnChanges {
     return TeamPowerRatingComponent.trendGames;
   }
 
+  /**
+   * Whether the rating counts Natural Stat Trick's expected goals, so the card credits it. Without them the rating is
+   * worked out from the NHL's stats alone, and the card says so.
+   */
+  public get hasExpectedGoals(): boolean {
+    return !!this.team?.hasExpectedGoals;
+  }
+
   public ngOnChanges(): void {
     this.team = (this.ratings ?? []).find(rating => rating.teamId === this.teamId);
-    this.parts = this.team ? TeamRatingUtils.ratedMetrics.map(metric => {
+    this.parts = this.team ? TeamRatingUtils.getRatedMetrics(this.team.weights).map(metric => {
       const score = this.team.scores[metric.id];
       const value = this.team.values[metric.id];
       const average = TeamRatingUtils.averageRating;
@@ -103,7 +115,7 @@ export class TeamPowerRatingComponent implements OnChanges {
       return {
         label: metric.label,
         description: metric.description,
-        weight: Math.round(metric.weight * 100) + "%",
+        weight: Math.round(this.team.weights[metric.id] * 100) + "%",
         value: value == null ? "-" : metric.format(value),
         rank: TeamRatingUtils.getOrdinal(this.team.ranks[metric.id]),
         barStart: toTrack(Math.min(score, average)),
