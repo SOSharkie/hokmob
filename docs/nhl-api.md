@@ -323,6 +323,14 @@ on. The number is the change in the rating's correlation with forward strength, 
   rating also beats the old one over 2015-21 (0.500 against 0.464). Last season's rating needs no new data: the
   previous season's team games and NST game logs. It's left out on purpose: the rating is about the current season
   only.
+- **Zone time (EDGE) is the one new signal, not proven yet.** Even strength zone time differential (offensive minus
+  defensive zone time %) is mostly Corsi (0.86 with it, 0.81 with xGF%, and it carries over to the next season as well:
+  0.78 against 0.77). But at the end of the regular season it tracked playoff strength better than anything in the
+  rating: 0.43 alone against 0.34 for Corsi, 0.31 for xGF% and 0.40 for the rating, and adding it at 20% gave +0.038
+  (-0.00 to 0.08, better in 4 of 5 seasons) where 20% more Corsi gave -0.001. In xGF%'s place: +0.043 (0.01 to 0.08, 5 of
+  5). That's 16 teams a season over 5 seasons and one of 13 EDGE stats tried, so it's a lead, not a result, and EDGE
+  only gives full seasons, so it can't be tested part-way through a past season. Skating speed, bursts, distance and
+  shot speed added nothing (`edge1.js`).
 
 The power rating card shows the rating, its rank, its change over the last 5 games and each rated stat with its
 weight and a bar from the league average: the stats and weights the rating was worked out with. It credits Natural
@@ -588,7 +596,7 @@ logs, for research on the team power rating: stats nobody publishes ready-made, 
 written by `npm run build-play-by-play -- <season> [<season> ...]` (`ClientApp/build-play-by-play.js`), is in
 `.gitignore` (about 55 MB a season) and isn't read by the app. The play-by-play of 2022-23 to 2026-27 (through
 2026-11-15) is there, the logs from 2015-16 and the season totals from 2012-13 (`--only totals`, three requests a
-season; the bios from 2021-22). 2021-22's play-by-play was never fetched. **Read these files instead
+season; the bios from 2021-22). 2021-22's play-by-play was never fetched. The EDGE totals are there for 2021-22 to 2026-27. **Read these files instead
 of asking the NHL again**: a finished game never changes, and the script resumes, so rerunning it only fetches the games
 a file doesn't have (a season in progress's new games, or the rest after an interruption).
 
@@ -606,6 +614,7 @@ copies, and don't fetch play-by-play in a loop any other way. The app's own api-
 | `{season}-2-skater-totals.csv` | A row per skater: the season's games, goals, points, shots, ice time | stats API `skater/summary` |
 | `{season}-2-goalie-totals.csv` | A row per goalie: the season's games, shots, saves, goals against | stats API `goalie/summary` |
 | `{season}-2-skater-bios.csv` | A row per skater: birth date, height, weight, first season, draft | stats API `skater/bios` |
+| `{season}-2-team-edge.csv` | A row per team: the season's zone time, skating and shot speed (`--only edge`) | api-web `edge/team-detail` and `edge/team-zone-time-details` |
 
 The game list comes from the stats API's `game?cayenneExp=season=20252026 and gameType=2` (one row per game with
 `id`, `gameDate`, `homeTeamId`, `visitingTeamId` and `gameStateId`: 7 is finished, 1 not played yet).
@@ -642,6 +651,16 @@ two weeks of `gameDate` at a time. `goalies`: `gameId`, `playerId`, `team`, `sta
 `toi` (seconds). `skater-bios`: `playerId`, `birthDate`, `height` (inches), `weight` (pounds), `firstSeason`, and
 `draftYear` and `draftOverall` (empty when undrafted). They're what a player had done before a later season, for rating a lineup by its players' record, and
 are refetched on every run, since a season in progress's change.
+
+**EDGE.** The NHL's puck and player tracking, from 2021-22: `edge/team-detail/{teamId}/{season}/{gameType}` (zone
+time, skating speed and bursts, distance skated, shot speed, shots on goal by area) and
+`edge/team-zone-time-details/{teamId}/{season}/{gameType}` (the share of time in each zone by strength: `all`, `es`,
+`pp`, `pk`). Both give **the season so far only**: no game, no date range, so a past season can't be cut off part-way,
+and a season in progress has to be saved as it goes to have its history. `team-edge`: `teamId`, `team`, `games`, `oz`,
+`nz`, `dz` (shares of time in the offensive, neutral and defensive zone, all situations), `ozEv`, `nzEv`, `dzEv` (even
+strength), `burstsOver22`, `burstsOver20` (mph), `maxSpeed` (mph), `distance` (miles), `shotsOver90`, `topShotSpeed`
+(mph), and shots on goal and goals from `High`, `Mid` and `Long` range. It's two requests per team, not in the default
+parts, and refetched on every run.
 
 ## Natural Stat Trick
 

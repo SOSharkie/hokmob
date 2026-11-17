@@ -11,6 +11,8 @@
 //                           refetched every run)
 //             logs          every skater's ice time and every goalie's shots in each game (about 15 requests)
 //             play-by-play  every game's plays (one request per game)
+//           Not in the default: edge, every team's season totals from the NHL's EDGE tracking (zone time, skating
+//           and shot speed; 2 requests per team, refetched every run, 2021-22 and later).
 //
 // It resumes: games already in a season's file are skipped, so rerun it after an interruption, or to add a season in
 // progress's new games. Only finished games are fetched.
@@ -216,13 +218,61 @@ async function saveTotals(season, dir) {
   await sleep(1500);
 }
 
+/** An api-web response, one request at a time: waits out a 429, and null when there's nothing (404). */
+async function apiWeb(pathAndQuery) {
+  for (let attempt = 0; attempt < 15; attempt++) {
+    const sent = Date.now();
+    let response = null;
+    try {
+      response = await fetch(`https://api-web.nhle.com/v1/${pathAndQuery}`);
+    } catch (error) {
+      // a dropped connection: try again below
+    }
+    if (response?.ok) {
+      const json = await response.json();
+      await sleep(Math.max(0, startInterval - (Date.now() - sent)));
+      return json;
+    }
+    if (response?.status === 404) return null;
+    await sleep(response?.status === 429 ? ((Number(response.headers.get('retry-after')) || 60) + 3) * 1000 : 5000);
+  }
+  return null;
+}
+
+/**
+ * Every team's season totals from the NHL's EDGE puck and player tracking: the share of time in each zone, skating
+ * and shot speed, and shots on goal by distance. EDGE only gives a season so far, never a game or a date range.
+ */
+async function saveEdge(season, games, dir) {
+  const teamIds = [...new Set(games.map(game => game.homeTeamId))].sort((a, b) => a - b);
+  const rows = [];
+  for (const teamId of teamIds) {
+    const detail = await apiWeb(`edge/team-detail/${teamId}/${season}/2`);
+    const zones = await apiWeb(`edge/team-zone-time-details/${teamId}/${season}/2`);
+    if (!detail || !zones) { console.log(`${season}: no EDGE data for team ${teamId}`); continue; }
+    const zone = code => zones.zoneTimeDetails?.find(z => z.strengthCode === code) ?? {};
+    const sog = code => detail.sogSummary?.find(s => s.locationCode === code) ?? {};
+    const all = zone('all'), ev = zone('es');
+    rows.push([teamId, detail.team?.abbrev, detail.team?.gamesPlayed,
+      all.offensiveZonePctg, all.neutralZonePctg, all.defensiveZonePctg, ev.offensiveZonePctg, ev.neutralZonePctg, ev.defensiveZonePctg,
+      detail.skatingSpeed?.burstsOver22?.value, detail.skatingSpeed?.burstsOver20?.value, detail.skatingSpeed?.speedMax?.imperial,
+      detail.distanceSkated?.total?.imperial, detail.shotSpeed?.shotAttemptsOver90?.value, detail.shotSpeed?.topShotSpeed?.imperial,
+      sog('high').shots, sog('high').goals, sog('mid').shots, sog('mid').goals, sog('long').shots, sog('long').goals]
+      .map(value => value ?? ''));
+  }
+  fs.writeFileSync(path.join(dir, `${season}-2-team-edge.csv`), csv(
+    ['teamId', 'team', 'games', 'oz', 'nz', 'dz', 'ozEv', 'nzEv', 'dzEv', 'burstsOver22', 'burstsOver20', 'maxSpeed', 'distance',
+      'shotsOver90', 'topShotSpeed', 'sogHigh', 'goalsHigh', 'sogMid', 'goalsMid', 'sogLong', 'goalsLong'], rows));
+  console.log(`${season}: EDGE totals of ${rows.length} teams`);
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const outIndex = args.indexOf('--out');
   const dir = outIndex >= 0 ? path.resolve(args[outIndex + 1]) : path.join(__dirname, '..', '..', 'data', 'nhl-play-by-play');
   const seasons = args.filter((arg, i) => /^\d{8}$/.test(arg) && (outIndex < 0 || i !== outIndex + 1));
   if (!seasons.length) {
-    console.error('Usage: npm run build-play-by-play -- <season> [<season> ...] [--out <dir>] [--only totals,logs,play-by-play]');
+    console.error('Usage: npm run build-play-by-play -- <season> [<season> ...] [--out <dir>] [--only totals,logs,play-by-play,edge]');
     process.exit(1);
   }
   const onlyIndex = args.indexOf('--only');
@@ -230,9 +280,10 @@ async function main() {
   fs.mkdirSync(dir, {recursive: true});
   for (const season of seasons) {
     if (parts.includes('totals')) await saveTotals(season, dir);
-    if (!parts.includes('logs') && !parts.includes('play-by-play')) continue;
+    if (!parts.includes('logs') && !parts.includes('play-by-play') && !parts.includes('edge')) continue;
     const games = await finishedGames(season);
     if (!games.length) { console.log(`${season}: no finished games`); continue; }
+    if (parts.includes('edge')) await saveEdge(season, games, dir);
     if (parts.includes('logs')) await saveLogs(season, games, dir);
     if (parts.includes('play-by-play')) await savePlayByPlay(season, games, path.join(dir, `${season}-2.ndjson`));
   }
