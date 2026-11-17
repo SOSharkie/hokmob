@@ -282,11 +282,47 @@ over the six checkpoints and the five seasons.
 - **Tested and left out:** score adjusted Corsi and xG, Fenwick, scoring chances (as good as xG, within noise),
   high danger chances, goals saved and scored above expected, opponent and home ice adjustment, weighting recent
   games more, weights that grow with games played, faceoffs, hits, blocks, takeaways and giveaways.
-- **Not done:** blending in last season's final rating early on tracked clearly better (0.695, and 0.68 instead of
-  0.59 after 10 games), but it makes the rating about more than this season.
+- **Not done, by choice:** blending in last season's final rating early on tracks clearly better (see below), but it
+  makes the rating about more than this season. Decided 2026-11-16: the rating stays about the current season only.
 
 The backtest's NST data is kept locally, outside git (see [Team game logs](#team-game-logs)); the NHL's per game
-team reports come from the stats API with `isGame=true`.
+team reports come from the stats API with `isGame=true`. The scripts are in `data/power-rating-backtest/` (local too),
+with a README.
+
+### What play-by-play and player data add
+
+A second round (2026-11) looked for an edge in stats nobody publishes: about 85 of them, worked out from the stored
+play-by-play, ice time logs, season totals and bios (see [Stored play-by-play](#stored-play-by-play)). Each was added to
+the rating at ±10% and ±20% on 2023-24 to 2025-26, and the few that helped were then run on seasons they weren't picked
+on. The number is the change in the rating's correlation with forward strength, with its 90% interval.
+
+| Stat | Where picked | On seasons not picked on |
+|---|---|---|
+| Last season's final rating, fading as games are played (its share is 10 / (games + 10)) | 2021-26: +0.029 (0.008 to 0.046) | 2015-21: +0.058 (0.032 to 0.078) |
+| The lineup's track record: last season's points per hour of the skaters, weighted by this season's ice time, at 20% | 2021-26: +0.023 (0.006 to 0.044) | 2015-21: +0.036 (0.004 to 0.062) |
+| Slot shot share (5v5 unblocked attempts from between the faceoff dots, inside 35 feet of the goal line) in place of xGF% | 2023-26: +0.008 (-0.003 to 0.020) | 2022-23: +0.004 (-0.003 to 0.011) |
+| Shooters' prior shooting %, weighted by this season's attempts, at 10% | 2023-26: +0.015 (-0.002 to 0.034) | 2022-23: -0.015 |
+| Icings forced minus icings committed, at 5% | 2023-26: +0.007 (-0.005 to 0.015) | 2022-23: -0.002 |
+| Prior save % of the goalies in net lately, for half of save % | 2023-26: +0.007 (-0.003 to 0.019) | 2021-23: -0.010 |
+
+- **Nothing from this season's play-by-play adds a clear edge.** What it measures is what Corsi and xG already say, or
+  noise. Tested and left out: shot distance, inner slot, tips, rebounds and rush shots; bursts of attempts; offensive
+  zone faceoff share, icings, goalie freezes and where hits, giveaways and takeaways happen; time spent leading, the
+  first goal, Corsi by period and by score; the share of games out-attempted or out-chanced; pace; restraining fouls
+  against the rest, and penalties by zone; power play and penalty kill shot rates; the save % of the goalie with the
+  most shots, or of the ones in net lately; scoring and shooting depth; how much ice time the top forwards and
+  defensemen take; shift length; lineup changes and the core players dressed; age, height, weight, experience and
+  draft position.
+- **Slot shot share is the best single stat found**: alone it tracks forward strength at 0.621 over 2022-26, against
+  0.569 for NST's xGF% and 0.558 for Corsi, and in xGF%'s place it did as well or a little better in all 4 seasons
+  (+0.007, -0.001 to 0.017; +0.011 against the fallback weights). It's a way to rate without NST, not an addition: it would
+  need every game's play-by-play, which api-web gives at one game a second.
+- **The edge is in what was known before the season.** Last season's rating and the lineup's track record say much
+  the same thing (they correlate 0.66 to 0.78) and both together add little more (+0.031 over 2021-26). The gain is
+  early: after 10 games the rating tracks at 0.69 instead of 0.60, and from mid-season it's the same. With it the
+  rating also beats the old one over 2015-21 (0.500 against 0.464). Last season's rating needs no new data: the
+  previous season's team games and NST game logs. It's left out on purpose: the rating is about the current season
+  only.
 
 The power rating card shows the rating, its rank, its change over the last 5 games and each rated stat with its
 weight and a bar from the league average: the stats and weights the rating was worked out with. It credits Natural
@@ -544,6 +580,68 @@ final with `npm run capture-live-fixtures -- --watch` from `HokMob.App/ClientApp
 - **A goal's `highlightClip` is added within minutes**, picked up by the page's normal refresh.
 - **`score` lags the landing at a period change** by a few seconds (the landing was in the 2nd while `score` still
   showed the 1st intermission), so don't assert that the two agree.
+
+## Stored play-by-play
+
+`data/nhl-play-by-play/` at the repo root keeps whole regular seasons of the NHL's play-by-play and per game player
+logs, for research on the team power rating: stats nobody publishes ready-made, worked out from the events. It's
+written by `npm run build-play-by-play -- <season> [<season> ...]` (`ClientApp/build-play-by-play.js`), is in
+`.gitignore` (about 55 MB a season) and isn't read by the app. The play-by-play of 2022-23 to 2026-27 (through
+2026-11-15) is there, the logs from 2015-16 and the season totals from 2012-13 (`--only totals`, three requests a
+season; the bios from 2021-22). 2021-22's play-by-play was never fetched. **Read these files instead
+of asking the NHL again**: a finished game never changes, and the script resumes, so rerunning it only fetches the games
+a file doesn't have (a season in progress's new games, or the rest after an interruption).
+
+**The limit.** `gamecenter/{id}/play-by-play` allows about one request a second per IP address. Past that api-web
+answers 429 with `Retry-After: 60`, and requests sent during those 60 seconds keep failing (5 parallel requests were
+blocked after about 100 games, and 4 a second after 33). The stats API slows down with it. So the script sends one
+request at a time, waits out every 429 and then slows down: a season (1,312 games) takes 25 to 40 minutes. Don't run two
+copies, and don't fetch play-by-play in a loop any other way. The app's own api-web calls can fail while it runs.
+
+| File | What | From |
+|---|---|---|
+| `{season}-2.ndjson` | One game per line: its plays, compacted | api-web `gamecenter/{id}/play-by-play` |
+| `{season}-2-skater-toi.csv` | A row per skater and game: ice time and shifts | stats API `skater/timeonice`, `isGame=true` |
+| `{season}-2-goalies.csv` | A row per goalie and game: shots, saves, goals against | stats API `goalie/summary`, `isGame=true` |
+| `{season}-2-skater-totals.csv` | A row per skater: the season's games, goals, points, shots, ice time | stats API `skater/summary` |
+| `{season}-2-goalie-totals.csv` | A row per goalie: the season's games, shots, saves, goals against | stats API `goalie/summary` |
+| `{season}-2-skater-bios.csv` | A row per skater: birth date, height, weight, first season, draft | stats API `skater/bios` |
+
+The game list comes from the stats API's `game?cayenneExp=season=20252026 and gameType=2` (one row per game with
+`id`, `gameDate`, `homeTeamId`, `visitingTeamId` and `gameStateId`: 7 is finished, 1 not played yet).
+
+**A game's line** is `{ id, date, home, away, roster, plays }`: `home` and `away` are team IDs, `roster` is
+`[playerId, teamId, positionCode]` for everyone dressed (`rosterSpots`), and each play keeps these keys, absent when
+the play has no such value:
+
+| Key | Meaning |
+|---|---|
+| `t` | `typeDescKey`: `faceoff`, `shot-on-goal`, `missed-shot`, `blocked-shot`, `goal`, `hit`, `giveaway`, `takeaway`, `penalty`, `stoppage`, `delayed-penalty`, `period-start`, `period-end`, `game-end`, ... |
+| `p`, `s` | Period number (4 is overtime, 5 the shootout) and seconds into the period |
+| `sit` | `situationCode`: away goalie, away skaters, home skaters, home goalie. `1551` is 5v5, `1451` a home power play |
+| `side` | `L` or `R`: the side the home team defends (`homeTeamDefendingSide`). It can be wrong or missing, so work out the direction from where each team's offensive zone shots are instead |
+| `tm` | `eventOwnerTeamId`. For a blocked shot it's the shooter's team (and the zone is the blocker's), so take a play's team from its player and the roster |
+| `x`, `y`, `z` | Coordinates in feet from center ice (the nets are at x = ±89) and `zoneCode` (`O`, `N`, `D`, from the owner's side). A blocked shot's are where it was blocked |
+| `pl` | The play's main player: shooter, scorer, faceoff winner, hitter, the player giving or taking the puck away, the penalized player |
+| `b` | The other player: blocker, faceoff loser, the player hit, the player who drew the penalty |
+| `a1`, `a2`, `g`, `st` | A goal's assists; the goalie in net (absent on an empty net) and the `shotType` of a shot or goal |
+| `r`, `r2` | A stoppage's `reason` and `secondaryReason` (`icing`, `offside`, `goalie-stopped-after-sog`, `puck-frozen`, `tv-timeout`, ...), a missed shot's reason, or a penalty's `descKey` (`tripping`, `hooking`, ...) |
+| `pt`, `dur` | A penalty's type (`MIN`, `MAJ`, `BEN` for a bench minor, `MIS`, ...) and minutes |
+
+What a play doesn't say: who was on the ice (that's the shift charts, not stored), passes, zone entries, or which team
+iced the puck or froze it. The last two follow from the next faceoff, which is in the defending zone of the team that
+did.
+
+**The logs.** `skater-toi`: `gameId`, `playerId`, `team` (abbreviation), `position`, `toi`, `evToi`, `ppToi`, `shToi`
+(seconds) and `shifts`. A season is about 47,000 rows and a stats API query returns 10,000 at most, so the script asks
+two weeks of `gameDate` at a time. `goalies`: `gameId`, `playerId`, `team`, `started` (1 or 0), `shotsAgainst`, `saves`,
+`goalsAgainst` and `toi` (seconds), all situations. A goalie's 5v5 shots are in the play-by-play (`g` and `sit`).
+
+**The totals.** `skater-totals`: `playerId`, `position`, `games`, `goals`, `assists`, `points`, `evPoints`, `shots` and
+`toiPerGame` (seconds). `goalie-totals`: `playerId`, `games`, `started`, `shotsAgainst`, `saves`, `goalsAgainst` and
+`toi` (seconds). `skater-bios`: `playerId`, `birthDate`, `height` (inches), `weight` (pounds), `firstSeason`, and
+`draftYear` and `draftOverall` (empty when undrafted). They're what a player had done before a later season, for rating a lineup by its players' record, and
+are refetched on every run, since a season in progress's change.
 
 ## Natural Stat Trick
 

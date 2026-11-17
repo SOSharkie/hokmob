@@ -42,6 +42,10 @@ A request to one of them is a regression.
 - `data/natural-stat-trick/team-games/`: whole seasons of NST's team game logs as CSV, for backtesting the power
   rating without asking NST again (see "Team game logs" in `docs/nhl-api.md`). It's in `.gitignore` and must stay out
   of git: the repo is public, and NST's data isn't republished in it. The app doesn't read the files.
+- `data/nhl-play-by-play/`: whole seasons of the NHL's play-by-play, ice time and goalie logs, player season totals and
+  bios, written by `npm run build-play-by-play -- <season>` (see "Stored play-by-play" in `docs/nhl-api.md`), and
+  `data/power-rating-backtest/`: the backtest scripts and their README. Both are in `.gitignore`. Read these files
+  instead of asking the NHL again: api-web allows about one play-by-play request a second.
 - `ClientApp/src/app/shared/`:
   - `models/nhl-web-api/`: typed models for api-web and the player search. `models/nhl-stats-api/`: the
     `/api/nhl-stats/*` responses. `models/nhl-history/`: the history page's season files and rated games.
