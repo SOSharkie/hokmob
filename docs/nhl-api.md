@@ -210,6 +210,10 @@ The colors are the `--rating-elite`, `--rating-good`, `--rating-ordinary` and `-
 and the history page's distribution chart, a canvas, reads their values (`RatingColorUtils.resolveTierColor`). Don't
 write the hex values anywhere else.
 
+A filled, colored box behind a number means a rating, so nothing else gets one. A stat leader's value on the stats
+page and a goalie's save % and GAA on the player page are plain, bolder text, not a pill in the team's color: the
+team's logo is already beside them, and many team colors are a tier's hue (a red team would read as a poor rating).
+
 Each scale has its own cut points, set so a tier is about the same share of its ratings: elite the top 3 to 5%, good
 the next 20% or so, ordinary the middle, and poor the bottom 20% or so. A green badge means "good" on a game, a season
 and a team alike.

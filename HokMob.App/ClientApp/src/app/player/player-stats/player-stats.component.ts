@@ -1,7 +1,6 @@
 import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {GoalieSeasonStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
-import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
 
 /**
@@ -24,9 +23,6 @@ export class PlayerStatsComponent {
 
   @Input()
   public stats: SkaterSeasonStats | GoalieSeasonStats;
-
-  @Input()
-  public teamColor: string;
 
   @Input()
   public isGoalie: boolean;
@@ -100,11 +96,6 @@ export class PlayerStatsComponent {
   /** A goalie's goals saved above average, like "+4.2". */
   public get goalsSavedAboveAverage(): string {
     return PlayerSeasonRatingUtils.formatGoalsSavedAboveAverage(this.seasonRating?.goalsSavedAboveAverage);
-  }
-
-  /** The text color on teamColor, for the goalie's save percentage and GAA: white, or near-black on a light color. */
-  public get teamTextColor(): string {
-    return NhlTeamColorUtils.getTextColorOn(this.teamColor);
   }
 
   /** The row as a skater's, for the skater grid. */

@@ -34,7 +34,6 @@ describe('PlayerStatsComponent', () => {
     fixture.componentRef.setInput('statTitle', statTitle);
     fixture.componentRef.setInput('stats', stats);
     fixture.componentRef.setInput('isGoalie', isGoalie);
-    fixture.componentRef.setInput('teamColor', '#B4975A');
     fixture.detectChanges();
   }
 
@@ -141,15 +140,15 @@ describe('PlayerStatsComponent', () => {
     ]);
   });
 
-  it("should put the goalie's save percentage and GAA in readable text on the team color", () => {
+  it("should show the goalie's save percentage and GAA bolder, without a fill, which would read as a rating badge", () => {
     const season = mockPlayerStats(8476945).regularSeasons[0] as GoalieSeasonStats;
     show(season, true, '2025-2026 NHL Regular Season Stats');
 
-    // The card is shown in Vegas gold (#B4975A), too light for white text
-    const pills = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.goalie-stats .item-value'))
-        .filter(value => value.style.backgroundColor);
-    expect(pills.map(pill => pill.textContent.trim())).toEqual(['.895', '2.86']);
-    expect(pills.map(pill => pill.style.color)).toEqual(['rgb(27, 27, 27)', 'rgb(27, 27, 27)']);
+    const keyValues = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.goalie-stats .key-value'));
+    expect(keyValues.map(value => value.textContent.trim())).toEqual(['.895', '2.86']);
+    const values = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.goalie-stats .item-value'));
+    expect(values.every(value => getComputedStyle(value).backgroundColor === 'rgba(0, 0, 0, 0)')).toBeTrue();
+    expect(keyValues.map(value => getComputedStyle(value).fontWeight)).toEqual(['600', '600']);
   });
 
   describe('rating column', () => {

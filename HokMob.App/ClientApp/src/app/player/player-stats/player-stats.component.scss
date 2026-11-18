@@ -67,7 +67,9 @@
       color: white;
     }
 
-    .rating-value {
+    // A goalie's save % and GAA stand out by weight, with no box: a filled, colored box behind a number is the
+    // rating's badge
+    .key-value, .rating-value {
       font-weight: 600;
     }
   }

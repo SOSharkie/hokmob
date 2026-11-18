@@ -8,8 +8,6 @@ import { ActivatedRoute, convertToParamMap, ParamMap, Router, RouterLink } from 
 import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { NhlStatsApiService } from '@shared/services/nhl-stats-api.service';
-import { NhlTeamColorUtils } from '@shared/utils/nhl-team-color-utils';
-import { NhlTeamUtils } from '@shared/utils/nhl-team-utils';
 import { StatCategoryUtils } from '@shared/utils/stat-category-utils';
 import {
   mockGoalieSavePctgLeaders25,
@@ -177,18 +175,15 @@ describe('StatCategoryComponent', () => {
     expect(rows()[0].lastElementChild).toBe(selectedCells[0]);
   });
 
-  it('should put the leader\'s own stat in their team color', async () => {
+  it('should show the leader\'s own stat bolder, without a team color fill, which would read as a rating badge', async () => {
     await openPoints();
 
     const leaderValues = fixture.nativeElement.querySelectorAll('.leader-value');
     expect(leaderValues.length).toBe(1);
     expect(text(leaderValues[0])).toBe('138');
-    const edmontonColor = NhlTeamColorUtils.getTeamPrimaryColor(NhlTeamUtils.getTeamIdByAbbrev('EDM'));
-    const probe = document.createElement('span');
-    probe.style.backgroundColor = edmontonColor;
-    expect(leaderValues[0].style.backgroundColor).toBe(probe.style.backgroundColor);
-    // Edmonton's blue keeps white text
-    expect(leaderValues[0].style.color).toBe('rgb(255, 255, 255)');
+    expect(leaderValues[0].getAttribute('style')).toBeNull();
+    expect(getComputedStyle(leaderValues[0]).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(getComputedStyle(leaderValues[0]).fontWeight).toBe('700');
     expect(rows()[0].classList).toContain('leader-row');
     expect(rows()[1].classList).not.toContain('leader-row');
   });

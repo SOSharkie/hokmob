@@ -98,8 +98,7 @@
                 <td class="stat-cell"
                     [class.selected-column]="column.isSelected" [class.phone-hidden]="column.isPhoneHidden">
                   @if (column.isSelected && isFirst) {
-                    <span class="leader-value"
-                          [ngStyle]="{'background-color': row.teamColor, 'color': row.teamTextColor}">{{row.values[i]}}</span>
+                    <span class="leader-value">{{row.values[i]}}</span>
                   } @else {
                     <span>{{row.values[i]}}</span>
                   }
