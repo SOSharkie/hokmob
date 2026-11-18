@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { TeamSeasonStats } from '@shared/models/nhl-stats-api/team-stats.model';
 import { mockTeamStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
-import { TeamRatingUtils } from '@shared/utils/team-rating-utils';
+import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 
 import { TeamStatsComponent } from './team-stats.component';
 
@@ -47,11 +47,9 @@ describe('TeamStatsComponent', () => {
     return fixture.nativeElement.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim();
   }
 
-  /** A color as the browser writes it, so a hex color can be compared to an element's style. */
-  function asStyle(color: string): string {
-    const element = document.createElement('span');
-    element.style.backgroundColor = color;
-    return element.style.backgroundColor;
+  function groupTitles(): string[] {
+    return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.rating-group-title'))
+        .map(title => title.textContent.trim());
   }
 
   it('should show a skeleton with a bar row per stat while loading, instead of the card', () => {
@@ -61,8 +59,10 @@ describe('TeamStatsComponent', () => {
     expect(skeleton.getAttribute('shape')).toBe('bar');
     expect(skeleton.getAttribute('cardTitle')).toBeNull();
     expect(skeleton.layout.rows).toBe(8);
-    expect(skeleton.layout.rowHeight).toBe(48);
-    expect(skeleton.mobileLayout.rowHeight).toBe(44);
+    // As tall as the card: its 48px title, three group titles and 8 rows of 43px, the same at every width
+    const layout = skeleton.layout;
+    expect(layout.headerHeight + layout.rows * layout.rowHeight + layout.paddingBottom).toBe(522);
+    expect(skeleton.mobileLayout).toBeUndefined();
     expect(fixture.nativeElement.querySelector('.team-stats')).toBeNull();
 
     fixture.componentRef.setInput('loading', false);
@@ -73,14 +73,16 @@ describe('TeamStatsComponent', () => {
 
   it('should show the real stats and league ranks of a team', () => {
     show(6);
-    expect(text('.rating-bar-card-title')).toBe('2025-2026 Team Stats');
+    expect(text('.rating-bar-card-title')).toBe('Team Stats');
     expect(fixture.nativeElement.querySelector('.rating-badge')).toBeNull();
+    expect(groupTitles()).toEqual(['Results', 'Special teams', 'Shots & draws']);
+    expect(component.groups.map(group => group.rows.length)).toEqual([3, 2, 3]);
     expect(rows()).toEqual([
       {label: 'Points %', value: '61.0%', rank: '8th'},
-      {label: 'Power Play %', value: '23.4%', rank: '9th'},
-      {label: 'Penalty Kill %', value: '77.0%', rank: '24th'},
       {label: 'Goals For / Game', value: '3.27', rank: '10th'},
       {label: 'Goals Against / Game', value: '3.01', rank: '14th'},
+      {label: 'Power Play %', value: '23.4%', rank: '9th'},
+      {label: 'Penalty Kill %', value: '77.0%', rank: '24th'},
       {label: 'Shots For / Game', value: '27.0', rank: '21st'},
       {label: 'Shots Against / Game', value: '29.7', rank: '28th'},
       {label: 'Faceoff %', value: '53.1%', rank: '4th'}
@@ -95,16 +97,27 @@ describe('TeamStatsComponent', () => {
     expect(faceoffs.barStart).toBe(50);
     expect(faceoffs.barWidth).toBeGreaterThan(0);
     const fills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-bar-fill'));
-    expect(fills[7].classList).toContain('above-average');
-    expect(fills[7].style.backgroundColor).toBe(asStyle(faceoffs.barColor));
+    expect(fills[7].style.left).toBe('50%');
+    expect(parseFloat(fills[7].style.width)).toBeCloseTo(faceoffs.barWidth, 3);
   });
 
-  it('should color the points % by how far it is above the league average', () => {
+  it('should color each rank\'s pill and bar only in the league\'s top and bottom 10', () => {
     show(6);
-    // Boston's 61.0% is 0.6 standard deviations above the average, a score of 5.9, in the green
-    const pointsPct = component.rows[0];
-    expect(pointsPct.isAboveAverage).toBeTrue();
-    expect(pointsPct.barColor).toBe(TeamRatingUtils.getRatingColor(5.9));
+    // Boston: points % 8th, goals against 14th, penalty kill 24th
+    expect(component.rows.map(row => row.rankTier)).toEqual([
+      'top', 'top', 'middle', 'top', 'bottom', 'middle', 'bottom', 'top'
+    ]);
+    const pills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-rank'));
+    const fills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-bar-fill'));
+    expect(pills[0].classList).toContain('rank-top');
+    expect(fills[0].classList).toContain('rank-top');
+    expect(pills[2].classList).toContain('rank-middle');
+    expect(pills[4].classList).toContain('rank-bottom');
+    expect(fills[4].classList).toContain('rank-bottom');
+    // Colored by the class, not by the score's rating color
+    expect(fills[0].style.backgroundColor).toBe('');
+    expect(getComputedStyle(fills[0]).backgroundColor).toBe('rgb(30, 200, 84)');
+    expect(getComputedStyle(pills[2]).color).toBe('rgb(164, 164, 164)');
   });
 
   it('should draw a lower value as better against', () => {
@@ -121,10 +134,10 @@ describe('TeamStatsComponent', () => {
     const bestPowerPlay = [...teams].sort((teamA, teamB) => teamB.powerPlayPct - teamA.powerPlayPct)[0];
     const fewestGoalsAgainst = [...teams].sort((teamA, teamB) => teamA.goalsAgainstPerGame - teamB.goalsAgainstPerGame)[0];
     show(bestPowerPlay.teamId);
-    expect(rows()[1].rank).toBe('1st');
+    expect(rows()[3].rank).toBe('1st');
     show(fewestGoalsAgainst.teamId);
-    expect(rows()[4].rank).toBe('1st');
-    expect(component.rows[4].isAboveAverage).toBeTrue();
+    expect(rows()[2].rank).toBe('1st');
+    expect(component.rows[2].isAboveAverage).toBeTrue();
   });
 
   it('should give teams with the same value the same rank', () => {
@@ -135,15 +148,41 @@ describe('TeamStatsComponent', () => {
     second.powerPlayPct = 0.8;
     third.powerPlayPct = 0.8;
     show(second.teamId, teams);
-    expect(rows()[1].rank).toBe('2nd');
+    expect(rows()[3].rank).toBe('2nd');
     show(third.teamId, teams);
-    expect(rows()[1].rank).toBe('2nd');
+    expect(rows()[3].rank).toBe('2nd');
   });
 
-  it('should name the season of the rows, not the current one', () => {
+  it('should title the card without its season, which the page already gives', () => {
     const teams = mockTeamStats().teams.map(team => ({...team, seasonId: 20242025}));
     show(6, teams);
-    expect(text('.rating-bar-card-title')).toBe('2024-2025 Team Stats');
+    expect(text('.rating-bar-card-title')).toBe('Team Stats');
+  });
+
+  it('should name the team with its logo when asked, for a page with more than one card', () => {
+    fixture.componentRef.setInput('showTeam', true);
+    show(6);
+    expect(text('.rating-bar-card-title')).toBe('Bruins');
+    // A compact card's title, beside the logo
+    expect(text('.rating-bar-card-short-title')).toBe('BOS');
+    const logo: HTMLImageElement = fixture.nativeElement.querySelector('.rating-bar-card-logo');
+    expect(logo.getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(6));
+    expect(logo.alt).toBe('');
+  });
+
+  it('should have no logo without showTeam', () => {
+    show(6);
+    expect(fixture.nativeElement.querySelector('.rating-bar-card-logo')).toBeNull();
+    expect(text('.rating-bar-card-short-title')).toBe('Team Stats');
+  });
+
+  it('should give each stat its short name, for a compact card', () => {
+    show(6);
+    const shortNames = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.part-short-name'))
+        .map(name => name.textContent.trim());
+    expect(shortNames).toEqual([
+      'Points %', 'Goals for', 'Goals against', 'Power play', 'Penalty kill', 'Shots for', 'Shots against', 'Faceoffs'
+    ]);
   });
 
   it('should show no card for a team without a row, like a former team or a season without games', () => {
@@ -166,6 +205,9 @@ describe('TeamStatsComponent', () => {
     show(6, teams);
     expect(rows()[7]).toEqual({label: 'Faceoff %', value: '-', rank: ''});
     expect(component.rows[7].barWidth).toBe(0);
+    // An empty, uncolored pill
+    expect(component.rows[7].rankTier).toBe('middle');
+    expect(fixture.nativeElement.querySelectorAll('.part-rank')[7].classList).toContain('no-rank');
   });
 
 });

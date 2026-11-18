@@ -1,5 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges} from '@angular/core';
-import {TeamRating, TeamRatingPoint, TeamRatingUtils, TeamScoreBar} from "@shared/utils/team-rating-utils";
+import {
+  TeamRankTier, TeamRating, TeamRatingPoint, TeamRatingUtils, TeamScoreBar
+} from "@shared/utils/team-rating-utils";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -18,17 +20,21 @@ export interface PowerRatingPart extends TeamScoreBar {
   weight: string;
   value: string;
   rank: string;
+  /** Where the rank stands in the league, for the color of its pill and bar. */
+  rankTier: TeamRankTier;
 }
 
 /**
  * The team's HokMob power rating card: the rating in its color, its league rank and its change over the last 5 games,
- * and each rated stat with its weight, value, league rank and a bar from the league average. The stats and weights are
+ * and each rated stat with its weight, value, league rank in a pill and a bar from the league average, the pill and bar
+ * colored at the ends of the league like the team stats cards' (TeamRatingUtils.getRankTier). The stats and weights are
  * the ones the rating was worked out with: with Natural Stat Trick's expected goals, credited under the card, or from
  * the NHL's stats alone when there are none. See TeamRatingUtils for how it's worked out.
  *
- * A page can put the card in a size container named `power-rating` (container: power-rating / inline-size on the
- * app-team-power-rating element), like a future game's two cards side by side. Under 340px wide it then goes compact:
- * the team's abbreviation for a title, the stats' short names without their weights, and a smaller rating.
+ * A page can put the card in a size container named `power-rating` (container: power-rating / inline-size on an
+ * element around it, like TeamRatingCardComponent's), like a future game's two cards side by side. Under 340px wide it
+ * then goes compact: the team's abbreviation for a title, the stats' short names without their weights, and a smaller
+ * rating. An element with a `cardAction` attribute is shown in the header's top right corner.
  */
 @Component({
     selector: 'app-team-power-rating',
@@ -51,8 +57,8 @@ export class TeamPowerRatingComponent implements OnChanges {
   public timeline: TeamRatingPoint[];
 
   /**
-   * Whether the header names the team, with its logo, like "Sharks Power Rating", for a page that shows more than one
-   * team's card, like a future game's.
+   * Whether the header names the team, with its logo, like "Sharks", for a page that shows more than one team's card,
+   * like a future game's, where the card's toggle says which card it is (TeamRatingCardComponent).
    */
   @Input()
   public showTeam: boolean = false;
@@ -70,12 +76,14 @@ export class TeamPowerRatingComponent implements OnChanges {
 
   /**
    * The skeleton: the rating and rank under the title, then a bar row per rated stat (6 with expected goals, which most
-   * seasons have), and the note's space below.
+   * seasons have) spread over the height the rows and their group title take, and the note's space below.
    */
-  public readonly skeletonLayout: SkeletonCardLayout = {rows: 6, rowHeight: 48, summaryHeight: 70, paddingBottom: 33};
+  public readonly skeletonLayout: SkeletonCardLayout = {
+    rows: 6, headerHeight: 48, summaryHeight: 72, rowHeight: 50, paddingBottom: 42
+  };
 
-  /** On a phone the rows and the rating are a little smaller. */
-  public readonly skeletonMobileLayout: SkeletonCardLayout = {rowHeight: 44, summaryHeight: 66};
+  /** On a phone the rating is a little smaller. */
+  public readonly skeletonMobileLayout: SkeletonCardLayout = {summaryHeight: 64};
 
   /** The games the recent change is over. */
   public static readonly trendGames = 5;
@@ -89,10 +97,18 @@ export class TeamPowerRatingComponent implements OnChanges {
   /** The change in rating over the last 5 games, or null before the team has played 6. */
   public change: number = null;
 
-  /** "Power Rating", or like "Sharks Power Rating" with showTeam. */
+  /** "Power Rating", or the team's name, like "Sharks", with showTeam. */
   public get title(): string {
     const teamName = this.showTeam ? NhlTeamUtils.getTeam(this.teamId)?.teamName : null;
-    return teamName ? teamName + " Power Rating" : "Power Rating";
+    return teamName || "Power Rating";
+  }
+
+  /**
+   * The title over the rated stats: "Built from", under the card's own title, or "Power Rating" with showTeam, where
+   * the card's title is the team's name.
+   */
+  public get groupTitle(): string {
+    return this.showTeam ? "Power Rating" : "Built from";
   }
 
   /** The compact card's title: like "SJS" with showTeam, the logo beside it, or else the title. */
@@ -113,9 +129,14 @@ export class TeamPowerRatingComponent implements OnChanges {
     return TeamRatingUtils.getRatingColor(this.team?.rating);
   }
 
-  /** Like "8th of 32". */
-  public get rankLabel(): string {
-    return TeamRatingUtils.getOrdinal(this.team?.rank) + " of " + (this.ratings ?? []).length;
+  /** The rating's rank, like "8th", shown before "of 32". */
+  public get rankOrdinal(): string {
+    return TeamRatingUtils.getOrdinal(this.team?.rank);
+  }
+
+  /** How many teams are rated, like 32. */
+  public get teamCount(): number {
+    return (this.ratings ?? []).length;
   }
 
   /** Like "Through 22 games", shown on hover over the rating and its rank. */
@@ -124,13 +145,9 @@ export class TeamPowerRatingComponent implements OnChanges {
     return "Through " + games + (games === 1 ? " game" : " games");
   }
 
-  /** Like "+4.2" or "-1.0". */
+  /** Like "4.2", without a sign: the arrow beside it (and, for a screen reader, "Up" or "Down") gives the direction. */
   public get changeLabel(): string {
-    if (this.change == null) {
-      return "";
-    }
-    const rounded = Math.abs(this.change).toFixed(1);
-    return rounded === "0.0" ? "0.0" : (this.change > 0 ? "+" : "-") + rounded;
+    return this.change == null ? "" : Math.abs(this.change).toFixed(1);
   }
 
   public get changeDirection(): "up" | "down" | "flat" {
@@ -161,6 +178,7 @@ export class TeamPowerRatingComponent implements OnChanges {
         weight: Math.round(this.team.weights[metric.id] * 100) + "%",
         value: value == null ? "-" : metric.format(value),
         rank: TeamRatingUtils.getOrdinal(this.team.ranks[metric.id]),
+        rankTier: TeamRatingUtils.getRankTier(this.team.ranks[metric.id], this.teamCount),
         ...TeamRatingUtils.getScoreBar(this.team.scores[metric.id])
       };
     }) : [];

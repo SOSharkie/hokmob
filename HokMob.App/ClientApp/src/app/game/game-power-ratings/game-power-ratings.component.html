@@ -1,26 +1,34 @@
 @if (hasRatings) {
   <div class="game-power-ratings">
-    <app-team-power-rating
+    <app-team-rating-card
         [teamId]="homeTeamId"
         [ratings]="ratings"
         [timeline]="homeTimeline"
+        [teamStats]="teamStats"
+        [statsLoading]="statsLoading"
         [showTeam]="true"
         [showNote]="false"
-    ></app-team-power-rating>
-    <app-team-power-rating
+        [(view)]="view"
+    ></app-team-rating-card>
+    <app-team-rating-card
         [teamId]="awayTeamId"
         [ratings]="ratings"
         [timeline]="awayTimeline"
+        [teamStats]="teamStats"
+        [statsLoading]="statsLoading"
         [showTeam]="true"
         [showNote]="false"
-    ></app-team-power-rating>
+        [(view)]="view"
+    ></app-team-rating-card>
   </div>
-  <p class="game-power-ratings-note">
-    5.0 is league average.
-    @if (hasExpectedGoals) {
-      <a class="power-rating-source" [href]="nstUrl" target="_blank" rel="noopener">xG from Natural Stat Trick</a>
-    } @else {
-      <span class="power-rating-fallback">Rated without expected goals, which aren't available right now.</span>
-    }
-  </p>
+  @if (view === 'power') {
+    <p class="game-power-ratings-note">
+      5.0 is league average.
+      @if (hasExpectedGoals) {
+        <a class="power-rating-source" [href]="nstUrl" target="_blank" rel="noopener">xG from Natural Stat Trick</a>
+      } @else {
+        <span class="power-rating-fallback">Rated without expected goals, which aren't available right now.</span>
+      }
+    </p>
+  }
 }

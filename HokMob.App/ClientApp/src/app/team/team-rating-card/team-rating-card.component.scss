@@ -1,0 +1,87 @@
+@use "variables" as *;
+@use "interaction" as *;
+@use "segmented-toggle" as *;
+
+// The cards go compact under 340px wide (see the card partial), and the toggle shows its labels from 500px. A size
+// container doesn't size to its content, so it takes the width it's given
+:host {
+  display: block;
+  width: 100%;
+  container: power-rating / inline-size;
+}
+
+// A segmented pill in the top right corner of the card's header, like the power rating chart's Season / Last 10 toggle,
+// so the title stays centered on the card
+.card-view-toggle {
+  @include segmented-toggle;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  padding: 3px;
+
+  .toggle-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-small;
+    min-width: 36px;
+    padding: 0 $spacing-medium;
+    @include focus-ring;
+
+    .view-icon {
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+    }
+
+    // Read out but not shown on a narrow card, where the icons stand alone
+    .view-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+}
+
+@container power-rating (width >= 500px) {
+  .card-view-toggle .toggle-option {
+    padding: 0 $spacing-large 0 $spacing-medium;
+
+    .view-label {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+    }
+  }
+}
+
+// A card that names the team, like a future game's, has its logo and name on the left, so a long name (Golden Knights)
+// fits beside the toggle at every width
+:host(.names-team) ::ng-deep .rating-bar-card-header {
+  justify-content: flex-start;
+}
+
+// A compact card's toggle gets smaller, for the shorter header
+@container power-rating (width < 340px) {
+  .card-view-toggle {
+    padding: 2px;
+
+    .toggle-option {
+      min-width: 30px;
+      height: 26px;
+      padding: 0 $spacing-small;
+
+      .view-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+      }
+    }
+  }
+}

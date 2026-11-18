@@ -16,6 +16,7 @@ import {RouterExtensionService} from "@shared/services/router-extension.service"
 import {NhlSearchService} from "@shared/services/nhl-search.service";
 import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
+import {TeamRatingService} from "@shared/services/team-rating.service";
 import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
 import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe";
 
@@ -50,6 +51,7 @@ const modules = [
     NhlSearchService,
     SeasonHistoryService,
     NaturalStatTrickService,
+    TeamRatingService,
     {provide: MatDialogRef, useValue: {close: () => {}}},
     {provide: MAT_DIALOG_DATA, useValue: {}}
   ]

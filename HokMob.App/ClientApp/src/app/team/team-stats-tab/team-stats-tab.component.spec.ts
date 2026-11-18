@@ -101,7 +101,6 @@ describe('TeamStatsTabComponent', () => {
     expect(TeamRatingUtils.formatRating(team.rating)).toBe('2.9');
     expect(child('app-team-power-rating').ratings).toBe(component.ratings);
     expect(child('app-team-power-rating').timeline).toBe(component.timeline);
-    expect(child('app-team-advanced-stats').season).toBe(20262027);
     expect(child('app-team-advanced-stats').ratings).toBe(component.ratings);
     expect(child('app-team-rating-chart').games.length).toBe(650);
     expect(child('app-team-rating-chart').teamIds).toEqual([sharks]);

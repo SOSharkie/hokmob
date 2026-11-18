@@ -1,26 +1,29 @@
 @if (loading) {
-  <app-skeleton-card shape="bar" [cardTitle]="title" [layout]="skeletonLayout"
-                     [mobileLayout]="skeletonMobileLayout"></app-skeleton-card>
-} @else if (rows.length) {
+  <app-skeleton-card shape="bar" [cardTitle]="title" [layout]="skeletonLayout"></app-skeleton-card>
+} @else if (groups.length) {
   <section class="rating-bar-card team-stats">
     <div class="rating-bar-card-header">
       <h2 class="rating-bar-card-title">{{title}}</h2>
     </div>
-    <ul class="rating-parts">
-      @for (row of rows; track row.label) {
-        <li class="rating-part" [title]="row.description">
-          <div class="part-label">
-            <span class="part-name">{{row.label}}</span>
-          </div>
-          <span class="part-value">{{row.value}}</span>
-          <span class="part-rank">{{row.rank}}</span>
-          <div class="part-bar" aria-hidden="true">
-            <span class="part-bar-fill" [class.above-average]="row.isAboveAverage"
-                  [style.left.%]="row.barStart" [style.width.%]="row.barWidth"
-                  [style.background-color]="row.barColor"></span>
-          </div>
-        </li>
-      }
-    </ul>
+    @for (group of groups; track group.title) {
+      <div class="rating-group">
+        <h3 class="rating-group-title">{{group.title}}</h3>
+        <ul class="rating-parts">
+          @for (row of group.rows; track row.label) {
+            <li class="rating-part" [title]="row.description">
+              <div class="part-label">
+                <span class="part-name">{{row.label}}</span>
+              </div>
+              <span class="part-value">{{row.value}}</span>
+              <span class="part-rank" [ngClass]="'rank-' + row.rankTier" [class.no-rank]="!row.rank">{{row.rank}}</span>
+              <div class="part-bar" aria-hidden="true">
+                <span class="part-bar-fill" [ngClass]="'rank-' + row.rankTier"
+                      [style.left.%]="row.barStart" [style.width.%]="row.barWidth"></span>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    }
   </section>
 }

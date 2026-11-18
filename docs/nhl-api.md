@@ -210,7 +210,12 @@ page (`StandingsTypeUtils`), left out at its default, the divisions. Picking a t
 `Location.replaceState`, like the history page's filters, so it doesn't scroll to the top or add a history entry, and
 the back button still leaves the page.
 
-- **Overview:** the team stats card, the conference standings, the next game, the form and the schedule.
+- **Overview:** the power rating card, the conference standings, the next game, the form and the schedule. The power
+  rating card's toggle, in its header's top right corner, switches it to the team stats card and back
+  (`TeamRatingCardComponent`). The page rates the league from `/api/nhl-stats/team-games` and NST's
+  `/api/nst/team-games` (`TeamRatingService`, which keeps a season's games for 5 minutes, so the team stats tab and a
+  future game reuse them). Without a rating (before the team's first game, or when the games fail) the card shows the
+  team stats alone, without the toggle.
 - **Standings:** the whole league's standings of the picked type, with the team's row highlighted.
 - **Player stats:** a sortable table of skaters (GP, G, A, P, +/-, S, hits, FO%) and one of goalies (GS, W, L, OTL,
   SV%, GAA, SO, SA), from `/api/nhl-stats/team-players` (`skater/summary` merged with `skater/realtime`, and
@@ -226,10 +231,14 @@ the back button still leaves the page.
   `/api/nhl-stats/teams`, so it shows while the season's games load and when they fail. Until each card's data is in,
   it shows its skeleton (see [Loading skeletons](#loading-skeletons)).
   The team stats card (on the overview too) and the advanced stats card list their stats like the power rating card,
-  each with a bar from the league average in the color of its score: the team stats card's points % first, scored
-  like the rating's stats (`TeamRatingUtils.getScores`) with goals and shots against scored lower is better, and the
-  advanced stats card's from `TeamRating.scores`. The power rating card shows each stat's weight only while it's
-  hovered. The advanced stats card leaves out Fenwick and PDO, which the teams page still shows.
+  in titled groups (results, special teams, shots and draws; goal margins, shot share, finishing and goaltending),
+  each with its rank in a pill and a bar from the league average. The bars are scored like the rating's stats
+  (`TeamRatingUtils.getScores`) on the team stats card, with goals and shots against scored lower is better, and from
+  `TeamRating.scores` on the advanced stats card. The pill and bar are colored by the rank alone
+  (`TeamRatingUtils.getRankTier`): green in the league's top 10, red in its bottom 10 and gray between, so only what
+  stands out is colored. The cards' titles leave out the season, which the page already gives. The power rating card
+  shows each stat's weight only while it's hovered. The advanced stats card leaves out Fenwick and PDO, which the
+  teams page still shows. The cards' rows are 18px lines at every width, so their skeletons are the cards' height.
 - **Games:** the next game and the schedule, and the form.
 
 ## Team power rating
@@ -356,8 +365,9 @@ on. The number is the change in the rating's correlation with forward strength, 
   previous season's team games and NST game logs. It's left out on purpose: the rating is about the current season
   only.
 
-The power rating card shows the rating, its rank (gray, like each stat's), its change over the last 5 games and each
-rated stat with its weight and a bar from the league average: the stats and weights the rating was worked out with. It credits Natural
+The power rating card shows the rating, its rank, its change over the last 5 games and, under "Built from", each
+rated stat with its weight, its rank in a pill and a bar from the league average, colored like the team stats cards':
+the stats and weights the rating was worked out with. It credits Natural
 Stat Trick for the xG, or says the team is rated without expected goals on the fallback. The chart
 (`TeamRatingChartComponent`, `shared/components`) plots up to 4 of its 9 lines (the rating and 8 stats: Corsi %,
 xGF%, shooting %, save %, power play, penalties, points % and goal differential) on the rating's scale, all on one
@@ -430,12 +440,17 @@ players card.
   (`NhlStarPlayerUtils.pickStarLine`). The goalie stays the wins leader.
 
 Below the season leaders, a future game shows each team's power rating card (`GamePowerRatingsComponent`), the home
-team's first, side by side at every width. Each card is the team page's (`TeamPowerRatingComponent`) with `showTeam`, so
-its header names the team with its logo, like "Sharks Power Rating", and with `showNote` off: the league average and
-NST's credit are noted once, centered, under both. Each card is a `power-rating` size container, so under 340px wide,
-like on a phone, it goes compact: the logo and the team's abbreviation for a title, each stat's short name
-(`TeamMetric.shortLabel`) on one line with its value and rank, no weights, and a smaller rating.
-The team page's card isn't in such a container, so it never goes compact. The league is rated on the game's regular season from `/api/nhl-stats/team-games` and NST's
+team's first, side by side at every width. Each card is the team page overview's (`TeamRatingCardComponent`), with a
+toggle in its header's top right corner to the team's season stats (`/api/nhl-stats/teams`, loaded with the games):
+either card's toggle switches both, so the teams stay side by side on the same stats. Its header names the team with
+its logo on the left, like "Sharks", with the power rating's stats titled "Power Rating" instead of "Built from",
+and `showNote` is off: the league average
+and NST's credit are noted once, centered, under both, while they show the power ratings. Without the season stats the
+cards have no toggle. Each card is a `power-rating` size container, so under 340px wide, like on a phone, it goes
+compact: the logo and the team's abbreviation for a title, each stat's short name (`TeamMetric.shortLabel`, or the team
+stats card's own) on one line with its value and a smaller rank pill, no weights or group titles, a smaller rating, the
+change shortened to "0.9 last 5", and a smaller toggle. The toggle shows its labels (Rating, Stats) only from 500px
+wide, and its icons alone below. The team stats tab's cards aren't in such a container, so they never go compact. The league is rated on the game's regular season from `/api/nhl-stats/team-games` and NST's
 `/api/nst/team-games`, the same way as the team stats tab (see [Team power rating](#team-power-rating)), so a playoff
 game shows the regular season's ratings. There's no fallback to the previous season: the cards are hidden until both
 teams have played a regular season game, and when the games fail to load. Loaded once, not on the game's refresh.

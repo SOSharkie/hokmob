@@ -118,11 +118,14 @@
           <div class="team-data-container overview-tab">
             <div class="team-main-container">
               <div class="team-stats-container">
-                <app-team-stats
+                <app-team-rating-card
                   [teamId]="teamId"
+                  [ratings]="ratings"
+                  [timeline]="ratingTimeline"
+                  [ratingLoading]="!ratingsLoaded"
                   [teamStats]="teamStats"
-                  [loading]="!teamStatsLoaded"
-                ></app-team-stats>
+                  [statsLoading]="!teamStatsLoaded"
+                ></app-team-rating-card>
               </div>
               @if (standings?.length) {
                 <div class="team-standings">
