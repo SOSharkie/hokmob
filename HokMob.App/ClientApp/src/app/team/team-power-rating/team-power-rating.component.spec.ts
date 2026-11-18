@@ -6,6 +6,7 @@ import { TeamRating, TeamRatingPoint, TeamRatingUtils } from '@shared/utils/team
 import { NhlTeamLogoUtils } from '@shared/utils/nhl-team-logo-utils';
 
 import { TeamPowerRatingComponent } from './team-power-rating.component';
+import { RatingColorUtils } from '@shared/utils/rating-color-utils';
 
 describe('TeamPowerRatingComponent', () => {
   let component: TeamPowerRatingComponent;
@@ -100,7 +101,7 @@ describe('TeamPowerRatingComponent', () => {
     const badge: HTMLElement = fixture.nativeElement.querySelector('.rating-badge');
     const team = ratings.find(rating => rating.teamId === sharks);
     const expected = document.createElement('span');
-    expected.style.backgroundColor = TeamRatingUtils.getRatingColor(team.rating);
+    expected.style.backgroundColor = RatingColorUtils.getColor(team.rating, 'team');
     expect(badge.style.backgroundColor).toBe(expected.style.backgroundColor);
   });
 

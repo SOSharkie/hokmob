@@ -3,8 +3,8 @@ import {PositionGroup, RatedSeason} from "@shared/models/nhl-history/season-hist
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {PickerMenuUtils} from "@shared/utils/picker-menu-utils";
-import {StatsUtils} from "@shared/utils/stats-utils";
 import {PositionOption, SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /** A team of the team picker. */
 export interface TeamOption {
@@ -139,7 +139,7 @@ export class AverageRatingLeadersComponent implements OnChanges {
             NhlTeamUtils.getTeam(leader.teamId)?.triCode, leader.player.id),
         gamesPlayed: leader.gamesPlayed,
         averageRating,
-        ratingColor: StatsUtils.getHokmobRatingColor(Number(averageRating))
+        ratingColor: RatingColorUtils.getColor(Number(averageRating), "seasonAverage")
       };
     });
   }

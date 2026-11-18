@@ -11,6 +11,15 @@ body {
   background-color: black;
 }
 
+// The rating tier colors (RatingColorUtils): every rating badge, the team cards' rank pills and bars, and the history
+// page's distribution chart read them from here
+:root {
+  --rating-elite: #0e87e0;
+  --rating-good: #1ec854;
+  --rating-ordinary: #e68122;
+  --rating-poor: #e55b5b;
+}
+
 // Remove borders on focus of inputs
 input:focus,
 select:focus,

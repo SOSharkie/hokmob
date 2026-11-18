@@ -1,5 +1,5 @@
 import {RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";
-import {StatsUtils} from "@shared/utils/stats-utils";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /**
  * A player's season in the history file (SeasonHistoryService): their average HokMob rating, and the stat shown
@@ -87,11 +87,12 @@ export class PlayerSeasonRatingUtils {
   }
 
   /**
-   * The badge color of an average rating, from its shown value, so 6.996 shown as "7.00" is green.
+   * The badge color of an average rating, on the season average scale, from its shown value, so 5.996 shown as
+   * "6.00" is green. Undefined without one.
    */
   public static getAverageRatingColor(averageRating: number): string {
     return averageRating == null ? undefined :
-        StatsUtils.getHokmobRatingColor(Number(PlayerSeasonRatingUtils.formatAverageRating(averageRating)));
+        RatingColorUtils.getColor(Number(PlayerSeasonRatingUtils.formatAverageRating(averageRating)), "seasonAverage");
   }
 
   /**

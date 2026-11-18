@@ -101,19 +101,20 @@ describe('TeamStatsComponent', () => {
     expect(parseFloat(fills[7].style.width)).toBeCloseTo(faceoffs.barWidth, 3);
   });
 
-  it('should color each rank\'s pill and bar only in the league\'s top and bottom 10', () => {
+  it('should color each rank\'s pill and bar only at the ends of the league', () => {
     show(6);
-    // Boston: points % 8th, goals against 14th, penalty kill 24th
+    // Boston: points % 8th and faceoffs 4th are in the best 8, and 28th is in the worst 6. 9th, 10th and 24th aren't
+    expect(component.rows.map(row => row.rank)).toEqual(['8th', '10th', '14th', '9th', '24th', '21st', '28th', '4th']);
     expect(component.rows.map(row => row.rankTier)).toEqual([
-      'top', 'top', 'middle', 'top', 'bottom', 'middle', 'bottom', 'top'
+      'good', 'middle', 'middle', 'middle', 'middle', 'middle', 'poor', 'good'
     ]);
     const pills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-rank'));
     const fills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-bar-fill'));
-    expect(pills[0].classList).toContain('rank-top');
-    expect(fills[0].classList).toContain('rank-top');
+    expect(pills[0].classList).toContain('rank-good');
+    expect(fills[0].classList).toContain('rank-good');
     expect(pills[2].classList).toContain('rank-middle');
-    expect(pills[4].classList).toContain('rank-bottom');
-    expect(fills[4].classList).toContain('rank-bottom');
+    expect(pills[6].classList).toContain('rank-poor');
+    expect(fills[6].classList).toContain('rank-poor');
     // Colored by the class, not by the score's rating color
     expect(fills[0].style.backgroundColor).toBe('');
     expect(getComputedStyle(fills[0]).backgroundColor).toBe('rgb(30, 200, 84)');

@@ -15,6 +15,7 @@ import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {SortDirection} from "@app/team/team-player-stats/team-player-stats.component";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /** A team's row of the table, before it's formatted for a column. */
 export interface TeamTableRow {
@@ -358,7 +359,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
 
   /** The power rating badge's color, at the team thresholds. */
   public getRatingColor(row: TeamTableRow): string {
-    return TeamRatingUtils.getRatingColor(row.rating?.rating);
+    return RatingColorUtils.getColor(row.rating?.rating, "team");
   }
 
   /** Whether a column starts a header group, so it gets a divider on its left. */

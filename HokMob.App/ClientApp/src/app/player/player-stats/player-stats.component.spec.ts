@@ -182,14 +182,16 @@ describe('PlayerStatsComponent', () => {
       expect(items().slice(0, 8).map(item => item[0]))
           .toEqual(['Goals', 'Assists', 'Points', 'Games', '+/-', 'Faceoff %', 'Shots', 'Hits']);
       expect(ratingItems()).toEqual([['HokMob', '7.46'], ['Corsi %', '68.8%']]);
-      expect(badge().style.backgroundColor).toBe('rgb(30, 200, 84)');
+      // On the season average scale, where 7.46 is elite
+      expect(badge().style.backgroundColor).toBe('var(--rating-elite)');
       expect(badge().title).toBe('Average HokMob rating over 14 games, through Nov 8');
     });
 
     it('should show a goalie\'s average rating, then his goals saved above average', () => {
       showRated(true, {gamesRated: 1, averageRating: 5.9, goalsSavedAboveAverage: -1.578});
       expect(ratingItems()).toEqual([['HokMob', '5.90'], ['GSAA', '-1.6']]);
-      expect(badge().style.backgroundColor).toBe('rgb(229, 91, 91)');
+      // 5.90 is an ordinary season average, though it would be a poor game
+      expect(badge().style.backgroundColor).toBe('var(--rating-ordinary)');
       // A finished season has no through date
       expect(badge().title).toBe('Average HokMob rating over 1 game');
     });

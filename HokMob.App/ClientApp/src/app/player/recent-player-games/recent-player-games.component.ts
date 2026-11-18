@@ -6,6 +6,7 @@ import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {GoalieGameStats, SkaterGameStats} from "@shared/models/nhl-stats-api/player-stats.model";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /**
  * One row of the recent games table: a game with the player's stats in it and their HokMob rating.
@@ -129,7 +130,7 @@ export class RecentPlayerGamesComponent implements OnChanges {
       score: RecentPlayerGamesComponent.getScore(game),
       timeOnIce: "-",
       hokmobRating: hokmobRating,
-      ratingColor: StatsUtils.getHokmobRatingColor(hokmobRating)
+      ratingColor: RatingColorUtils.getColor(hokmobRating, "game")
     };
   }
 

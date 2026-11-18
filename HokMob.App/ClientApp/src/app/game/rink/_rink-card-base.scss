@@ -3,8 +3,8 @@
 @use "variables" as *;
 @use "interaction" as *;
 
-// The rating blue the starred player is highlighted in (StatsUtils.hokmobRatingBlue), for the lineup toggle
-$star-blue: #0e87e0;
+// The rating blue the starred player is highlighted in (the elite tier, RatingColorUtils), for the lineup toggle
+$star-blue: var(--rating-elite);
 $rink-line: $gray-01;
 
 // A pill toggle in the top right corner of a card's header, so the title stays centered on the card: the top players'

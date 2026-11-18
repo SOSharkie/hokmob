@@ -21,6 +21,7 @@ import {BoxscoreGoalie, BoxscoreSkater, GamePlayer} from "@shared/models/nhl-web
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
 import {NstPlayerGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /**
  * A player's bio and game stats, shown at the top of the player game dialog and the goal highlight dialog.
@@ -258,4 +259,6 @@ export class PlayerGameStatsComponent implements OnChanges, AfterViewInit, OnDes
   }
 
   protected readonly StatsUtils = StatsUtils;
+
+  protected readonly RatingColorUtils = RatingColorUtils;
 }

@@ -202,6 +202,36 @@ from their edge. `NhlApiClient` keeps the scoreboard up through it (the reasonin
 - **Errors are JSON:** `NhlController` never passes an upstream error body through. Any status of 400 or more comes
   back as `{"status": <code>, "error": "The NHL API request failed."}`.
 
+## Rating colors
+
+Every rating is colored by its tier (`RatingColorUtils`): elite (blue), good (green), ordinary (orange) and poor (red).
+The colors are the `--rating-elite`, `--rating-good`, `--rating-ordinary` and `--rating-poor` custom properties in
+`styles.scss`, so stylesheets and style bindings share them: TS binds `var(--rating-…)` (`RatingColorUtils.getColor`),
+and the history page's distribution chart, a canvas, reads their values (`RatingColorUtils.resolveTierColor`). Don't
+write the hex values anywhere else.
+
+Each scale has its own cut points, set so a tier is about the same share of its ratings: elite the top 3 to 5%, good
+the next 20% or so, ordinary the middle, and poor the bottom 20% or so. A green badge means "good" on a game, a season
+and a team alike.
+
+| Scale | Elite | Good | Ordinary | Poor | Shown on |
+|---|---|---|---|---|---|
+| `game` | 8+ | 6.5+ | 5+ | below 5 | game page, player page's recent games, ratings explorer, history page's best games and distribution |
+| `seasonAverage` | 6.5+ | 6+ | 5.5+ | below 5.5 | player page, team page's players, history page's leaders, game page's season leaders |
+| `team` | 7.5+ | 6+ | 3.5+ | below 3.5 | teams page, team page's and game page's power rating |
+
+- **Game:** the median skater game of 2025-26 is about 5.8, so these color about 3% of skater games blue, 20% green,
+  59% orange and 18% red. Goalie games spread wider: about 6%, 29%, 46% and 19%.
+- **Season average:** an average spreads much less than a game (skaters with 20+ games average 4.9 to 7.1), so it has
+  its own cut points. On the game's it was nearly always red. These color about 3% of 2025-26 skaters blue, 18% green,
+  58% orange and 22% red.
+- **Team:** from the rating's design (5 at the average, 1.5 points per standard deviation): about 5%, 20%, 59% and 16%.
+- **Team stat ranks** (`TeamRatingUtils.getRankTier`) use the colors only at the ends of the league: blue for the best
+  2, green for the rest of the best 8, red for the worst 6 and gray between (`rankTierSizes`).
+
+The game page's top players card also rings a hovered player in the elite color if he's the game's star, and the good
+color otherwise, whatever his rating.
+
 ## Team page
 
 `/team/{id}` has five tabs, kept in the `tab` query parameter (`overview`, the default, is left out): `team-stats`,
@@ -235,8 +265,8 @@ the back button still leaves the page.
   each with its rank in a pill and a bar from the league average. The bars are scored like the rating's stats
   (`TeamRatingUtils.getScores`) on the team stats card, with goals and shots against scored lower is better, and from
   `TeamRating.scores` on the advanced stats card. The pill and bar are colored by the rank alone
-  (`TeamRatingUtils.getRankTier`): green in the league's top 10, red in its bottom 10 and gray between, so only what
-  stands out is colored. The cards' titles leave out the season, which the page already gives. The power rating card
+  (`TeamRatingUtils.getRankTier`), in the [rating colors](#rating-colors): blue for the league's best 2, green for the
+  rest of its best 8, red for its worst 6 and gray between, so only what stands out is colored. The cards' titles leave out the season, which the page already gives. The power rating card
   shows each stat's weight only while it's hovered. The advanced stats card leaves out Fenwick and PDO, which the
   teams page still shows. The cards' rows are 18px lines at every width, so their skeletons are the cards' height.
 - **Games:** the next game and the schedule, and the form.
@@ -270,9 +300,9 @@ set of teams and days, so a league page can reuse it:
   from 0 to 10.
 - **Rating:** the weighted sum of the rated stats' deviations, scaled back to one deviation the same way, so it's 0 to
   10 with one decimal like a HokMob player rating (San Jose was 2.9 through 2026-11-14, and 3.4 on the fallback), 5
-  is an average team, and the spread doesn't depend on how early in the season it is. Colored in the HokMob rating
-  colors, at team thresholds: blue from 7 (about the top 10%), green from 5.5, orange from 4, red below. The player
-  thresholds (green from 7) would make most teams red.
+  is an average team, and the spread doesn't depend on how early in the season it is. Colored on the team scale of the
+  [rating colors](#rating-colors): blue from 7.5, green from 6, orange from 3.5 and red below, so an average team is
+  orange.
 - **Weights** (`expectedGoalsWeights`): 30% 5v5 Corsi %, 15% 5v5 xGF%, 15% 5v5 shooting %, 10% 5v5 save %, 20% net
   power play % and 10% penalty differential. The penalty kill isn't rated (see below). Nothing comes from the
   standings: the rating is a statistical look at how a team plays, so points %, wins and goal differential aren't in
@@ -437,7 +467,7 @@ players card.
   shows the players there are. The card is hidden when either team has no one.
 - **Stat line:** `GP · G-A-P` for skaters and `W-L-OTL · SV% · GAA` for the goalie. A player links to his player page.
 - **Average rating:** each player wears his average HokMob rating in the top players card's badge, with one decimal
-  (like "7.1") and colored by that shown value. It comes from the history file of the totals' season and game type
+  (like "7.1") and colored by that shown value, on the season average scale of the [rating colors](#rating-colors). It comes from the history file of the totals' season and game type
   (`SeasonHistoryService`), loaded by the game page once the totals are in, and counts only his games for that team
   (`PlayerSeasonRatingUtils.getTeamSeasonRatings`), like the totals. The playoffs have no history file, so playoff
   totals go without ratings, and so does a player without a rated game in the file, or every player while it loads
@@ -860,6 +890,8 @@ had two shots in the same second, paired by distance.
 
 ## Open items
 
+- **Goalie season averages** run higher than skaters' (5.4 to 6.8 in 2025-26), so on the season average cut points
+  about half of goalies with 20+ games are green. They may need their own scale (see [Rating colors](#rating-colors)).
 - **Stats API rows for regular season games.** It has no preseason rows at all (`skater/summary` with `isGame=true`
   returns 0 rows for `gameId=2026010001` and for `seasonId=20262027 and gameTypeId=1`, but 36 for `2025021057`), so
   the player page's recent games stay empty for preseason games. Whether rows exist while a regular season game is

@@ -6,6 +6,7 @@ import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {StatsUtils} from "@shared/utils/stats-utils";
 import {PositionOption, SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /** A row of the best games list. */
 export interface BestGameRow {
@@ -101,7 +102,7 @@ export class BestGamesComponent implements OnChanges {
       date: DateTimeUtils.getDateDisplayValue(dayjs(game.date).toDate()),
       score: teamScore + " - " + opponentScore,
       rating: ratedGame.rating,
-      ratingColor: StatsUtils.getHokmobRatingColor(ratedGame.rating),
+      ratingColor: RatingColorUtils.getColor(ratedGame.rating, "game"),
       ratingNote: ratedGame.uncappedRating > ratedGame.rating
           ? "Capped at " + ratedGame.rating + ", from " + StatsUtils.roundRating(ratedGame.uncappedRating).toFixed(1)
           : undefined
