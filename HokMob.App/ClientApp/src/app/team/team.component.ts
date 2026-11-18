@@ -19,13 +19,16 @@ import {StandingsTypeUtils} from "@shared/utils/standings-type-utils";
 import {TeamStandingsComponent} from "@app/team/team-standings/team-standings.component";
 import {TeamTab, TeamTabId, TeamTabs} from "@app/team/team-tabs";
 import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
+import {TeamRatingService} from "@shared/services/team-rating.service";
+import {TeamRating, TeamRatingPoint, TeamRatingUtils} from "@shared/utils/team-rating-utils";
 import dayjs from "dayjs";
 
 /**
  * The team page: a header with the team's tabs (TeamTabs), and the picked tab below it. One
  * club-schedule-season/{abbrev}/now response feeds the form, the schedule and the next game of the overview and games
- * tabs, the standings give the division, conference and season, and the stats API gives the season stats card. The
- * standings and player stats tabs load their own data when they're opened.
+ * tabs, the standings give the division, conference and season, and the stats API gives the season stats. The
+ * overview's power rating card rates the league from the season's games (TeamRatingService), which the team stats tab
+ * shares. The standings and player stats tabs load their own data when they're opened.
  *
  * The tab is the tab query parameter (/team/6?tab=player-stats), and the standings tab's type is standingsType, like
  * on the standings page. Picking a tab rewrites the URL without the router (see saveTabToUrl).
@@ -95,6 +98,15 @@ export class TeamComponent implements OnInit, OnDestroy {
   /** Every team's stats for the standings season, for the team stats card. */
   public teamStats: TeamSeasonStats[] = [];
 
+  /** Every team's power rating of the standings season, for the overview's power rating card. */
+  public ratings: TeamRating[] = [];
+
+  /** The team's rating after each of its games, for the power rating card's recent change. */
+  public ratingTimeline: TeamRatingPoint[] = [];
+
+  /** Whether the ratings are in (or failed), so the power rating card shows its skeleton until they are. */
+  public ratingsLoaded: boolean = false;
+
   /** The team's last finished games, most recent first. */
   public formGames: ClubScheduleGame[] = [];
 
@@ -131,7 +143,8 @@ export class TeamComponent implements OnInit, OnDestroy {
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
               private nhlStandingAndPlayoffService: NhlStandingAndPlayoffService,
-              private nhlStatsApiService: NhlStatsApiService) {}
+              private nhlStatsApiService: NhlStatsApiService,
+              private teamRatingService: TeamRatingService) {}
 
   public ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
@@ -263,15 +276,42 @@ export class TeamComponent implements OnInit, OnDestroy {
       if (teamRow?.seasonId) {
         this.season = teamRow.seasonId;
         this.retrieveTeamStats(teamRow.seasonId);
+        this.retrieveRatings(teamRow.seasonId);
       } else {
         this.seasonFailed = true;
         this.teamStatsLoaded = true;
+        this.ratingsLoaded = true;
       }
     }).catch(() => {
       // The service logs the error. The page keeps working without the standings, division and stats
       this.standings = [];
       this.seasonFailed = true;
       this.teamStatsLoaded = true;
+      this.ratingsLoaded = true;
+    });
+  }
+
+  /**
+   * Rates the league on the season's games, for the overview's power rating card. Without them the card shows the
+   * team's stats instead.
+   */
+  private retrieveRatings(season: number): void {
+    const teamId = this.teamId;
+    this.teamRatingService.getRatedGames(season).then(games => {
+      if (teamId !== this.teamId || season !== this.season) {
+        return;
+      }
+      this.ratings = TeamRatingUtils.getLeagueRatings(games);
+      this.ratingTimeline = TeamRatingUtils.getTimeline(games, [teamId]).get(teamId) ?? [];
+      this.ratingsLoaded = true;
+    }).catch(() => {
+      // The service logs the error
+      if (teamId !== this.teamId || season !== this.season) {
+        return;
+      }
+      this.ratings = [];
+      this.ratingTimeline = [];
+      this.ratingsLoaded = true;
     });
   }
 
@@ -394,6 +434,9 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.seasonFailed = false;
     this.teamStats = [];
     this.teamStatsLoaded = false;
+    this.ratings = [];
+    this.ratingTimeline = [];
+    this.ratingsLoaded = false;
     this.scheduleLoaded = false;
     this.formLoaded = false;
     this.formGames = [];

@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
-import { mockNstTeamGames, mockTeamGames } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { mockNstTeamGames, mockTeamGames, mockTeamStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import { TeamRatingUtils } from '@shared/utils/team-rating-utils';
 
 import { GamePowerRatingsComponent } from './game-power-ratings.component';
@@ -15,6 +15,8 @@ describe('GamePowerRatingsComponent', () => {
   const teamGamesUrl = '/api/nhl-stats/team-games?season=20262027&gameType=2';
 
   const nstTeamGamesUrl = '/api/nst/team-games?season=20262027';
+
+  const teamStatsUrl = '/api/nhl-stats/teams?season=20262027&gameType=2';
 
   /** San Jose, 22 games into 2026-27 in the fixture: rated 2.9, 30th, through 2026-11-14. */
   const sharks = 28;
@@ -53,13 +55,21 @@ describe('GamePowerRatingsComponent', () => {
   }
 
   function cards(): any[] {
-    return Array.from(fixture.nativeElement.querySelectorAll('app-team-power-rating'));
+    return Array.from(fixture.nativeElement.querySelectorAll('app-team-rating-card'));
   }
 
-  /** Answers both requests with the real 2026-27 games through 2026-11-14 and NST's expected goals. */
+  /** Answers the season stats request with every team's real stats (the mocks have 2025-26's). */
+  function flushTeamStats(): void {
+    httpMock.expectOne(teamStatsUrl).flush(mockTeamStats());
+  }
+
+  /**
+   * Answers the requests with the real 2026-27 games through 2026-11-14, NST's expected goals and every team's stats.
+   */
   async function flushGames(): Promise<void> {
     httpMock.expectOne(nstTeamGamesUrl).flush(mockNstTeamGames());
     httpMock.expectOne(teamGamesUrl).flush(mockTeamGames());
+    flushTeamStats();
     await settle();
   }
 
@@ -68,6 +78,7 @@ describe('GamePowerRatingsComponent', () => {
     expect(cards().length).toBe(0);
     httpMock.expectOne(teamGamesUrl);
     httpMock.expectOne(nstTeamGamesUrl);
+    httpMock.expectOne(teamStatsUrl);
   });
 
   it('should show the home team\'s card and then the away team\'s, rated on the season with expected goals', async () => {
@@ -88,6 +99,40 @@ describe('GamePowerRatingsComponent', () => {
     expect(TeamRatingUtils.formatRating(sanJose.rating)).toBe('2.9');
     expect(sanJose.rank).toBe(30);
     expect(sanJose.hasExpectedGoals).toBeTrue();
+  });
+
+  it('should give both cards every team\'s season stats, for their stats view', async () => {
+    show(sharks, bruins);
+    await flushGames();
+    const [home, away] = cards();
+    expect(home.statsLoading).toBeFalse();
+    expect(home.teamStats.length).toBe(32);
+    expect(away.teamStats).toBe(home.teamStats);
+  });
+
+  it('should show both cards\' power ratings first, and switch them together', async () => {
+    show(sharks, bruins);
+    await flushGames();
+    expect(cards().map(card => card.view)).toEqual(['power', 'power']);
+    // As either card's toggle does through its two-way view binding
+    component.view = 'stats';
+    fixture.detectChanges();
+    expect(cards().map(card => card.view)).toEqual(['stats', 'stats']);
+    // The note is about the power ratings
+    expect(fixture.nativeElement.querySelector('.game-power-ratings-note')).toBeNull();
+  });
+
+  it('should keep the power ratings when the season stats fail, without stats to switch to', async () => {
+    show(sharks, bruins);
+    expect(cards().length).toBe(0);
+    httpMock.expectOne(nstTeamGamesUrl).flush(mockNstTeamGames());
+    httpMock.expectOne(teamGamesUrl).flush(mockTeamGames());
+    httpMock.expectOne(teamStatsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    await settle();
+    const [home] = cards();
+    expect(cards().length).toBe(2);
+    expect(home.teamStats).toEqual([]);
+    expect(home.statsLoading).toBeFalse();
   });
 
   it('should note the league average once under the cards, centered, and credit Natural Stat Trick', async () => {
@@ -125,6 +170,7 @@ describe('GamePowerRatingsComponent', () => {
     show(sharks, bruins);
     httpMock.expectOne(nstTeamGamesUrl).flush('Unavailable', {status: 503, statusText: 'Service Unavailable'});
     httpMock.expectOne(teamGamesUrl).flush(mockTeamGames());
+    flushTeamStats();
     await settle();
     expect(cards().length).toBe(2);
     const sanJose = component.ratings.find(rating => rating.teamId === sharks);
@@ -142,6 +188,7 @@ describe('GamePowerRatingsComponent', () => {
     show(sharks, bruins);
     httpMock.expectOne(nstTeamGamesUrl).flush(mockNstTeamGames());
     httpMock.expectOne(teamGamesUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    flushTeamStats();
     await settle();
     expect(component.ratings).toEqual([]);
     expect(cards().length).toBe(0);
@@ -160,6 +207,7 @@ describe('GamePowerRatingsComponent', () => {
     show(sharks, bruins);
     httpMock.expectOne(nstTeamGamesUrl).flush('Not found', {status: 404, statusText: 'Not Found'});
     httpMock.expectOne(teamGamesUrl).flush({games: {}});
+    flushTeamStats();
     await settle();
     expect(cards().length).toBe(0);
   });
@@ -169,6 +217,7 @@ describe('GamePowerRatingsComponent', () => {
     await flushGames();
     show(sharks, bruins);
     httpMock.expectNone(teamGamesUrl);
+    httpMock.expectNone(teamStatsUrl);
     expect(cards().length).toBe(2);
   });
 
@@ -183,5 +232,7 @@ describe('GamePowerRatingsComponent', () => {
     expect(component.ratings).toEqual([]);
     httpMock.expectOne('/api/nst/team-games?season=20252026');
     httpMock.expectOne('/api/nhl-stats/team-games?season=20252026&gameType=2');
+    httpMock.expectOne(teamStatsUrl);
+    httpMock.expectOne('/api/nhl-stats/teams?season=20252026&gameType=2');
   });
 });

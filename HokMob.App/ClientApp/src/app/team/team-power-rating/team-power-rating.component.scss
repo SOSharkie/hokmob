@@ -1,14 +1,6 @@
 @use "variables" as *;
 @use "../rating-bar-card" as *;
 
-// The team's logo before the title, when the card names the team
-.power-rating-team-logo {
-  width: 28px;
-  height: 28px;
-  margin-right: $spacing-medium;
-  object-fit: contain;
-}
-
 // Each stat's share of the rating shows only while the card is hovered (or tapped on a phone), and keeps its space when
 // hidden, so the rows don't move
 .power-rating-card {
@@ -35,50 +27,15 @@
   }
 }
 
-// Hidden from sight but still read out, like the full title and stat names a compact card replaces
-@mixin visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+// The change's direction for a screen reader, which skips the arrow
+.power-rating-hidden {
+  @include visually-hidden;
 }
 
-// The compact card's title and stat names show only in a compact card
-.power-rating-short-title,
-.rating-parts .part-label .part-short-name {
-  display: none;
-}
-
-// Compact under 340px wide, in a page's `power-rating` size container, like a future game's two cards side by side on a
-// phone: the team's abbreviation for a title, the stats' short names without their weights, and a smaller rating with
-// its rank and change beside it. The selectors start at the card to win over the card partial's own
+// A compact card (see the card partial) has a smaller rating with its rank and short change ("0.9 last 5") beside it.
+// The selectors start at the card to win over the card partial's own
 .power-rating-card {
   @container power-rating (width < 340px) {
-    padding: 0 $spacing-large $spacing-small;
-    border-radius: 20px;
-
-    .rating-bar-card-header {
-      height: 36px;
-
-      .rating-bar-card-title {
-        @include visually-hidden;
-      }
-    }
-
-    .power-rating-team-logo {
-      width: 24px;
-      height: 24px;
-      margin-right: $spacing-medium;
-    }
-
-    .power-rating-short-title {
-      display: inline;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
     .rating-summary {
       display: grid;
       grid-template-columns: auto minmax(0, 1fr);
@@ -113,35 +70,19 @@
         grid-area: change;
         align-self: start;
         font-size: 12px;
-      }
-    }
 
-    .rating-parts {
-      .rating-part {
-        grid-template-columns: minmax(0, 1fr) auto 28px;
-        column-gap: $spacing-small;
-        padding: $spacing-small 0 $spacing-medium;
-        font-size: 12px;
-      }
-
-      .part-label {
-        .part-name {
-          @include visually-hidden;
-        }
-
-        .part-short-name {
-          display: inline;
-        }
-
-        .part-weight {
+        .change-long {
           display: none;
         }
       }
+    }
 
-      .part-bar {
-        height: 5px;
-        margin-top: $spacing-small;
-      }
+    .rating-summary + .rating-group {
+      margin-top: 0;
+    }
+
+    .rating-parts .part-label .part-weight {
+      display: none;
     }
   }
 }

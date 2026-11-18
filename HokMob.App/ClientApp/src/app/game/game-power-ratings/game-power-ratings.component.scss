@@ -5,17 +5,12 @@
 }
 
 // Side by side at every width, the home team's first. Each card is a `power-rating` size container, so it goes compact
-// when it's narrow, like on a phone (see TeamPowerRatingComponent)
+// when it's narrow, like on a phone (see TeamRatingCardComponent)
 .game-power-ratings {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $spacing-card-gap;
   align-items: start;
-
-  app-team-power-rating {
-    display: block;
-    container: power-rating / inline-size;
-  }
 }
 
 @media only screen and (max-width: $mobile-screen-breakpoint) {

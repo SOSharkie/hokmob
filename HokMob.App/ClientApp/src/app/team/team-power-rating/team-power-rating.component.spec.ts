@@ -68,11 +68,31 @@ describe('TeamPowerRatingComponent', () => {
     expect(text('.power-rating-card')).not.toContain('Through');
   });
 
-  it('should gray the rating\'s rank like each stat\'s', () => {
+  it('should show the rating\'s rank in white, with the team count quieter beside it', () => {
     show(sharks);
-    const rankColor = getComputedStyle(fixture.nativeElement.querySelector('.rating-rank')).color;
-    expect(rankColor).toBe('rgb(149, 149, 149)');
-    expect(rankColor).toBe(getComputedStyle(fixture.nativeElement.querySelector('.part-rank')).color);
+    expect(getComputedStyle(fixture.nativeElement.querySelector('.rating-rank')).color).toBe('rgb(255, 255, 255)');
+    expect(text('.rating-rank-total')).toBe('of 32');
+    expect(getComputedStyle(fixture.nativeElement.querySelector('.rating-rank-total')).color)
+        .toBe('rgb(149, 149, 149)');
+  });
+
+  it('should list the stats under one group title', () => {
+    show(sharks);
+    expect(text('.rating-group-title')).toBe('Built from');
+    expect(fixture.nativeElement.querySelectorAll('.rating-group .rating-part').length).toBe(6);
+  });
+
+  it('should color each stat\'s rank pill and bar only in the league\'s top and bottom 10', () => {
+    show(sharks);
+    const team = ratings.find(rating => rating.teamId === sharks);
+    const pills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-rank'));
+    const fills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-bar-fill'));
+    component.parts.forEach((part, index) => {
+      const metric = TeamRatingUtils.getRatedMetrics(team.weights)[index];
+      expect(part.rankTier).toBe(TeamRatingUtils.getRankTier(team.ranks[metric.id], 32));
+      expect(pills[index].classList).toContain('rank-' + part.rankTier);
+      expect(fills[index].classList).toContain('rank-' + part.rankTier);
+    });
   });
 
   it('should color the rating like a HokMob rating', () => {
@@ -113,8 +133,13 @@ describe('TeamPowerRatingComponent', () => {
     const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
     expect(skeleton.getAttribute('shape')).toBe('bar');
     expect(skeleton.cardTitle).toBe('Power Rating');
-    expect(skeleton.layout).toEqual(jasmine.objectContaining({rows: 6, summaryHeight: 70}));
-    expect(skeleton.mobileLayout).toEqual(jasmine.objectContaining({rowHeight: 44, summaryHeight: 66}));
+    expect(skeleton.layout).toEqual(jasmine.objectContaining({rows: 6, summaryHeight: 72}));
+    // As tall as the card: 462px, or 454px on a phone, where the rating is smaller
+    const layout = skeleton.layout;
+    const rowsHeight = layout.headerHeight + layout.rows * layout.rowHeight + layout.paddingBottom;
+    expect(rowsHeight + layout.summaryHeight).toBe(462);
+    expect(skeleton.mobileLayout).toEqual({summaryHeight: 64});
+    expect(rowsHeight + skeleton.mobileLayout.summaryHeight).toBe(454);
     expect(fixture.nativeElement.querySelector('.power-rating-card')).toBeNull();
 
     fixture.componentRef.setInput('loading', false);
@@ -202,8 +227,10 @@ describe('TeamPowerRatingComponent', () => {
     show(sharks);
     const change = timeline[timeline.length - 1].rating - timeline[timeline.length - 6].rating;
     expect(component.change).toBeCloseTo(change, 10);
-    const sign = change > 0 ? '+' : '-';
-    expect(text('.rating-change')).toContain(sign + Math.abs(change).toFixed(1) + ' last 5');
+    // The arrow shows the direction, and a screen reader hears it as a word
+    const direction = change > 0 ? 'Up' : 'Down';
+    expect(text('.rating-change')).toContain(direction + ' ' + Math.abs(change).toFixed(1) + ' over the last 5 games');
+    expect(text('.power-rating-hidden')).toBe(direction);
   });
 
   it('should show no change before 6 games', () => {
@@ -215,10 +242,10 @@ describe('TeamPowerRatingComponent', () => {
   it('should label a rise, a fall and no change', () => {
     show(sharks);
     component.change = 2.04;
-    expect(component.changeLabel).toBe('+2.0');
+    expect(component.changeLabel).toBe('2.0');
     expect(component.changeDirection).toBe('up');
     component.change = -0.31;
-    expect(component.changeLabel).toBe('-0.3');
+    expect(component.changeLabel).toBe('0.3');
     expect(component.changeDirection).toBe('down');
     component.change = 0.02;
     expect(component.changeLabel).toBe('0.0');
@@ -228,17 +255,19 @@ describe('TeamPowerRatingComponent', () => {
   it('should title the card without the team on the team page', () => {
     show(sharks);
     expect(text('.rating-bar-card-title')).toBe('Power Rating');
-    expect(text('.power-rating-short-title')).toBe('Power Rating');
-    expect(fixture.nativeElement.querySelector('.power-rating-team-logo')).toBeNull();
+    expect(text('.rating-bar-card-short-title')).toBe('Power Rating');
+    expect(fixture.nativeElement.querySelector('.rating-bar-card-logo')).toBeNull();
   });
 
-  it('should name the team with its logo when asked, for a page with more than one card', () => {
+  it('should name the team with its logo instead when asked, for a page with more than one card', () => {
     fixture.componentRef.setInput('showTeam', true);
     show(sharks);
-    expect(text('.rating-bar-card-title')).toBe('Sharks Power Rating');
+    expect(text('.rating-bar-card-title')).toBe('Sharks');
+    // Its stats say which card it is instead
+    expect(text('.rating-group-title')).toBe('Power Rating');
     // A compact card's title, beside the logo
-    expect(text('.power-rating-short-title')).toBe('SJS');
-    const logo: HTMLImageElement = fixture.nativeElement.querySelector('.power-rating-team-logo');
+    expect(text('.rating-bar-card-short-title')).toBe('SJS');
+    const logo: HTMLImageElement = fixture.nativeElement.querySelector('.rating-bar-card-logo');
     expect(logo.getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(sharks));
     expect(logo.alt).toBe('');
   });

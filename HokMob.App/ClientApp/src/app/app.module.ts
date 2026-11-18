@@ -61,6 +61,7 @@ import { TeamScheduleComponent } from './team/team-schedule/team-schedule.compon
 import { TeamStatsComponent } from './team/team-stats/team-stats.component';
 import { TeamStatsTabComponent } from './team/team-stats-tab/team-stats-tab.component';
 import { TeamPowerRatingComponent } from './team/team-power-rating/team-power-rating.component';
+import { TeamRatingCardComponent } from './team/team-rating-card/team-rating-card.component';
 import { TeamAdvancedStatsComponent } from './team/team-advanced-stats/team-advanced-stats.component';
 import { TeamRatingChartComponent } from './shared/components/team-rating-chart/team-rating-chart.component';
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
@@ -85,6 +86,7 @@ import { AverageRatingLeadersComponent } from './history/average-rating-leaders/
 import { BestGamesComponent } from './history/best-games/best-games.component';
 import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
+import {TeamRatingService} from "@shared/services/team-rating.service";
 
 @NgModule({
   declarations: [
@@ -135,6 +137,7 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
     TeamStatsComponent,
     TeamStatsTabComponent,
     TeamPowerRatingComponent,
+    TeamRatingCardComponent,
     TeamAdvancedStatsComponent,
     TeamRatingChartComponent,
     TeamNextGameComponent,
@@ -178,7 +181,8 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
     RouterExtensionService,
     NhlSearchService,
     SeasonHistoryService,
-    NaturalStatTrickService
+    NaturalStatTrickService,
+    TeamRatingService
   ],
   bootstrap: [AppComponent]
 })

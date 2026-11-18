@@ -28,6 +28,9 @@ export interface TeamScoreBar {
   isAboveAverage: boolean;
 }
 
+/** Where a team's rank for a stat stands in the league: see TeamRatingUtils.getRankTier. */
+export type TeamRankTier = "top" | "middle" | "bottom";
+
 /**
  * A team stat worked out from a team's totals: one of the power rating's parts when the rating's weights have it, and a
  * line the rating chart can plot when it has a color. Every metric is better when it's higher.
@@ -122,6 +125,9 @@ export class TeamRatingUtils {
 
   /** The highest rating and score, like a HokMob player rating's. The lowest is 0. */
   public static readonly maxRating = 10;
+
+  /** How many teams at each end of the league a stat's rank is colored for (getRankTier). */
+  public static readonly rankTierSize = 10;
 
   /** The rating points per standard deviation from the league average. */
   public static readonly pointsPerDeviation = 1.5;
@@ -392,6 +398,21 @@ export class TeamRatingUtils {
    */
   public static formatRating(rating: number): string {
     return rating == null || isNaN(rating) ? "-" : rating.toFixed(1);
+  }
+
+  /**
+   * Where a rank stands in the league, for its color on the team page's stat cards: "top" in the best 10 teams,
+   * "bottom" in the worst 10, and "middle" between them or without a rank. Only the ends are colored, so the color
+   * points at what stands out. In a small league the top wins where the two overlap.
+   */
+  public static getRankTier(rank: number, teamCount: number): TeamRankTier {
+    if (rank == null) {
+      return "middle";
+    }
+    if (rank <= TeamRatingUtils.rankTierSize) {
+      return "top";
+    }
+    return rank > (teamCount ?? 0) - TeamRatingUtils.rankTierSize ? "bottom" : "middle";
   }
 
   /**

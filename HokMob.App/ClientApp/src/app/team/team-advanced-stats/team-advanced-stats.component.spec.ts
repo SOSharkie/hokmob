@@ -31,10 +31,9 @@ describe('TeamAdvancedStatsComponent', () => {
     fixture.destroy();
   });
 
-  function show(teamId: number, season: number = 20262027, teamRatings: TeamRating[] = ratings): void {
+  function show(teamId: number, teamRatings: TeamRating[] = ratings): void {
     fixture.componentRef.setInput('teamId', teamId);
     fixture.componentRef.setInput('ratings', teamRatings);
-    fixture.componentRef.setInput('season', season);
     fixture.detectChanges();
   }
 
@@ -48,19 +47,22 @@ describe('TeamAdvancedStatsComponent', () => {
     }));
   }
 
-  it('should show the season\'s advanced stats in order', () => {
+  it('should show the season\'s advanced stats in their groups, in order', () => {
     show(sharks);
-    expect(fixture.nativeElement.querySelector('.rating-bar-card-title').textContent.trim())
-        .toBe('2026-2027 Advanced Stats');
+    expect(fixture.nativeElement.querySelector('.rating-bar-card-title').textContent.trim()).toBe('Advanced Stats');
+    const groupTitles = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.rating-group-title'))
+        .map(title => title.textContent.trim());
+    expect(groupTitles).toEqual(['Goal margins', 'Shot share', 'Finishing & goaltending']);
+    expect(component.groups.map(group => group.rows.length)).toEqual([3, 3, 2]);
     expect(rows().map(row => row.label)).toEqual([
-      'Goal Diff / Game', 'Special Teams Diff / Game', '5v5 Corsi %', '5v5 xGF%', 'Shots For %', '5v5 Goals For %',
+      'Goal Diff / Game', 'Special Teams Diff / Game', '5v5 Goals For %', '5v5 Corsi %', '5v5 xGF%', 'Shots For %',
       '5v5 Shooting %', '5v5 Save %'
     ]);
     expect(rows().map(row => row.label)).not.toContain('5v5 Fenwick %');
     expect(rows().map(row => row.label)).not.toContain('PDO');
   });
 
-  it('should draw each stat\'s bar from the league average, in the color of its score', () => {
+  it('should draw each stat\'s bar from the league average, colored by where its rank stands', () => {
     show(sharks);
     const team = ratings.find(rating => rating.teamId === sharks);
     const [goalDiff] = component.rows;
@@ -69,19 +71,26 @@ describe('TeamAdvancedStatsComponent', () => {
     expect(goalDiff.isAboveAverage).toBeFalse();
     expect(goalDiff.barStart).toBeCloseTo(team.scores.goalDiff * 10, 10);
     expect(goalDiff.barStart + goalDiff.barWidth).toBeCloseTo(50, 10);
-    expect(goalDiff.barColor).toBe(TeamRatingUtils.getRatingColor(team.scores.goalDiff));
     const fills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-bar-fill'));
     expect(fills.length).toBe(rows().length);
-    expect(fills[0].classList).not.toContain('above-average');
+    const pills: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.part-rank'));
+    component.rows.forEach((row, index) => {
+      expect(row.rankTier).toBe(TeamRatingUtils.getRankTier(team.ranks[TeamAdvancedStatsComponent.rowIds[index]], 32));
+      expect(pills[index].classList).toContain('rank-' + row.rankTier);
+      expect(fills[index].classList).toContain('rank-' + row.rankTier);
+    });
   });
 
-  it('should show a skeleton with a bar row per stat and the season title while loading', () => {
+  it('should show a skeleton with a bar row per stat and the title while loading', () => {
     fixture.componentRef.setInput('loading', true);
-    show(28, 20262027, []);
+    show(28, []);
     const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
     expect(skeleton.getAttribute('shape')).toBe('bar');
-    expect(skeleton.cardTitle).toBe('2026-2027 Advanced Stats');
+    expect(skeleton.cardTitle).toBe('Advanced Stats');
     expect(skeleton.layout.rows).toBe(8);
+    // As tall as the card with expected goals, like the team stats card
+    const layout = skeleton.layout;
+    expect(layout.headerHeight + layout.rows * layout.rowHeight + layout.paddingBottom).toBe(522);
     expect(fixture.nativeElement.querySelector('.rating-bar-card')).toBeNull();
   });
 
@@ -106,13 +115,13 @@ describe('TeamAdvancedStatsComponent', () => {
 
   it('should explain each stat in its tooltip', () => {
     show(sharks);
-    expect(rows()[2].title).toBe(TeamRatingUtils.getMetric('corsi').description);
+    expect(rows()[3].title).toBe(TeamRatingUtils.getMetric('corsi').description);
   });
 
   it('should show a dash for a stat without a value', () => {
     const team = ratings.find(rating => rating.teamId === sharks);
     const withoutSaves = {...team, values: {...team.values, save5v5: null}, ranks: {...team.ranks, save5v5: null}};
-    show(sharks, 20262027, [withoutSaves]);
+    show(sharks, [withoutSaves]);
     const save = rows()[7];
     expect(save.label).toBe('5v5 Save %');
     expect(save.value).toBe('-');
@@ -129,7 +138,7 @@ describe('TeamAdvancedStatsComponent', () => {
   describe('5v5 xGF% from Natural Stat Trick', () => {
     /** The ratings when NST can't be asked: worked out from the NHL's stats alone. */
     function showWithoutNst(teamId: number = sharks): void {
-      show(teamId, 20262027, TeamRatingUtils.getLeagueRatings(mockTeamGameRows()));
+      show(teamId, TeamRatingUtils.getLeagueRatings(mockTeamGameRows()));
     }
 
     it("should show the team's real xGF% and rank after Corsi", () => {

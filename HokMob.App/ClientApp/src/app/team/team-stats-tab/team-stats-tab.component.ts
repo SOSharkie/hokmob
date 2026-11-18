@@ -1,7 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
-import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
-import {NstTeamGameStats} from "@shared/models/natural-stat-trick/nst-team-games.model";
+import {TeamRatingService} from "@shared/services/team-rating.service";
 import {TeamSeasonStats} from "@shared/models/nhl-stats-api/team-stats.model";
 import {TeamGameStats} from "@shared/models/nhl-stats-api/team-games.model";
 import {TeamRating, TeamRatingPoint, TeamRatingUtils} from "@shared/utils/team-rating-utils";
@@ -106,13 +104,11 @@ export class TeamStatsTabComponent implements OnChanges {
     this.hasError = false;
     this.games = [];
     this.buildRatings();
-    // The service logs the error. Without NST's expected goals the rating falls back to the NHL's stats
-    const expectedGoals = this.naturalStatTrickService.getTeamGames(season).catch(() => [] as NstTeamGameStats[]);
-    Promise.all([this.nhlStatsApiService.getTeamGames(season), expectedGoals]).then(([games, nstGames]) => {
+    this.teamRatingService.getRatedGames(season).then(games => {
       if (season !== this.gamesSeason) {
         return;
       }
-      this.games = TeamRatingUtils.withExpectedGoals(games, nstGames);
+      this.games = games;
       this.isLoading = false;
       this.buildRatings();
     }).catch(() => {
@@ -132,6 +128,5 @@ export class TeamStatsTabComponent implements OnChanges {
     this.timeline = TeamRatingUtils.getTimeline(this.games, this.teamIds).get(this.teamId) ?? [];
   }
 
-  constructor(private nhlStatsApiService: NhlStatsApiService,
-              private naturalStatTrickService: NaturalStatTrickService) {}
+  constructor(private teamRatingService: TeamRatingService) {}
 }

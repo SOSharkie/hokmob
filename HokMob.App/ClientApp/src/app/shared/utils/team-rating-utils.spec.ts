@@ -466,4 +466,21 @@ describe('TeamRatingUtils', () => {
       expect(TeamRatingUtils.getOrdinal(null)).toBe('');
     });
   });
+
+  describe('getRankTier', () => {
+    it('should mark the league\'s top 10 and bottom 10, and the middle between them', () => {
+      expect([1, 10, 11, 22, 23, 32].map(rank => TeamRatingUtils.getRankTier(rank, 32)))
+          .toEqual(['top', 'top', 'middle', 'middle', 'bottom', 'bottom']);
+    });
+
+    it('should put a missing rank in the middle', () => {
+      expect(TeamRatingUtils.getRankTier(null, 32)).toBe('middle');
+    });
+
+    it('should prefer the top where the ends overlap in a small league', () => {
+      expect([1, 10, 11, 15].map(rank => TeamRatingUtils.getRankTier(rank, 15)))
+          .toEqual(['top', 'top', 'bottom', 'bottom']);
+      expect(TeamRatingUtils.getRankTier(3, null)).toBe('top');
+    });
+  });
 });

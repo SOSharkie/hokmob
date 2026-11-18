@@ -16,9 +16,13 @@ import { NhlGameStateEnum } from '@shared/enums/nhl-game-state.enum';
 import { NhlStandingsTypeEnum } from '@shared/enums/nhl-standings-type.enum';
 import {
   mockClubScheduleSeason,
+  mockNstTeamGames,
   mockStandingsResponse,
+  mockTeamGames,
   mockTeamStats
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+
+import { TeamRatingUtils } from '@shared/utils/team-rating-utils';
 
 import { TeamComponent } from './team.component';
 
@@ -35,6 +39,8 @@ describe('TeamComponent', () => {
   const standingsUrl = '/api/nhl/standings/now';
   const scheduleUrl = '/api/nhl/club-schedule-season/';
   const teamStatsUrl = '/api/nhl-stats/teams?season=20252026&gameType=2';
+  const teamGamesUrl = '/api/nhl-stats/team-games?season=20252026&gameType=2';
+  const nstTeamGamesUrl = '/api/nst/team-games?season=20252026';
 
   beforeEach(async () => {
     routeParams = new BehaviorSubject<Params>({});
@@ -63,6 +69,8 @@ describe('TeamComponent', () => {
 
   afterEach(() => {
     fixture.destroy();
+    // The overview's power rating, which only the tests about it answer
+    httpMock.match(request => request.url.startsWith('/api/nhl-stats/team-games') || request.url.startsWith('/api/nst/'));
     httpMock.verify();
   });
 
@@ -98,13 +106,26 @@ describe('TeamComponent', () => {
     return schedule;
   }
 
-  /** Answers the standings, schedule and team stats requests of a team page with the real responses. */
+  /**
+   * Answers the season's games and expected goals for the power rating with the real responses (of 2026-27, the
+   * season the mocks have).
+   */
+  function flushRatings(): void {
+    // None when the season's games were loaded for a team before, which TeamRatingService keeps
+    httpMock.match(teamGamesUrl).forEach(request => request.flush(mockTeamGames()));
+    httpMock.match(nstTeamGamesUrl).forEach(request => request.flush(mockNstTeamGames()));
+  }
+
+  /**
+   * Answers the standings, schedule, team stats and power rating requests of a team page with the real responses.
+   */
   async function flushTeamPage(teamAbbrev: string, schedule?: ClubScheduleSeason): Promise<void> {
     httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
     httpMock.expectOne(scheduleUrl + teamAbbrev + '/now')
         .flush(schedule ?? upcomingSchedule(teamAbbrev));
     await settle();
     httpMock.expectOne(teamStatsUrl).flush(mockTeamStats());
+    flushRatings();
     // The 2026-27 schedule has no finished games, so the form falls back to the previous season
     const formRequests = httpMock.match(scheduleUrl + teamAbbrev + '/20252026');
     formRequests.forEach(request => request.flush(mockClubScheduleSeason(teamAbbrev as any, 20252026)));
@@ -127,7 +148,8 @@ describe('TeamComponent', () => {
     expect(child('app-standings')).toBeNull();
     // The conference's 16 teams
     expect(child('.team-standings app-skeleton-card').layout.rows).toBe(16);
-    expect(child('app-team-stats').loading).toBeTrue();
+    expect(child('app-team-rating-card').statsLoading).toBeTrue();
+    expect(child('app-team-rating-card').ratingLoading).toBeTrue();
     expect(child('app-team-next-game').loading).toBeTrue();
     expect(child('app-single-team-form').loading).toBeTrue();
     expect(child('app-team-schedule').loading).toBeTrue();
@@ -137,7 +159,8 @@ describe('TeamComponent', () => {
     expect(child('.team-division-skeleton')).toBeNull();
     expect(child('app-skeleton-card')).toBeNull();
     expect(child('app-standings')).not.toBeNull();
-    expect(child('app-team-stats').loading).toBeFalse();
+    expect(child('app-team-rating-card').statsLoading).toBeFalse();
+    expect(child('app-team-rating-card').ratingLoading).toBeFalse();
     expect(child('app-team-next-game').loading).toBeFalse();
     expect(child('app-single-team-form').loading).toBeFalse();
     expect(child('app-team-schedule').loading).toBeFalse();
@@ -152,7 +175,7 @@ describe('TeamComponent', () => {
     expect(child('app-team-next-game').game.id).toBe(2026010013);
     // The 2026-27 schedule has no finished games yet, so the form waits for the previous season's
     expect(child('app-single-team-form').loading).toBeTrue();
-    expect(child('app-team-stats').loading).toBeTrue();
+    expect(child('app-team-rating-card').statsLoading).toBeTrue();
 
     httpMock.expectOne(teamStatsUrl).flush(mockTeamStats());
     httpMock.match(scheduleUrl + 'BOS/20252026')
@@ -160,7 +183,7 @@ describe('TeamComponent', () => {
     await settle();
     expect(child('app-single-team-form').loading).toBeFalse();
     expect(child('app-single-team-form').games.length).toBe(5);
-    expect(child('app-team-stats').loading).toBeFalse();
+    expect(child('app-team-rating-card').statsLoading).toBeFalse();
   });
 
   it('should show the games tab\'s cards as skeletons until the schedule loads', async () => {
@@ -182,8 +205,38 @@ describe('TeamComponent', () => {
     expect(component.standings.length).toBe(1);
     expect(component.standings[0].title).toBe('Eastern Conference');
     expect(child('app-standings').selectedTeamId).toBe(6);
-    expect(child('app-team-stats').teamId).toBe(6);
-    expect(child('app-team-stats').teamStats.length).toBe(32);
+    expect(child('app-team-rating-card').teamId).toBe(6);
+    expect(child('app-team-rating-card').teamStats.length).toBe(32);
+  });
+
+  it('should rate the league for the overview\'s power rating card, which shows first', async () => {
+    open('6');
+    await flushTeamPage('BOS');
+    const card = child('app-team-rating-card');
+    expect(card.ratingLoading).toBeFalse();
+    expect(card.ratings.length).toBe(32);
+    expect(card.ratings.some(rating => rating.teamId === 6)).toBeTrue();
+    // Boston's rating after each of its games, from its third
+    const gamesPlayed = component.ratings.find(rating => rating.teamId === 6).gamesPlayed;
+    expect(card.timeline.length).toBe(gamesPlayed - TeamRatingUtils.minChartGames + 1);
+    expect(card.timeline.every(point => point.teamId === 6)).toBeTrue();
+  });
+
+  it('should show the overview\'s stats alone when the season\'s games fail', async () => {
+    open('6');
+    httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
+    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
+    await settle();
+    httpMock.expectOne(teamStatsUrl).flush(mockTeamStats());
+    httpMock.expectOne(teamGamesUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+    httpMock.expectOne(nstTeamGamesUrl).flush(mockNstTeamGames());
+    httpMock.match(scheduleUrl + 'BOS/20252026')
+        .forEach(request => request.flush(mockClubScheduleSeason('BOS', 20252026)));
+    await settle();
+    expect(console.error).toHaveBeenCalled();
+    expect(child('app-team-rating-card').ratingLoading).toBeFalse();
+    expect(child('app-team-rating-card').ratings).toEqual([]);
+    expect(child('app-team-rating-card').teamStats.length).toBe(32);
   });
 
   it('should show the next games, next game and form from one schedule response', async () => {
@@ -244,7 +297,9 @@ describe('TeamComponent', () => {
     expect(component.divisionName).toBe('');
     expect(component.standings).toEqual([]);
     expect(child('app-standings')).toBeNull();
-    expect(child('app-team-stats').teamStats).toEqual([]);
+    expect(child('app-team-rating-card').teamStats).toEqual([]);
+    expect(child('app-team-rating-card').ratings).toEqual([]);
+    expect(child('app-team-rating-card').ratingLoading).toBeFalse();
     expect(child('app-team-next-game')).toBeNull();
     expect(child('app-single-team-form').games).toEqual([]);
     expect(child('app-team-schedule').games).toEqual([]);
@@ -271,7 +326,8 @@ describe('TeamComponent', () => {
     // No skeletons left: no standings card and no stats card
     expect(child('app-skeleton-card')).toBeNull();
     expect(child('.team-division-skeleton')).toBeNull();
-    expect(child('app-team-stats').loading).toBeFalse();
+    expect(child('app-team-rating-card').statsLoading).toBeFalse();
+    expect(child('app-team-rating-card').ratingLoading).toBeFalse();
     expect(child('app-team-next-game').game.id).toBe(2026010013);
   });
 
@@ -289,7 +345,7 @@ describe('TeamComponent', () => {
     expect(child('app-single-team-form').loading).toBeFalse();
     expect(child('app-team-schedule').games).toEqual([]);
     expect(child('app-team-schedule').loading).toBeFalse();
-    expect(child('app-team-stats').teamStats.length).toBe(32);
+    expect(child('app-team-rating-card').teamStats.length).toBe(32);
   });
 
   it('should show no stats card when the team stats fail', async () => {
@@ -303,7 +359,7 @@ describe('TeamComponent', () => {
     await settle();
 
     expect(console.error).toHaveBeenCalled();
-    expect(child('app-team-stats').teamStats).toEqual([]);
+    expect(child('app-team-rating-card').teamStats).toEqual([]);
   });
 
   it('should go back in the browser history, labeled with the previous page', async () => {
