@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges} from '@angular/core';
 import {TeamMetricId, TeamRating, TeamRatingUtils} from "@shared/utils/team-rating-utils";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {TeamStatBarRow} from "@app/team/team-stats/team-stats.component";
 
 /**
@@ -30,6 +31,20 @@ export class TeamAdvancedStatsComponent implements OnChanges {
   /** The season, like 20262027, for the title. */
   @Input()
   public season: number;
+
+  /** Whether the ratings are still loading, so the card shows its skeleton at its size. */
+  @Input()
+  public loading: boolean = false;
+
+  /**
+   * The skeleton: a bar row per stat (8 with expected goals, which most seasons have), like the team stats card's, 48px
+   * tall or 44px on a phone.
+   */
+  public readonly skeletonLayout: SkeletonCardLayout = {
+    rows: TeamAdvancedStatsComponent.rowIds.length, rowHeight: 48, paddingBottom: 9
+  };
+
+  public readonly skeletonMobileLayout: SkeletonCardLayout = {rowHeight: 44};
 
   public rows: TeamStatBarRow[] = [];
 

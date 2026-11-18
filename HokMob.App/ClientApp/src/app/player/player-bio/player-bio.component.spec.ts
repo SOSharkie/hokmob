@@ -44,6 +44,15 @@ describe('PlayerBioComponent', () => {
     ]);
   }
 
+  it('should show a skeleton of the 8 bio tiles while loading, without a title', () => {
+    fixture.componentRef.setInput('loading', true);
+    show(undefined);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('shape')).toBe('tiles');
+    expect(skeleton.layout).toEqual(jasmine.objectContaining({rows: 2, columns: 4, headerHeight: 0}));
+    expect(fixture.nativeElement.querySelector('.bio-grid')).toBeNull();
+  });
+
   it('should show the real bio of a skater, with his draft', () => {
     show(mockPlayerLanding(8476460));
     expect(items()).toEqual([

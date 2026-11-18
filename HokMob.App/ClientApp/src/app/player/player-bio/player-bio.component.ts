@@ -1,5 +1,6 @@
 import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import dayjs from "dayjs";
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
 
 /**
@@ -20,6 +21,15 @@ export class PlayerBioComponent {
 
   @Input()
   public countryFlagPath: string;
+
+  /** Whether the player is still loading, so the card shows its skeleton at its size. */
+  @Input()
+  public loading: boolean = false;
+
+  /** The skeleton: the bio's 8 items in two rows of 4, without a title. */
+  public readonly skeletonLayout: SkeletonCardLayout = {
+    rows: 2, rowHeight: 122, columns: 4, headerHeight: 0
+  };
 
   public get position(): string {
     return this.player?.position ?? "-";

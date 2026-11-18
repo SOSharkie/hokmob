@@ -81,6 +81,8 @@ A request to one of them is a regression.
   `PeriodUtils`; playoff series text: `NhlGameInfoUtils.getSeriesStatusShort`.
 - Components `.catch()` every service promise (the service already logs). Show an empty or fallback state instead of
   stale data (see `ScoreboardComponent.retrieveNhlGames`).
+- A card that waits for data shows `app-skeleton-card` at its own size while it loads, through a `loading` input,
+  instead of appearing late and pushing the page down (see "Loading skeletons" in `docs/nhl-api.md`).
 - `tsconfig.json` has `strict` and `strictTemplates` on, but `strictNullChecks` off. Guard with `?.` / `??` anyway,
   because API fields go missing (TBD series, future games).
 - Style: 2-space indent, JSDoc on public methods and non-obvious helpers, getters for template-bound values.

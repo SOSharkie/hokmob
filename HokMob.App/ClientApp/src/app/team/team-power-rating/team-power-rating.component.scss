@@ -34,3 +34,114 @@
     text-decoration: underline;
   }
 }
+
+// Hidden from sight but still read out, like the full title and stat names a compact card replaces
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// The compact card's title and stat names show only in a compact card
+.power-rating-short-title,
+.rating-parts .part-label .part-short-name {
+  display: none;
+}
+
+// Compact under 340px wide, in a page's `power-rating` size container, like a future game's two cards side by side on a
+// phone: the team's abbreviation for a title, the stats' short names without their weights, and a smaller rating with
+// its rank and change beside it. The selectors start at the card to win over the card partial's own
+.power-rating-card {
+  @container power-rating (width < 340px) {
+    padding: 0 $spacing-large $spacing-small;
+    border-radius: 20px;
+
+    .rating-bar-card-header {
+      height: 36px;
+
+      .rating-bar-card-title {
+        @include visually-hidden;
+      }
+    }
+
+    .power-rating-team-logo {
+      width: 24px;
+      height: 24px;
+      margin-right: $spacing-medium;
+    }
+
+    .power-rating-short-title {
+      display: inline;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .rating-summary {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas:
+        "badge rank"
+        "badge change";
+      align-items: center;
+      gap: $spacing-x-small $spacing-medium;
+      padding: $spacing-x-small 0 $spacing-medium;
+
+      .rating-details,
+      .rating-games {
+        display: contents;
+      }
+
+      .rating-badge {
+        grid-area: badge;
+        min-width: 46px;
+        height: 36px;
+        padding: 0 $spacing-medium;
+        border-radius: 9px;
+        font-size: 19px;
+      }
+
+      .rating-rank {
+        grid-area: rank;
+        align-self: end;
+        font-size: 13px;
+      }
+
+      .rating-change {
+        grid-area: change;
+        align-self: start;
+        font-size: 12px;
+      }
+    }
+
+    .rating-parts {
+      .rating-part {
+        grid-template-columns: minmax(0, 1fr) auto 28px;
+        column-gap: $spacing-small;
+        padding: $spacing-small 0 $spacing-medium;
+        font-size: 12px;
+      }
+
+      .part-label {
+        .part-name {
+          @include visually-hidden;
+        }
+
+        .part-short-name {
+          display: inline;
+        }
+
+        .part-weight {
+          display: none;
+        }
+      }
+
+      .part-bar {
+        height: 5px;
+        margin-top: $spacing-small;
+      }
+    }
+  }
+}

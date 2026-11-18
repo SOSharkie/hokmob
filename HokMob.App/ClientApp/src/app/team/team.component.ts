@@ -18,6 +18,7 @@ import {NhlTeamCustomModel} from "@shared/models/nhl-team.model";
 import {StandingsTypeUtils} from "@shared/utils/standings-type-utils";
 import {TeamStandingsComponent} from "@app/team/team-standings/team-standings.component";
 import {TeamTab, TeamTabId, TeamTabs} from "@app/team/team-tabs";
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import dayjs from "dayjs";
 
 /**
@@ -68,6 +69,22 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   /** Whether the team stats request is over, so the team stats tab can tell an empty season from a pending one. */
   public teamStatsLoaded: boolean = false;
+
+  /** Whether the schedule request is over, so the schedule and next game show their skeletons until it is. */
+  public scheduleLoaded: boolean = false;
+
+  /** Whether the team's form is loaded (or failed), so the form card shows its skeleton until it is. */
+  public formLoaded: boolean = false;
+
+  /**
+   * The overview's conference standings while they load: the title, the column names and the conference's 16 teams,
+   * with 9 columns on a wide screen and 7 on a phone, like app-standings without its form and next game columns.
+   */
+  public readonly standingsSkeletonLayout: SkeletonCardLayout = {
+    rows: 16, rowHeight: 36, columns: 9, headerHeight: 39, tableHeaderHeight: 48, paddingBottom: 16
+  };
+
+  public readonly standingsSkeletonMobileLayout: SkeletonCardLayout = {columns: 7};
 
   /** The team's division, from its standings row. Empty until the standings load. */
   public divisionName: string = "";
@@ -277,6 +294,7 @@ export class TeamComponent implements OnInit, OnDestroy {
       this.scheduleGames = NhlGameInfoUtils.getUpcomingGames(schedule.games, this.scheduleGameCount)
           .map(game => NhlGameInfoUtils.toScoreGame(game));
       this.nextGame = this.scheduleGames[0];
+      this.scheduleLoaded = true;
       this.retrieveTeamForm(schedule);
       this.retrieveLiveNextGame();
     }).catch(() => {
@@ -284,6 +302,8 @@ export class TeamComponent implements OnInit, OnDestroy {
       this.scheduleGames = [];
       this.nextGame = undefined;
       this.formGames = [];
+      this.scheduleLoaded = true;
+      this.formLoaded = true;
     });
   }
 
@@ -299,9 +319,11 @@ export class TeamComponent implements OnInit, OnDestroy {
     };
     this.nhlGameService.getTeamFormGames(this.team.triCode, reference, schedule).then(games => {
       this.formGames = games;
+      this.formLoaded = true;
     }).catch(() => {
       // The service logs the error. Show the empty state instead of another team's form
       this.formGames = [];
+      this.formLoaded = true;
     });
   }
 
@@ -372,6 +394,8 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.seasonFailed = false;
     this.teamStats = [];
     this.teamStatsLoaded = false;
+    this.scheduleLoaded = false;
+    this.formLoaded = false;
     this.formGames = [];
     this.scheduleGames = [];
     this.nextGame = undefined;

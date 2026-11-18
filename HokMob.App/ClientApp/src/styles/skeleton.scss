@@ -1,0 +1,30 @@
+@use "variables" as *;
+
+// Loading skeletons: gray blocks in the place of a card's content while it loads, so the card keeps its size and the
+// page doesn't jump when the data comes in. SkeletonCardComponent draws a whole card; a page's own placeholders (like
+// the player page's header) are elements with the skeleton-block class, sized by the page. Global, from styles.scss,
+// so each component's stylesheet carries only its blocks' sizes.
+
+// A placeholder block that pulses while it waits. Under reduced motion it holds still at its middle shade.
+.skeleton-block {
+  display: block;
+  border-radius: 6px;
+  background-color: $gray-01;
+  opacity: 0.55;
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: 0.4;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 0.25;
+  }
+}

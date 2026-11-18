@@ -1,4 +1,4 @@
-@if (player) {
+@if (player || playerLoading) {
   <div class="player-container">
     <div class="player-header">
       <div class="back-container">
@@ -16,22 +16,34 @@
           </span>
           <span class="games-label">{{backButtonLabel}}</span>
         </button>
-        <div class="team-line-1" [ngStyle]="{'border-bottom-color': teamColor}"></div>
-        <div class="team-line-2" [ngStyle]="{'border-bottom-color': teamColor}"></div>
+        <div class="team-line-1" [ngStyle]="{'border-bottom-color': headerLineColor}"></div>
+        <div class="team-line-2" [ngStyle]="{'border-bottom-color': headerLineColor}"></div>
       </div>
-      <div class="player-headshot-container">
-        <img [src]="playerHeadshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
-      </div>
-      <div class="player-info">
-        <span class="player-name">{{playerName}}</span>
-        @if (player.currentTeamId) {
-          <a class="player-team" [routerLink]="['/team', player.currentTeamId]">
-            <app-team-logo class="player-team-logo" [teamId]="player.currentTeamId" [size]="logoSize"
-                           [width]="logoMaxWidth"></app-team-logo>
-            <span class="player-team-label">{{teamName}}</span>
-          </a>
-        }
-      </div>
+      @if (player) {
+        <div class="player-headshot-container">
+          <img [src]="playerHeadshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
+        </div>
+        <div class="player-info">
+          <span class="player-name">{{playerName}}</span>
+          @if (player.currentTeamId) {
+            <a class="player-team" [routerLink]="['/team', player.currentTeamId]">
+              <app-team-logo class="player-team-logo" [teamId]="player.currentTeamId" [size]="logoSize"
+                             [width]="logoMaxWidth"></app-team-logo>
+              <span class="player-team-label">{{teamName}}</span>
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="player-headshot-container player-headshot-skeleton skeleton-block" role="status"
+             aria-label="Loading player"></div>
+        <div class="player-info" aria-hidden="true">
+          <span class="player-name player-name-skeleton skeleton-block">&nbsp;</span>
+          <span class="player-team player-team-skeleton">
+            <span class="player-team-logo-skeleton skeleton-block"></span>
+            <span class="player-team-label player-team-label-skeleton skeleton-block">&nbsp;</span>
+          </span>
+        </div>
+      }
     </div>
     <div class="player-cards" [class.season-rating-cards]="hasSeasonRating"
          [class.with-playoff-stats]="!!playoffStats">
@@ -39,6 +51,7 @@
         <app-player-bio
           [player]="player"
           [countryFlagPath]="countryFlagPath"
+          [loading]="playerLoading"
         ></app-player-bio>
       </div>
       @if (statsFailed) {
@@ -56,32 +69,37 @@
           ></app-player-stats>
         </div>
       }
-      @if (regularSeasonStats) {
+      @if (regularSeasonStats || statsLoading) {
         <div class="regular-season-stats">
           <app-player-stats
-              [statTitle]="seasonLabel + ' NHL Regular Season Stats'"
+              [statTitle]="seasonLabel ? seasonLabel + ' NHL Regular Season Stats' : null"
               [stats]="regularSeasonStats"
               [teamColor]="teamColor"
               [isGoalie]="isGoalie"
               [seasonRating]="seasonRating"
-              [ratingPending]="seasonRatingPending"
+              [ratingPending]="seasonRatingPending || playerLoading"
+              [loading]="statsLoading"
           ></app-player-stats>
         </div>
       }
-      @if (stats?.recentGames?.length) {
+      @if (stats?.recentGames?.length || (statsLoading && expectedRecentGames)) {
         <div class="match-stats-container">
           <app-recent-player-games
-              [games]="stats.recentGames"
+              [games]="stats?.recentGames"
               [teamColor]="teamColor"
               [isGoalie]="isGoalie"
+              [loading]="statsLoading"
+              [loadingRows]="expectedRecentGames"
           ></app-recent-player-games>
         </div>
       }
-      @if (stats?.regularSeasons?.length) {
+      @if (stats?.regularSeasons?.length || (statsLoading && expectedCareerSeasons)) {
         <div class="career-totals" [ngClass]="{'career-beside-stats': !playoffStats}">
           <app-player-career
-              [seasons]="stats.regularSeasons"
+              [seasons]="stats?.regularSeasons"
               [isGoalie]="isGoalie"
+              [loading]="statsLoading"
+              [loadingRows]="expectedCareerSeasons"
           ></app-player-career>
         </div>
       }

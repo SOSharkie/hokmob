@@ -14,10 +14,10 @@ export class TeamTabs {
   /** The tabs, in the order of the tab bar. The first one is the default. */
   public static readonly tabs: TeamTab[] = [
     {id: "overview", label: "Overview"},
-    {id: "standings", label: "Standings"},
-    {id: "player-stats", label: "Player Stats"},
     {id: "team-stats", label: "Team Stats"},
-    {id: "games", label: "Games"}
+    {id: "player-stats", label: "Player Stats"},
+    {id: "games", label: "Games"},
+    {id: "standings", label: "Standings"}
   ];
 
   public static readonly defaultTab: TeamTabId = "overview";

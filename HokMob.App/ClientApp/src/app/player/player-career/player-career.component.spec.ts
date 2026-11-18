@@ -54,6 +54,18 @@ describe('PlayerCareerComponent', () => {
         .map(header => header.textContent.trim());
   }
 
+  it('should show a skeleton row per expected season while loading', () => {
+    fixture.componentRef.setInput('loading', true);
+    fixture.componentRef.setInput('loadingRows', 12);
+    show(undefined, false);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('cardTitle')).toBe('Career');
+    expect(skeleton.layout.rows).toBe(12);
+    expect(skeleton.layout.columns).toBe(5);
+    expect(skeleton.mobileBreakpoint).toBe(950);
+    expect(fixture.nativeElement.querySelector('.career-seasons-table')).toBeNull();
+  });
+
   it('should show the real NHL seasons of a skater, newest first', () => {
     const seasons = mockPlayerStats(8477496).regularSeasons as SkaterSeasonStats[];
     show(seasons, false);

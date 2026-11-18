@@ -1,76 +1,81 @@
-<div class="player-career">
-  <div class="player-career-header">
-    <span>Career</span>
-  </div>
-  @if (!isGoalie) {
-    <table class="career-seasons-table">
-      <thead>
-        <tr class="player-seasons-header">
-          <th class="season-header"><span>Season</span></th>
-          <th class="games-header"><span>Games Played</span></th>
-          <th class="goals-header"><span>Goals</span></th>
-          <th class="assists-header"><span>Assists</span></th>
-          <th class="points-header"><span>Points</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows; track row; let isLast = $last) {
-          <tr class="career-season-row" [ngClass]="{'last-row': isLast}">
-            <td class="season-cell">
-              <div class="season-info">
-                <div class="logo-container">
-                  @for (logo of row.teamLogos; track $index) {
-                    <img [src]="logo" alt="" class="player-team-logo">
-                  }
-                </div>
-                <div class="season-name">
-                  <span>{{row.season}}</span>
-                </div>
-              </div>
-            </td>
-            <td class="stat-cell"><span>{{row.gamesPlayed}}</span></td>
-            <td class="stat-cell"><span>{{row.goals}}</span></td>
-            <td class="stat-cell"><span>{{row.assists}}</span></td>
-            <td class="stat-cell"><span [ngStyle]="{'color': row.points > 0 ? '#84dc7b' : ''}">{{row.points}}</span></td>
+@if (loading) {
+  <app-skeleton-card cardTitle="Career" [layout]="skeletonLayout" [mobileLayout]="skeletonMobileLayout"
+                     [mobileBreakpoint]="skeletonBreakpoint"></app-skeleton-card>
+} @else {
+  <div class="player-career">
+    <div class="player-career-header">
+      <span>Career</span>
+    </div>
+    @if (!isGoalie) {
+      <table class="career-seasons-table">
+        <thead>
+          <tr class="player-seasons-header">
+            <th class="season-header"><span>Season</span></th>
+            <th class="games-header"><span>Games Played</span></th>
+            <th class="goals-header"><span>Goals</span></th>
+            <th class="assists-header"><span>Assists</span></th>
+            <th class="points-header"><span>Points</span></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  }
+        </thead>
+        <tbody>
+          @for (row of rows; track row; let isLast = $last) {
+            <tr class="career-season-row" [ngClass]="{'last-row': isLast}">
+              <td class="season-cell">
+                <div class="season-info">
+                  <div class="logo-container">
+                    @for (logo of row.teamLogos; track $index) {
+                      <img [src]="logo" alt="" class="player-team-logo">
+                    }
+                  </div>
+                  <div class="season-name">
+                    <span>{{row.season}}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="stat-cell"><span>{{row.gamesPlayed}}</span></td>
+              <td class="stat-cell"><span>{{row.goals}}</span></td>
+              <td class="stat-cell"><span>{{row.assists}}</span></td>
+              <td class="stat-cell"><span [ngStyle]="{'color': row.points > 0 ? '#84dc7b' : ''}">{{row.points}}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
 
-  @if (isGoalie) {
-    <table class="career-seasons-table">
-      <thead>
-        <tr class="player-seasons-header">
-          <th class="season-header"><span>Season</span></th>
-          <th class="games-header"><span>Games Played</span></th>
-          <th class="goals-header"><span>Shutouts</span></th>
-          <th class="assists-header"><span [title]="'Goals Against Average'">GAA</span></th>
-          <th class="points-header"><span [title]="'Save Percentage'">SV %</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows; track row; let isLast = $last) {
-          <tr class="career-season-row" [ngClass]="{'last-row': isLast}">
-            <td class="season-cell">
-              <div class="season-info">
-                <div class="logo-container">
-                  @for (logo of row.teamLogos; track $index) {
-                    <img [src]="logo" alt="" class="player-team-logo">
-                  }
-                </div>
-                <div class="season-name">
-                  <span>{{row.season}}</span>
-                </div>
-              </div>
-            </td>
-            <td class="stat-cell"><span>{{row.gamesPlayed}}</span></td>
-            <td class="stat-cell"><span>{{row.shutouts}}</span></td>
-            <td class="stat-cell"><span>{{row.goalsAgainstAverage | goalsAgainstAverage}}</span></td>
-            <td class="stat-cell"><span>{{row.savePct | savePercentage}}</span></td>
+    @if (isGoalie) {
+      <table class="career-seasons-table">
+        <thead>
+          <tr class="player-seasons-header">
+            <th class="season-header"><span>Season</span></th>
+            <th class="games-header"><span>Games Played</span></th>
+            <th class="goals-header"><span>Shutouts</span></th>
+            <th class="assists-header"><span [title]="'Goals Against Average'">GAA</span></th>
+            <th class="points-header"><span [title]="'Save Percentage'">SV %</span></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  }
-</div>
+        </thead>
+        <tbody>
+          @for (row of rows; track row; let isLast = $last) {
+            <tr class="career-season-row" [ngClass]="{'last-row': isLast}">
+              <td class="season-cell">
+                <div class="season-info">
+                  <div class="logo-container">
+                    @for (logo of row.teamLogos; track $index) {
+                      <img [src]="logo" alt="" class="player-team-logo">
+                    }
+                  </div>
+                  <div class="season-name">
+                    <span>{{row.season}}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="stat-cell"><span>{{row.gamesPlayed}}</span></td>
+              <td class="stat-cell"><span>{{row.shutouts}}</span></td>
+              <td class="stat-cell"><span>{{row.goalsAgainstAverage | goalsAgainstAverage}}</span></td>
+              <td class="stat-cell"><span>{{row.savePct | savePercentage}}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}

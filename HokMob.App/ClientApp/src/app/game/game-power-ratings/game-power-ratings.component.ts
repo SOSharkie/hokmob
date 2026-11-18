@@ -3,9 +3,11 @@ import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
 import {NstTeamGameStats} from "@shared/models/natural-stat-trick/nst-team-games.model";
 import {TeamRating, TeamRatingPoint, TeamRatingUtils} from "@shared/utils/team-rating-utils";
+import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 /**
- * A future game's power rating cards, the home team's then the away team's, side by side when they fit. Rates the
+ * A future game's power rating cards, the home team's then the away team's, side by side, compact on a phone, with the
+ * league average and Natural Stat Trick's credit noted once under both. Rates the
  * league on the game's regular season, like the team page's team stats tab: every team's games
  * (/api/nhl-stats/team-games) with Natural Stat Trick's expected goals (/api/nst/team-games), which are optional, so
  * without them the rating falls back to the NHL's stats. Nothing shows until both teams have played a regular season
@@ -40,6 +42,16 @@ export class GamePowerRatingsComponent implements OnChanges {
 
   /** The season and teams of the games loaded or loading, so a late response for another game is dropped. */
   private loadKey: string;
+
+  public readonly nstUrl: string = NstStatsUtils.teamTableUrl;
+
+  /**
+   * Whether the ratings count Natural Stat Trick's expected goals, so the note credits it. Every team has them or none
+   * does, so the home team's say.
+   */
+  public get hasExpectedGoals(): boolean {
+    return !!this.ratings.find(rating => rating.teamId === this.homeTeamId)?.hasExpectedGoals;
+  }
 
   /** Whether both teams are rated, so both cards show. */
   public get hasRatings(): boolean {

@@ -1,4 +1,6 @@
-@if (team) {
+@if (loading) {
+  <app-skeleton-card shape="bar" [layout]="skeletonLayout" [mobileLayout]="skeletonMobileLayout"></app-skeleton-card>
+} @else if (team) {
   <section class="rating-bar-card team-stats">
     <div class="rating-bar-card-header">
       <h2 class="rating-bar-card-title">{{title}}</h2>

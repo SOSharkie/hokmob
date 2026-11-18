@@ -63,6 +63,23 @@ describe('RecentPlayerGamesComponent', () => {
     return gameRows()[index].querySelector('.opponent-logo').getAttribute('src');
   }
 
+  it('should show a skeleton row per expected game while loading, with the columns of the table', () => {
+    fixture.componentRef.setInput('loading', true);
+    fixture.componentRef.setInput('loadingRows', 7);
+    show(undefined, false);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('cardTitle')).toBe('Recent Games');
+    expect(skeleton.layout.rows).toBe(7);
+    expect(skeleton.layout.columns).toBe(10);
+    expect(skeleton.mobileLayout.columns).toBe(6);
+    expect(skeleton.mobileBreakpoint).toBe(950);
+    expect(fixture.nativeElement.querySelector('.recent-games-table')).toBeNull();
+
+    // A goalie's table has 8 columns
+    show(undefined, true);
+    expect(fixture.nativeElement.querySelector('app-skeleton-card').layout.columns).toBe(8);
+  });
+
   it('should show the real last games of a skater, newest first, with ratings', () => {
     const games = mockPlayerStats(8477964).recentGames as SkaterGameStats[];
     show(games, false);

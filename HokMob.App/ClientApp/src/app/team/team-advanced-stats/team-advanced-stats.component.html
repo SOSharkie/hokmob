@@ -1,4 +1,7 @@
-@if (rows.length) {
+@if (loading) {
+  <app-skeleton-card shape="bar" [cardTitle]="title" [layout]="skeletonLayout"
+                     [mobileLayout]="skeletonMobileLayout"></app-skeleton-card>
+} @else if (rows.length) {
   <section class="rating-bar-card team-stats">
     <div class="rating-bar-card-header">
       <h2 class="rating-bar-card-title">{{title}}</h2>

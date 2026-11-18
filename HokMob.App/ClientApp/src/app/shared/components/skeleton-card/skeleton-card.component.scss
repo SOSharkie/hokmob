@@ -1,0 +1,260 @@
+@use "variables" as *;
+
+// The blocks are the global skeleton-block class (styles/skeleton.scss); these rules only size and place them
+
+// Fills a stretched grid cell, like the player page's season stats beside the bio
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Like the site's cards
+.skeleton-card {
+  box-sizing: border-box;
+  height: 100%;
+  border-radius: 25px;
+  background-color: $black-02;
+  color: white;
+  overflow: hidden;
+}
+
+// Like the cards' titles
+.skeleton-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+
+  .skeleton-title {
+    font-size: 17px;
+    font-weight: 500;
+  }
+
+  .skeleton-title-block {
+    width: 150px;
+    height: 16px;
+  }
+}
+
+// Every row's height is set from the layout, and its blocks are centered in it
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 $spacing-xx-large;
+}
+
+// A game: each team's logo over its abbreviation, either side of the score
+.shape-game .skeleton-row {
+  justify-content: space-around;
+
+  .skeleton-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-medium;
+  }
+
+  .skeleton-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+  }
+
+  .skeleton-abbrev {
+    width: 34px;
+    height: 10px;
+  }
+
+  .skeleton-score {
+    width: 64px;
+    height: 32px;
+    border-radius: 9px;
+  }
+}
+
+// A stat: its name, value and rank, and its bar from the league average below, like a rating bar card's row
+.shape-bar .skeleton-row {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: $spacing-medium;
+  border-bottom: 1px solid $gray-01;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .skeleton-bar-line {
+    display: flex;
+    align-items: center;
+    gap: $spacing-medium;
+  }
+
+  .skeleton-label {
+    width: 40%;
+    height: 12px;
+    margin-right: auto;
+  }
+
+  .skeleton-value {
+    width: 40px;
+    height: 12px;
+  }
+
+  .skeleton-rank {
+    width: 28px;
+    height: 12px;
+  }
+
+  .skeleton-track {
+    height: 6px;
+    border-radius: 3px;
+  }
+}
+
+// A table row: the first cell wider, with a logo, the others short values
+.shape-table {
+  .skeleton-row {
+    gap: $spacing-large;
+    border-bottom: 1px solid $black-03;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .skeleton-cell {
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-medium;
+    min-width: 0;
+
+    &.first-cell {
+      flex-grow: 3;
+      justify-content: flex-start;
+    }
+  }
+
+  .skeleton-logo {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+  }
+
+  .skeleton-text {
+    width: 60%;
+    max-width: 36px;
+    height: 12px;
+  }
+
+  .first-cell .skeleton-text {
+    max-width: 110px;
+  }
+
+  // The column names: thinner than the values
+  .skeleton-heading {
+    width: 60%;
+    max-width: 40px;
+    height: 9px;
+  }
+
+  .skeleton-table-header .first-cell .skeleton-heading {
+    max-width: 60px;
+  }
+}
+
+// Stat tiles: a label over a value, like the player bio and season stats
+.shape-tiles .skeleton-row {
+  gap: $spacing-medium;
+  padding: 0 $spacing-medium;
+
+  .skeleton-tile {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-large;
+    min-width: 0;
+  }
+
+  .skeleton-label {
+    width: 55%;
+    max-width: 60px;
+    height: 10px;
+  }
+
+  .skeleton-value {
+    width: 45%;
+    max-width: 44px;
+    height: 22px;
+  }
+}
+
+// A headline: a badge and two lines beside it, over a line, like a rating bar card's rating and rank
+.skeleton-summary {
+  display: flex;
+  align-items: center;
+  gap: $spacing-x-large;
+  box-sizing: border-box;
+  margin: 0 $spacing-xx-large;
+  border-bottom: 1px solid $gray-01;
+
+  .skeleton-badge {
+    flex: none;
+    width: 72px;
+    height: 46px;
+    border-radius: 12px;
+  }
+
+  .skeleton-summary-lines {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-medium;
+    flex: 1;
+  }
+
+  .skeleton-summary-line {
+    width: 60%;
+    max-width: 110px;
+    height: 14px;
+
+    &.short {
+      width: 45%;
+      height: 11px;
+    }
+  }
+}
+
+// A large area per row, like a chart's plot, under a row of toggles that wraps like the chart's
+.shape-block {
+  .skeleton-table-header {
+    flex-wrap: wrap;
+    align-content: center;
+    gap: $spacing-medium;
+  }
+
+  .skeleton-pill {
+    width: 76px;
+    height: 28px;
+    border-radius: 14px;
+  }
+
+  .skeleton-row:not(.skeleton-table-header) {
+    align-items: stretch;
+    padding-top: $spacing-large;
+    padding-bottom: $spacing-large;
+  }
+
+  // Darker than the small blocks and still, so a big area doesn't glare or flash; its toggles pulse
+  .skeleton-area {
+    flex: 1;
+    border-radius: 12px;
+    background-color: $black-04;
+    opacity: 1;
+    animation: none;
+  }
+}

@@ -1,4 +1,5 @@
 import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {TeamSeasonStats} from "@shared/models/nhl-stats-api/team-stats.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {TeamRatingUtils, TeamScoreBar} from "@shared/utils/team-rating-utils";
@@ -55,6 +56,20 @@ export class TeamStatsComponent implements OnChanges {
    */
   @Input()
   public teamStats: TeamSeasonStats[];
+
+  /** Whether the stats are still loading, so the card shows its skeleton at its size. */
+  @Input()
+  public loading: boolean = false;
+
+  /**
+   * The skeleton's rows: one per stat, like the rating bar card's, 48px tall or 44px on a phone (now and then 45px, as
+   * the bold value lines up). The card's 10px bottom padding is 9px here, since the last real row has no border.
+   */
+  public readonly skeletonLayout: SkeletonCardLayout = {
+    rows: TeamStatsComponent.stats.length, rowHeight: 48, paddingBottom: 9
+  };
+
+  public readonly skeletonMobileLayout: SkeletonCardLayout = {rowHeight: 44};
 
   /** The team's row, or undefined without one. */
   public team: TeamSeasonStats;

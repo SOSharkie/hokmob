@@ -119,15 +119,59 @@ describe('TeamComponent', () => {
     return fixture.nativeElement.querySelector(selector);
   }
 
-  it('should show the team name right away, before anything is loaded', async () => {
+  it('should show the team name right away, and skeletons in the cards\' places until they load', async () => {
     open('6');
     expect(text('.team-name')).toBe('Boston Bruins');
     expect(component.teamColor).toBe('#FFB81C');
-    expect(child('.team-division')).toBeNull();
+    expect(child('.team-division-skeleton')).not.toBeNull();
     expect(child('app-standings')).toBeNull();
-    expect(child('app-team-next-game')).toBeNull();
+    // The conference's 16 teams
+    expect(child('.team-standings app-skeleton-card').layout.rows).toBe(16);
+    expect(child('app-team-stats').loading).toBeTrue();
+    expect(child('app-team-next-game').loading).toBeTrue();
+    expect(child('app-single-team-form').loading).toBeTrue();
+    expect(child('app-team-schedule').loading).toBeTrue();
+
     await flushTeamPage('BOS');
     expect(text('.team-division-label')).toBe('Atlantic Division');
+    expect(child('.team-division-skeleton')).toBeNull();
+    expect(child('app-skeleton-card')).toBeNull();
+    expect(child('app-standings')).not.toBeNull();
+    expect(child('app-team-stats').loading).toBeFalse();
+    expect(child('app-team-next-game').loading).toBeFalse();
+    expect(child('app-single-team-form').loading).toBeFalse();
+    expect(child('app-team-schedule').loading).toBeFalse();
+  });
+
+  it('should keep the form\'s skeleton until the form loads, after the schedule', async () => {
+    open('6');
+    httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
+    httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
+    await settle();
+    expect(child('app-team-schedule').loading).toBeFalse();
+    expect(child('app-team-next-game').game.id).toBe(2026010013);
+    // The 2026-27 schedule has no finished games yet, so the form waits for the previous season's
+    expect(child('app-single-team-form').loading).toBeTrue();
+    expect(child('app-team-stats').loading).toBeTrue();
+
+    httpMock.expectOne(teamStatsUrl).flush(mockTeamStats());
+    httpMock.match(scheduleUrl + 'BOS/20252026')
+        .forEach(request => request.flush(mockClubScheduleSeason('BOS', 20252026)));
+    await settle();
+    expect(child('app-single-team-form').loading).toBeFalse();
+    expect(child('app-single-team-form').games.length).toBe(5);
+    expect(child('app-team-stats').loading).toBeFalse();
+  });
+
+  it('should show the games tab\'s cards as skeletons until the schedule loads', async () => {
+    open('6', {tab: 'games'});
+    expect(child('.games-tab app-team-next-game').loading).toBeTrue();
+    expect(child('.games-tab app-team-schedule').loading).toBeTrue();
+    expect(child('.games-tab app-single-team-form').loading).toBeTrue();
+    await flushTeamPage('BOS');
+    expect(child('.games-tab app-team-next-game').loading).toBeFalse();
+    expect(child('.games-tab app-team-schedule').loading).toBeFalse();
+    expect(child('.games-tab app-single-team-form').loading).toBeFalse();
   });
 
   it('should show the real division, conference standings and stats of a team', async () => {
@@ -224,6 +268,10 @@ describe('TeamComponent', () => {
     expect(console.error).toHaveBeenCalled();
     expect(component.standings).toEqual([]);
     expect(component.teamStats).toEqual([]);
+    // No skeletons left: no standings card and no stats card
+    expect(child('app-skeleton-card')).toBeNull();
+    expect(child('.team-division-skeleton')).toBeNull();
+    expect(child('app-team-stats').loading).toBeFalse();
     expect(child('app-team-next-game').game.id).toBe(2026010013);
   });
 
@@ -238,7 +286,9 @@ describe('TeamComponent', () => {
     expect(console.error).toHaveBeenCalled();
     expect(child('app-team-next-game')).toBeNull();
     expect(child('app-single-team-form').games).toEqual([]);
+    expect(child('app-single-team-form').loading).toBeFalse();
     expect(child('app-team-schedule').games).toEqual([]);
+    expect(child('app-team-schedule').loading).toBeFalse();
     expect(child('app-team-stats').teamStats.length).toBe(32);
   });
 
@@ -317,7 +367,7 @@ describe('TeamComponent', () => {
       open('6');
       await flushTeamPage('BOS');
       expect(tabs().map(button => button.textContent.trim()))
-          .toEqual(['Overview', 'Standings', 'Player Stats', 'Team Stats', 'Games']);
+          .toEqual(['Overview', 'Team Stats', 'Player Stats', 'Games', 'Standings']);
       expect(selectedTabLabel()).toBe('Overview');
       expect(tab('Overview').getAttribute('aria-selected')).toBe('true');
       expect(tab('Overview').tabIndex).toBe(0);
@@ -412,10 +462,13 @@ describe('TeamComponent', () => {
 
     it('should say there are no team stats when they fail', async () => {
       open('6', {tab: 'team-stats'});
+      // The tab and its skeletons show while the team stats load
+      expect(child('app-team-stats-tab').teamStatsLoading).toBeTrue();
       httpMock.expectOne(standingsUrl).flush(mockStandingsResponse());
       httpMock.expectOne(scheduleUrl + 'BOS/now').flush(upcomingSchedule('BOS'));
       await settle();
       expect(child('.team-tab-message')).toBeNull();
+      expect(child('app-team-stats-tab').teamStatsLoading).toBeTrue();
       httpMock.expectOne(teamStatsUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       httpMock.match(scheduleUrl + 'BOS/20252026')
           .forEach(request => request.flush(mockClubScheduleSeason('BOS', 20252026)));
@@ -465,16 +518,16 @@ describe('TeamComponent', () => {
       await flushTeamPage('BOS');
 
       pressKey(tab('Overview'), 'ArrowRight');
-      expect(selectedTabLabel()).toBe('Standings');
-      expect(document.activeElement).toBe(tab('Standings'));
+      expect(selectedTabLabel()).toBe('Team Stats');
+      expect(document.activeElement).toBe(tab('Team Stats'));
 
-      pressKey(tab('Standings'), 'End');
-      expect(selectedTabLabel()).toBe('Games');
-      pressKey(tab('Games'), 'ArrowRight');
+      pressKey(tab('Team Stats'), 'End');
+      expect(selectedTabLabel()).toBe('Standings');
+      pressKey(tab('Standings'), 'ArrowRight');
       expect(selectedTabLabel()).toBe('Overview');
       pressKey(tab('Overview'), 'ArrowLeft');
-      expect(selectedTabLabel()).toBe('Games');
-      pressKey(tab('Games'), 'Home');
+      expect(selectedTabLabel()).toBe('Standings');
+      pressKey(tab('Standings'), 'Home');
       expect(selectedTabLabel()).toBe('Overview');
       expect(path()).toBe('/team/6');
 

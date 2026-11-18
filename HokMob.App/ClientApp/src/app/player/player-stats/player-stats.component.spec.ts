@@ -50,6 +50,24 @@ describe('PlayerStatsComponent', () => {
     return fixture.nativeElement.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim();
   }
 
+  it('should show a skeleton of the stat tiles while loading, with the rating column when it will have one', () => {
+    fixture.componentRef.setInput('loading', true);
+    fixture.componentRef.setInput('ratingPending', true);
+    show(undefined, false, '2025-2026 NHL Regular Season Stats');
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('shape')).toBe('tiles');
+    expect(skeleton.cardTitle).toBe('2025-2026 NHL Regular Season Stats');
+    expect(skeleton.layout.columns).toBe(5);
+    // On a phone the rating column is a row of its own
+    expect(skeleton.mobileLayout.rows).toBe(3);
+    expect(fixture.nativeElement.querySelector('.stats-grid')).toBeNull();
+
+    fixture.componentRef.setInput('ratingPending', false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-skeleton-card').layout.columns).toBe(4);
+    expect(fixture.nativeElement.querySelector('app-skeleton-card').mobileLayout.rows).toBe(2);
+  });
+
   it('should show the real regular season stats of a skater', () => {
     const season = mockPlayerStats(8477964).regularSeasons[0] as SkaterSeasonStats;
     show(season, false, '2025-2026 NHL Regular Season Stats');

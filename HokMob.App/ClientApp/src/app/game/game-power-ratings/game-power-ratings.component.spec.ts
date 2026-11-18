@@ -79,12 +79,34 @@ describe('GamePowerRatingsComponent', () => {
     expect(away.teamId).toBe(bruins);
     expect(home.showTeam).toBeTrue();
     expect(away.showTeam).toBeTrue();
+    // Noted once under both cards instead
+    expect(home.showNote).toBeFalse();
+    expect(away.showNote).toBeFalse();
     expect(home.ratings.length).toBe(32);
     expect(away.ratings).toBe(home.ratings);
     const sanJose = component.ratings.find(rating => rating.teamId === sharks);
     expect(TeamRatingUtils.formatRating(sanJose.rating)).toBe('2.9');
     expect(sanJose.rank).toBe(30);
     expect(sanJose.hasExpectedGoals).toBeTrue();
+  });
+
+  it('should note the league average once under the cards, centered, and credit Natural Stat Trick', async () => {
+    show(sharks, bruins);
+    await flushGames();
+    const notes: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.game-power-ratings-note'));
+    expect(notes.length).toBe(1);
+    expect(notes[0].textContent.replace(/\s+/g, ' ').trim()).toBe('5.0 is league average. xG from Natural Stat Trick');
+    expect(getComputedStyle(notes[0]).textAlign).toBe('center');
+    const credit: HTMLAnchorElement = notes[0].querySelector('.power-rating-source');
+    expect(credit.href).toBe('https://www.naturalstattrick.com/teamtable.php');
+    expect(credit.target).toBe('_blank');
+  });
+
+  it('should put the cards side by side', async () => {
+    show(sharks, bruins);
+    await flushGames();
+    const grid: HTMLElement = fixture.nativeElement.querySelector('.game-power-ratings');
+    expect(getComputedStyle(grid).gridTemplateColumns.split(' ').length).toBe(2);
   });
 
   it('should give each card its own team\'s timeline, through its last game', async () => {
@@ -109,6 +131,11 @@ describe('GamePowerRatingsComponent', () => {
     // San Jose's rating from the NHL's stats alone
     expect(TeamRatingUtils.formatRating(sanJose.rating)).toBe('3.4');
     expect(sanJose.hasExpectedGoals).toBeFalse();
+    expect(component.hasExpectedGoals).toBeFalse();
+    const note: HTMLElement = fixture.nativeElement.querySelector('.game-power-ratings-note');
+    expect(note.querySelector('.power-rating-source')).toBeNull();
+    expect(note.querySelector('.power-rating-fallback').textContent.trim())
+        .toBe('Rated without expected goals, which aren\'t available right now.');
   });
 
   it('should show nothing when the games fail to load', async () => {
@@ -118,6 +145,7 @@ describe('GamePowerRatingsComponent', () => {
     await settle();
     expect(component.ratings).toEqual([]);
     expect(cards().length).toBe(0);
+    expect(fixture.nativeElement.querySelector('.game-power-ratings-note')).toBeNull();
   });
 
   it('should show nothing until both teams have played', async () => {
