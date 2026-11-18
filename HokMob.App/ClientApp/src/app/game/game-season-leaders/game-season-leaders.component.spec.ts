@@ -2,7 +2,10 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { ClubStats } from '@shared/models/nhl-web-api/club-stats.model';
-import { MockClubStatsKey, mockClubStats } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { MockClubStatsKey, mockClubStats, mockSeasonHistory } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import { RatedSeason } from '@shared/models/nhl-history/season-history.model';
+import { SeasonHistoryService } from '@shared/services/season-history.service';
+import { StatsUtils } from '@shared/utils/stats-utils';
 
 import { GameSeasonLeadersComponent } from './game-season-leaders.component';
 
@@ -210,6 +213,85 @@ describe('GameSeasonLeadersComponent', () => {
     expect(card('away', 'Karel Vejmelka').querySelector('.goalie-icon')).not.toBeNull();
     expect(card('home', 'David Pastrnak').querySelector('.goalie-icon')).toBeNull();
   });
+
+  describe('average ratings', () => {
+    /** The 7 game 2025-26 history fixture: Boston plays 2 of its games, Utah none. */
+    let ratedSeason: RatedSeason;
+
+    beforeEach(() => {
+      ratedSeason = SeasonHistoryService.rateSeason(mockSeasonHistory());
+    });
+
+    function rate(season: RatedSeason): void {
+      fixture.componentRef.setInput('ratedSeason', season);
+      fixture.detectChanges();
+    }
+
+    function badge(playerCard: HTMLElement): HTMLElement {
+      return playerCard.querySelector('.hokmob-score-container');
+    }
+
+    /** A player's average over his rated games for Boston in the fixture, with one decimal. */
+    function expectedRating(playerId: number): string {
+      const games = ratedSeason.ratedGames.filter(game => game.player.id === playerId && game.teamId === bostonId);
+      return (games.reduce((sum, game) => sum + game.rating, 0) / games.length).toFixed(1);
+    }
+
+    it("should show each player's average rating for the team, with one decimal, in its color", () => {
+      showSeason('20252026');
+      rate(ratedSeason);
+      const pastrnak = card('home', 'David Pastrnak');
+      const rating = expectedRating(8477956);
+      expect(badge(pastrnak).textContent.trim()).toBe(rating);
+      expect(rating).toMatch(/^\d+\.\d$/);
+      expect(badge(pastrnak).style.backgroundColor).toBe(hexToRgb(StatsUtils.getHokmobRatingColor(Number(rating))));
+      expect(badge(pastrnak).getAttribute('title')).toBe('Average HokMob rating in 2 games');
+      expect(badge(card('home', 'Jeremy Swayman')).textContent.trim()).toBe(expectedRating(8480280));
+      expect(cards('home').every(playerCard => !!badge(playerCard))).toBeTrue();
+    });
+
+    it('should read the average rating to screen readers before the stat line', () => {
+      showSeason('20252026');
+      rate(ratedSeason);
+      expect(card('home', 'David Pastrnak').getAttribute('aria-label')).toBe('David Pastrnak, average rating ' +
+          expectedRating(8477956) + ', 77 games played, 29 goals, 71 assists, 100 points');
+    });
+
+    it('should leave out the rating of a player without a rated game, and of every player while it loads', () => {
+      showSeason('20252026');
+      expect(cards('home').some(badge)).toBeFalse();
+      expect(card('home', 'David Pastrnak').getAttribute('aria-label'))
+          .toBe('David Pastrnak, 77 games played, 29 goals, 71 assists, 100 points');
+
+      rate(ratedSeason);
+      // Utah has no game in the fixture
+      expect(cards('away').length).toBe(6);
+      expect(cards('away').some(badge)).toBeFalse();
+    });
+
+    it('should only rate the players with rated games from the same season and game type as the totals', () => {
+      showSeason('20262027');
+      rate(ratedSeason);
+      expect(cards('home').some(badge)).toBeFalse();
+
+      showSeason('20252026');
+      rate({...ratedSeason, gameType: 3});
+      expect(cards('home').some(badge)).toBeFalse();
+    });
+
+    it('should keep the ratings in the star lineup', () => {
+      showSeason('20252026');
+      rate(ratedSeason);
+      fixture.nativeElement.querySelector('.lineup-toggle').click();
+      fixture.detectChanges();
+      expect(cards('home').every(playerCard => !!badge(playerCard))).toBeTrue();
+    });
+  });
+
+  function hexToRgb(hex: string): string {
+    const value = parseInt(hex.replace('#', ''), 16);
+    return `rgb(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255})`;
+  }
 
   it('should show the headshots and fall back to the blank headshot', () => {
     showSeason('20252026');

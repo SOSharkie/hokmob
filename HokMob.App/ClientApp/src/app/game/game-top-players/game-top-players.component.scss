@@ -13,21 +13,11 @@ $bench-height: 44px;
 $bench-players-height: 78px;
 $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
-// The rating and goal pucks on the avatar of a player on the rink or on a bench. Written under .player-avatar, which
-// both share, instead of under each, to keep this card's styles inside the component style budget.
+// The game MVP's star in the rating badge (see _rink-card.scss), and the goal pucks on the avatar of a player on the
+// rink or on a bench. Written under .player-avatar, which both share, instead of under each, to keep this card's styles
+// inside the component style budget.
 .player-avatar {
   .hokmob-score-container {
-    position: absolute;
-    top: -5px;
-    left: 34px;
-    display: flex;
-    align-items: center;
-    padding: 0 5px;
-    border-radius: 10px;
-    font-size: 12px;
-    line-height: 17px;
-    white-space: nowrap;
-
     .star-icon {
       margin-left: 1px;
       font-size: 12px;
@@ -300,10 +290,6 @@ $bench-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 // Mobile Styling
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   .top-player {
-    .hokmob-score-container {
-      left: 28px;
-    }
-
     .player-goals {
       top: 29px;
       left: 30px;

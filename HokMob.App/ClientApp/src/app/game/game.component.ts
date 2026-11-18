@@ -39,6 +39,8 @@ import {PlayerClick, PlayerHighlight} from "@shared/models/player-highlight.mode
 import {ScrollDirectionService} from "@shared/services/scroll-direction.service";
 import {Subject, takeUntil} from "rxjs";
 import {ClubStats} from "@shared/models/nhl-web-api/club-stats.model";
+import {RatedSeason} from "@shared/models/nhl-history/season-history.model";
+import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
 import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
@@ -128,6 +130,12 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
   public homeSeasonStats: ClubStats;
 
   public awaySeasonStats: ClubStats;
+
+  /**
+   * The rated games of the season leaders' season, for each player's average HokMob rating. Only loaded when the
+   * season and game type of their totals has a history file (SeasonHistoryService.seasons).
+   */
+  public seasonLeadersRatedSeason: RatedSeason;
 
   /**
    * Both teams' and each skater's expected goals and Corsi from Natural Stat Trick, for live and finished games.
@@ -317,6 +325,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
               private naturalStatTrickService: NaturalStatTrickService,
+              private seasonHistoryService: SeasonHistoryService,
               private scrollDirectionService: ScrollDirectionService) {
   }
 
@@ -488,6 +497,7 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
     this.awayTeamFormGames = [];
     this.homeSeasonStats = undefined;
     this.awaySeasonStats = undefined;
+    this.seasonLeadersRatedSeason = undefined;
     this.advancedStats = undefined;
     this.homeTeamLogo = undefined;
     this.awayTeamLogo = undefined;
@@ -569,6 +579,30 @@ export class GameComponent implements OnInit, AfterViewInit, OnDestroy {
       if (gameId === this.gameId) {
         this.homeSeasonStats = stats.home;
         this.awaySeasonStats = stats.away;
+        this.loadSeasonLeadersRatings(stats.home ?? stats.away);
+      }
+    }).catch(() => {
+      // Already logged by the service
+    });
+  }
+
+  /**
+   * Loads the history file of the season leaders' season and game type, for each player's average HokMob rating, when
+   * there is one (the playoffs have none). The file is shared with the history, player and team pages and kept for the
+   * session. If it fails, the players go without a rating.
+   */
+  private loadSeasonLeadersRatings(stats: ClubStats): void {
+    const season = Number(stats?.season);
+    const gameType = stats?.gameType;
+    const hasHistory = SeasonHistoryService.seasons.some(option =>
+        option.season === season && option.gameType === gameType);
+    if (!hasHistory) {
+      return;
+    }
+    const gameId = this.gameId;
+    this.seasonHistoryService.getSeasonHistory(season, gameType).then(ratedSeason => {
+      if (gameId === this.gameId) {
+        this.seasonLeadersRatedSeason = ratedSeason;
       }
     }).catch(() => {
       // Already logged by the service

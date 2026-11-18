@@ -8,7 +8,8 @@
 
 @use "rink-card-base" as *;
 
-// A player's headshot with the goalie mask badge, and their name below it, on the rink or elsewhere on the card
+// A player's headshot with the goalie mask and rating badges, and their name below it, on the rink or elsewhere on the
+// card. The rating is a game's on the top players card, and a season's average on the season leaders card.
 @mixin player-avatar {
   display: flex;
   flex-direction: column;
@@ -36,6 +37,19 @@
       height: 58px;
       margin-top: 8px;
     }
+  }
+
+  .hokmob-score-container {
+    position: absolute;
+    top: -5px;
+    left: 34px;
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 17px;
+    white-space: nowrap;
   }
 
   .goalie-icon-container {
@@ -158,6 +172,10 @@
 
     .goalie-icon-container {
       left: -7px;
+    }
+
+    .hokmob-score-container {
+      left: 28px;
     }
 
     .player-name {

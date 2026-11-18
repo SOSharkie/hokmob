@@ -28,11 +28,17 @@
   @for (spot of spots; track trackBySpot($index, spot)) {
     <a [routerLink]="['/player', spot.player.playerId]"
        class="top-player" [ngClass]="spot.line" [style.--length.%]="spot.length" [style.--across.%]="spot.across"
-       [attr.aria-label]="spot.player.name + ', ' + spot.player.statLabel">
+       [attr.aria-label]="getAriaLabel(spot.player)">
       <div class="player-avatar">
         <div class="player-headshot-container">
           <img [src]="spot.player.headshot" (error)="showBlankHeadshot($event)" alt="" class="player-headshot">
         </div>
+        @if (spot.player.averageRating) {
+          <div class="hokmob-score-container" [style.background-color]="spot.player.ratingColor"
+               [title]="spot.player.ratingLabel">
+            <span>{{spot.player.averageRating}}</span>
+          </div>
+        }
         @if (spot.player.isGoalie) {
           <div class="goalie-icon-container">
             <img class="goalie-icon" src="assets/goalie_mask.png" alt="">
