@@ -12,8 +12,8 @@ import {
 } from '@angular/core';
 import {Chart, Plugin, registerables, TooltipItem} from 'chart.js';
 import {PositionGroup, RatedGame} from "@shared/models/nhl-history/season-history.model";
-import {StatsUtils} from "@shared/utils/stats-utils";
 import {PositionOption, RatingDistribution, SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 Chart.register(...registerables);
 
 /**
@@ -45,9 +45,14 @@ export class RatingDistributionComponent implements OnChanges, AfterViewInit, On
 
   public distribution: RatingDistribution = SeasonRatingStatsUtils.getDistribution([], "F");
 
-  public readonly greenColor = StatsUtils.hokmobRatingGreen;
+  public readonly goodColor = RatingColorUtils.getTierColor("good");
 
-  public readonly blueColor = StatsUtils.hokmobRatingBlue;
+  public readonly eliteColor = RatingColorUtils.getTierColor("elite");
+
+  /** The good and elite shares' labels, from the game scale's cut points, like "6.5+". */
+  public readonly goodLabel = SeasonRatingStatsUtils.goodRating + "+";
+
+  public readonly eliteLabel = SeasonRatingStatsUtils.eliteRating + "+";
 
   @ViewChild("distributionChart")
   private chartCanvas: ElementRef<HTMLCanvasElement>;
@@ -62,12 +67,12 @@ export class RatingDistributionComponent implements OnChanges, AfterViewInit, On
     return this.distribution.total ? this.distribution.median.toFixed(1) : "-";
   }
 
-  public get greenShare(): string {
-    return RatingDistributionComponent.formatShare(this.distribution.greenShare, this.distribution.total);
+  public get goodShare(): string {
+    return RatingDistributionComponent.formatShare(this.distribution.goodShare, this.distribution.total);
   }
 
-  public get blueShare(): string {
-    return RatingDistributionComponent.formatShare(this.distribution.blueShare, this.distribution.total);
+  public get eliteShare(): string {
+    return RatingDistributionComponent.formatShare(this.distribution.eliteShare, this.distribution.total);
   }
 
   public get gameCount(): string {
@@ -162,7 +167,9 @@ export class RatingDistributionComponent implements OnChanges, AfterViewInit, On
     const dataset = this.distributionChart.data.datasets[0];
     // Each bar is centered in its bin on the linear axis
     dataset.data = this.distribution.bins.map(bin => ({x: bin.from + SeasonRatingStatsUtils.binSize / 2, y: bin.count}));
-    dataset.backgroundColor = this.distribution.bins.map(bin => StatsUtils.getHokmobRatingColor(bin.from));
+    // A canvas can't read a var(), so the tier colors are resolved from the page's styles
+    dataset.backgroundColor = this.distribution.bins
+        .map(bin => RatingColorUtils.resolveTierColor(RatingColorUtils.getTier(bin.from, "game")));
     this.distributionChart.update();
   }
 
@@ -190,15 +197,15 @@ export class RatingDistributionComponent implements OnChanges, AfterViewInit, On
   }
 
   /**
-   * Draws the green and blue rating thresholds as dashed lines across the chart, over the bars.
+   * Draws the good (green) and elite (blue) cut points as dashed lines across the chart, over the bars.
    */
   private static readonly thresholdPlugin: Plugin<"bar"> = {
     id: "ratingThresholds",
     afterDatasetsDraw: chart => {
       const {ctx, chartArea, scales} = chart;
       [
-        {rating: SeasonRatingStatsUtils.greenRating, color: StatsUtils.hokmobRatingGreen},
-        {rating: SeasonRatingStatsUtils.blueRating, color: StatsUtils.hokmobRatingBlue}
+        {rating: SeasonRatingStatsUtils.goodRating, color: RatingColorUtils.resolveTierColor("good")},
+        {rating: SeasonRatingStatsUtils.eliteRating, color: RatingColorUtils.resolveTierColor("elite")}
       ].forEach(threshold => {
         const x = scales["x"].getPixelForValue(threshold.rating);
         ctx.save();

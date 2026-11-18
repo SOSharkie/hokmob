@@ -5,7 +5,7 @@ import { ClubStats } from '@shared/models/nhl-web-api/club-stats.model';
 import { MockClubStatsKey, mockClubStats, mockSeasonHistory } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import { RatedSeason } from '@shared/models/nhl-history/season-history.model';
 import { SeasonHistoryService } from '@shared/services/season-history.service';
-import { StatsUtils } from '@shared/utils/stats-utils';
+import { RatingColorUtils } from '@shared/utils/rating-color-utils';
 
 import { GameSeasonLeadersComponent } from './game-season-leaders.component';
 
@@ -244,7 +244,7 @@ describe('GameSeasonLeadersComponent', () => {
       const rating = expectedRating(8477956);
       expect(badge(pastrnak).textContent.trim()).toBe(rating);
       expect(rating).toMatch(/^\d+\.\d$/);
-      expect(badge(pastrnak).style.backgroundColor).toBe(hexToRgb(StatsUtils.getHokmobRatingColor(Number(rating))));
+      expect(badge(pastrnak).style.backgroundColor).toBe(RatingColorUtils.getColor(Number(rating), 'seasonAverage'));
       expect(badge(pastrnak).getAttribute('title')).toBe('Average HokMob rating in 2 games');
       expect(badge(card('home', 'Jeremy Swayman')).textContent.trim()).toBe(expectedRating(8480280));
       expect(cards('home').every(playerCard => !!badge(playerCard))).toBeTrue();
@@ -287,11 +287,6 @@ describe('GameSeasonLeadersComponent', () => {
       expect(cards('home').every(playerCard => !!badge(playerCard))).toBeTrue();
     });
   });
-
-  function hexToRgb(hex: string): string {
-    const value = parseInt(hex.replace('#', ''), 16);
-    return `rgb(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255})`;
-  }
 
   it('should show the headshots and fall back to the blank headshot', () => {
     showSeason('20252026');

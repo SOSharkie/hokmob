@@ -43,15 +43,15 @@ describe('SeasonRatingStatsUtils', () => {
       expect(SeasonRatingStatsUtils.getDistribution(games, 'G').total).toBe(15);
     });
 
-    it('should work out the mean, median and green and blue shares', () => {
+    it('should work out the mean, median and good and elite shares', () => {
       const games = ratedGames().filter(game => game.position === 'D');
       const distribution = SeasonRatingStatsUtils.getDistribution(games, 'D');
       const ratings = games.map(game => game.rating).sort((a, b) => a - b);
       expect(distribution.mean).toBeCloseTo(ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length, 10);
       // 84 games, so the median is between the 42nd and 43rd
       expect(distribution.median).toBeCloseTo((ratings[41] + ratings[42]) / 2, 10);
-      expect(distribution.greenShare).toBeCloseTo(ratings.filter(rating => rating >= 7).length / 84, 10);
-      expect(distribution.blueShare).toBeCloseTo(ratings.filter(rating => rating >= 8.5).length / 84, 10);
+      expect(distribution.goodShare).toBeCloseTo(ratings.filter(rating => rating >= 6.5).length / 84, 10);
+      expect(distribution.eliteShare).toBeCloseTo(ratings.filter(rating => rating >= 8).length / 84, 10);
     });
 
     it('should put a rating on a bin edge in the bin it starts, and 10 and below 0 in the end bins', () => {
@@ -63,9 +63,9 @@ describe('SeasonRatingStatsUtils', () => {
       expect(countFrom(9.5)).toBe(1);
       expect(countFrom(0)).toBe(1);
       expect(countFrom(0.5)).toBe(1);
-      // 7, 8.5 and 10 are green, 8.5 and 10 are blue
-      expect(distribution.greenShare).toBeCloseTo(3 / 6, 10);
-      expect(distribution.blueShare).toBeCloseTo(2 / 6, 10);
+      // 7, 6.9, 8.5 and 10 are good or better, 8.5 and 10 are elite
+      expect(distribution.goodShare).toBeCloseTo(4 / 6, 10);
+      expect(distribution.eliteShare).toBeCloseTo(2 / 6, 10);
     });
 
     it('should take the middle rating of an odd count as the median', () => {
@@ -79,7 +79,7 @@ describe('SeasonRatingStatsUtils', () => {
         expect(distribution.bins.every(bin => bin.count === 0)).toBeTrue();
         expect(distribution.mean).toBe(0);
         expect(distribution.median).toBe(0);
-        expect(distribution.greenShare).toBe(0);
+        expect(distribution.goodShare).toBe(0);
       });
     });
   });

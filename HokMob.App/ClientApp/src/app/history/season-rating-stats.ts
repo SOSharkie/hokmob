@@ -1,4 +1,5 @@
 import {HistoryPlayer, PositionGroup, RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /**
  * A choice of a position toggle. A null value is every position.
@@ -28,9 +29,9 @@ export interface RatingDistribution {
   mean: number;
   median: number;
   /** The share of games rated 7 and up (green or blue), 0 to 1. */
-  greenShare: number;
+  goodShare: number;
   /** The share of games rated 8.5 and up (blue), 0 to 1. */
-  blueShare: number;
+  eliteShare: number;
 }
 
 /**
@@ -83,10 +84,10 @@ export class SeasonRatingStatsUtils {
   /** The top of the rating scale. */
   public static readonly maxRating = 10;
 
-  /** The rating a game needs to be green, and blue (StatsUtils.getHokmobRatingColor). */
-  public static readonly greenRating = 7;
+  /** The rating a game needs to be good (green), and elite (blue), on the game scale (RatingColorUtils). */
+  public static readonly goodRating = RatingColorUtils.cutPoints.game.good;
 
-  public static readonly blueRating = 8.5;
+  public static readonly eliteRating = RatingColorUtils.cutPoints.game.elite;
 
   /** The fewest games a player needs on the average rating leaderboard of a finished season. */
   public static readonly fullSeasonMinGames = 20;
@@ -96,7 +97,7 @@ export class SeasonRatingStatsUtils {
 
   /**
    * Bins the ratings of one position group into a 0 to 10 histogram, and works out their mean, median and the share
-   * of green and blue games. An empty list gives empty bins and 0s.
+   * of good (green) and elite (blue) games. An empty list gives empty bins and 0s.
    *
    * @param ratedGames - Every rated game of the season.
    * @param position - The position group to count.
@@ -110,13 +111,13 @@ export class SeasonRatingStatsUtils {
     }));
     const ratings = (ratedGames ?? []).filter(game => game.position === position).map(game => game.rating);
     let sum = 0;
-    let greenCount = 0;
-    let blueCount = 0;
+    let goodCount = 0;
+    let eliteCount = 0;
     ratings.forEach(rating => {
       bins[SeasonRatingStatsUtils.getBinIndex(rating, binCount)].count++;
       sum += rating;
-      greenCount += rating >= SeasonRatingStatsUtils.greenRating ? 1 : 0;
-      blueCount += rating >= SeasonRatingStatsUtils.blueRating ? 1 : 0;
+      goodCount += rating >= SeasonRatingStatsUtils.goodRating ? 1 : 0;
+      eliteCount += rating >= SeasonRatingStatsUtils.eliteRating ? 1 : 0;
     });
     const total = ratings.length;
     return {
@@ -124,8 +125,8 @@ export class SeasonRatingStatsUtils {
       total,
       mean: total ? sum / total : 0,
       median: SeasonRatingStatsUtils.getMedian(ratings),
-      greenShare: total ? greenCount / total : 0,
-      blueShare: total ? blueCount / total : 0
+      goodShare: total ? goodCount / total : 0,
+      eliteShare: total ? eliteCount / total : 0
     };
   }
 

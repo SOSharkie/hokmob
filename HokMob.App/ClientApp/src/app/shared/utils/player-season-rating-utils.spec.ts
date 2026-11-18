@@ -114,8 +114,11 @@ describe('PlayerSeasonRatingUtils', () => {
     it('should show an average rating with two decimals, colored by its shown value', () => {
       expect(PlayerSeasonRatingUtils.formatAverageRating(7.123)).toBe('7.12');
       expect(PlayerSeasonRatingUtils.formatAverageRating(null)).toBe('-');
-      expect(PlayerSeasonRatingUtils.getAverageRatingColor(6.996)).toBe(StatsUtils.hokmobRatingGreen);
-      expect(PlayerSeasonRatingUtils.getAverageRatingColor(8.5)).toBe(StatsUtils.hokmobRatingBlue);
+      // On the season average scale, so 5.996 shown as "6.00" is green and a typical 5.8 is orange, not red
+      expect(PlayerSeasonRatingUtils.getAverageRatingColor(5.996)).toBe('var(--rating-good)');
+      expect(PlayerSeasonRatingUtils.getAverageRatingColor(5.8)).toBe('var(--rating-ordinary)');
+      expect(PlayerSeasonRatingUtils.getAverageRatingColor(6.5)).toBe('var(--rating-elite)');
+      expect(PlayerSeasonRatingUtils.getAverageRatingColor(5.2)).toBe('var(--rating-poor)');
       expect(PlayerSeasonRatingUtils.getAverageRatingColor(null)).toBeUndefined();
     });
 

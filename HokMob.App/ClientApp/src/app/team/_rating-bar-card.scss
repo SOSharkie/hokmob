@@ -4,14 +4,17 @@
 // each with its value, its league rank in a pill and a bar from the league average: the power rating and team stats
 // cards.
 
-// A rank's pill and bar are colored only at the ends of the league (TeamRatingUtils.getRankTier): green in the top 10,
-// red in the bottom 10 and gray between, so the color points at what stands out
-$rank-top-color: #1ec854;
-$rank-top-text: #5ee08a;
-$rank-top-background: rgba(30, 200, 84, 0.15);
-$rank-bottom-color: #e55b5b;
-$rank-bottom-text: #ff8a87;
-$rank-bottom-background: rgba(229, 91, 91, 0.16);
+// A rank's pill and bar are colored only at the ends of the league (TeamRatingUtils.getRankTier), in the rating tier
+// colors (styles.scss): blue for the best 2, green for the rest of the best 8, red for the worst 6 and gray between,
+// so the color points at what stands out. A pill tints its tier color for the background and lightens it for the text.
+@function rank-text($color) {
+  @return color-mix(in srgb, #{$color}, white 30%);
+}
+
+@function rank-background($color) {
+  @return color-mix(in srgb, #{$color} 16%, transparent);
+}
+
 $rank-middle-color: #5c5c5c;
 $rank-middle-background: #2a2a2a;
 
@@ -93,11 +96,11 @@ $rank-middle-background: #2a2a2a;
       font-variant-numeric: tabular-nums;
 
       &.change-up {
-        color: $rank-top-text;
+        color: rank-text(var(--rating-good));
       }
 
       &.change-down {
-        color: $rank-bottom-text;
+        color: rank-text(var(--rating-poor));
       }
     }
   }
@@ -182,14 +185,11 @@ $rank-middle-background: #2a2a2a;
     line-height: 14px;
     white-space: nowrap;
 
-    &.rank-top {
-      background-color: $rank-top-background;
-      color: $rank-top-text;
-    }
-
-    &.rank-bottom {
-      background-color: $rank-bottom-background;
-      color: $rank-bottom-text;
+    @each $tier in elite, good, poor {
+      &.rank-#{$tier} {
+        background-color: rank-background(var(--rating-#{$tier}));
+        color: rank-text(var(--rating-#{$tier}));
+      }
     }
 
     // No pill without a rank, like a missing value
@@ -224,12 +224,10 @@ $rank-middle-background: #2a2a2a;
       border-radius: 2px;
       background-color: $rank-middle-color;
 
-      &.rank-top {
-        background-color: $rank-top-color;
-      }
-
-      &.rank-bottom {
-        background-color: $rank-bottom-color;
+      @each $tier in elite, good, poor {
+        &.rank-#{$tier} {
+          background-color: var(--rating-#{$tier});
+        }
       }
     }
   }

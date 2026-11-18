@@ -391,15 +391,6 @@ describe('TeamRatingUtils', () => {
     });
   });
 
-  describe('getRatingColor', () => {
-    it('should use the HokMob rating colors', () => {
-      expect(TeamRatingUtils.getRatingColor(7.2)).toBe('#0e87e0');
-      expect(TeamRatingUtils.getRatingColor(7)).toBe('#0e87e0');
-      expect(TeamRatingUtils.getRatingColor(5.5)).toBe('#1ec854');
-      expect(TeamRatingUtils.getRatingColor(5)).toBe('#e68122');
-      expect(TeamRatingUtils.getRatingColor(3.99)).toBe('#e55b5b');
-    });
-  });
 
   describe('getScores', () => {
     it('should give 1.5 points per standard deviation from the league average\'s 5', () => {
@@ -431,7 +422,6 @@ describe('TeamRatingUtils', () => {
       expect(bar.barStart).toBeCloseTo(32, 10);
       expect(bar.barWidth).toBeCloseTo(18, 10);
       expect(bar.isAboveAverage).toBeFalse();
-      expect(bar.barColor).toBe(TeamRatingUtils.getRatingColor(3.2));
     });
 
     it('should draw a score above average from the middle of the track', () => {
@@ -439,7 +429,6 @@ describe('TeamRatingUtils', () => {
       expect(bar.barStart).toBe(50);
       expect(bar.barWidth).toBeCloseTo(30, 10);
       expect(bar.isAboveAverage).toBeTrue();
-      expect(bar.barColor).toBe('#0e87e0');
     });
 
     it('should draw no bar without a score', () => {
@@ -468,9 +457,9 @@ describe('TeamRatingUtils', () => {
   });
 
   describe('getRankTier', () => {
-    it('should mark the league\'s top 10 and bottom 10, and the middle between them', () => {
-      expect([1, 10, 11, 22, 23, 32].map(rank => TeamRatingUtils.getRankTier(rank, 32)))
-          .toEqual(['top', 'top', 'middle', 'middle', 'bottom', 'bottom']);
+    it('should mark the league\'s best 2 elite, the rest of its best 8 good, its worst 6 poor and the middle', () => {
+      expect([1, 2, 3, 8, 9, 26, 27, 32].map(rank => TeamRatingUtils.getRankTier(rank, 32)))
+          .toEqual(['elite', 'elite', 'good', 'good', 'middle', 'middle', 'poor', 'poor']);
     });
 
     it('should put a missing rank in the middle', () => {
@@ -478,9 +467,10 @@ describe('TeamRatingUtils', () => {
     });
 
     it('should prefer the top where the ends overlap in a small league', () => {
-      expect([1, 10, 11, 15].map(rank => TeamRatingUtils.getRankTier(rank, 15)))
-          .toEqual(['top', 'top', 'bottom', 'bottom']);
-      expect(TeamRatingUtils.getRankTier(3, null)).toBe('top');
+      // In 10 teams the worst 6 start at 5th, but the best 8 keep theirs
+      expect([1, 3, 5, 8, 9, 10].map(rank => TeamRatingUtils.getRankTier(rank, 10)))
+          .toEqual(['elite', 'good', 'good', 'good', 'poor', 'poor']);
+      expect(TeamRatingUtils.getRankTier(3, null)).toBe('good');
     });
   });
 });

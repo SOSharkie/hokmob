@@ -5,6 +5,7 @@ import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {PlayerHighlight} from "@shared/models/player-highlight.model";
 import {NhlStarPlayerUtils} from "@shared/utils/nhl-star-player-utils";
 import {RinkComponent, RinkSpot} from "@app/game/rink/rink.component";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /** A top player and their spot on the rink. */
 export type TopPlayerSpot = RinkSpot<GamePlayer>;
@@ -135,7 +136,7 @@ export class GameTopPlayersComponent implements OnChanges {
   }
 
   public getHokmobScoreColor(player: GamePlayer): string {
-    return StatsUtils.getHokmobRatingColor(player.hokmobRating);
+    return RatingColorUtils.getColor(player.hokmobRating, "game");
   }
 
   public showBlankHeadshot(event: Event): void {
@@ -166,7 +167,7 @@ export class GameTopPlayersComponent implements OnChanges {
    * player, and the rating green for everyone else.
    */
   public getHighlightColor(player: GamePlayer): string {
-    return player.playerId === this.gameMvpPlayerId ? StatsUtils.hokmobRatingBlue : StatsUtils.hokmobRatingGreen;
+    return RatingColorUtils.getTierColor(player.playerId === this.gameMvpPlayerId ? "elite" : "good");
   }
 
   /**

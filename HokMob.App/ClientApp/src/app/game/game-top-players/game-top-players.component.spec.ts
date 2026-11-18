@@ -440,7 +440,7 @@ describe('GameTopPlayersComponent', () => {
       fixture.detectChanges();
       const aho = benchPlayers('away')[2];
       expect(aho.classList).toContain('highlighted');
-      expect(aho.style.getPropertyValue('--highlight-color')).toBe(StatsUtils.hokmobRatingGreen);
+      expect(aho.style.getPropertyValue('--highlight-color')).toBe('var(--rating-good)');
     });
 
     it('should leave the benches empty and hide the toggle without players', () => {
@@ -487,10 +487,10 @@ describe('GameTopPlayersComponent', () => {
       // Jordan Staal is the game's starred player
       expect(component.gameMvpPlayerId).toBe(8473533);
       highlight({playerId: 8473533, goalIndex: 1});
-      expect(card('away', 'Jordan Staal').style.getPropertyValue('--highlight-color')).toBe(StatsUtils.hokmobRatingBlue);
+      expect(card('away', 'Jordan Staal').style.getPropertyValue('--highlight-color')).toBe('var(--rating-elite)');
 
       highlight({playerId: 8477940, goalIndex: 0});
-      expect(card('away', 'Nikolaj Ehlers').style.getPropertyValue('--highlight-color')).toBe(StatsUtils.hokmobRatingGreen);
+      expect(card('away', 'Nikolaj Ehlers').style.getPropertyValue('--highlight-color')).toBe('var(--rating-good)');
       expect(card('away', 'Jordan Staal').style.getPropertyValue('--highlight-color')).toBe('');
     });
 

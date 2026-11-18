@@ -15,6 +15,7 @@ import {
 
 import { RatingsComponent, StatControl } from './ratings.component';
 import { RatingStatLineUtils } from './rating-stat-line';
+import { RatingColorUtils } from '@shared/utils/rating-color-utils';
 
 describe('RatingsComponent', () => {
   let component: RatingsComponent;
@@ -130,7 +131,7 @@ describe('RatingsComponent', () => {
 
   it('should color the rating badge the way a game page does', () => {
     const badge = fixture.nativeElement.querySelector('.rating-badge') as HTMLElement;
-    expect(component.ratingColor).toBe(StatsUtils.getHokmobRatingColor(component.breakdown.rating));
+    expect(component.ratingColor).toBe(RatingColorUtils.getColor(component.breakdown.rating, 'game'));
     expect(badge.style.backgroundColor).toBeTruthy();
   });
 

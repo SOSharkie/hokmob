@@ -6,6 +6,7 @@ import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /**
  * One part of the power rating: a rated stat, its share of the rating, and how it compares to the league, with its bar
@@ -126,7 +127,7 @@ export class TeamPowerRatingComponent implements OnChanges {
   }
 
   public get ratingColor(): string {
-    return TeamRatingUtils.getRatingColor(this.team?.rating);
+    return RatingColorUtils.getColor(this.team?.rating, "team");
   }
 
   /** The rating's rank, like "8th", shown before "of 32". */

@@ -1,6 +1,6 @@
 import {TeamGameStats} from "@shared/models/nhl-stats-api/team-games.model";
 import {NstTeamGameStats} from "@shared/models/natural-stat-trick/nst-team-games.model";
-import {StatsUtils} from "@shared/utils/stats-utils";
+import {RatingTier} from "@shared/utils/rating-color-utils";
 
 /**
  * A team's stats added up over some games: every count of TeamGameStats, and the games played. The expected goals
@@ -23,13 +23,15 @@ export type TeamRatingWeights = Partial<Record<TeamMetricId, number>>;
 export interface TeamScoreBar {
   barStart: number;
   barWidth: number;
-  barColor: string;
   /** Whether the score is at or above the league average, for the bar's side. */
   isAboveAverage: boolean;
 }
 
-/** Where a team's rank for a stat stands in the league: see TeamRatingUtils.getRankTier. */
-export type TeamRankTier = "top" | "middle" | "bottom";
+/**
+ * Where a team's rank for a stat stands in the league, in the rating tiers' names, with "middle" for the uncolored
+ * ranks between the ends: see TeamRatingUtils.getRankTier.
+ */
+export type TeamRankTier = Exclude<RatingTier, "ordinary"> | "middle";
 
 /**
  * A team stat worked out from a team's totals: one of the power rating's parts when the rating's weights have it, and a
@@ -126,8 +128,11 @@ export class TeamRatingUtils {
   /** The highest rating and score, like a HokMob player rating's. The lowest is 0. */
   public static readonly maxRating = 10;
 
-  /** How many teams at each end of the league a stat's rank is colored for (getRankTier). */
-  public static readonly rankTierSize = 10;
+  /**
+   * How many of the best teams in a stat get the elite and good rank colors, and how many of the worst get the poor
+   * one (getRankTier). In a 32-team league that's about the rating tiers' shares: 6% elite, 19% good, 19% poor.
+   */
+  public static readonly rankTierSizes = {elite: 2, good: 8, poor: 6};
 
   /** The rating points per standard deviation from the league average. */
   public static readonly pointsPerDeviation = 1.5;
@@ -359,15 +364,6 @@ export class TeamRatingUtils {
   }
 
   /**
-   * A team's power rating color, in the HokMob rating colors: blue for 7 and up (about the top 10% of teams), green
-   * for 5.5 and up, orange for 4 and up, and red below. The thresholds are lower than a player rating's (green from 7),
-   * since a team's rating is spread around 5 by design, and most teams would be red on the player thresholds.
-   */
-  public static getRatingColor(rating: number): string {
-    return StatsUtils.getHokmobRatingColor(rating >= 7 ? 8.5 : rating >= 5.5 ? 7 : rating >= 4 ? 6 : 0);
-  }
-
-  /**
    * Scores any stat of every team on the rating's 0 to 10 scale, like the rated stats: 5 at the league average and 1.5
    * points per standard deviation from it. A missing value scores average. With `lowerIsBetter`, like goals against, a
    * value below the average scores above 5.
@@ -379,7 +375,7 @@ export class TeamRatingUtils {
 
   /**
    * A score's bar on a 0 to 10 track with the league average in the middle: where it starts and how wide it is, in %
-   * of the track, from the average to the score, and its rating color.
+   * of the track, from the average to the score.
    */
   public static getScoreBar(score: number): TeamScoreBar {
     const average = TeamRatingUtils.averageRating;
@@ -388,7 +384,6 @@ export class TeamRatingUtils {
     return {
       barStart: toTrack(Math.min(value, average)),
       barWidth: toTrack(Math.abs(value - average)),
-      barColor: TeamRatingUtils.getRatingColor(value),
       isAboveAverage: value >= average
     };
   }
@@ -401,18 +396,23 @@ export class TeamRatingUtils {
   }
 
   /**
-   * Where a rank stands in the league, for its color on the team page's stat cards: "top" in the best 10 teams,
-   * "bottom" in the worst 10, and "middle" between them or without a rank. Only the ends are colored, so the color
-   * points at what stands out. In a small league the top wins where the two overlap.
+   * Where a rank stands in the league, for its color on the team page's stat cards (rankTierSizes): "elite" in the
+   * best 2 teams, "good" in the rest of the best 8, "poor" in the worst 6, and "middle" between them or without a rank.
+   * Only the ends are colored, so the color points at what stands out. In a small league the top wins where the ends
+   * overlap.
    */
   public static getRankTier(rank: number, teamCount: number): TeamRankTier {
+    const sizes = TeamRatingUtils.rankTierSizes;
     if (rank == null) {
       return "middle";
     }
-    if (rank <= TeamRatingUtils.rankTierSize) {
-      return "top";
+    if (rank <= sizes.elite) {
+      return "elite";
     }
-    return rank > (teamCount ?? 0) - TeamRatingUtils.rankTierSize ? "bottom" : "middle";
+    if (rank <= sizes.good) {
+      return "good";
+    }
+    return rank > (teamCount ?? 0) - sizes.poor ? "poor" : "middle";
   }
 
   /**

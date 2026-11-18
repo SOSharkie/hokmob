@@ -70,13 +70,6 @@ export interface GoalieRatingContext {
 export class StatsUtils {
 
   /**
-   * The HokMob rating colors: blue for 8.5 and up, green for 7 and up.
-   */
-  public static readonly hokmobRatingBlue = "#0e87e0";
-
-  public static readonly hokmobRatingGreen = "#1ec854";
-
-  /**
    * The number of faceoffs a skater takes before his faceoff percentage counts fully in his rating.
    */
   public static readonly fullWeightFaceoffCount = 10;
@@ -702,18 +695,6 @@ export class StatsUtils {
     });
     return [...skaters, ...goalies].sort((playerA, playerB) => StatsUtils.sortByHokMobRating(playerA, playerB) ||
         StatsUtils.sortByStarPlayer(playerA, playerB));
-  }
-
-  public static getHokmobRatingColor(score: number): string {
-    if (score >= 8.5) {
-      return StatsUtils.hokmobRatingBlue;
-    } else if (score >= 7) {
-      return StatsUtils.hokmobRatingGreen;
-    } else if (score >= 6) {
-      return "#e68122";
-    } else {
-      return "#e55b5b";
-    }
   }
 
   /**

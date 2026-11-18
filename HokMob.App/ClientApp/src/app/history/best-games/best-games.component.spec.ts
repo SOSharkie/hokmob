@@ -95,7 +95,7 @@ describe('BestGamesComponent', () => {
     show();
     expect(component.rows.slice(0, 2).map(row => row.playerId)).toEqual([second.player.id, first.player.id]);
     expect(rowElements()[0].querySelector('.rating-badge').getAttribute('title')).toBe('Capped at 10, from 12.4');
-    expect(component.rows[0].ratingColor).toBe(StatsUtils.hokmobRatingBlue);
+    expect(component.rows[0].ratingColor).toBe('var(--rating-elite)');
     expect(rowElements()[2].querySelector('.rating-badge').getAttribute('title')).toBeNull();
   });
 

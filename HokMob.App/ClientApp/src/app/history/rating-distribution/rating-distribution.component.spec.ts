@@ -63,23 +63,29 @@ describe('RatingDistributionComponent', () => {
     expect(data[19].x).toBe(9.75);
   });
 
-  it('should show the mean, median and the shares of 7+ and 8.5+ games', () => {
+  it('should show the mean, median and the shares of good (6.5+) and elite (8+) games', () => {
     const games = ratedGames();
     show(games);
     const forwards = games.filter(game => game.position === 'F').map(game => game.rating);
     const mean = forwards.reduce((sum, rating) => sum + rating, 0) / forwards.length;
     expect(text('.mean-value')).toBe(mean.toFixed(2));
     expect(text('.median-value')).toBe(component.distribution.median.toFixed(1));
-    expect(text('.green-value')).toBe((forwards.filter(rating => rating >= 7).length / 168 * 100).toFixed(1) + '%');
-    expect(text('.blue-value')).toBe((forwards.filter(rating => rating >= 8.5).length / 168 * 100).toFixed(1) + '%');
+    expect(text('.good-value')).toBe((forwards.filter(rating => rating >= 6.5).length / 168 * 100).toFixed(1) + '%');
+    expect(text('.elite-value')).toBe((forwards.filter(rating => rating >= 8).length / 168 * 100).toFixed(1) + '%');
+    const labels = Array.from(fixture.nativeElement.querySelectorAll('.summary-label') as NodeListOf<HTMLElement>)
+        .map(label => label.textContent.trim());
+    expect(labels).toContain('6.5+');
+    expect(labels).toContain('8+');
   });
 
   it('should color each bar like a rating in its bin', () => {
     show(ratedGames());
     const colors = chart().data.datasets[0].backgroundColor as string[];
-    expect(colors[0]).toBe(StatsUtils.getHokmobRatingColor(0));
-    expect(colors[14]).toBe(StatsUtils.hokmobRatingGreen);
-    expect(colors[17]).toBe(StatsUtils.hokmobRatingBlue);
+    // A canvas can't read a var(), so the bars get the resolved colors
+    expect(colors[0]).toBe('#e55b5b');
+    expect(colors[10]).toBe('#e68122');
+    expect(colors[13]).toBe('#1ec854');
+    expect(colors[16]).toBe('#0e87e0');
   });
 
   it('should switch to the goalies, leaving out the one who faced no shots', () => {
@@ -100,7 +106,7 @@ describe('RatingDistributionComponent', () => {
     expect(text('.games-value')).toBe('0');
     expect(text('.mean-value')).toBe('-');
     expect(text('.median-value')).toBe('-');
-    expect(text('.green-value')).toBe('-');
+    expect(text('.good-value')).toBe('-');
     expect(chart().data.datasets[0].data.every(point => point.y === 0)).toBeTrue();
   });
 

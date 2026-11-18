@@ -4,6 +4,7 @@ import {ActivatedRoute} from "@angular/router";
 import {BoxscoreGoalie, BoxscoreSkater} from "@shared/models/nhl-web-api/boxscore.model";
 import {GoalieRatingContext, SkaterRatingContext, StatsUtils} from "@shared/utils/stats-utils";
 import {RatingBreakdown, RatingBreakdownUtils, RatingTerm} from "@app/ratings/rating-breakdown";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /** Which rating formula the page is showing. */
 export type RatingSubject = "skater" | "goalie";
@@ -48,7 +49,7 @@ export interface GameStatLineSource {
   rating: number;
 }
 
-/** A band of the rating color scale (StatsUtils.getHokmobRatingColor), drawn under the rating. */
+/** A band of the game rating's color scale (RatingColorUtils), drawn under the rating. */
 export interface RatingBand {
   from: number;
   to: number;
@@ -209,13 +210,9 @@ export class RatingsComponent implements OnInit, AfterViewInit {
     }
   ];
 
-  /** The color scale the rating badge uses, from `StatsUtils.getHokmobRatingColor`. */
-  public readonly ratingBands: RatingBand[] = [
-    {from: 0, to: 6, color: StatsUtils.getHokmobRatingColor(0)},
-    {from: 6, to: 7, color: StatsUtils.getHokmobRatingColor(6)},
-    {from: 7, to: 8.5, color: StatsUtils.getHokmobRatingColor(7)},
-    {from: 8.5, to: 10, color: StatsUtils.getHokmobRatingColor(10)}
-  ];
+  /** The color scale the rating badge uses: the game scale's tiers (RatingColorUtils). */
+  public readonly ratingBands: RatingBand[] = RatingColorUtils.getTierRanges("game", 0, 10)
+      .map(range => ({from: range.from, to: range.to, color: RatingColorUtils.getTierColor(range.tier)}));
 
   /** The quirks of the formulas that are easy to trip over while working on them. */
   public readonly quirks: string[] = [
@@ -268,7 +265,7 @@ export class RatingsComponent implements OnInit, AfterViewInit {
 
   /** The rating in the color it is shown in on a game page. */
   public get ratingColor(): string {
-    return StatsUtils.getHokmobRatingColor(this.breakdown?.rating ?? 0);
+    return RatingColorUtils.getColor(this.breakdown?.rating ?? 0, "game");
   }
 
   /** The stat line being edited. */

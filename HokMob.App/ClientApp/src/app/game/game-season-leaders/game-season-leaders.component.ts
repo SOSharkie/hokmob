@@ -9,6 +9,7 @@ import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe"
 import {RinkComponent, RinkSpot} from "@app/game/rink/rink.component";
 import {RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
+import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /**
  * A player on the season leaders rink, with his season totals for the team.
@@ -187,8 +188,8 @@ export class GameSeasonLeadersComponent implements OnChanges {
   }
 
   /**
-   * Adds a player's average rating, shown with one decimal like a game's rating, and its badge color from the shown
-   * value, so 6.96 shown as "7.0" is green. A player without a rated game keeps none.
+   * Adds a player's average rating, shown with one decimal like a game's rating, and its badge color on the season
+   * average scale from the shown value, so 6.46 shown as "6.5" is blue. A player without a rated game keeps none.
    */
   private static addRating(leader: SeasonLeader, rating: PlayerSeasonRating): SeasonLeader {
     if (rating?.averageRating == null) {
@@ -198,7 +199,7 @@ export class GameSeasonLeadersComponent implements OnChanges {
     return {
       ...leader,
       averageRating: shownRating,
-      ratingColor: StatsUtils.getHokmobRatingColor(Number(shownRating)),
+      ratingColor: RatingColorUtils.getColor(Number(shownRating), "seasonAverage"),
       ratingLabel: 'Average HokMob rating in ' +
           GameSeasonLeadersComponent.count(rating.gamesRated, 'game', 'games')
     };

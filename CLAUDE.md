@@ -58,6 +58,9 @@ A request to one of them is a regression.
     `StatCategoryUtils` defines the stats page's categories and the columns of their top 25 tables. `TeamRatingUtils`
     holds the team power rating and advanced stats, for any team (see "Team power rating" in `docs/nhl-api.md`). The
     rating counts NST's xG and falls back to the NHL's stats without it, and nothing in it comes from the standings.
+    `RatingColorUtils` colors every rating (games, season averages, teams) by its tier, with each scale's own cut
+    points, from the `--rating-*` colors in `styles.scss`; never write a rating color's hex anywhere else (see "Rating
+    colors" in `docs/nhl-api.md`).
 - `ClientApp/src/app/game/rink/`: the rink drawing (`RinkComponent`, which places players with `placeLine`) and
   `_rink-card.scss`, shared by the top players card and a future game's season leaders card. Its card and header
   toggle are in `_rink-card-base.scss`, which the shot map card imports. The player game dialog's shot map
