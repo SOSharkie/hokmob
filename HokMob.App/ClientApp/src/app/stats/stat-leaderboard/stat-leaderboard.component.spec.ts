@@ -107,24 +107,25 @@ describe('StatLeaderboardComponent', () => {
     expect(leaderLogo().teamId).toBe(entries[0].teamId);
   });
 
-  it('should color the leader stat with their team color', () => {
+  it('should show the leader stat without a team color fill, which would read as a rating badge', () => {
     show(entriesOf(mockGoalieStatsLeaders().savePctg), 'savePctg', 'Save Percentage');
 
-    // Scott Wedgewood leads with Colorado, whose primary color is #6F263D
+    // Scott Wedgewood leads with Colorado, whose burgundy is close to a poor rating's red
     expect(text('.leader-team-label')).toBe('Colorado Avalanche');
-    expect(fixture.nativeElement.querySelector('.stat-leader .stat-container').style.backgroundColor)
-        .toBe('rgb(111, 38, 61)');
-    expect(fixture.nativeElement.querySelector('.stat-leader .stat-container').style.color).toBe('rgb(255, 255, 255)');
+    const value: HTMLElement = fixture.nativeElement.querySelector('.stat-leader .stat-container');
+    expect(value.getAttribute('style')).toBeNull();
+    expect(getComputedStyle(value).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(getComputedStyle(value).fontWeight).toBe('600');
   });
 
-  it('should put dark text on a light team color, so the leader stat stays readable', () => {
+  it('should show a leader on a light team color in the same plain text', () => {
     show(entriesOf(mockSkaterStatsLeaders(3).points));
 
-    // Mitch Marner leads the playoffs with Vegas, whose gold #B4975A is too light for white text
+    // Mitch Marner leads the playoffs with Vegas, whose gold once needed dark text on it
     expect(text('.leader-team-label')).toBe('Vegas Golden Knights');
     const value: HTMLElement = fixture.nativeElement.querySelector('.stat-leader .stat-container');
-    expect(value.style.backgroundColor).toBe('rgb(180, 151, 90)');
-    expect(value.style.color).toBe('rgb(27, 27, 27)');
+    expect(value.getAttribute('style')).toBeNull();
+    expect(getComputedStyle(value).color).toBe('rgb(255, 255, 255)');
   });
 
   it('should format a save percentage, a goals against average and a time on ice', () => {

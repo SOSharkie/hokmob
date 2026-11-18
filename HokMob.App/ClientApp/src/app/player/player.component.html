@@ -64,7 +64,6 @@
           <app-player-stats
               [statTitle]="playoffsLabel + ' NHL Playoffs Stats'"
               [stats]="playoffStats"
-              [teamColor]="teamColor"
               [isGoalie]="isGoalie"
           ></app-player-stats>
         </div>
@@ -74,7 +73,6 @@
           <app-player-stats
               [statTitle]="seasonLabel ? seasonLabel + ' NHL Regular Season Stats' : null"
               [stats]="regularSeasonStats"
-              [teamColor]="teamColor"
               [isGoalie]="isGoalie"
               [seasonRating]="seasonRating"
               [ratingPending]="seasonRatingPending || playerLoading"

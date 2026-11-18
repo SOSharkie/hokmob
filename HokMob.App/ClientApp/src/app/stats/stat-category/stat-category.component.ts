@@ -13,7 +13,6 @@ import {
   StatColumn
 } from "@shared/utils/stat-category-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
-import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {PickerMenuUtils} from "@shared/utils/picker-menu-utils";
@@ -31,9 +30,6 @@ export interface StatCategoryRow {
   teamId: number;
   /** Like "EDM", or "-" for an unknown team. */
   teamAbbrev: string;
-  teamColor: string;
-  /** The text color on teamColor: white, or near-black on a light team color. */
-  teamTextColor: string;
   /** The values of the category's columns, in order, like ["82", "48", "90", "+28", "1.68", "138"]. */
   values: string[];
 }
@@ -296,8 +292,6 @@ export class StatCategoryComponent implements OnInit, OnDestroy {
         headshot: entry.headshot || NhlPlayerHeadshotUtils.blankHeadshot,
         teamId: entry.teamId,
         teamAbbrev: team.triCode,
-        teamColor: NhlTeamColorUtils.getTeamPrimaryColor(entry.teamId),
-        teamTextColor: NhlTeamColorUtils.getTeamTextColor(entry.teamId),
         values: StatCategoryUtils.getTableColumns(category).map(column => StatCategoryUtils.formatValue(
             column.field === category.field ? entry.value : seasonRow?.[column.field], column.format))
       };

@@ -186,8 +186,11 @@
         }
       }
 
+      // The leader's stat stands out by size and weight alone. A filled, colored box behind a number is a HokMob
+      // rating's badge, and the team is already beside it.
       .stat-container {
         font-size: larger;
+        font-weight: 600;
       }
     }
   }

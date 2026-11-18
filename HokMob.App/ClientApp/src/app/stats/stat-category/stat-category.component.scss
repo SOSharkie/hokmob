@@ -247,11 +247,10 @@
         font-weight: 500;
       }
 
-      // The leader's own stat sits in a pill of their team's color, like on the stats page's card
+      // The leader's own stat is bolder still, with no box: a filled, colored box behind a number is a HokMob
+      // rating's badge, and the team is already beside it
       .leader-value {
-        display: inline-block;
-        padding: $spacing-small $spacing-large;
-        border-radius: 15px;
+        font-weight: 700;
       }
     }
 
@@ -346,10 +345,6 @@
         // Too narrow for one line, so a long name wraps instead of being cut off
         .player-name {
           overflow-wrap: anywhere;
-        }
-
-        .leader-value {
-          padding: $spacing-x-small $spacing-medium;
         }
       }
 
