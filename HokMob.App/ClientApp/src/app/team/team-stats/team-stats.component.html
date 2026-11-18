@@ -1,16 +1,23 @@
-@if (rows.length) {
-  <div class="team-stats">
-    <div class="team-stats-header">
-      <span>{{title}}</span>
+@if (team) {
+  <section class="rating-bar-card team-stats">
+    <div class="rating-bar-card-header">
+      <h2 class="rating-bar-card-title">{{title}}</h2>
     </div>
-    @for (row of rows; track row.label) {
-      <div class="team-stat-row">
-        <span class="stat-label">{{row.label}}</span>
-        <div class="stat-values">
-          <span class="stat-value">{{row.value}}</span>
-          <span class="stat-rank">{{row.rank}}</span>
-        </div>
-      </div>
-    }
-  </div>
+    <ul class="rating-parts">
+      @for (row of rows; track row.label) {
+        <li class="rating-part">
+          <div class="part-label">
+            <span class="part-name">{{row.label}}</span>
+          </div>
+          <span class="part-value">{{row.value}}</span>
+          <span class="part-rank">{{row.rank}}</span>
+          <div class="part-bar" aria-hidden="true">
+            <span class="part-bar-fill" [class.above-average]="row.isAboveAverage"
+                  [style.left.%]="row.barStart" [style.width.%]="row.barWidth"
+                  [style.background-color]="row.barColor"></span>
+          </div>
+        </li>
+      }
+    </ul>
+  </section>
 }

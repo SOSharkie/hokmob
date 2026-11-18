@@ -40,7 +40,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Page | Requests |
 |---|---|
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
-| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a live or finished game's xG and Corsi (the game stats card, the shot maps and the player dialog) |
+| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `/api/nhl-stats/team-games` and `/api/nst/team-games` for a future game's power rating cards; `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a live or finished game's xG and Corsi (the game stats card, the shot maps and the player dialog) |
 | Team | `standings/now` (division, conference and season), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams`. The standings tab loads `standings/now` again for its type, the player stats tab `/api/nhl-stats/team-players?teamId=&season=&gameType=2` and the season's `assets/history/{season}-2.json` when it has one, and the team stats tab `/api/nhl-stats/team-games?season=&gameType=2` and `/api/nst/teams?season=` (see [Team page](#team-page) and [Team power rating](#team-power-rating)) |
 | Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split), and the featured season's `assets/history/{season}-2.json` when it has one, for the regular season card's rating column (see [History data](#history-data)) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
@@ -193,11 +193,16 @@ the back button still leaves the page.
   Corsi For % or a goalie's goals saved above average, from the player's games for this team only
   (`PlayerSeasonRatingUtils.getTeamSeasonRatings`). The file is a snapshot, so a season in progress is rated through
   its `throughDate` (the column's tooltip says so), while the stats are current.
-- **Team stats:** the power rating, the team stats (points % first) and the advanced stats cards, three across on a desktop, in two
+- **Team stats:** the power rating, the team stats and the advanced stats cards, three across on a desktop, in two
   columns on a tablet and stacked on a phone, and the power rating chart below them (see
   [Team power rating](#team-power-rating)). The tab loads `/api/nhl-stats/team-games` and NST's
   `/api/nst/team-games` at once and rates the league when both are back. The team stats card only needs
   `/api/nhl-stats/teams`, so it shows while the season's games load and when they fail.
+  The team stats card (on the overview too) and the advanced stats card list their stats like the power rating card,
+  each with a bar from the league average in the color of its score: the team stats card's points % first, scored
+  like the rating's stats (`TeamRatingUtils.getScores`) with goals and shots against scored lower is better, and the
+  advanced stats card's from `TeamRating.scores`. The power rating card shows each stat's weight only while it's
+  hovered. The advanced stats card leaves out Fenwick and PDO, which the teams page still shows.
 - **Games:** the next game and the schedule, and the form.
 
 ## Team power rating
@@ -396,6 +401,14 @@ players card.
 - **Stat line:** `GP · G-A-P` for skaters and `W-L-OTL · SV% · GAA` for the goalie. A player links to his player page.
 - **Star lineup:** the toggle swaps the skaters for each team's stars who have played for it, topped up by points
   (`NhlStarPlayerUtils.pickStarLine`). The goalie stays the wins leader.
+
+Below the season leaders, a future game shows each team's power rating card (`GamePowerRatingsComponent`), the home
+team's first, side by side when the column is at least 700px wide (a container query) and stacked below that. Each card
+is the team page's (`TeamPowerRatingComponent`) with `showTeam`, so its header names the team with its logo, like
+"Sharks Power Rating". The league is rated on the game's regular season from `/api/nhl-stats/team-games` and NST's
+`/api/nst/team-games`, the same way as the team stats tab (see [Team power rating](#team-power-rating)), so a playoff
+game shows the regular season's ratings. There's no fallback to the previous season: the cards are hidden until both
+teams have played a regular season game, and when the games fail to load. Loaded once, not on the game's refresh.
 
 ## Shot maps
 
@@ -708,8 +721,8 @@ fetch is kept 5 minutes, so an outage isn't asked about on every visit. It answe
 season yet and 503 when NST can't be asked.
 
 The power rating counts these (see [Team power rating](#team-power-rating)), and they give the 5v5 xGF% of the
-advanced stats card and the teams page, which credit NST. `NaturalStatTrickService.getTeamGames` gives each row the
-NHL's team ID.
+advanced stats card, credited under the power rating card, and of the teams page, which credits NST.
+`NaturalStatTrickService.getTeamGames` gives each row the NHL's team ID.
 
 - **Table:** one `<table id=teams>`, a row per team and game, with the TOI and the for and against counts of Corsi,
   Fenwick, shots, goals, xG, scoring chances and high, medium and low danger chances, then SH%, SV% and PDO. The rows

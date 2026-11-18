@@ -1,12 +1,15 @@
 @if (team) {
-  <section class="power-rating-card">
-    <div class="power-rating-header">
-      <h2 class="power-rating-title">Power Rating</h2>
+  <section class="rating-bar-card power-rating-card">
+    <div class="rating-bar-card-header">
+      @if (showTeam) {
+        <img class="power-rating-team-logo" [src]="teamLogo" alt="">
+      }
+      <h2 class="rating-bar-card-title">{{title}}</h2>
     </div>
-    <div class="power-rating-summary">
+    <div class="rating-summary">
       <span class="rating-badge" [style.background-color]="ratingColor">{{rating}}</span>
       <div class="rating-details">
-        <span class="rating-rank">{{rankLabel}} in the NHL</span>
+        <span class="rating-rank">{{rankLabel}}</span>
         <span class="rating-games">
           {{gamesLabel}}
           @if (change != null) {
@@ -36,7 +39,7 @@
         </li>
       }
     </ul>
-    <p class="power-rating-note">
+    <p class="rating-bar-card-note">
       5.0 is league average.
       @if (hasExpectedGoals) {
         <a class="power-rating-source" [href]="nstUrl" target="_blank" rel="noopener">xG from Natural Stat Trick</a>

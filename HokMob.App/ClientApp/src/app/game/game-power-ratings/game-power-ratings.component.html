@@ -1,0 +1,16 @@
+@if (hasRatings) {
+  <div class="game-power-ratings">
+    <app-team-power-rating
+        [teamId]="homeTeamId"
+        [ratings]="ratings"
+        [timeline]="homeTimeline"
+        [showTeam]="true"
+    ></app-team-power-rating>
+    <app-team-power-rating
+        [teamId]="awayTeamId"
+        [ratings]="ratings"
+        [timeline]="awayTimeline"
+        [showTeam]="true"
+    ></app-team-power-rating>
+  </div>
+}

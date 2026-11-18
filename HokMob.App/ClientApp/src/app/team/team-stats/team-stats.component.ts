@@ -1,10 +1,10 @@
 import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
 import {TeamSeasonStats} from "@shared/models/nhl-stats-api/team-stats.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
-import {TeamRatingUtils} from "@shared/utils/team-rating-utils";
+import {TeamRatingUtils, TeamScoreBar} from "@shared/utils/team-rating-utils";
 
 /**
- * One row of the team stats card: a stat's value and the team's rank in the league for it.
+ * One row of a team stats card: a stat's value and the team's rank in the league for it.
  */
 export interface TeamStatRow {
   label: string;
@@ -16,7 +16,25 @@ export interface TeamStatRow {
 }
 
 /**
- * The team's season stats with their league ranks, from every team's stats API row (/api/nhl-stats/teams). The card
+ * A row of the team stats card, with its bar from the league average, scored like the power rating's stats.
+ */
+export interface TeamStatBarRow extends TeamStatRow, TeamScoreBar {}
+
+/** A stat of the team stats card. Per-game stats have two decimals unless `decimals` says otherwise. */
+interface TeamStatDefinition {
+  label: string;
+  field: keyof TeamSeasonStats;
+  percentage?: boolean;
+  decimals?: number;
+  /** For goals and shots against. */
+  lowerIsBetter?: boolean;
+}
+
+/**
+ * The team's season stats with their league ranks, from every team's stats API row (/api/nhl-stats/teams), laid out
+ * like the power rating card's stats: each stat with its value, rank and a bar from the league average, in the HokMob
+ * rating color of its score. The scores are the power rating's: 5 at the league average and 1.5 points per standard
+ * deviation from it. The card
  * isn't shown when the team has no row for the season, like a season before its first game or a former team.
  */
 @Component({
@@ -32,21 +50,21 @@ export class TeamStatsComponent implements OnChanges {
   public teamId: number;
 
   /**
-   * Every team's stats for the season. The team's own row is picked out of it, and the ranks are worked out from all
-   * the rows.
+   * Every team's stats for the season. The team's own row is picked out of it, and the ranks and scores are worked out
+   * from all the rows.
    */
   @Input()
   public teamStats: TeamSeasonStats[];
 
-  public rows: TeamStatRow[] = [];
+  /** The team's row, or undefined without one. */
+  public team: TeamSeasonStats;
+
+  public rows: TeamStatBarRow[] = [];
 
   public title: string = "Team Stats";
 
-  /**
-   * The stats shown, in order. Per-game stats have two decimals unless `decimals` says otherwise. A lower value is
-   * better for goals and shots against.
-   */
-  private static readonly stats: {label: string, field: keyof TeamSeasonStats, percentage?: boolean, decimals?: number, lowerIsBetter?: boolean}[] = [
+  /** The stats shown, in order. */
+  private static readonly stats: TeamStatDefinition[] = [
     {label: "Points %", field: "pointPct", percentage: true},
     {label: "Power Play %", field: "powerPlayPct", percentage: true},
     {label: "Penalty Kill %", field: "penaltyKillPct", percentage: true},
@@ -58,17 +76,29 @@ export class TeamStatsComponent implements OnChanges {
   ];
 
   public ngOnChanges(): void {
-    const team = (this.teamStats ?? []).find(stats => stats.teamId === this.teamId);
-    if (!team) {
+    this.team = (this.teamStats ?? []).find(stats => stats.teamId === this.teamId);
+    if (!this.team) {
       this.rows = [];
       return;
     }
-    this.title = DateTimeUtils.getNhlSeasonDisplayValue(String(team.seasonId)) + " Team Stats";
-    this.rows = TeamStatsComponent.stats.map(stat => ({
+    this.title = DateTimeUtils.getNhlSeasonDisplayValue(String(this.team.seasonId)) + " Team Stats";
+    this.rows = TeamStatsComponent.stats.map(stat => this.getRow(stat));
+  }
+
+  /**
+   * The team's row for a stat: its value, league rank and bar, scored against every team's value.
+   */
+  private getRow(stat: TeamStatDefinition): TeamStatBarRow {
+    const teams = this.teamStats ?? [];
+    const values = teams.map(stats => stats[stat.field] as number);
+    const scores = TeamRatingUtils.getScores(values, stat.lowerIsBetter);
+    const value = this.team[stat.field] as number;
+    return {
       label: stat.label,
-      value: TeamStatsComponent.formatValue(team[stat.field] as number, stat.percentage, stat.decimals),
-      rank: this.getRank(team[stat.field] as number, stat.field, stat.lowerIsBetter)
-    }));
+      value: TeamStatsComponent.formatValue(value, stat.percentage, stat.decimals),
+      rank: this.getRank(value, stat.field, stat.lowerIsBetter),
+      ...TeamRatingUtils.getScoreBar(scores[teams.indexOf(this.team)])
+    };
   }
 
   /**

@@ -108,6 +108,15 @@
         ></app-game-season-leaders>
       </div>
     }
+    @if (landing && futureGame) {
+      <div class="game-container">
+        <app-game-power-ratings
+            [season]="landing.season"
+            [homeTeamId]="landing.homeTeam.id"
+            [awayTeamId]="landing.awayTeam.id"
+        ></app-game-power-ratings>
+      </div>
+    }
     @if (!futureGame && playByPlay) {
       <div class="game-container">
         <app-momentum [playByPlay]="playByPlay"></app-momentum>
