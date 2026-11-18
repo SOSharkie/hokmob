@@ -436,6 +436,12 @@ players card.
   Goalies by wins, then games started, then save percentage. Players without games are left out, and a short line
   shows the players there are. The card is hidden when either team has no one.
 - **Stat line:** `GP · G-A-P` for skaters and `W-L-OTL · SV% · GAA` for the goalie. A player links to his player page.
+- **Average rating:** each player wears his average HokMob rating in the top players card's badge, with one decimal
+  (like "7.1") and colored by that shown value. It comes from the history file of the totals' season and game type
+  (`SeasonHistoryService`), loaded by the game page once the totals are in, and counts only his games for that team
+  (`PlayerSeasonRatingUtils.getTeamSeasonRatings`), like the totals. The playoffs have no history file, so playoff
+  totals go without ratings, and so does a player without a rated game in the file, or every player while it loads
+  or if it fails. The current season's file runs through its `throughDate`, so it can be a few days behind the totals.
 - **Star lineup:** the toggle swaps the skaters for each team's stars who have played for it, topped up by points
   (`NhlStarPlayerUtils.pickStarLine`). The goalie stays the wins leader.
 
@@ -524,7 +530,8 @@ the latest bracket that has series.
 
 The history page doesn't call the NHL APIs. A season's per game stat lines are preloaded into
 `src/assets/history/{season}-{gameType}.json` (`20252026-2.json` is the 2025-26 regular season), which the history
-page loads (`SeasonHistoryService`), as does the player page for its rating column. They're rated in the browser with
+page loads (`SeasonHistoryService`), as do the player page for its rating column, the team page for its players' ratings
+and a future game's season leaders (see [Season leaders](#season-leaders)). They're rated in the browser with
 `StatsUtils.calculateSkaterGameRating` / `calculateGoalieGameRating`, the same as the player page's recent games. The
 file holds the rating's inputs, not ratings, so a formula change shows up on the history page without regenerating it.
 

@@ -30,7 +30,8 @@ import {
   mockNstGameStats,
   mockPlayoffScoreResponse,
   mockRegularSeasonScoreResponse,
-  mockScoreResponse
+  mockScoreResponse,
+  mockSeasonHistory
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 
 import { GameComponent } from './game.component';
@@ -66,8 +67,8 @@ describe('GameComponent', () => {
   afterEach(() => {
     fixture.destroy();
     // Every finished game asks Natural Stat Trick for its expected goals and Corsi. Specs that don't check them leave
-    // the request unanswered.
-    httpMock.match(request => request.url.startsWith('/api/nst/'));
+    // the request unanswered, and so do the season leaders' requests for their season's history file.
+    httpMock.match(request => request.url.startsWith('/api/nst/') || request.url.startsWith('assets/history/'));
     httpMock.verify();
   });
 
@@ -863,6 +864,51 @@ describe('GameComponent', () => {
       httpMock.expectOne(clubStatsUrl('UTA', 20252026)).flush(mockClubStats('UTA-20252026-2'));
       await settle();
       expect(element('app-game-season-leaders').awayStats.season).toBe('20252026');
+    });
+
+    it("should pass the rated games of the totals' season for each player's average rating", async () => {
+      await openFutureGame();
+      flushSeasonLeaders();
+      await settle();
+      expect(element('app-game-season-leaders').ratedSeason).toBeUndefined();
+
+      httpMock.expectOne('assets/history/20262027-2.json').flush({...mockSeasonHistory(), season: 20262027});
+      await settle();
+      const ratedSeason = element('app-game-season-leaders').ratedSeason;
+      expect(ratedSeason.season).toBe(20262027);
+      expect(ratedSeason.ratedGames.some(game => game.player.name === 'David Pastrnak')).toBeTrue();
+    });
+
+    it("should rate last season's leaders from last season's history file", async () => {
+      await openFutureGame();
+      flushSeasonLeaders(mockClubStats('BOS-20262027-2'), {...mockClubStats('UTA-20262027-2'), skaters: [], goalies: []});
+      await settle();
+      httpMock.expectOne(clubStatsUrl('BOS', 20252026)).flush(mockClubStats('BOS-20252026-2'));
+      httpMock.expectOne(clubStatsUrl('UTA', 20252026)).flush(mockClubStats('UTA-20252026-2'));
+      await settle();
+
+      httpMock.expectOne('assets/history/20252026-2.json').flush(mockSeasonHistory());
+      await settle();
+      expect(element('app-game-season-leaders').ratedSeason.season).toBe(20252026);
+    });
+
+    it('should show the season leaders without ratings when the history file fails', async () => {
+      await openFutureGame();
+      flushSeasonLeaders();
+      await settle();
+      httpMock.expectOne('assets/history/20262027-2.json').flush('Not found', {status: 404, statusText: 'Not Found'});
+      await settle();
+      expect(element('app-game-season-leaders')).not.toBeNull();
+      expect(element('app-game-season-leaders').ratedSeason).toBeUndefined();
+    });
+
+    it('should not ask for a history file for playoff totals, which have none', async () => {
+      await openFutureGame();
+      // Playoff totals from other teams, since the captured ones of BOS and UTA are empty
+      flushSeasonLeaders(mockClubStats('CAR-20252026-3'), mockClubStats('VGK-20252026-3'));
+      await settle();
+      httpMock.expectNone(request => request.url.startsWith('assets/history/'));
+      expect(element('app-game-season-leaders')).not.toBeNull();
     });
 
     it('should hide the season leaders when the totals fail to load', async () => {

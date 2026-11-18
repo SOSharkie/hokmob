@@ -7,6 +7,8 @@ import {StatsUtils} from "@shared/utils/stats-utils";
 import {SavePercentagePipe} from "@shared/pipes/save-percentage.pipe";
 import {GoalsAgainstAveragePipe} from "@shared/pipes/goals-against-average.pipe";
 import {RinkComponent, RinkSpot} from "@app/game/rink/rink.component";
+import {RatedSeason} from "@shared/models/nhl-history/season-history.model";
+import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
 
 /**
  * A player on the season leaders rink, with his season totals for the team.
@@ -20,12 +22,21 @@ export interface SeasonLeader {
   statLine: string;
   /** The stat line spelled out, like "77 games played, 29 goals, 71 assists, 100 points". */
   statLabel: string;
+  /**
+   * His average HokMob rating in his rated games for the team, like "7.1", with its badge color and a title like
+   * "Average HokMob rating in 18 games". Undefined without a history file or a rated game.
+   */
+  averageRating?: string;
+  ratingColor?: string;
+  ratingLabel?: string;
 }
 
 /**
  * A future game's preview of each team's key players on the rink: its top three forwards and two defensemen by
  * points and its top goalie by wins, with their season totals (NhlGameService.getSeasonLeaderStats). The star lineup
- * switches the skaters to the team's stars (NhlStarPlayerUtils). A player opens his player page.
+ * switches the skaters to the team's stars (NhlStarPlayerUtils). Each player wears his average HokMob rating for the
+ * team when the season has a history file (SeasonHistoryService), like the top players card's game ratings. A player
+ * opens his player page.
  */
 @Component({
     selector: 'app-game-season-leaders',
@@ -59,6 +70,13 @@ export class GameSeasonLeadersComponent implements OnChanges {
 
   @Input()
   public awayTeamId: number;
+
+  /**
+   * The rated games of the totals' season and game type, for each player's average rating. Undefined while it loads,
+   * and when there's no history file for it (the playoffs): the players go without a rating.
+   */
+  @Input()
+  public ratedSeason: RatedSeason;
 
   public homeSpots: RinkSpot<SeasonLeader>[] = [];
 
@@ -107,6 +125,15 @@ export class GameSeasonLeadersComponent implements OnChanges {
     return season.substring(0, 4) + '-' + season.substring(6) + ' ' + gameType;
   }
 
+  /**
+   * What a screen reader reads for a player: his name, his average rating when he has one, and his stat line, like
+   * "Connor McDavid, average rating 7.1, 18 games played, 9 goals, 21 assists, 30 points".
+   */
+  public getAriaLabel(player: SeasonLeader): string {
+    return [player.name, player.averageRating ? 'average rating ' + player.averageRating : undefined, player.statLabel]
+        .filter(part => !!part).join(', ');
+  }
+
   public showBlankHeadshot(event: Event): void {
     NhlPlayerHeadshotUtils.showBlankHeadshot(event);
   }
@@ -118,6 +145,19 @@ export class GameSeasonLeadersComponent implements OnChanges {
   private buildSpots(): void {
     this.homeSpots = this.getSpots(this.homeStats, this.homeTeamId);
     this.awaySpots = this.getSpots(this.awayStats, this.awayTeamId);
+  }
+
+  /**
+   * Each player's average rating for the team, by player ID. Only his games for this team count, like his totals in
+   * the club stats. Empty without rated games, or when they're from another season than the totals.
+   */
+  private getTeamRatings(stats: ClubStats, teamId: number): Map<number, PlayerSeasonRating> {
+    const ratedSeason = this.ratedSeason;
+    if (!ratedSeason || !stats || String(ratedSeason.season) !== String(stats.season) ||
+        ratedSeason.gameType !== stats.gameType) {
+      return new Map();
+    }
+    return PlayerSeasonRatingUtils.getTeamSeasonRatings(ratedSeason, teamId);
   }
 
   /**
@@ -133,13 +173,35 @@ export class GameSeasonLeadersComponent implements OnChanges {
     const defense = skaters.filter(skater => skater.positionCode === 'D');
     const forwards = skaters.filter(skater =>
         GameSeasonLeadersComponent.forwardPositions.includes(skater.positionCode));
+    const ratings = this.getTeamRatings(stats, teamId);
+    const withRating = (leader: SeasonLeader): SeasonLeader =>
+        GameSeasonLeadersComponent.addRating(leader, ratings.get(leader.playerId));
     return [
-      ...RinkComponent.placeLine('goalies', goalies.slice(0, 1).map(GameSeasonLeadersComponent.toGoalieLeader)),
+      ...RinkComponent.placeLine('goalies', goalies.slice(0, 1).map(GameSeasonLeadersComponent.toGoalieLeader)
+          .map(withRating)),
       ...RinkComponent.placeLine('defense', this.pickLine(defense, NhlStarPlayerUtils.getStarDefenseIds(teamId),
-          this.numDefenseToShow).map(GameSeasonLeadersComponent.toSkaterLeader)),
+          this.numDefenseToShow).map(GameSeasonLeadersComponent.toSkaterLeader).map(withRating)),
       ...RinkComponent.placeLine('forwards', this.pickLine(forwards, NhlStarPlayerUtils.getStarForwardIds(teamId),
-          this.numForwardsToShow).map(GameSeasonLeadersComponent.toSkaterLeader))
+          this.numForwardsToShow).map(GameSeasonLeadersComponent.toSkaterLeader).map(withRating))
     ];
+  }
+
+  /**
+   * Adds a player's average rating, shown with one decimal like a game's rating, and its badge color from the shown
+   * value, so 6.96 shown as "7.0" is green. A player without a rated game keeps none.
+   */
+  private static addRating(leader: SeasonLeader, rating: PlayerSeasonRating): SeasonLeader {
+    if (rating?.averageRating == null) {
+      return leader;
+    }
+    const shownRating = rating.averageRating.toFixed(1);
+    return {
+      ...leader,
+      averageRating: shownRating,
+      ratingColor: StatsUtils.getHokmobRatingColor(Number(shownRating)),
+      ratingLabel: 'Average HokMob rating in ' +
+          GameSeasonLeadersComponent.count(rating.gamesRated, 'game', 'games')
+    };
   }
 
   private pickLine(skaters: ClubStatsSkater[], starPlayerIds: number[], count: number): ClubStatsSkater[] {
