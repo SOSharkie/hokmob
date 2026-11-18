@@ -32,6 +32,23 @@ export interface PlayerLanding {
   draftDetails?: PlayerDraftDetails;
   /** The latest season the player has stats for. Missing for a player who has never played an NHL game. */
   featuredStats?: PlayerFeaturedStats;
+  /**
+   * The player's totals in every league and season, a row per team for a traded season. Only used to count the NHL
+   * regular seasons, so the career card's skeleton has a row for each before the stats load.
+   */
+  seasonTotals?: PlayerSeasonTotal[];
+}
+
+/**
+ * One row of the landing's seasonTotals. Only the fields that tell an NHL regular season apart are modeled.
+ */
+export interface PlayerSeasonTotal {
+  /** Like 20252026. */
+  season: number;
+  /** Like "NHL" or "AHL". */
+  leagueAbbrev: string;
+  /** 2 for the regular season, 3 for the playoffs. */
+  gameTypeId: number;
 }
 
 /**

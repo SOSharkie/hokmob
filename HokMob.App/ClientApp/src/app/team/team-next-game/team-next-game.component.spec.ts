@@ -69,6 +69,20 @@ describe('TeamNextGameComponent', () => {
     return new Date(startTimeUTC).toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
   }
 
+  it('should show a skeleton of one game while loading, before there is a game', () => {
+    fixture.componentRef.setInput('loading', true);
+    show(undefined);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('shape')).toBe('game');
+    expect(skeleton.layout.rows).toBe(1);
+    expect(skeleton.layout.rowHeight).toBe(93);
+
+    fixture.componentRef.setInput('loading', false);
+    show(nextGame());
+    expect(fixture.nativeElement.querySelector('app-skeleton-card')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.team-next-game')).not.toBeNull();
+  });
+
   it('should show the day and start time of a real future game', () => {
     const game = nextGame();
     show(game);

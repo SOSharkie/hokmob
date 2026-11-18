@@ -1,4 +1,5 @@
 import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -41,7 +42,23 @@ export class PlayerCareerComponent implements OnChanges {
   @Input()
   public isGoalie: boolean;
 
+  /** Whether the seasons are still loading, so the card shows its skeleton at its size. */
+  @Input()
+  public loading: boolean = false;
+
+  /** How many seasons the skeleton has rows for: the player's NHL seasons, from the landing (seasonTotals). */
+  @Input()
+  public loadingRows: number = 10;
+
   public rows: CareerSeasonRow[] = [];
+
+  /** The width, in px, at and below which the table's rows get shorter. */
+  public readonly skeletonBreakpoint: number = 950;
+
+  /** The skeleton: one row per season, with the table's 5 columns. */
+  public skeletonLayout: SkeletonCardLayout;
+
+  public readonly skeletonMobileLayout: SkeletonCardLayout = {rowHeight: 52.9, tableHeaderHeight: 44};
 
   public ngOnChanges(): void {
     const seasons: (SkaterSeasonStats | GoalieSeasonStats)[] = this.seasons ?? [];
@@ -56,6 +73,9 @@ export class PlayerCareerComponent implements OnChanges {
       goalsAgainstAverage: (season as GoalieSeasonStats).goalsAgainstAverage,
       savePct: (season as GoalieSeasonStats).savePct
     }));
+    this.skeletonLayout = {
+      rows: this.loadingRows, rowHeight: 70.9, columns: 5, headerHeight: 51.5, tableHeaderHeight: 58
+    };
   }
 
   /**

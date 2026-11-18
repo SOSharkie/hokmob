@@ -1,4 +1,5 @@
 import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {GoalieSeasonStats, SkaterSeasonStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
@@ -38,10 +39,36 @@ export class PlayerStatsComponent {
   @Input()
   public ratingPending: boolean = false;
 
+  /** Whether the stats are still loading, so the card shows its skeleton at its size. */
+  @Input()
+  public loading: boolean = false;
+
   /** Whether the card has the rating column. */
   public get showRating(): boolean {
     return this.ratingPending || !!this.seasonRating;
   }
+
+  /** The skeleton's stat tiles: two rows of 4, and the rating column's 2 beside them when the card will have it. */
+  public get skeletonLayout(): SkeletonCardLayout {
+    return this.showRating ? PlayerStatsComponent.ratedSkeletonLayout : PlayerStatsComponent.unratedSkeletonLayout;
+  }
+
+  /** On a phone the stats wrap, and the rating column is a row of its own under them. */
+  public get skeletonMobileLayout(): SkeletonCardLayout {
+    return this.showRating ? PlayerStatsComponent.ratedSkeletonMobileLayout : PlayerStatsComponent.unratedSkeletonMobileLayout;
+  }
+
+  private static readonly ratedSkeletonLayout: SkeletonCardLayout = {
+    rows: 2, rowHeight: 94.5, columns: 5, headerHeight: 51.5
+  };
+
+  private static readonly unratedSkeletonLayout: SkeletonCardLayout = {
+    rows: 2, rowHeight: 94.5, columns: 4, headerHeight: 51.5
+  };
+
+  private static readonly ratedSkeletonMobileLayout: SkeletonCardLayout = {rows: 3, rowHeight: 83.5, columns: 4};
+
+  private static readonly unratedSkeletonMobileLayout: SkeletonCardLayout = {rows: 2, rowHeight: 94.5, columns: 4};
 
   /** The average rating, like "7.12", or a dash while it loads. */
   public get averageRating(): string {

@@ -22,6 +22,10 @@ import {
  * season cards, the career table and the recent games. The bio stays when the stats fail, and the season shown is the
  * landing's featuredStats season, so the off-season shows the last season played. When that season has a history
  * file (SeasonHistoryService), it's loaded too, for the regular season card's average HokMob rating.
+ *
+ * While each request loads, its cards show skeletons at their size (SkeletonCardComponent), so the page doesn't jump
+ * when the data comes in: the whole page until the landing loads, then the season, recent games and career cards
+ * until the stats do. The landing tells how many career seasons and recent games there will be.
  */
 @Component({
     selector: 'app-player',
@@ -31,6 +35,15 @@ import {
     standalone: false
 })
 export class PlayerComponent implements OnInit {
+
+  /** The recent games the stats API returns (RecentGameCount in NhlStatsController). */
+  private static readonly recentGameCount = 10;
+
+  /** The career card's skeleton rows before the landing says how many seasons there are. */
+  private static readonly defaultCareerSeasons = 10;
+
+  /** The header stripes' color while the player loads: the skeleton blocks' gray ($gray-01) at their opacity. */
+  private static readonly loadingLineColor = "#2b2b2b";
 
   public playerId: number;
 
@@ -95,10 +108,51 @@ export class PlayerComponent implements OnInit {
 
   /**
    * Whether the regular season card has its rating column (loading or loaded), which makes it five columns wide to the
-   * bio's four, so the wide layout gives it more room.
+   * bio's four, so the wide layout gives it more room. Before the landing loads it's assumed, like most players' cards.
    */
   public get hasSeasonRating(): boolean {
-    return !!this.regularSeasonStats && (this.seasonRatingPending || !!this.seasonRating);
+    if (this.playerLoading) {
+      return true;
+    }
+    return (!!this.regularSeasonStats || this.statsLoading) && (this.seasonRatingPending || !!this.seasonRating);
+  }
+
+  /** The header's two stripes: the team's color, or the skeletons' gray while the player loads. */
+  public get headerLineColor(): string {
+    return this.playerLoading ? PlayerComponent.loadingLineColor : this.teamColor;
+  }
+
+  /** Whether the landing is still loading, so the header and every card show their skeletons. */
+  public get playerLoading(): boolean {
+    return !this.player && !this.playerFailed;
+  }
+
+  /**
+   * Whether the stats are still loading, for a player who has some: the season, recent games and career cards show
+   * their skeletons until they're in. A player who has never played an NHL game has none to wait for.
+   */
+  public get statsLoading(): boolean {
+    return !this.stats && !this.statsFailed && (!this.player || !!this.player.featuredStats);
+  }
+
+  /** The recent games' skeleton rows: the 10 asked for, or the player's NHL games when they've played fewer. */
+  public get expectedRecentGames(): number {
+    const career = this.player?.featuredStats;
+    if (!career) {
+      return PlayerComponent.recentGameCount;
+    }
+    const games = (career.regularSeason?.career?.gamesPlayed ?? 0) + (career.playoffs?.career?.gamesPlayed ?? 0);
+    return Math.min(PlayerComponent.recentGameCount, games);
+  }
+
+  /** The career card's skeleton rows: the player's NHL regular seasons in the landing, or 10 before it loads. */
+  public get expectedCareerSeasons(): number {
+    const totals = this.player?.seasonTotals;
+    if (!totals) {
+      return PlayerComponent.defaultCareerSeasons;
+    }
+    return new Set(totals.filter(total => total.leagueAbbrev === "NHL" && total.gameTypeId === 2)
+        .map(total => total.season)).size;
   }
 
   /** The featured season's regular season row, or undefined when there is none. */

@@ -52,6 +52,32 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Header search | `/api/nhl-search/player?q=…`; teams come from `NhlTeamUtils`, with no request |
 | History | `assets/history/{season}-{gameType}.json`, a static file generated from the stats API (see [History data](#history-data)), with no NHL API request |
 
+### Loading skeletons
+
+While a request is out, the team and player pages show each card it fills as a skeleton at the card's size, so nothing
+jumps when the data comes in: `SkeletonCardComponent` (`shared/components/skeleton-card`), a card of gray blocks with
+the real card's title when it's known. One component for every card: its `shape` (`game`, `bar`, `table`, `tiles` or
+`block`, a chart's plot under its toggles) makes its rows look like the card's, and its `layout` (rows, row height,
+columns, the title's height, a table header or toggles row, a headline like a rating and its rank, bottom padding)
+gives it the card's size, with a `mobileLayout` for the fields that change at the card's own
+breakpoint (`mobileBreakpoint`, 700px by default). A card takes a `loading` input and keeps its skeleton's layout next
+to its own styles (like `SingleTeamFormComponent.skeletonLayout`). The pulsing block is the global `skeleton-block`
+class (`styles/skeleton.scss`), which a page's own placeholders use too, like the player header's, sizing it themselves.
+
+- **Team page:** the division label, the team stats card and the overview's conference standings until the standings
+  and team stats load; the next game and the schedule until the schedule does; the form until it does (it can need
+  the previous season's schedule too). The games tab's cards do the same. The team stats tab shows the season stats
+  card's skeleton until the team stats load, and the power rating, advanced stats and chart skeletons until the
+  season's games (and NST's expected goals) do, assuming expected goals, which add a row to each card. The chart's
+  skeleton is in the tab, in the chart's place, since the chart draws on its canvas once.
+- **Player page:** the header and every card until the landing loads, assuming the season card has its rating column
+  like most; then the season, recent games and career cards until the stats load, with a career row per NHL regular
+  season in the landing's `seasonTotals` and a recent game row per game played, up to 10. A player who has never
+  played an NHL game shows no stats skeletons.
+- **Known drift:** a schedule row grows when a long team name wraps in a narrow column, a team stats row is 44 or 45px
+  on a phone, and a career row's height follows its crests (a traded season's two logos can wrap), none of which is
+  known before the data. Each is the last card in its column, or a few pixels.
+
 ## api-web conventions
 
 - **Localized names.** Most names are objects like `{ "default": "Jets", "fr": "…" }`. Read `.default`.
@@ -178,8 +204,8 @@ from their edge. `NhlApiClient` keeps the scoreboard up through it (the reasonin
 
 ## Team page
 
-`/team/{id}` has five tabs, kept in the `tab` query parameter (`overview`, the default, is left out): `standings`,
-`player-stats`, `team-stats` and `games` (`TeamTabs`). The standings tab's type is `standingsType`, as on the standings
+`/team/{id}` has five tabs, kept in the `tab` query parameter (`overview`, the default, is left out): `team-stats`,
+`player-stats`, `games` and `standings`, in that order (`TeamTabs`). The standings tab's type is `standingsType`, as on the standings
 page (`StandingsTypeUtils`), left out at its default, the divisions. Picking a tab rewrites the URL with
 `Location.replaceState`, like the history page's filters, so it doesn't scroll to the top or add a history entry, and
 the back button still leaves the page.
@@ -197,7 +223,8 @@ the back button still leaves the page.
   columns on a tablet and stacked on a phone, and the power rating chart below them (see
   [Team power rating](#team-power-rating)). The tab loads `/api/nhl-stats/team-games` and NST's
   `/api/nst/team-games` at once and rates the league when both are back. The team stats card only needs
-  `/api/nhl-stats/teams`, so it shows while the season's games load and when they fail.
+  `/api/nhl-stats/teams`, so it shows while the season's games load and when they fail. Until each card's data is in,
+  it shows its skeleton (see [Loading skeletons](#loading-skeletons)).
   The team stats card (on the overview too) and the advanced stats card list their stats like the power rating card,
   each with a bar from the league average in the color of its score: the team stats card's points % first, scored
   like the rating's stats (`TeamRatingUtils.getScores`) with goals and shots against scored lower is better, and the
@@ -329,8 +356,8 @@ on. The number is the change in the rating's correlation with forward strength, 
   previous season's team games and NST game logs. It's left out on purpose: the rating is about the current season
   only.
 
-The power rating card shows the rating, its rank, its change over the last 5 games and each rated stat with its
-weight and a bar from the league average: the stats and weights the rating was worked out with. It credits Natural
+The power rating card shows the rating, its rank (gray, like each stat's), its change over the last 5 games and each
+rated stat with its weight and a bar from the league average: the stats and weights the rating was worked out with. It credits Natural
 Stat Trick for the xG, or says the team is rated without expected goals on the fallback. The chart
 (`TeamRatingChartComponent`, `shared/components`) plots up to 4 of its 9 lines (the rating and 8 stats: Corsi %,
 xGF%, shooting %, save %, power play, penalties, points % and goal differential) on the rating's scale, all on one
@@ -403,9 +430,12 @@ players card.
   (`NhlStarPlayerUtils.pickStarLine`). The goalie stays the wins leader.
 
 Below the season leaders, a future game shows each team's power rating card (`GamePowerRatingsComponent`), the home
-team's first, side by side when the column is at least 700px wide (a container query) and stacked below that. Each card
-is the team page's (`TeamPowerRatingComponent`) with `showTeam`, so its header names the team with its logo, like
-"Sharks Power Rating". The league is rated on the game's regular season from `/api/nhl-stats/team-games` and NST's
+team's first, side by side at every width. Each card is the team page's (`TeamPowerRatingComponent`) with `showTeam`, so
+its header names the team with its logo, like "Sharks Power Rating", and with `showNote` off: the league average and
+NST's credit are noted once, centered, under both. Each card is a `power-rating` size container, so under 340px wide,
+like on a phone, it goes compact: the logo and the team's abbreviation for a title, each stat's short name
+(`TeamMetric.shortLabel`) on one line with its value and rank, no weights, and a smaller rating.
+The team page's card isn't in such a container, so it never goes compact. The league is rated on the game's regular season from `/api/nhl-stats/team-games` and NST's
 `/api/nst/team-games`, the same way as the team stats tab (see [Team power rating](#team-power-rating)), so a playoff
 game shows the regular season's ratings. There's no fallback to the previous season: the cards are hidden until both
 teams have played a regular season game, and when the games fail to load. Loaded once, not on the game's refresh.

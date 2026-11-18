@@ -1,16 +1,20 @@
-<div class="team-schedule">
-  <div class="team-schedule-header">
-    <span>Team Schedule</span>
-  </div>
-  @for (game of games; track game; let last = $last) {
-    <div class="future-game-container" [ngClass]="{'last-scorecard': last}">
-      <app-scorecard
-          [game]="game"
-          [smallerScorecard]="true"
-      ></app-scorecard>
+@if (loading) {
+  <app-skeleton-card cardTitle="Team Schedule" shape="game" [layout]="skeletonLayout"></app-skeleton-card>
+} @else {
+  <div class="team-schedule">
+    <div class="team-schedule-header">
+      <span>Team Schedule</span>
     </div>
-  }
-  @if (!games?.length) {
-    <div class="no-games">No upcoming games</div>
-  }
-</div>
+    @for (game of games; track game; let last = $last) {
+      <div class="future-game-container" [ngClass]="{'last-scorecard': last}">
+        <app-scorecard
+            [game]="game"
+            [smallerScorecard]="true"
+        ></app-scorecard>
+      </div>
+    }
+    @if (!games?.length) {
+      <div class="no-games">No upcoming games</div>
+    }
+  </div>
+}

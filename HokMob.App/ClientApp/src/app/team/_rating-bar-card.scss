@@ -54,7 +54,9 @@
     gap: $spacing-small;
     min-width: 0;
 
+    // Gray like each stat's rank
     .rating-rank {
+      color: $gray-03;
       font-size: 17px;
       font-weight: 500;
     }

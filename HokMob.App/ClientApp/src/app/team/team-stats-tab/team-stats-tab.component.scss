@@ -42,10 +42,6 @@ $three-column-breakpoint: 1100px;
   background-color: $black-02;
   color: $gray-03;
   text-align: center;
-
-  &.loading-card {
-    min-height: 200px;
-  }
 }
 
 @media only screen and (min-width: $two-column-breakpoint) {

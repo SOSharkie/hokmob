@@ -54,15 +54,32 @@ describe('TeamStatsTabComponent', () => {
     return fixture.nativeElement.querySelector(selector);
   }
 
-  it('should show the season stats and a spinner while the games load', () => {
+  it('should show the season stats, and the other cards as skeletons while the games load', () => {
     show(sharks, 20262027);
     httpMock.expectOne(teamGamesUrl);
     httpMock.expectOne(nstTeamGamesUrl).flush(mockNstTeamGames());
     expect(child('app-team-stats').teamId).toBe(sharks);
     expect(child('app-team-stats').teamStats.length).toBe(32);
-    expect(child('.loading-card app-loading-spinner')).not.toBeNull();
-    expect(child('app-team-power-rating')).toBeNull();
+    expect(child('app-team-stats').loading).toBeFalse();
+    expect(component.ratingLoading).toBeTrue();
+    expect(child('app-team-power-rating').loading).toBeTrue();
+    expect(child('app-team-advanced-stats').loading).toBeTrue();
+    // The chart's skeleton in its place: its title, its toggles and the plot
+    const chartSkeleton = child('app-skeleton-card');
+    expect(chartSkeleton.getAttribute('shape')).toBe('block');
+    expect(chartSkeleton.getAttribute('cardTitle')).toBe('Power Rating Over the Season');
+    expect(chartSkeleton.layout.columns).toBe(10);
     expect(child('app-team-rating-chart')).toBeNull();
+  });
+
+  it('should show the season stats card as a skeleton while the page loads the team stats', () => {
+    fixture.componentRef.setInput('teamStatsLoading', true);
+    show(sharks, undefined);
+    expect(child('app-team-stats').loading).toBeTrue();
+    // No season yet, so the games wait, and their cards keep their skeletons
+    expect(component.ratingLoading).toBeTrue();
+    expect(child('app-team-power-rating').loading).toBeTrue();
+    expect(child('app-skeleton-card')).not.toBeNull();
   });
 
   it('should rate every team from the season\'s real games and expected goals', async () => {
@@ -71,7 +88,10 @@ describe('TeamStatsTabComponent', () => {
     httpMock.expectOne(teamGamesUrl).flush(mockTeamGames());
     await settle();
 
-    expect(child('.loading-card')).toBeNull();
+    expect(component.ratingLoading).toBeFalse();
+    expect(child('app-skeleton-card')).toBeNull();
+    expect(child('app-team-power-rating').loading).toBeFalse();
+    expect(child('app-team-advanced-stats').loading).toBeFalse();
     expect(component.ratings.length).toBe(32);
     expect(component.timeline.length).toBe(20);
     // San Jose, 30th through 2026-11-14 with NST's expected goals
@@ -105,12 +125,12 @@ describe('TeamStatsTabComponent', () => {
     await settle();
 
     expect(component.isLoading).toBeTrue();
-    expect(child('app-team-power-rating')).toBeNull();
+    expect(child('app-team-power-rating').loading).toBeTrue();
 
     nst.flush(mockNstTeamGames());
     await settle();
     expect(component.isLoading).toBeFalse();
-    expect(child('app-team-power-rating')).not.toBeNull();
+    expect(child('app-team-power-rating').loading).toBeFalse();
   });
 
   it('should keep the season stats when the games fail', async () => {
@@ -121,6 +141,8 @@ describe('TeamStatsTabComponent', () => {
 
     expect(child('app-team-stats')).not.toBeNull();
     expect(child('app-team-power-rating')).toBeNull();
+    expect(child('app-team-advanced-stats')).toBeNull();
+    expect(child('app-skeleton-card')).toBeNull();
     expect(child('.team-stats-tab-message').textContent.trim())
         .toBe('The power rating and advanced stats couldn\'t be loaded');
   });
@@ -133,6 +155,8 @@ describe('TeamStatsTabComponent', () => {
 
     expect(child('app-team-power-rating')).toBeNull();
     expect(child('app-team-advanced-stats')).toBeNull();
+    expect(child('app-skeleton-card')).toBeNull();
+    expect(child('app-team-rating-chart')).toBeNull();
     expect(child('.team-stats-tab-message')).toBeNull();
     expect(child('app-team-stats')).not.toBeNull();
   });

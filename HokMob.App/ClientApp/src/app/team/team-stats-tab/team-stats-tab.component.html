@@ -1,29 +1,27 @@
 <div class="team-stats-tab">
   <div class="stats-cards">
     <div class="stats-column">
-      @if (hasRating) {
+      @if (hasRating || ratingLoading) {
         <app-team-power-rating
             [teamId]="teamId"
             [ratings]="ratings"
             [timeline]="timeline"
+            [loading]="ratingLoading"
         ></app-team-power-rating>
       }
       <app-team-stats
           [teamId]="teamId"
           [teamStats]="teamStats"
+          [loading]="teamStatsLoading"
       ></app-team-stats>
     </div>
     <div class="stats-column">
-      @if (isLoading) {
-        <div class="team-stats-tab-card loading-card">
-          <app-loading-spinner></app-loading-spinner>
-        </div>
-      }
-      @if (hasRating) {
+      @if (hasRating || ratingLoading) {
         <app-team-advanced-stats
             [teamId]="teamId"
             [ratings]="ratings"
             [season]="season"
+            [loading]="ratingLoading"
         ></app-team-advanced-stats>
       }
       @if (hasError) {
@@ -33,7 +31,14 @@
       }
     </div>
   </div>
-  @if (hasRating) {
+  @if (ratingLoading) {
+    <app-skeleton-card
+        shape="block"
+        cardTitle="Power Rating Over the Season"
+        [layout]="chartSkeletonLayout"
+        [mobileLayout]="chartSkeletonMobileLayout"
+    ></app-skeleton-card>
+  } @else if (hasRating) {
     <app-team-rating-chart
         title="Power Rating Over the Season"
         [games]="games"

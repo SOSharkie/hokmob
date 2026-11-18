@@ -54,6 +54,7 @@ import { SearchResultComponent } from './shared/components/search-result/search-
 import { StandingsComponent } from './shared/components/standings/standings.component';
 import { TeamLogoComponent } from './shared/components/team-logo/team-logo.component';
 import { LoadingSpinnerComponent } from './shared/components/loading-spinner/loading-spinner.component';
+import { SkeletonCardComponent } from './shared/components/skeleton-card/skeleton-card.component';
 import { LeagueStandingsComponent } from './league-standings/league-standings.component';
 import {SingleTeamFormComponent} from "@app/team/single-team-form/single-team-form.component";
 import { TeamScheduleComponent } from './team/team-schedule/team-schedule.component';
@@ -127,6 +128,7 @@ import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.servi
     StandingsComponent,
     TeamLogoComponent,
     LoadingSpinnerComponent,
+    SkeletonCardComponent,
     LeagueStandingsComponent,
     SingleTeamFormComponent,
     TeamScheduleComponent,

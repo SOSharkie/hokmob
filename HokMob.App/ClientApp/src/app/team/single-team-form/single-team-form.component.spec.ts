@@ -57,6 +57,16 @@ describe('SingleTeamFormComponent', () => {
     expect(fixture.nativeElement.querySelector('.no-games')).toBeNull();
   });
 
+  it('should show a skeleton of 5 games while loading, instead of the empty message', () => {
+    fixture.componentRef.setInput('loading', true);
+    show(6, []);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('cardTitle')).toBe('Team Form');
+    expect(skeleton.getAttribute('shape')).toBe('game');
+    expect(skeleton.layout.rows).toBe(5);
+    expect(fixture.nativeElement.querySelector('.no-games')).toBeNull();
+  });
+
   it('should show a message for a team without recent games', () => {
     show(53, []);
     expect(previousGames().length).toBe(0);

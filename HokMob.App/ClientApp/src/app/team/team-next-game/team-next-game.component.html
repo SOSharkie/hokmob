@@ -1,4 +1,6 @@
-@if (game) {
+@if (loading) {
+  <app-skeleton-card shape="game" [layout]="skeletonLayout"></app-skeleton-card>
+} @else if (game) {
   <div class="team-next-game">
     <div class="team-next-game-header">
       <span>{{header}}</span>

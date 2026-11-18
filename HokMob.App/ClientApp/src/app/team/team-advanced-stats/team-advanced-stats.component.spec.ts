@@ -75,6 +75,16 @@ describe('TeamAdvancedStatsComponent', () => {
     expect(fills[0].classList).not.toContain('above-average');
   });
 
+  it('should show a skeleton with a bar row per stat and the season title while loading', () => {
+    fixture.componentRef.setInput('loading', true);
+    show(28, 20262027, []);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('shape')).toBe('bar');
+    expect(skeleton.cardTitle).toBe('2026-2027 Advanced Stats');
+    expect(skeleton.layout.rows).toBe(8);
+    expect(fixture.nativeElement.querySelector('.rating-bar-card')).toBeNull();
+  });
+
   it('should draw a stat the team is above average at to the right of the middle', () => {
     show(sharks);
     const team = ratings.find(rating => rating.teamId === sharks);

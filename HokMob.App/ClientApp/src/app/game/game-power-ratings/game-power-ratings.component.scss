@@ -1,23 +1,43 @@
 @use "variables" as *;
 
-// Wide enough for two power rating cards of at least 340px side by side, with the gap between them
-$two-column-width: 700px;
-
 :host {
   display: block;
-  container-type: inline-size;
 }
 
-// Stacked in a narrow column, side by side, the home team's first, when they fit
+// Side by side at every width, the home team's first. Each card is a `power-rating` size container, so it goes compact
+// when it's narrow, like on a phone (see TeamPowerRatingComponent)
 .game-power-ratings {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $spacing-card-gap;
   align-items: start;
+
+  app-team-power-rating {
+    display: block;
+    container: power-rating / inline-size;
+  }
 }
 
-@container (min-width: #{$two-column-width}) {
+@media only screen and (max-width: $mobile-screen-breakpoint) {
   .game-power-ratings {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $spacing-large;
+  }
+}
+
+// The cards' note, once under both
+.game-power-ratings-note {
+  margin: $spacing-medium $spacing-large 0;
+  color: $gray-03;
+  font-size: 12px;
+  text-align: center;
+}
+
+// Credits Natural Stat Trick for the expected goals, like the cards' own credit
+.power-rating-source {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
   }
 }

@@ -1,0 +1,80 @@
+<div class="skeleton-card" [ngClass]="'shape-' + shape" [style.padding-bottom.px]="current.paddingBottom"
+     aria-hidden="true">
+  @if (current.headerHeight > 0) {
+    <div class="skeleton-header" [style.height.px]="current.headerHeight">
+      @if (cardTitle) {
+        <span class="skeleton-title">{{cardTitle}}</span>
+      } @else {
+        <span class="skeleton-block skeleton-title-block"></span>
+      }
+    </div>
+  }
+  @if (current.summaryHeight > 0) {
+    <div class="skeleton-summary" [style.height.px]="current.summaryHeight">
+      <span class="skeleton-block skeleton-badge"></span>
+      <span class="skeleton-summary-lines">
+        <span class="skeleton-block skeleton-summary-line"></span>
+        <span class="skeleton-block skeleton-summary-line short"></span>
+      </span>
+    </div>
+  }
+  @if (current.tableHeaderHeight > 0) {
+    <div class="skeleton-row skeleton-table-header" [style.height.px]="current.tableHeaderHeight">
+      @for (column of columnIndexes; track column) {
+        @if (shape === 'block') {
+          <span class="skeleton-block skeleton-pill"></span>
+        } @else {
+          <span class="skeleton-cell" [class.first-cell]="column === 0">
+            <span class="skeleton-block skeleton-heading"></span>
+          </span>
+        }
+      }
+    </div>
+  }
+  @for (row of rowIndexes; track row) {
+    <div class="skeleton-row" [style.height.px]="current.rowHeight">
+      @switch (shape) {
+        @case ('game') {
+          <span class="skeleton-team">
+            <span class="skeleton-block skeleton-logo"></span>
+            <span class="skeleton-block skeleton-abbrev"></span>
+          </span>
+          <span class="skeleton-block skeleton-score"></span>
+          <span class="skeleton-team">
+            <span class="skeleton-block skeleton-logo"></span>
+            <span class="skeleton-block skeleton-abbrev"></span>
+          </span>
+        }
+        @case ('bar') {
+          <span class="skeleton-bar-line">
+            <span class="skeleton-block skeleton-label"></span>
+            <span class="skeleton-block skeleton-value"></span>
+            <span class="skeleton-block skeleton-rank"></span>
+          </span>
+          <span class="skeleton-block skeleton-track"></span>
+        }
+        @case ('block') {
+          <span class="skeleton-block skeleton-area"></span>
+        }
+        @case ('tiles') {
+          @for (column of columnIndexes; track column) {
+            <span class="skeleton-tile">
+              <span class="skeleton-block skeleton-label"></span>
+              <span class="skeleton-block skeleton-value"></span>
+            </span>
+          }
+        }
+        @default {
+          @for (column of columnIndexes; track column) {
+            <span class="skeleton-cell" [class.first-cell]="column === 0">
+              @if (column === 0) {
+                <span class="skeleton-block skeleton-logo"></span>
+              }
+              <span class="skeleton-block skeleton-text"></span>
+            </span>
+          }
+        }
+      }
+    </div>
+  }
+</div>

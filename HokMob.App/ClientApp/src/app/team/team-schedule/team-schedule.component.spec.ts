@@ -62,6 +62,16 @@ describe('TeamScheduleComponent', () => {
         .toEqual([false, false, false, false, true]);
   });
 
+  it('should show a skeleton of 5 games while loading, instead of the empty message', () => {
+    fixture.componentRef.setInput('loading', true);
+    show([]);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('cardTitle')).toBe('Team Schedule');
+    expect(skeleton.getAttribute('shape')).toBe('game');
+    expect(skeleton.layout.rows).toBe(5);
+    expect(fixture.nativeElement.querySelector('.no-games')).toBeNull();
+  });
+
   it('should show a message for a team without upcoming games', () => {
     show([]);
     expect(scorecards().length).toBe(0);

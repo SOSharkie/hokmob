@@ -1,25 +1,28 @@
-@if (team) {
+@if (loading) {
+  <app-skeleton-card shape="bar" [cardTitle]="title" [layout]="skeletonLayout"
+                     [mobileLayout]="skeletonMobileLayout"></app-skeleton-card>
+} @else if (team) {
   <section class="rating-bar-card power-rating-card">
     <div class="rating-bar-card-header">
       @if (showTeam) {
         <img class="power-rating-team-logo" [src]="teamLogo" alt="">
       }
       <h2 class="rating-bar-card-title">{{title}}</h2>
+      <span class="power-rating-short-title" aria-hidden="true">{{shortTitle}}</span>
     </div>
     <div class="rating-summary">
-      <span class="rating-badge" [style.background-color]="ratingColor">{{rating}}</span>
+      <span class="rating-badge" [style.background-color]="ratingColor" [title]="gamesLabel">{{rating}}</span>
       <div class="rating-details">
-        <span class="rating-rank">{{rankLabel}}</span>
-        <span class="rating-games">
-          {{gamesLabel}}
-          @if (change != null) {
+        <span class="rating-rank" [title]="gamesLabel">{{rankLabel}}</span>
+        @if (change != null) {
+          <span class="rating-games">
             <span class="rating-change" [ngClass]="'change-' + changeDirection"
                   [title]="'Change in power rating over the last ' + trendGames + ' games'">
               <span aria-hidden="true">{{changeDirection === 'up' ? '▲' : changeDirection === 'down' ? '▼' : '•'}}</span>
               {{changeLabel}} last {{trendGames}}
             </span>
-          }
-        </span>
+          </span>
+        }
       </div>
     </div>
     <ul class="rating-parts">
@@ -27,6 +30,7 @@
         <li class="rating-part" [title]="part.description">
           <div class="part-label">
             <span class="part-name">{{part.label}}</span>
+            <span class="part-short-name" aria-hidden="true">{{part.shortLabel}}</span>
             <span class="part-weight">{{part.weight}}</span>
           </div>
           <span class="part-value">{{part.value}}</span>
@@ -39,13 +43,15 @@
         </li>
       }
     </ul>
-    <p class="rating-bar-card-note">
-      5.0 is league average.
-      @if (hasExpectedGoals) {
-        <a class="power-rating-source" [href]="nstUrl" target="_blank" rel="noopener">xG from Natural Stat Trick</a>
-      } @else {
-        <span class="power-rating-fallback">Rated without expected goals, which aren't available right now.</span>
-      }
-    </p>
+    @if (showNote) {
+      <p class="rating-bar-card-note">
+        5.0 is league average.
+        @if (hasExpectedGoals) {
+          <a class="power-rating-source" [href]="nstUrl" target="_blank" rel="noopener">xG from Natural Stat Trick</a>
+        } @else {
+          <span class="power-rating-fallback">Rated without expected goals, which aren't available right now.</span>
+        }
+      </p>
+    }
   </section>
 }

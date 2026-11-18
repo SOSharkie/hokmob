@@ -75,6 +75,12 @@
         .team-division-label {
           color: $gray-03;
         }
+
+        // In the label's place while the standings load, as tall as its line (a skeleton-block)
+        .team-division-skeleton {
+          display: inline-block;
+          width: 140px;
+        }
       }
     }
   }

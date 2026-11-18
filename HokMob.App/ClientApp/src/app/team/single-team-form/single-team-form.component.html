@@ -1,21 +1,25 @@
-<div class="team-form-container">
-  <div class="team-form-header">
-    <span>Team Form</span>
-  </div>
-  <div class="previous-games-container">
-    <div class="prev-games">
-      @for (game of games; track game; let isLast = $last) {
-        <div>
-          <app-previous-game
-              [teamId]="teamId"
-              [game]="game"
-              [isLast]="isLast"
-          ></app-previous-game>
-        </div>
-      }
-      @if (!games?.length) {
-        <div class="no-games">No recent games</div>
-      }
+@if (loading) {
+  <app-skeleton-card cardTitle="Team Form" shape="game" [layout]="skeletonLayout"></app-skeleton-card>
+} @else {
+  <div class="team-form-container">
+    <div class="team-form-header">
+      <span>Team Form</span>
+    </div>
+    <div class="previous-games-container">
+      <div class="prev-games">
+        @for (game of games; track game; let isLast = $last) {
+          <div>
+            <app-previous-game
+                [teamId]="teamId"
+                [game]="game"
+                [isLast]="isLast"
+            ></app-previous-game>
+          </div>
+        }
+        @if (!games?.length) {
+          <div class="no-games">No recent games</div>
+        }
+      </div>
     </div>
   </div>
-</div>
+}

@@ -54,6 +54,23 @@ describe('TeamStatsComponent', () => {
     return element.style.backgroundColor;
   }
 
+  it('should show a skeleton with a bar row per stat while loading, instead of the card', () => {
+    fixture.componentRef.setInput('loading', true);
+    show(28);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('shape')).toBe('bar');
+    expect(skeleton.getAttribute('cardTitle')).toBeNull();
+    expect(skeleton.layout.rows).toBe(8);
+    expect(skeleton.layout.rowHeight).toBe(48);
+    expect(skeleton.mobileLayout.rowHeight).toBe(44);
+    expect(fixture.nativeElement.querySelector('.team-stats')).toBeNull();
+
+    fixture.componentRef.setInput('loading', false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-skeleton-card')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.team-stats')).not.toBeNull();
+  });
+
   it('should show the real stats and league ranks of a team', () => {
     show(6);
     expect(text('.rating-bar-card-title')).toBe('2025-2026 Team Stats');

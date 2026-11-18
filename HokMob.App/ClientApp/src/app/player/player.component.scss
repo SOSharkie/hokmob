@@ -130,6 +130,41 @@
           color: $gray-03;
         }
       }
+
+      // While the player loads: blocks (skeleton-block) as tall as the name and team lines, so the header doesn't move
+      // when they come
+      .player-name-skeleton,
+      .player-team-label-skeleton {
+        display: inline-block;
+        align-self: flex-start;
+      }
+
+      .player-name-skeleton {
+        width: 190px;
+      }
+
+      .player-team-skeleton {
+        cursor: default;
+      }
+
+      .player-team-logo-skeleton {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        margin: 0 $spacing-medium 0 6px;
+      }
+
+      .player-team-label-skeleton {
+        width: 110px;
+      }
+    }
+
+    // The headshot's circle, its size
+    .player-headshot-skeleton {
+      border-radius: 50%;
+      flex: none;
+      width: 87px;
+      height: 87px;
     }
   }
 
@@ -267,8 +302,11 @@
   .player-container {
     margin: $spacing-small $spacing-x-small;
 
+    // One column that doesn't wrap: a wrapping one is as wide as its widest card's content, which pushed the cards
+    // past the right edge of a phone
     .player-cards {
       flex-direction: column;
+      flex-wrap: nowrap;
     }
   }
 }

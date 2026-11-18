@@ -1,41 +1,45 @@
-<div class="player-bio">
-  <div class="bio-grid">
-    <div class="bio-item top">
-      <span class="item-title">Position</span>
-      <span class="item-value">{{position}}</span>
-    </div>
-    <div class="bio-item top">
-      <span class="item-title">Age</span>
-      <span class="item-value">{{age}}</span>
-    </div>
-    <div class="bio-item top">
-      <span class="item-title">Height</span>
-      <span class="item-value">{{height}}</span>
-    </div>
-    <div class="bio-item top">
-      <span class="item-title">{{shootsCatchesHeader}}</span>
-      <span class="item-value">{{shootsCatches}}</span>
-    </div>
-    <div class="bio-item">
-      <span class="item-title">Country</span>
-      <div class="country-container">
-        @if (countryFlagPath) {
-          <img [src]="countryFlagPath" alt="" class="country-flag">
-        }
-        <span class="item-value">{{birthCountry}}</span>
+@if (loading) {
+  <app-skeleton-card shape="tiles" [layout]="skeletonLayout"></app-skeleton-card>
+} @else {
+  <div class="player-bio">
+    <div class="bio-grid">
+      <div class="bio-item top">
+        <span class="item-title">Position</span>
+        <span class="item-value">{{position}}</span>
+      </div>
+      <div class="bio-item top">
+        <span class="item-title">Age</span>
+        <span class="item-value">{{age}}</span>
+      </div>
+      <div class="bio-item top">
+        <span class="item-title">Height</span>
+        <span class="item-value">{{height}}</span>
+      </div>
+      <div class="bio-item top">
+        <span class="item-title">{{shootsCatchesHeader}}</span>
+        <span class="item-value">{{shootsCatches}}</span>
+      </div>
+      <div class="bio-item">
+        <span class="item-title">Country</span>
+        <div class="country-container">
+          @if (countryFlagPath) {
+            <img [src]="countryFlagPath" alt="" class="country-flag">
+          }
+          <span class="item-value">{{birthCountry}}</span>
+        </div>
+      </div>
+      <div class="bio-item">
+        <span class="item-title">Number</span>
+        <span class="item-value">{{sweaterNumber}}</span>
+      </div>
+      <div class="bio-item">
+        <span class="item-title">Weight</span>
+        <span class="item-value">{{weight}}</span>
+      </div>
+      <div class="bio-item">
+        <span class="item-title">Draft</span>
+        <span class="item-value draft-value">{{draft}}</span>
       </div>
     </div>
-    <div class="bio-item">
-      <span class="item-title">Number</span>
-      <span class="item-value">{{sweaterNumber}}</span>
-    </div>
-    <div class="bio-item">
-      <span class="item-title">Weight</span>
-      <span class="item-value">{{weight}}</span>
-    </div>
-    <div class="bio-item">
-      <span class="item-title">Draft</span>
-      <span class="item-value draft-value">{{draft}}</span>
-    </div>
   </div>
-</div>
+}

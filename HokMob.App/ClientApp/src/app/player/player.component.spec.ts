@@ -88,7 +88,6 @@ describe('PlayerComponent', () => {
 
   it('should show a real skater with his bio, season cards, recent games and career', async () => {
     open(8477964);
-    expect(child('.player-container')).toBeNull();
     await flushPlayerPage(8477964);
 
     expect(text('.player-name')).toBe('Ivan Barbashev');
@@ -156,6 +155,113 @@ describe('PlayerComponent', () => {
     expect(child('.stats-error')).toBeNull();
   });
 
+  describe('while loading', () => {
+    it('should show the header and every card as skeletons until the landing loads', () => {
+      open(8477964);
+      expect(component.playerLoading).toBeTrue();
+      expect(child('.player-headshot-skeleton').getAttribute('aria-label')).toBe('Loading player');
+      expect(child('.player-name-skeleton')).not.toBeNull();
+      expect(child('.player-headshot')).toBeNull();
+      // Gray stripes, not a team's color, until the player is in
+      expect(component.headerLineColor).toBe('#2b2b2b');
+      expect(child('app-player-bio').loading).toBeTrue();
+      expect(seasonCard().loading).toBeTrue();
+      expect(seasonCard().statTitle).toBeNull();
+      // Most players' cards have the rating column, so the layout and the card start with it
+      expect(component.hasSeasonRating).toBeTrue();
+      expect(seasonCard().ratingPending).toBeTrue();
+      expect(child('app-recent-player-games').loading).toBeTrue();
+      expect(child('app-recent-player-games').loadingRows).toBe(10);
+      expect(child('app-player-career').loading).toBeTrue();
+      expect(child('app-player-career').loadingRows).toBe(10);
+      httpMock.expectOne(landingUrl + '8477964/landing');
+    });
+
+    it('should show the stats cards as skeletons sized from the landing until the stats load', async () => {
+      open(8477964);
+      httpMock.expectOne(landingUrl + '8477964/landing').flush(mockPlayerLanding(8477964));
+      await settle();
+      expect(component.playerLoading).toBeFalse();
+      expect(text('.player-name')).toBe('Ivan Barbashev');
+      expect(child('.player-headshot-skeleton')).toBeNull();
+      expect(component.headerLineColor).toBe('#B4975A');
+      expect(child('app-player-bio').loading).toBeFalse();
+      expect(seasonCard().loading).toBeTrue();
+      expect(seasonCard().statTitle).toBe('2025-2026 NHL Regular Season Stats');
+      // 667 regular season and 112 playoff games: the 10 recent games are all there
+      expect(child('app-recent-player-games').loadingRows).toBe(10);
+      // The landing's 10 NHL regular seasons, the career table's rows once the stats load
+      expect(child('app-player-career').loadingRows).toBe(10);
+
+      httpMock.expectOne(statsUrl + '8477964?position=skater').flush(mockPlayerStats(8477964));
+      httpMock.match(historyUrl).forEach(request => request.flush(mockSeasonHistory()));
+      await settle();
+      expect(component.statsLoading).toBeFalse();
+      expect(seasonCard().loading).toBeFalse();
+      expect(child('app-recent-player-games').loading).toBeFalse();
+      expect(child('app-player-career').loading).toBeFalse();
+      expect(child('app-player-career').seasons.length).toBe(child('app-player-career').loadingRows);
+    });
+
+    it('should count a goalie\'s NHL seasons in the landing for the career skeleton', async () => {
+      open(8476945);
+      httpMock.expectOne(landingUrl + '8476945/landing').flush(mockPlayerLanding(8476945));
+      await settle();
+      expect(child('app-player-career').loadingRows).toBe(11);
+      await flushStats(8476945, 'goalie');
+      expect(child('app-player-career').seasons.length).toBe(11);
+    });
+
+    it('should give a newer player a recent games row per game played', async () => {
+      const landing = mockPlayerLanding(8477964);
+      landing.featuredStats.regularSeason.career.gamesPlayed = 4;
+      delete landing.featuredStats.playoffs;
+      open(8477964);
+      httpMock.expectOne(landingUrl + '8477964/landing').flush(landing);
+      await settle();
+      expect(component.expectedRecentGames).toBe(4);
+      expect(child('app-recent-player-games').loadingRows).toBe(4);
+      await flushStats(8477964, 'skater');
+    });
+
+    it('should show no stats skeletons for a player who has never played an NHL game', async () => {
+      const landing = mockPlayerLanding(8477964);
+      delete landing.featuredStats;
+      landing.seasonTotals = landing.seasonTotals.filter(total => total.leagueAbbrev !== 'NHL');
+      open(8477964);
+      httpMock.expectOne(landingUrl + '8477964/landing').flush(landing);
+      await settle();
+      expect(component.statsLoading).toBeFalse();
+      expect(child('app-skeleton-card')).toBeNull();
+      expect(child('.regular-season-stats')).toBeNull();
+      expect(child('.match-stats-container')).toBeNull();
+      expect(child('.career-totals')).toBeNull();
+      httpMock.match(() => true).forEach(request => request.flush({regularSeasons: [], playoffSeasons: [], recentGames: []}));
+      await settle();
+    });
+
+    it('should stop the stats skeletons when the stats fail', async () => {
+      open(8477964);
+      httpMock.expectOne(landingUrl + '8477964/landing').flush(mockPlayerLanding(8477964));
+      await settle();
+      httpMock.expectOne(statsUrl + '8477964?position=skater').flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      httpMock.match(historyUrl).forEach(request => request.flush(mockSeasonHistory()));
+      await settle();
+      expect(component.statsLoading).toBeFalse();
+      expect(child('.regular-season-stats')).toBeNull();
+      expect(child('.match-stats-container')).toBeNull();
+      expect(child('.career-totals')).toBeNull();
+      expect(text('.stats-error')).toBe('Stats couldn\'t be loaded');
+    });
+  });
+
+  /** Answers the stats request, and the featured season's history file when there's one. */
+  async function flushStats(playerId: number, position: string): Promise<void> {
+    httpMock.expectOne(statsUrl + playerId + '?position=' + position).flush(mockPlayerStats(playerId as any));
+    httpMock.match(historyUrl).forEach(request => request.flush(mockSeasonHistory()));
+    await settle();
+  }
+
   it('should show that the player could not be loaded when the landing fails', async () => {
     open(1);
     httpMock.expectOne(landingUrl + '1/landing').flush('Not found', {status: 404, statusText: 'Not Found'});
@@ -212,7 +318,10 @@ describe('PlayerComponent', () => {
 
     routeParams.next({id: '8476945'});
     fixture.detectChanges();
-    expect(child('.player-container')).toBeNull();
+    // Skeletons, not the previous player
+    expect(fixture.nativeElement.textContent).not.toContain('Barbashev');
+    expect(child('.player-headshot-skeleton')).not.toBeNull();
+    expect(child('app-player-bio').loading).toBeTrue();
     await flushPlayerPage(8476945, 'goalie');
     expect(text('.player-name')).toBe('Connor Hellebuyck');
     expect(child('app-player-career').seasons.length).toBe(11);

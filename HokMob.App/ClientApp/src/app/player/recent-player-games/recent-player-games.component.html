@@ -1,88 +1,93 @@
-<div class="player-recent-games-container">
-  <div class="recent-games-header">
-    <span>Recent Games</span>
-  </div>
-  @if (!isGoalie) {
-    <table class="recent-games-table">
-      <thead>
-        <tr class="player-game-header">
-          <th class="date-header"><span>Date</span></th>
-          <th class="vs-header"><span>VS</span></th>
-          <th class="toi-header"><span [title]="'Time On Ice'">TOI</span></th>
-          <th class="goals-header stat-cell"><span>Goals</span></th>
-          <th class="assists-header stat-cell"><span>Assists</span></th>
-          <th class="shots-header stat-cell"><span>Shots</span></th>
-          <th class="hits-header stat-cell"><span>Hits</span></th>
-          <th class="plus-minus-header stat-cell"><span>+/-</span></th>
-          <th class="pim-header stat-cell"><span [title]="'Penalty Minutes'">PIM</span></th>
-          <th class="rating-header stat-cell"><span [title]="'HokMob Rating'">Rating</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows; track row; let isLast = $last) {
-          <tr class="player-game-row" [ngClass]="{'last-row': isLast}"
-              [routerLink]="['/game', row.gameId]">
-            <td class="date-cell"><span>{{row.date}}</span></td>
-            <td>
-              <div class="opponent-cell">
-                <div class="logo-container">
-                  <img class="opponent-logo" [src]="row.opponentLogo" alt="">
-                </div>
-                <span>{{row.opponentAbbrev}}</span>
-                <span class="game-score">{{row.score}}</span>
-              </div>
-            </td>
-            <td><span>{{row.timeOnIce}}</span></td>
-            <td class="stat-cell"><span [ngStyle]="{'color': row.goals > 0 ? '#84dc7b' : ''}">{{row.goals}}</span></td>
-            <td class="stat-cell"><span [ngStyle]="{'color': row.assists > 0 ? '#84dc7b' : ''}">{{row.assists}}</span></td>
-            <td class="stat-cell hide-mobile"><span>{{row.shots}}</span></td>
-            <td class="stat-cell hide-mobile"><span>{{row.hits}}</span></td>
-            <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': getPlusMinusColor(row.plusMinus)}">{{row.plusMinus}}</span></td>
-            <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': row.penaltyMinutes > 0 ? '#e34d53' : ''}">{{row.penaltyMinutes}}</span></td>
-            <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': row.ratingColor}">{{row.hokmobRating}}</span></td>
+@if (loading) {
+  <app-skeleton-card cardTitle="Recent Games" [layout]="skeletonLayout" [mobileLayout]="skeletonMobileLayout"
+                     [mobileBreakpoint]="skeletonBreakpoint"></app-skeleton-card>
+} @else {
+  <div class="player-recent-games-container">
+    <div class="recent-games-header">
+      <span>Recent Games</span>
+    </div>
+    @if (!isGoalie) {
+      <table class="recent-games-table">
+        <thead>
+          <tr class="player-game-header">
+            <th class="date-header"><span>Date</span></th>
+            <th class="vs-header"><span>VS</span></th>
+            <th class="toi-header"><span [title]="'Time On Ice'">TOI</span></th>
+            <th class="goals-header stat-cell"><span>Goals</span></th>
+            <th class="assists-header stat-cell"><span>Assists</span></th>
+            <th class="shots-header stat-cell"><span>Shots</span></th>
+            <th class="hits-header stat-cell"><span>Hits</span></th>
+            <th class="plus-minus-header stat-cell"><span>+/-</span></th>
+            <th class="pim-header stat-cell"><span [title]="'Penalty Minutes'">PIM</span></th>
+            <th class="rating-header stat-cell"><span [title]="'HokMob Rating'">Rating</span></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  }
+        </thead>
+        <tbody>
+          @for (row of rows; track row; let isLast = $last) {
+            <tr class="player-game-row" [ngClass]="{'last-row': isLast}"
+                [routerLink]="['/game', row.gameId]">
+              <td class="date-cell"><span>{{row.date}}</span></td>
+              <td>
+                <div class="opponent-cell">
+                  <div class="logo-container">
+                    <img class="opponent-logo" [src]="row.opponentLogo" alt="">
+                  </div>
+                  <span>{{row.opponentAbbrev}}</span>
+                  <span class="game-score">{{row.score}}</span>
+                </div>
+              </td>
+              <td><span>{{row.timeOnIce}}</span></td>
+              <td class="stat-cell"><span [ngStyle]="{'color': row.goals > 0 ? '#84dc7b' : ''}">{{row.goals}}</span></td>
+              <td class="stat-cell"><span [ngStyle]="{'color': row.assists > 0 ? '#84dc7b' : ''}">{{row.assists}}</span></td>
+              <td class="stat-cell hide-mobile"><span>{{row.shots}}</span></td>
+              <td class="stat-cell hide-mobile"><span>{{row.hits}}</span></td>
+              <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': getPlusMinusColor(row.plusMinus)}">{{row.plusMinus}}</span></td>
+              <td class="stat-cell hide-mobile"><span [ngStyle]="{'color': row.penaltyMinutes > 0 ? '#e34d53' : ''}">{{row.penaltyMinutes}}</span></td>
+              <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': row.ratingColor}">{{row.hokmobRating}}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
 
-  @if (isGoalie) {
-    <table class="recent-games-table">
-      <thead>
-        <tr class="player-game-header">
-          <th class="date-header"><span>Date</span></th>
-          <th class="vs-header"><span>VS</span></th>
-          <th class="toi-header"><span [title]="'Time On Ice'">TOI</span></th>
-          <th class="goals-header stat-cell"><span>Save %</span></th>
-          <th class="assists-header stat-cell"><span [title]="'Goals Against Average'">GAA</span></th>
-          <th class="shots-header stat-cell"><span [title]="'Shots Against'">Shots Against</span></th>
-          <th class="hits-header stat-cell"><span [title]="'Goals Against'">Goals Against</span></th>
-          <th class="rating-header stat-cell"><span [title]="'HokMob Rating'">Rating</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows; track row; let isLast = $last) {
-          <tr class="player-game-row" [ngClass]="{'last-row': isLast}"
-              [routerLink]="['/game', row.gameId]">
-            <td class="date-cell"><span>{{row.date}}</span></td>
-            <td>
-              <div class="opponent-cell">
-                <div class="logo-container">
-                  <img class="opponent-logo" [src]="row.opponentLogo" alt="">
-                </div>
-                <span>{{row.opponentAbbrev}}</span>
-                <span class="game-score">{{row.score}}</span>
-              </div>
-            </td>
-            <td><span>{{row.timeOnIce}}</span></td>
-            <td class="stat-cell"><span>{{row.savePct | savePercentage}}</span></td>
-            <td class="stat-cell hide-mobile"><span>{{row.goalsAgainstAverage | goalsAgainstAverage}}</span></td>
-            <td class="stat-cell hide-mobile"><span>{{row.shotsAgainst}}</span></td>
-            <td class="stat-cell"><span>{{row.goalsAgainst}}</span></td>
-            <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': row.ratingColor}">{{row.hokmobRating}}</span></td>
+    @if (isGoalie) {
+      <table class="recent-games-table">
+        <thead>
+          <tr class="player-game-header">
+            <th class="date-header"><span>Date</span></th>
+            <th class="vs-header"><span>VS</span></th>
+            <th class="toi-header"><span [title]="'Time On Ice'">TOI</span></th>
+            <th class="goals-header stat-cell"><span>Save %</span></th>
+            <th class="assists-header stat-cell"><span [title]="'Goals Against Average'">GAA</span></th>
+            <th class="shots-header stat-cell"><span [title]="'Shots Against'">Shots Against</span></th>
+            <th class="hits-header stat-cell"><span [title]="'Goals Against'">Goals Against</span></th>
+            <th class="rating-header stat-cell"><span [title]="'HokMob Rating'">Rating</span></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  }
-</div>
+        </thead>
+        <tbody>
+          @for (row of rows; track row; let isLast = $last) {
+            <tr class="player-game-row" [ngClass]="{'last-row': isLast}"
+                [routerLink]="['/game', row.gameId]">
+              <td class="date-cell"><span>{{row.date}}</span></td>
+              <td>
+                <div class="opponent-cell">
+                  <div class="logo-container">
+                    <img class="opponent-logo" [src]="row.opponentLogo" alt="">
+                  </div>
+                  <span>{{row.opponentAbbrev}}</span>
+                  <span class="game-score">{{row.score}}</span>
+                </div>
+              </td>
+              <td><span>{{row.timeOnIce}}</span></td>
+              <td class="stat-cell"><span>{{row.savePct | savePercentage}}</span></td>
+              <td class="stat-cell hide-mobile"><span>{{row.goalsAgainstAverage | goalsAgainstAverage}}</span></td>
+              <td class="stat-cell hide-mobile"><span>{{row.shotsAgainst}}</span></td>
+              <td class="stat-cell"><span>{{row.goalsAgainst}}</span></td>
+              <td class="stat-cell"><span class="rating-cell" [ngStyle]="{'background-color': row.ratingColor}">{{row.hokmobRating}}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}

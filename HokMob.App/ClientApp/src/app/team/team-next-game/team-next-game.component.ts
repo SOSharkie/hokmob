@@ -1,5 +1,6 @@
 import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import dayjs from "dayjs";
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
@@ -27,6 +28,13 @@ export class TeamNextGameComponent {
    */
   @Input()
   public game: ScoreGame;
+
+  /** Whether the game is still loading, so the card shows its skeleton at its size. */
+  @Input()
+  public loading: boolean = false;
+
+  /** The skeleton: one game under the title, as tall as the score. */
+  public readonly skeletonLayout: SkeletonCardLayout = {rows: 1, rowHeight: 93};
 
   public get header(): string {
     if (this.liveGame) {

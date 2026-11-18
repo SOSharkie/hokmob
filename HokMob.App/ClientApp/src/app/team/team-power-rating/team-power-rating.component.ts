@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges} from '@angular/core';
 import {TeamRating, TeamRatingPoint, TeamRatingUtils, TeamScoreBar} from "@shared/utils/team-rating-utils";
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 
@@ -10,6 +11,8 @@ import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
  */
 export interface PowerRatingPart extends TeamScoreBar {
   label: string;
+  /** Like "Corsi %", for a narrow card. */
+  shortLabel: string;
   description: string;
   /** Like "30%". */
   weight: string;
@@ -22,6 +25,10 @@ export interface PowerRatingPart extends TeamScoreBar {
  * and each rated stat with its weight, value, league rank and a bar from the league average. The stats and weights are
  * the ones the rating was worked out with: with Natural Stat Trick's expected goals, credited under the card, or from
  * the NHL's stats alone when there are none. See TeamRatingUtils for how it's worked out.
+ *
+ * A page can put the card in a size container named `power-rating` (container: power-rating / inline-size on the
+ * app-team-power-rating element), like a future game's two cards side by side. Under 340px wide it then goes compact:
+ * the team's abbreviation for a title, the stats' short names without their weights, and a smaller rating.
  */
 @Component({
     selector: 'app-team-power-rating',
@@ -50,6 +57,26 @@ export class TeamPowerRatingComponent implements OnChanges {
   @Input()
   public showTeam: boolean = false;
 
+  /**
+   * Whether the card notes the league average and credits Natural Stat Trick under its stats. A page with more than one
+   * card can turn it off and note it once under them.
+   */
+  @Input()
+  public showNote: boolean = true;
+
+  /** Whether the ratings are still loading, so the card shows its skeleton at its size. */
+  @Input()
+  public loading: boolean = false;
+
+  /**
+   * The skeleton: the rating and rank under the title, then a bar row per rated stat (6 with expected goals, which most
+   * seasons have), and the note's space below.
+   */
+  public readonly skeletonLayout: SkeletonCardLayout = {rows: 6, rowHeight: 48, summaryHeight: 70, paddingBottom: 33};
+
+  /** On a phone the rows and the rating are a little smaller. */
+  public readonly skeletonMobileLayout: SkeletonCardLayout = {rowHeight: 44, summaryHeight: 66};
+
   /** The games the recent change is over. */
   public static readonly trendGames = 5;
 
@@ -66,6 +93,12 @@ export class TeamPowerRatingComponent implements OnChanges {
   public get title(): string {
     const teamName = this.showTeam ? NhlTeamUtils.getTeam(this.teamId)?.teamName : null;
     return teamName ? teamName + " Power Rating" : "Power Rating";
+  }
+
+  /** The compact card's title: like "SJS" with showTeam, the logo beside it, or else the title. */
+  public get shortTitle(): string {
+    const triCode = this.showTeam ? NhlTeamUtils.getTeam(this.teamId)?.triCode : null;
+    return triCode || this.title;
   }
 
   public get teamLogo(): string {
@@ -85,6 +118,7 @@ export class TeamPowerRatingComponent implements OnChanges {
     return TeamRatingUtils.getOrdinal(this.team?.rank) + " of " + (this.ratings ?? []).length;
   }
 
+  /** Like "Through 22 games", shown on hover over the rating and its rank. */
   public get gamesLabel(): string {
     const games = this.team?.gamesPlayed ?? 0;
     return "Through " + games + (games === 1 ? " game" : " games");
@@ -122,6 +156,7 @@ export class TeamPowerRatingComponent implements OnChanges {
       const value = this.team.values[metric.id];
       return {
         label: metric.label,
+        shortLabel: metric.shortLabel ?? metric.label,
         description: metric.description,
         weight: Math.round(this.team.weights[metric.id] * 100) + "%",
         value: value == null ? "-" : metric.format(value),

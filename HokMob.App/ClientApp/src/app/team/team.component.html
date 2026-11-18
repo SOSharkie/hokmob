@@ -20,6 +20,10 @@
           <div class="team-division">
             <span class="team-division-label">{{divisionName}} Division</span>
           </div>
+        } @else if (team && !standings) {
+          <div class="team-division" aria-hidden="true">
+            <span class="team-division-label team-division-skeleton skeleton-block">&nbsp;</span>
+          </div>
         }
       </div>
     </div>
@@ -71,11 +75,12 @@
           </div>
         }
         @case ('team-stats') {
-          @if (hasTeamStats) {
+          @if (hasTeamStats || !teamStatsLoaded) {
             <app-team-stats-tab
                 [teamId]="teamId"
                 [season]="season"
                 [teamStats]="teamStats"
+                [teamStatsLoading]="!teamStatsLoaded"
             ></app-team-stats-tab>
           }
           @if (teamStatsLoaded && !hasTeamStats) {
@@ -87,21 +92,24 @@
         @case ('games') {
           <div class="games-tab">
             <div class="games-column">
-              @if (nextGame) {
+              @if (nextGame || !scheduleLoaded) {
                 <div class="next-game-container">
                   <app-team-next-game
                       [game]="nextGame"
+                      [loading]="!scheduleLoaded"
                   ></app-team-next-game>
                 </div>
               }
               <app-team-schedule
                   [games]="scheduleGames"
+                  [loading]="!scheduleLoaded"
               ></app-team-schedule>
             </div>
             <div class="games-column">
               <app-single-team-form
                   [teamId]="teamId"
                   [games]="formGames"
+                  [loading]="!formLoaded"
               ></app-single-team-form>
             </div>
           </div>
@@ -113,6 +121,7 @@
                 <app-team-stats
                   [teamId]="teamId"
                   [teamStats]="teamStats"
+                  [loading]="!teamStatsLoaded"
                 ></app-team-stats>
               </div>
               @if (standings?.length) {
@@ -124,13 +133,21 @@
                       [showFormAndNext]="false"
                   ></app-standings>
                 </div>
+              } @else if (!standings) {
+                <div class="team-standings">
+                  <app-skeleton-card
+                      [layout]="standingsSkeletonLayout"
+                      [mobileLayout]="standingsSkeletonMobileLayout"
+                  ></app-skeleton-card>
+                </div>
               }
             </div>
             <div class="team-info-container">
-              @if (nextGame) {
+              @if (nextGame || !scheduleLoaded) {
                 <div class="next-game-container">
                   <app-team-next-game
                       [game]="nextGame"
+                      [loading]="!scheduleLoaded"
                   ></app-team-next-game>
                 </div>
               }
@@ -138,11 +155,13 @@
                 <app-single-team-form
                   [teamId]="teamId"
                   [games]="formGames"
+                  [loading]="!formLoaded"
                 ></app-single-team-form>
               </div>
               <div class="team-next-game-container">
                 <app-team-schedule
                   [games]="scheduleGames"
+                  [loading]="!scheduleLoaded"
                 ></app-team-schedule>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
+import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
 import {ClubScheduleGame} from "@shared/models/nhl-web-api/club-schedule.model";
 
 /**
@@ -22,5 +23,12 @@ export class SingleTeamFormComponent {
 
   @Input()
   public games: ClubScheduleGame[] = [];
+
+  /** Whether the games are still loading, so the card shows its skeleton at its size. */
+  @Input()
+  public loading: boolean = false;
+
+  /** The skeleton's rows: the 5 games the team page asks for, each like app-previous-game. */
+  public readonly skeletonLayout: SkeletonCardLayout = {rows: 5, rowHeight: 82.8};
 
 }

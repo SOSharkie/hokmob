@@ -46,10 +46,11 @@ describe('TeamPowerRatingComponent', () => {
     return fixture.nativeElement.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim();
   }
 
-  function parts(): {name: string, weight: string, value: string, rank: string}[] {
+  function parts(): {name: string, shortName: string, weight: string, value: string, rank: string}[] {
     const rows: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.rating-part'));
     return rows.map(row => ({
       name: row.querySelector('.part-name').textContent.trim(),
+      shortName: row.querySelector('.part-short-name').textContent.trim(),
       weight: row.querySelector('.part-weight').textContent.trim(),
       value: row.querySelector('.part-value').textContent.trim(),
       rank: row.querySelector('.part-rank').textContent.trim()
@@ -61,7 +62,17 @@ describe('TeamPowerRatingComponent', () => {
     const team = ratings.find(rating => rating.teamId === sharks);
     expect(text('.rating-badge')).toBe(team.rating.toFixed(1));
     expect(text('.rating-rank')).toBe(TeamRatingUtils.getOrdinal(team.rank) + ' of 32');
-    expect(text('.rating-games')).toContain('Through 22 games');
+    // The games played show on hover over the rating and its rank, not on the card
+    expect(fixture.nativeElement.querySelector('.rating-badge').title).toBe('Through 22 games');
+    expect(fixture.nativeElement.querySelector('.rating-rank').title).toBe('Through 22 games');
+    expect(text('.power-rating-card')).not.toContain('Through');
+  });
+
+  it('should gray the rating\'s rank like each stat\'s', () => {
+    show(sharks);
+    const rankColor = getComputedStyle(fixture.nativeElement.querySelector('.rating-rank')).color;
+    expect(rankColor).toBe('rgb(149, 149, 149)');
+    expect(rankColor).toBe(getComputedStyle(fixture.nativeElement.querySelector('.part-rank')).color);
   });
 
   it('should color the rating like a HokMob rating', () => {
@@ -87,6 +98,29 @@ describe('TeamPowerRatingComponent', () => {
     // San Jose, 30th through 2026-11-14
     expect(text('.rating-badge')).toBe('2.9');
     expect(text('.rating-rank')).toBe('30th of 32');
+  });
+
+  it('should give each stat its short name, for a compact card', () => {
+    show(sharks);
+    expect(parts().map(row => row.shortName)).toEqual([
+      'Corsi %', 'xGF%', 'Shooting %', 'Save %', 'Power play', 'Penalties'
+    ]);
+  });
+
+  it('should show a skeleton while loading: the rating, then a bar row per stat', () => {
+    fixture.componentRef.setInput('loading', true);
+    show(sharks, [], []);
+    const skeleton = fixture.nativeElement.querySelector('app-skeleton-card');
+    expect(skeleton.getAttribute('shape')).toBe('bar');
+    expect(skeleton.cardTitle).toBe('Power Rating');
+    expect(skeleton.layout).toEqual(jasmine.objectContaining({rows: 6, summaryHeight: 70}));
+    expect(skeleton.mobileLayout).toEqual(jasmine.objectContaining({rowHeight: 44, summaryHeight: 66}));
+    expect(fixture.nativeElement.querySelector('.power-rating-card')).toBeNull();
+
+    fixture.componentRef.setInput('loading', false);
+    show(sharks);
+    expect(fixture.nativeElement.querySelector('app-skeleton-card')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.power-rating-card')).not.toBeNull();
   });
 
   it('should rate nothing from the standings', () => {
@@ -125,6 +159,13 @@ describe('TeamPowerRatingComponent', () => {
     expect(credit.href).toBe('https://www.naturalstattrick.com/teamtable.php');
     expect(credit.target).toBe('_blank');
     expect(fixture.nativeElement.querySelector('.power-rating-fallback')).toBeNull();
+  });
+
+  it('should leave the note out when asked, for a page that notes it once under its cards', () => {
+    fixture.componentRef.setInput('showNote', false);
+    show(sharks);
+    expect(fixture.nativeElement.querySelector('.rating-bar-card-note')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.rating-part')).not.toBeNull();
   });
 
   describe('without expected goals', () => {
@@ -187,6 +228,7 @@ describe('TeamPowerRatingComponent', () => {
   it('should title the card without the team on the team page', () => {
     show(sharks);
     expect(text('.rating-bar-card-title')).toBe('Power Rating');
+    expect(text('.power-rating-short-title')).toBe('Power Rating');
     expect(fixture.nativeElement.querySelector('.power-rating-team-logo')).toBeNull();
   });
 
@@ -194,6 +236,8 @@ describe('TeamPowerRatingComponent', () => {
     fixture.componentRef.setInput('showTeam', true);
     show(sharks);
     expect(text('.rating-bar-card-title')).toBe('Sharks Power Rating');
+    // A compact card's title, beside the logo
+    expect(text('.power-rating-short-title')).toBe('SJS');
     const logo: HTMLImageElement = fixture.nativeElement.querySelector('.power-rating-team-logo');
     expect(logo.getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(sharks));
     expect(logo.alt).toBe('');
