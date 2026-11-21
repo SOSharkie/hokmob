@@ -311,11 +311,12 @@ namespace HokMob.App.Controllers
             {
                 new KeyValuePair<string, string>("isAggregate", "false"),
                 new KeyValuePair<string, string>("isGame", "true"),
-                new KeyValuePair<string, string>("limit", "-1"),
                 new KeyValuePair<string, string>("cayenneExp", $"seasonId={season} and gameTypeId={teamGameType}")
             };
+            // A season is up to 2,624 rows per report, so each is read page by page, in an order that's unique per row
             var reportTasks = TeamGameReports
-                .Select(report => _nhlStatsApiClient.GetReportAsync(report, parameters, cancellationToken))
+                .Select(report => _nhlStatsApiClient.GetAllReportRowsAsync(report, parameters, TeamGameSort,
+                    cancellationToken))
                 .ToList();
             await Task.WhenAll(reportTasks);
             // A missing report would rate every team on part of the stats, so every call is required.
@@ -360,14 +361,20 @@ namespace HokMob.App.Controllers
 
         /// <summary>
         /// The team reports of /team-games, in the order TeamGameFields refers to them by index. The summary comes
-        /// first: its rows are the games. The goals by strength reports leave out a team that scored no goals (a
-        /// shutout loss has no goalsforbystrength row), so they're optional (OptionalTeamGameReports).
+        /// first: its rows are the games. The goals by strength reports have no game for a team that scored no goals (a
+        /// shutout loss's goalsforbystrength row has no game ID), so they're optional (OptionalTeamGameReports).
         /// </summary>
         private static readonly string[] TeamGameReports =
         {
             "team/summary", "team/summaryshooting", "team/powerplay", "team/penaltykill", "team/goalsforbystrength",
             "team/goalsagainstbystrength"
         };
+
+        /// <summary>
+        /// The order the team reports are paged in. A team has one row per game, so it's unique per row. A
+        /// goalsforbystrength row of a shutout loss has no game ID; those sort first and are left out.
+        /// </summary>
+        private static readonly string[] TeamGameSort = {"gameId", "teamId"};
 
         /// <summary>The reports of TeamGameReports, by index, whose missing row counts as 0 goals.</summary>
         private static readonly HashSet<int> OptionalTeamGameReports = new() {4, 5};

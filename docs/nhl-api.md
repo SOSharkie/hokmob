@@ -118,8 +118,19 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
   percentages are 0–1, times are in seconds, and rows have no headshots or logos.
 - **Parameters:** `cayenneExp` is the filter and is required for the skater and goalie reports (`and`, `=`, `>=`,
   `in (a,b)`, `likeIgnoreCase "mac%"`). `isAggregate=true` sums everything into one row; `isGame=true` gives one row
-  per game. `sort` takes a JSON array like `[{"property":"gameDate","direction":"DESC"}]`. `limit=-1` returns every
-  row. URL-encode the spaces in `cayenneExp` as `%20`.
+  per game. `sort` takes a JSON array like `[{"property":"gameDate","direction":"DESC"}]`. URL-encode the spaces in
+  `cayenneExp` as `%20`.
+- **At most 100 rows per request** (since 2026-11): `limit=-1`, or any limit over 100, returns the first 100 rows,
+  while `total` still counts them all. Until then `limit=-1` returned every row. For more, page
+  with `start=0,100,200,…` and `limit=100`, sorted by fields that are unique per row (a team's game rows by `gameId`
+  then `teamId`); without a sort each request returns a different 100. `NhlStatsApiClient.GetAllReportRowsAsync`
+  does this, 6 pages at a time, and reads the report again if `total` changes between pages; the data scripts use
+  `ClientApp/stats-api-pages.js`, which does the same one page at a time, at most 4 a second (see the rate limit under
+  [History data](#history-data)). `GetReportAsync` logs a
+  warning when a `limit=-1` query gets fewer rows than `total`.
+- **At most 10,000 rows per query**, even page by page: a query with more says its `total` is 10,000 and pages
+  stop there, without an error. Split it (by team, or by dates). The backend and the scripts fail on a query that
+  reaches it.
 - **Per-season rows** (`isAggregate=false&isGame=false`): NHL seasons only, and a traded season is one combined row
   with `teamAbbrevs` like `"CGY,VAN"`. Rows have no `gameTypeId`, so query the regular season and the playoffs
   separately.
@@ -150,7 +161,7 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
 | `team/summary` | `teamId`, `teamFullName`, `powerPlayPct`, `penaltyKillPct`, `goalsForPerGame`, `goalsAgainstPerGame`, `shotsForPerGame`, `shotsAgainstPerGame`, `faceoffWinPct`; per game (`isGame=true`) also `gameId`, `gameDate`, `homeRoad`, `wins`, `losses`, `otLosses`, `points`, `goalsFor`, `goalsAgainst`, and a game's shots as `shotsForPerGame` / `shotsAgainstPerGame` |
 | `team/summaryshooting` | 5v5 shot attempts: `satFor`, `satAgainst` (Corsi), `usatFor`, `usatAgainst` (Fenwick), and `shots5v5` (shots on goal) |
 | `team/powerplay`, `team/penaltykill` | `powerPlayGoalsFor`, `ppOpportunities`, `shGoalsAgainst`; `ppGoalsAgainst`, `timesShorthanded`, `shGoalsFor` |
-| `team/goalsforbystrength`, `team/goalsagainstbystrength` | `goalsFor5On5`, `goalsAgainst5On5`. A team that scored no goals has **no `goalsforbystrength` row** for that game (113 games in 2025-26) |
+| `team/goalsforbystrength`, `team/goalsagainstbystrength` | `goalsFor5On5`, `goalsAgainst5On5`. A team that scored no goals has **no `goalsforbystrength` row** for that game (113 games in 2025-26), or, since 2026-11, a row with a null `gameId` and null counts |
 | `game` | `homeTeamId`, `visitingTeamId`, `homeScore`, `visitingScore`, `gameStateId`, `gameType`, `gameDate`, `easternStartTime` |
 | `season` | `id`, `formattedSeasonId`, `preseasonStartdate`, `startDate`, `regularSeasonEndDate`, `endDate`, `numberOfGames` |
 
@@ -283,8 +294,9 @@ row per team and game, merged from the per game rows of `team/summary`, `team/su
 goal, sorted by date. It's sent as columns (`{ games: { gameId: [...], teamId: [...], ... } }`), 64 KB for 650 rows,
 since a full season is about 2,600 rows; `NhlStatsApiService.getTeamGames` turns them into objects. A game missing
 from one of the required reports is left out, but a missing goals by strength row counts as 0 goals (see the reports
-table). All six calls are required, or it answers 502. A season is about 2,600 rows per report, under the 10,000 row
-cap.
+table). All six reports are required, or it answers 502. A season is up to 2,624 rows per report, so each is read
+in pages of 100 sorted by `gameId` then `teamId` (see the 100 row cap above): about 160 requests for a full season,
+about 5 seconds when nothing is cached, then cached for 5 minutes.
 
 Each game's expected goals come from Natural Stat Trick's `/api/nst/team-games?season=` (see
 [Team game logs](#team-game-logs)): the team's 5v5 xG for and against. The team stats tab and the teams page ask for both at once, merge them by game and team
@@ -604,12 +616,17 @@ file holds the rating's inputs, not ratings, so a formula change shows up on the
   rating's win and shutout bonuses, since file version 2, and the goalie's own `goals` and `assists` since version 3)
   and `goalie/savesByStrength`. The `game` report gives each
   game's date, teams and score. The reports are merged by `playerId` + `gameId`.
-- **The 10,000 row cap:** the stats API returns at most 10,000 rows per query, even with `limit=-1`, without an
-  error, and `total` says 10,000 too. A regular season is about 47,000 skater game rows, so the skater reports are
-  asked for per team (`seasonId=20252026 and gameTypeId=2 and teamId=<id>`, about 1,500 rows each). The goalies (2,768
-  rows) fit in one query. The script fails when a response has 10,000 rows or more.
-- **Rate limit:** the stats API answers 429 to a few dozen requests at once, so the script sends two at a time and
-  waits on a 429.
+- **Paging:** the stats API returns 100 rows per request (see its parameters), so every query is read in pages of
+  100, sorted by `playerId` then `gameId` (the `game` report by `id`), by `stats-api-pages.js`, which the play-by-play
+  script shares. It reads a query again when its `total` changes between pages, and fails when the rows don't add up
+  to the total or repeat a key, or when a query reaches the 10,000 row cap. A regular season is about 47,000 skater
+  game rows, so the skater reports are asked for per team (`seasonId=20252026 and gameTypeId=2 and teamId=<id>`,
+  about 1,500 rows, 15 pages each), which also gives each row its team; the goalies (2,768 rows) are one query. A full
+  season is about 3,400 pages, about 15 minutes.
+- **Rate limit:** the stats API answers 429 with `Retry-After: 60` to a burst: 50 requests at about 13 a second got
+  one (2026-11), while 70 at 3 a second and 90 at one every 1.3 seconds didn't. So the script reads two queries at a
+  time, each one page at a time, starts a page at most every 250 ms across both (`stats-api-pages.js`), and waits on a
+  429. It logs its progress every tenth of the skater queries.
 - **Quirks:** `skater/summaryshooting` leaves a Corsi or Fenwick count null instead of 0 for a skater with a few 5v5
   shifts (stored as 0). `faceoffWinPct` is null without faceoffs (stored as 0, as the rating reads it) and truncated
   to 5 decimals (0.38461 for 5 of 13), so it's stored as given rather than worked out from the counts. A goalie's
@@ -732,8 +749,8 @@ iced the puck or froze it. The last two follow from the next faceoff, which is i
 did.
 
 **The logs.** `skater-toi`: `gameId`, `playerId`, `team` (abbreviation), `position`, `toi`, `evToi`, `ppToi`, `shToi`
-(seconds) and `shifts`. A season is about 47,000 rows and a stats API query returns 10,000 at most, so the script asks
-two weeks of `gameDate` at a time. `goalies`: `gameId`, `playerId`, `team`, `started` (1 or 0), `shotsAgainst`, `saves`,
+(seconds) and `shifts`. A season is about 47,000 rows and a stats API query sees 10,000 at most, so the script asks
+two weeks of `gameDate` at a time, each read in pages of 100 (`stats-api-pages.js`, see [History data](#history-data)). `goalies`: `gameId`, `playerId`, `team`, `started` (1 or 0), `shotsAgainst`, `saves`,
 `goalsAgainst` and `toi` (seconds), all situations. A goalie's 5v5 shots are in the play-by-play (`g` and `sit`).
 
 **The totals.** `skater-totals`: `playerId`, `position`, `games`, `goals`, `assists`, `points`, `evPoints`, `shots` and
