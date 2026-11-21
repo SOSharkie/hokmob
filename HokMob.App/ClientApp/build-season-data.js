@@ -15,15 +15,18 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const {getAllRows} = require('./stats-api-pages');
 
 const statsUrl = 'https://api.nhle.com/stats/rest/en/';
 const maxAttempts = 6;
 const retryDelayMs = 5000;
 const timeoutMs = 60000;
-/** The stats API answers 429 to more than a few requests at once. */
+/**
+ * The queries read at once, each one page at a time. The pages are paced at 4 a second (stats-api-pages.js), since
+ * the stats API answers 429 to a burst, and a season is about 3,400 pages of 100 rows, so a full season takes about
+ * 15 minutes.
+ */
 const concurrency = 2;
-/** The stats API returns at most this many rows per query, however high the limit, without saying so. */
-const rowCap = 10000;
 const fileVersion = 3;
 
 /** The skater reports merged into one row per player and game, and the fields taken from each. */
@@ -68,19 +71,18 @@ const outFile = optionValue('--out') ?? path.join(__dirname, `src/assets/history
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * An error that retrying won't fix, like a response at the row cap.
+ * Fetches every row of a stats API report, page by page in the given order, which must be unique per row (see
+ * stats-api-pages.js).
  */
-function fatalError(message) {
-  return Object.assign(new Error(message), {fatal: true});
+async function getReport(report, params, sortFields) {
+  const query = Object.entries(params).map(([key, value]) => key + '=' + encodeURIComponent(value)).join('&');
+  return getAllRows(statsUrl + report + '?' + query, sortFields, url => fetchPage(report, url));
 }
 
 /**
- * Fetches a stats API report's rows, retrying a few times, and waiting longer after a 429. Fails when the response
- * may have hit the row cap.
+ * Fetches one page of a stats API report, retrying a few times, and waiting longer after a 429.
  */
-async function getReport(report, params) {
-  const query = Object.entries(params).map(([key, value]) => key + '=' + encodeURIComponent(value)).join('&');
-  const url = statsUrl + report + '?' + query;
+async function fetchPage(report, url) {
   for (let attempt = 1; ; attempt++) {
     try {
       const response = await fetch(url, {signal: AbortSignal.timeout(timeoutMs)});
@@ -98,16 +100,9 @@ async function getReport(report, params) {
       if (!Array.isArray(body.data)) {
         throw new Error(`${report}: ${body.message ?? 'no data'} (${url})`);
       }
-      if (body.total >= rowCap || body.data.length >= rowCap) {
-        throw fatalError(`${report}: ${body.total} rows, at the stats API's ${rowCap} row cap, so some are missing ` +
-            `(${url})`);
-      }
-      if (body.data.length !== body.total) {
-        throw fatalError(`${report}: ${body.data.length} of ${body.total} rows (${url})`);
-      }
-      return body.data;
+      return body;
     } catch (error) {
-      if (attempt >= maxAttempts || error.fatal) {
+      if (attempt >= maxAttempts) {
         throw error;
       }
       const delay = retryDelayMs * attempt;
@@ -123,10 +118,15 @@ async function getReport(report, params) {
 async function runAll(tasks) {
   const results = new Array(tasks.length);
   let next = 0;
+  let done = 0;
+  const step = Math.ceil(tasks.length / 10);
   const worker = async () => {
     while (next < tasks.length) {
       const index = next++;
       results[index] = await tasks[index]();
+      if (++done % step === 0 && done < tasks.length) {
+        console.log(`  ${done} of ${tasks.length} queries`);
+      }
     }
   };
   await Promise.all(Array.from({length: Math.min(concurrency, tasks.length)}, worker));
@@ -134,8 +134,11 @@ async function runAll(tasks) {
 }
 
 function gameRowParams(filter) {
-  return {isAggregate: 'false', isGame: 'true', limit: '-1', cayenneExp: filter};
+  return {isAggregate: 'false', isGame: 'true', cayenneExp: filter};
 }
+
+/** A player's per game rows are unique by player and game. */
+const playerGameSort = ['playerId', 'gameId'];
 
 const rowKey = row => row.playerId + '-' + row.gameId;
 
@@ -195,7 +198,7 @@ async function main() {
   const seasonFilter = `seasonId=${season} and gameTypeId=${gameType}`;
 
   console.log(`Fetching the ${season} games (game type ${gameType})`);
-  const scheduledGames = (await getReport('game', {cayenneExp: `season=${season} and gameType=${gameType}`}))
+  const scheduledGames = (await getReport('game', {cayenneExp: `season=${season} and gameType=${gameType}`}, ['id']))
       .sort((gameA, gameB) => gameA.id - gameB.id);
   const gameRows = scheduledGames.filter(game => game.gameStateId === 7);
   const unfinished = scheduledGames.filter(game => game.gameStateId !== 7);
@@ -211,12 +214,12 @@ async function main() {
   const teamIds = [...new Set(gameRows.flatMap(game => [game.homeTeamId, game.visitingTeamId]))]
       .sort((teamA, teamB) => teamA - teamB);
 
-  // A team's season is about 1,500 skater rows, the whole league's about 47,000, well over the row cap
+  // Asked team by team, so each row's team is known: a team's season is about 1,500 skater rows, 15 pages
   const reports = Object.keys(skaterReports);
   console.log(`Fetching ${reports.length} skater reports for ${teamIds.length} teams`);
   const teamReports = teamIds.flatMap(teamId => reports.map(report => ({teamId, report})));
   const teamReportRows = await runAll(teamReports.map(({teamId, report}) => () =>
-      getReport(report, gameRowParams(`${seasonFilter} and teamId=${teamId}`)).then(finalGameRows)));
+      getReport(report, gameRowParams(`${seasonFilter} and teamId=${teamId}`), playerGameSort).then(finalGameRows)));
   const skaterRows = teamIds.flatMap(teamId => {
     const reportRows = Object.fromEntries(reports.map(report =>
         [report, teamReportRows[teamReports.findIndex(task => task.teamId === teamId && task.report === report)]]));
@@ -226,7 +229,7 @@ async function main() {
   console.log('Fetching the goalie reports');
   const goalieReportNames = Object.keys(goalieReports);
   const goalieReportRows = await runAll(goalieReportNames.map(report => () =>
-      getReport(report, gameRowParams(seasonFilter)).then(finalGameRows)));
+      getReport(report, gameRowParams(seasonFilter), playerGameSort).then(finalGameRows)));
   const goalieReportsByName = Object.fromEntries(goalieReportNames.map((report, i) => [report, goalieReportRows[i]]));
   const goalieRows = mergeReports(goalieReportsByName, goalieReports, 'goalies');
 

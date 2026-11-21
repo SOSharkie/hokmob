@@ -7,9 +7,9 @@
 //   season  Like 20252026. Regular season only. Several seasons are done one after another.
 //   --out   Output folder. Default: ../../data/nhl-play-by-play
 //   --only  Comma separated parts to save. Default: totals,logs,play-by-play.
-//             totals        every skater's and goalie's season totals and the skaters' bios (3 requests,
-//                           refetched every run)
-//             logs          every skater's ice time and every goalie's shots in each game (about 15 requests)
+//             totals        every skater's and goalie's season totals and the skaters' bios (about 25 pages of
+//                           100 rows, refetched every run)
+//             logs          every skater's ice time and every goalie's shots in each game (about 500 pages)
 //             play-by-play  every game's plays (one request per game)
 //
 // It resumes: games already in a season's file are skipped, so rerun it after an interruption, or to add a season in
@@ -21,6 +21,7 @@
 // expect the running app's own api-web calls to fail now and then while it runs: the limit is per IP address.
 const fs = require('fs');
 const path = require('path');
+const {getAllRows} = require('./stats-api-pages');
 
 const playByPlayUrl = id => `https://api-web.nhle.com/v1/gamecenter/${id}/play-by-play`;
 const statsUrl = 'https://api.nhle.com/stats/rest/en/';
@@ -85,28 +86,36 @@ function compactGame(game) {
   };
 }
 
-/** A stats API report, every row of it. Retries, since it shares api-web's limit. */
-async function statsRows(report, expression, isGame) {
-  const url = `${statsUrl}${report}?${isGame ? 'isAggregate=false&isGame=true&' : ''}limit=-1&cayenneExp=${encodeURIComponent(expression)}`;
+/**
+ * A stats API report, every row of it, read in pages of 100 in the given order, which must be unique per row (see
+ * stats-api-pages.js).
+ */
+async function statsRows(report, expression, isGame, sortFields) {
+  const url = `${statsUrl}${report}?${isGame ? 'isAggregate=false&isGame=true&' : ''}cayenneExp=${encodeURIComponent(expression)}`;
+  return getAllRows(url, sortFields, statsPage);
+}
+
+/** One page of a stats API report. Retries, since it shares api-web's limit. */
+async function statsPage(url) {
   for (let attempt = 0; attempt < 20; attempt++) {
     try {
       const response = await fetch(url);
       if (response.ok) {
         const json = await response.json();
-        if (json.total != null && json.data.length !== json.total) throw new Error(`${report}: ${json.data.length} of ${json.total} rows`);
-        return json.data;
+        if (!Array.isArray(json.data)) throw new Error(json.message ?? 'no data');
+        return json;
       }
     } catch (error) {
       if (attempt === 19) throw error;
     }
     await sleep(15000);
   }
-  throw new Error(`The stats API didn't answer for ${report}`);
+  throw new Error(`The stats API didn't answer for ${url}`);
 }
 
 /** The season's finished regular season games, by date. */
 async function finishedGames(season) {
-  const games = await statsRows('game', `season=${season} and gameType=2`, false);
+  const games = await statsRows('game', `season=${season} and gameType=2`, false, ['id']);
   return games.filter(game => game.gameStateId === finalGameState)
     .sort((a, b) => a.gameDate < b.gameDate ? -1 : a.gameDate > b.gameDate ? 1 : a.id - b.id);
 }
@@ -171,11 +180,13 @@ async function saveLogs(season, games, dir) {
   const skaterFile = path.join(dir, `${season}-2-skater-toi.csv`), goalieFile = path.join(dir, `${season}-2-goalies.csv`);
   const gameCount = file => fs.existsSync(file) ? new Set(fs.readFileSync(file, 'utf8').split('\n').slice(1).filter(Boolean).map(l => l.split(',')[0])).size : 0;
   if (gameCount(skaterFile) < games.length) {
-    // a season is about 47,000 rows and a query gives 10,000 at most, so ask two weeks at a time
+    // a season is about 47,000 rows and a query sees 10,000 at most, even page by page, so ask two weeks at a time
+    // (about 3,600 rows, 36 pages)
     const rows = [];
     for (let from = games[0].gameDate; from <= games[games.length - 1].gameDate; from = addDays(from, 14)) {
       const data = await statsRows('skater/timeonice',
-        `seasonId=${season} and gameTypeId=2 and gameDate>="${from}" and gameDate<="${addDays(from, 13)} 23:59:59"`, true);
+        `seasonId=${season} and gameTypeId=2 and gameDate>="${from}" and gameDate<="${addDays(from, 13)} 23:59:59"`, true,
+        ['gameId', 'playerId']);
       data.forEach(r => rows.push([r.gameId, r.playerId, r.teamAbbrev, r.positionCode, r.timeOnIce, r.evTimeOnIce, r.ppTimeOnIce,
         r.shTimeOnIce, r.shifts]));
       await sleep(1500);
@@ -185,9 +196,8 @@ async function saveLogs(season, games, dir) {
     console.log(`${season}: ${rows.length} skater rows in ${path.basename(skaterFile)}`);
   }
   if (gameCount(goalieFile) < games.length) {
-    const data = await statsRows('goalie/summary', `seasonId=${season} and gameTypeId=2`, true);
-    const rows = data.map(r => [r.gameId, r.playerId, r.teamAbbrev, r.gamesStarted, r.shotsAgainst, r.saves, r.goalsAgainst, r.timeOnIce])
-      .sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const data = await statsRows('goalie/summary', `seasonId=${season} and gameTypeId=2`, true, ['gameId', 'playerId']);
+    const rows = data.map(r => [r.gameId, r.playerId, r.teamAbbrev, r.gamesStarted, r.shotsAgainst, r.saves, r.goalsAgainst, r.timeOnIce]);
     fs.writeFileSync(goalieFile, csv(['gameId', 'playerId', 'team', 'started', 'shotsAgainst', 'saves', 'goalsAgainst', 'toi'], rows));
     console.log(`${season}: ${rows.length} goalie rows in ${path.basename(goalieFile)}`);
   }
@@ -195,19 +205,19 @@ async function saveLogs(season, games, dir) {
 
 /** Every skater's and goalie's totals for the season: what a player had done before a later season, for rating a lineup. */
 async function saveTotals(season, dir) {
-  const skaters = await statsRows('skater/summary', `seasonId=${season} and gameTypeId=2`, false);
+  const skaters = await statsRows('skater/summary', `seasonId=${season} and gameTypeId=2`, false, ['playerId']);
   fs.writeFileSync(path.join(dir, `${season}-2-skater-totals.csv`), csv(
     ['playerId', 'position', 'games', 'goals', 'assists', 'points', 'evPoints', 'shots', 'toiPerGame'],
     skaters.map(r => [r.playerId, r.positionCode, r.gamesPlayed, r.goals, r.assists, r.points, r.evPoints, r.shots,
       Math.round(r.timeOnIcePerGame)]).sort((a, b) => a[0] - b[0])));
   await sleep(1500);
-  const goalies = await statsRows('goalie/summary', `seasonId=${season} and gameTypeId=2`, false);
+  const goalies = await statsRows('goalie/summary', `seasonId=${season} and gameTypeId=2`, false, ['playerId']);
   fs.writeFileSync(path.join(dir, `${season}-2-goalie-totals.csv`), csv(
     ['playerId', 'games', 'started', 'shotsAgainst', 'saves', 'goalsAgainst', 'toi'],
     goalies.map(r => [r.playerId, r.gamesPlayed, r.gamesStarted, r.shotsAgainst, r.saves, r.goalsAgainst, r.timeOnIce])
       .sort((a, b) => a[0] - b[0])));
   await sleep(1500);
-  const bios = await statsRows('skater/bios', `seasonId=${season} and gameTypeId=2`, false);
+  const bios = await statsRows('skater/bios', `seasonId=${season} and gameTypeId=2`, false, ['playerId']);
   fs.writeFileSync(path.join(dir, `${season}-2-skater-bios.csv`), csv(
     ['playerId', 'birthDate', 'height', 'weight', 'firstSeason', 'draftYear', 'draftOverall'],
     bios.map(r => [r.playerId, r.birthDate, r.height, r.weight, r.firstSeasonForGameType, r.draftYear ?? '', r.draftOverall ?? ''])
