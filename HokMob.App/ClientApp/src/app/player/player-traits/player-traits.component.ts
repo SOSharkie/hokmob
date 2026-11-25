@@ -179,7 +179,7 @@ export class PlayerTraitsComponent implements OnChanges {
     if (!this.traits?.usesEdge) {
       return "";
     }
-    return "Speed is NHL EDGE's top speed and bursts over 20 mph per 60" + this.edgeThroughText + ".";
+    return "Speed is NHL EDGE's bursts over 20 mph per 60, with top speed at half weight" + this.edgeThroughText + ".";
   }
 
   /** What comes from Natural Stat Trick, for the explanation, or nothing when it isn't used. */

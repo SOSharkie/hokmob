@@ -95,7 +95,7 @@ describe('PlayerTraitsComponent', () => {
     const speed = fixture.nativeElement.querySelectorAll('.trait-label')[3];
     expect(speed.getAttribute('title')).toContain('(NHL EDGE)');
     expect(speed.getAttribute('title')).toMatch(/, through [A-Z][a-z]+ \d+$/);
-    expect(text('.traits-help')).toContain("Speed is NHL EDGE's top speed and bursts over 20 mph per 60, through");
+    expect(text('.traits-help')).toContain("Speed is NHL EDGE's bursts over 20 mph per 60, with top speed at half weight, through");
     expect(text('.traits-help')).toContain("like Possession's shot attempts and 5v5 Corsi For %");
     expect(text('.traits-help')).toContain('come from Natural Stat Trick');
     const source: HTMLAnchorElement = fixture.nativeElement.querySelector('.traits-source');

@@ -141,6 +141,9 @@ export class PlayerPercentileUtils {
   /** What the on-ice xGA percentile counts for in Defense, where the blocks and takeaways percentiles count 1 each. */
   public static readonly expectedGoalsAgainstWeight = 0.5;
 
+  /** What the top speed percentile counts for in Speed, where the bursts per 60 percentile counts 1. */
+  public static readonly topSpeedWeight = 0.5;
+
   /**
    * The percentiles where a rank's color tier starts (getRankTier), in the rating colors' shares: elite the top 5%,
    * good the rest of the top 25%, and poor the bottom 20%.
@@ -229,18 +232,21 @@ export class PlayerPercentileUtils {
   private static readonly speedAxis: PlayerTraitAxis<SkaterTraitRow> = {
     key: "speed",
     label: "Speed",
-    description: "Top skating speed and bursts over 20 mph per 60 minutes (NHL EDGE), each ranked and averaged",
+    description: "Bursts over 20 mph per 60 minutes, and top skating speed at half weight (NHL EDGE), each ranked " +
+        "and averaged",
     // Ranked against our pool, not EDGE's percentiles: EDGE ranks the bursts as a count, which favors the players
-    // with the most games and ice time
+    // with the most games and ice time. Top speed counts half: a single fastest moment, it repeats from season to
+    // season less (0.63 for forwards, against 0.87 for bursts per 60), but it doesn't grow in little ice time the way
+    // a rate does, so it holds back the fast depth forwards that bursts per 60 alone put at the top
     parts: [
-      {getValue: row => row.edge?.speedMax ?? undefined},
+      {getValue: row => row.edge?.speedMax ?? undefined, weight: PlayerPercentileUtils.topSpeedWeight},
       {getValue: row => PlayerPercentileUtils.getBurstsPer60(row)}
     ],
     formatValue: (_, row) => {
       const bursts = PlayerPercentileUtils.getBurstsPer60(row);
       return PlayerPercentileUtils.joinParts([
-        row.edge?.speedMax == null ? undefined : row.edge.speedMax.toFixed(1) + " mph top speed",
-        bursts == null ? undefined : bursts.toFixed(1) + " bursts over 20 mph per 60"
+        bursts == null ? undefined : bursts.toFixed(1) + " bursts over 20 mph per 60",
+        row.edge?.speedMax == null ? undefined : row.edge.speedMax.toFixed(1) + " mph top speed"
       ]);
     }
   };

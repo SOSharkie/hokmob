@@ -556,7 +556,7 @@ pool and minimum games), and the season performance card shares it, the endpoint
   | Goals | goals per 60 (1), ixG per 60 (½) | stats API, NST |
   | Possession | shot attempts per 60 (`totalShotAttempts`: on goal, missed and blocked) (1), 5v5 Corsi For % (`satFor` / `satFor + satAgainst`) (1) | stats API |
   | Playmaking | primary + ½ secondary assists per 60 | stats API |
-  | Speed | top skating speed (1), bursts over 20 mph per 60 (1) | EDGE season file |
+  | Speed | bursts over 20 mph per 60 (1), top skating speed (½) | EDGE season file |
   | Defense | blocks per 60 (1), takeaways per 60 (1), 5v5 on-ice xGA per 60, lower first (½) | stats API, NST's on-ice page |
   | Physical | hits per 60 (1), hits taken per 60 (½) | stats API, NST |
 
@@ -580,7 +580,7 @@ pool and minimum games), and the season performance card shares it, the endpoint
   | Physical | F 0.90, 0.93; D 0.90, 0.91 | F 0.90, 0.93; D 0.88, 0.90 |
   | Defense + ½ xGA | F 0.65, 0.54; D 0.62, 0.58 | F 0.67, 0.56; D 0.60, 0.61 |
   | Shot attempts / Possession (Corsi alone) → Possession | F 0.86, 0.87 / 0.56, 0.63; D 0.80, 0.80 / 0.55, 0.58 | F 0.74, 0.79; D 0.70, 0.71 |
-  | Speed (new) | | F 0.81; D 0.80 (2024-25 → 2025-26 only) |
+  | Speed (new) | | F 0.85; D 0.84 (2024-25 → 2025-26 only) |
 
   ixG alone repeats best of all (F 0.75 to 0.77, D 0.78 to 0.79), but goals still lead the axis. On-ice xGA alone
   repeats poorly (0.34 to 0.45), and at a full third of Defense it made defensemen's Defense less repeatable in one
@@ -591,7 +591,10 @@ pool and minimum games), and the season performance card shares it, the endpoint
   Svechnikov, Hagel, Ehlers, MacKinnon, Kucherov; defensemen's Possession Malinski, Gostisbehere, Burns,
   Makar and Werenski. Speed has McDavid, MacKinnon, Tippett and Cooley, and Sanderson, Karlsson and Makar
   among defensemen; McDavid's 24.612 mph in the file is EDGE's own 24.6119. Bursts per 60 repeat better than top
-  speed (F 0.87 against 0.63), and also lift a few fast depth forwards (Koepke, Malenstyn, Wood). Defense and Physical are still topped by fourth-liners in 9 to 12 minutes a game
+  speed (F 0.87 against 0.63; D 0.84 against 0.56), but alone they put fast depth forwards near the top (Wright,
+  Brindley, Frank, Hinostroza in 10 to 12 minutes; for forwards they correlate −0.22 with ice time, top speed +0.11).
+  So top speed counts half: Speed repeats nearly as well as bursts alone (F 0.85, D 0.84, against 0.81 and 0.80 with
+  the two equal), and top speed still holds those forwards back. Defense and Physical are still topped by fourth-liners in 9 to 12 minutes a game
   (Samanski, Blais, Rempe), since a few events in little ice time make a high rate; a minimum ice time for the pool
   would change that, and is left for later.
 - **Playmaking** is primary assists plus half of secondary assists (`totalPrimaryAssists`,

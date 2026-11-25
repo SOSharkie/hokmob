@@ -423,11 +423,11 @@ describe('PlayerPercentileUtils', () => {
       expect(traits.edgeThroughDate).toBe('2026-11-24');
     });
 
-    it('should rank top speed and bursts per 60 against the pool and average them', () => {
+    it('should rank top speed and bursts per 60 against the pool, top speed at half weight', () => {
       // Leon Draisaitl's 22.27 mph is ahead of 15 forwards, his 61 bursts in 27 games of 1320.4615 seconds of 16
       const speed = trait(withEdge(8477934), 'speed');
-      expect(speed.value).toBeCloseTo((15.5 + 16.5) / 2 / 32 * 100, 10);
-      expect(speed.formattedValue).toBe('22.3 mph top speed, 6.2 bursts over 20 mph per 60');
+      expect(speed.value).toBeCloseTo((0.5 * 15.5 + 16.5) / 1.5 / 32 * 100, 10);
+      expect(speed.formattedValue).toBe('6.2 bursts over 20 mph per 60, 22.3 mph top speed');
       // Connor McDavid is the fastest and bursts the most
       expect(trait(withEdge(8478402), 'speed').percentile).toBeCloseTo(31.5 / 32 * 100, 10);
     });
