@@ -226,7 +226,7 @@ export class RatingsComponent implements OnInit, AfterViewInit {
         "goalie isn't marked down for the shots he hasn't had time to face. Overtime doesn't raise the average.",
     "A goalie's win and shutout bonuses only count once the game is over, since a live game has no decision yet.",
     "A goalie's goals and assists count the same as a skater's. The boxscore has none for a goalie, so the game page " +
-        "counts them from the scoring summary, and the player and history pages, whose stats API rows have no assist " +
+        "counts them from the scoring summary, and the player page and the players page, whose stats API rows have no assist " +
         "split, count each of his assists a flat 0.5.",
     "The shutout bonus needs a start, a win and no goal on the shots the goalie faced, which isn't quite the NHL's " +
         "shutout: a goal on a delayed penalty's empty net doesn't stop it, and a 0-0 shootout loss doesn't get it. " +

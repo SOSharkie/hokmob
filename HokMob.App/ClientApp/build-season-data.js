@@ -1,6 +1,6 @@
-// Builds the history page's data for one season: every player's per game stat line from the stats API
+// Builds the players page's data for one season: every player's per game stat line from the stats API
 // (api.nhle.com/stats/rest/en), the inputs of the HokMob rating rather than the ratings, so a formula change shows up
-// on the history page without regenerating the file. See "History data" in docs/nhl-api.md.
+// on the players page without regenerating the file. See "History data" in docs/nhl-api.md.
 //
 // Usage: npm run build-season-data -- <season> [gameType] [--partial] [--games <id,id,...>] [--out <file>]
 //   season    Like 20252026.

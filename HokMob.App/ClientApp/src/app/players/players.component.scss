@@ -1,9 +1,9 @@
 @use "variables" as *;
 
 // Below it the leaderboard and the best games stack
-$history-columns-breakpoint: $tiny-display-breakpoint;
+$players-columns-breakpoint: $tiny-display-breakpoint;
 
-.history-page {
+.players-page {
   box-sizing: border-box;
   max-width: 1200px;
   margin: 0 auto;
@@ -11,32 +11,24 @@ $history-columns-breakpoint: $tiny-display-breakpoint;
   color: white;
 }
 
-.history-header {
+.players-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: $spacing-large $spacing-xx-large;
   margin-bottom: $spacing-card-gap;
 
-  .history-title {
-    margin: 0 0 $spacing-medium;
+  .players-title {
+    margin: 0;
     color: $green-01;
     font-size: 28px;
     font-weight: 500;
     line-height: 1.2;
   }
 
-  .history-lead {
-    max-width: 720px;
-    margin: 0;
-    color: $gray-04;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  .history-progress {
+  .players-progress {
     margin: $spacing-small 0 0;
-    color: $green-01;
+    color: white;
     font-size: 14px;
     line-height: 1.4;
   }
@@ -47,16 +39,28 @@ $history-columns-breakpoint: $tiny-display-breakpoint;
   }
 }
 
-.history-section {
-  display: block;
-  margin-bottom: $spacing-card-gap;
-}
-
-.history-columns {
+.players-columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $spacing-card-gap;
   align-items: start;
+}
+
+// The rating distribution, under the players, with what it counts above it
+.distribution-section {
+  margin-top: $spacing-card-gap;
+
+  .distribution-lead {
+    max-width: 720px;
+    margin: 0 0 $spacing-x-large;
+    color: $gray-04;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  app-rating-distribution {
+    display: block;
+  }
 }
 
 .loading-container {
@@ -68,28 +72,28 @@ $history-columns-breakpoint: $tiny-display-breakpoint;
   }
 }
 
-.history-message {
+.players-message {
   margin: $spacing-huge;
   color: $gray-03;
   text-align: center;
 }
 
-@media only screen and (max-width: $history-columns-breakpoint) {
-  .history-columns {
+@media only screen and (max-width: $players-columns-breakpoint) {
+  .players-columns {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .history-header {
+  .players-header {
     flex-direction: column;
 
-    .history-title {
+    .players-title {
       font-size: 22px;
     }
+  }
 
-    .history-lead {
-      font-size: 14px;
-    }
+  .distribution-section .distribution-lead {
+    font-size: 14px;
   }
 }

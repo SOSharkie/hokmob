@@ -1,11 +1,11 @@
 ---
 name: update-history-season
-description: Refresh the HokMob history page's current season file (HokMob.App/ClientApp/src/assets/history/{season}-2.json) to the latest final NHL games, by checking it against the stats API, rebuilding it with build-season-data.js --partial, validating it and updating its line in docs/nhl-api.md, and the season's NHL EDGE file (src/assets/edge/{season}-2.json, the player traits' Speed) with build-edge-data.js on the same schedule. Use this whenever the user wants the current season's ratings, history page or season data brought up to date, refreshed, regenerated or "updated through last night", even when they don't name the file or the script, and when the season in progress has ended and its file needs its final rebuild.
+description: Refresh the HokMob players page's current season file (HokMob.App/ClientApp/src/assets/history/{season}-2.json) to the latest final NHL games, by checking it against the stats API, rebuilding it with build-season-data.js --partial, validating it and updating its line in docs/nhl-api.md, and the season's NHL EDGE file (src/assets/edge/{season}-2.json, the player traits' Speed) with build-edge-data.js on the same schedule. Use this whenever the user wants the current season's ratings, players page or season data brought up to date, refreshed, regenerated or "updated through last night", even when they don't name the file or the script, and when the season in progress has ended and its file needs its final rebuild.
 ---
 
 # Update the history season
 
-The history page (`/history`) rates every player's game from a static file, so the season in progress only shows the
+The players page (`/players`) rates every player's game from a static file, so the season in progress only shows the
 games that were final when its file was last built. The file says how far it goes in `throughDate`, which the page
 shows as "Season in progress, through November 8". This skill brings the file up to the latest final games.
 
@@ -121,5 +121,5 @@ Docs:
 Tell the user the old and new `throughDate`, how many games were added, that the checks passed, and anything that's
 left (no commit yet, or games still in play that will count next time).
 
-If a dev server is already running on port 4200, `http://localhost:4200/history` shows the new date under the lead.
+If a dev server is already running on port 4200, `http://localhost:4200/players` shows the new date under the title.
 There's no need to start one just for this: the check script covers the data.

@@ -10,11 +10,11 @@ import {derivedSeasonHistoryInProgress, mockSeasonHistory} from '@shared/testing
 import {RatedSeason} from '@shared/models/nhl-history/season-history.model';
 import {HistorySeasonOption, SeasonHistoryService} from '@shared/services/season-history.service';
 
-import {HistoryComponent} from './history.component';
+import {PlayersComponent} from './players.component';
 
-describe('HistoryComponent', () => {
-  let component: HistoryComponent;
-  let fixture: ComponentFixture<HistoryComponent>;
+describe('PlayersComponent', () => {
+  let component: PlayersComponent;
+  let fixture: ComponentFixture<PlayersComponent>;
   let httpMock: HttpTestingController;
   let queryParams: BehaviorSubject<ParamMap>;
   let navigate: jasmine.Spy;
@@ -27,7 +27,7 @@ describe('HistoryComponent', () => {
     queryParams = new BehaviorSubject<ParamMap>(convertToParamMap({}));
     await TestBed.configureTestingModule({
       imports: [AppTestingModule],
-      declarations: [HistoryComponent],
+      declarations: [PlayersComponent],
       providers: [{provide: ActivatedRoute, useValue: {queryParamMap: queryParams}}],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
@@ -50,7 +50,7 @@ describe('HistoryComponent', () => {
   /** Opens the page, optionally with query parameters. */
   function open(params: Params = {}): void {
     queryParams.next(convertToParamMap(params));
-    fixture = TestBed.createComponent(HistoryComponent);
+    fixture = TestBed.createComponent(PlayersComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }
@@ -85,6 +85,29 @@ describe('HistoryComponent', () => {
     expect((element('app-best-games') as any).ratedSeason).toBe(ratedSeason);
   });
 
+  it('should title the page Players, without the rating description in the header', async () => {
+    open();
+    await respond(mockSeasonHistory());
+    expect(element('.players-title').textContent.trim()).toBe('Players');
+    expect(element('.players-header').textContent).not.toContain('Every HokMob rating');
+  });
+
+  it('should show the leaderboard and best games first, and the rating distribution and its description last',
+      async () => {
+    open();
+    await respond(mockSeasonHistory());
+    const page = element('.players-page');
+    const leaders = element('app-average-rating-leaders');
+    const distribution = element('app-rating-distribution');
+    const lead = element('.distribution-section .distribution-lead');
+    expect(lead.textContent).toContain('Every HokMob rating of a season');
+    expect(leaders.compareDocumentPosition(distribution) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(element('app-best-games').compareDocumentPosition(lead) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy();
+    expect(lead.compareDocumentPosition(distribution) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(page.lastElementChild).toBe(element('.distribution-section'));
+  });
+
   it('should show the season in the picker', async () => {
     open();
     await respond(mockSeasonHistory());
@@ -96,15 +119,15 @@ describe('HistoryComponent', () => {
 
   it('should say how far a season in progress goes', async () => {
     open();
-    expect(element('.history-progress')).toBeNull();
+    expect(element('.players-progress')).toBeNull();
     await respond(derivedSeasonHistoryInProgress());
-    expect(element('.history-progress').textContent.trim()).toBe('Season in progress, through April 14');
+    expect(element('.players-progress').textContent.trim()).toBe('Season in progress, through April 14');
   });
 
   it('should not call a finished season in progress', async () => {
     open();
     await respond(mockSeasonHistory());
-    expect(element('.history-progress')).toBeNull();
+    expect(element('.players-progress')).toBeNull();
   });
 
   it('should lower the leaderboard\'s minimum games for a season in progress', async () => {
@@ -125,14 +148,14 @@ describe('HistoryComponent', () => {
 
     component.selectSeason(finishedSeason);
     await respond(mockSeasonHistory(), undefined, finishedSeasonUrl);
-    expect(element('.history-progress')).toBeNull();
+    expect(element('.players-progress')).toBeNull();
     expect((element('app-average-rating-leaders') as any).minGames).toBe(20);
   });
 
   it('should show an empty state instead of the charts when the season can\'t be loaded', async () => {
     open();
     await respond('Not found', {status: 404, statusText: 'Not Found'});
-    expect(element('.history-message').textContent.trim()).toBe('The season couldn\'t be loaded');
+    expect(element('.players-message').textContent.trim()).toBe('The season couldn\'t be loaded');
     expect(element('app-loading-spinner')).toBeNull();
     expect(element('app-rating-distribution')).toBeNull();
     expect(element('app-best-games')).toBeNull();
@@ -226,7 +249,7 @@ describe('HistoryComponent', () => {
     }
 
     it('should give the cards their defaults without any', async () => {
-      await openWithUrl('/history');
+      await openWithUrl('/players');
       expect(card('app-rating-distribution').position).toBe('F');
       expect(card('app-average-rating-leaders').position).toBeNull();
       expect(card('app-average-rating-leaders').teamId).toBeNull();
@@ -234,7 +257,7 @@ describe('HistoryComponent', () => {
     });
 
     it('should give the cards the filters in the URL, so a reload keeps them', async () => {
-      await openWithUrl('/history', {distribution: 'G', leaders: 'D', team: '59', best: 'F'});
+      await openWithUrl('/players', {distribution: 'G', leaders: 'D', team: '59', best: 'F'});
       expect(card('app-rating-distribution').position).toBe('G');
       expect(card('app-average-rating-leaders').position).toBe('D');
       expect(card('app-average-rating-leaders').teamId).toBe(59);
@@ -242,7 +265,7 @@ describe('HistoryComponent', () => {
     });
 
     it('should use the defaults for filters it doesn\'t know', async () => {
-      await openWithUrl('/history', {distribution: 'X', leaders: 'all', team: 'abc', best: 'g'});
+      await openWithUrl('/players', {distribution: 'X', leaders: 'all', team: 'abc', best: 'g'});
       expect(card('app-rating-distribution').position).toBe('F');
       expect(card('app-average-rating-leaders').position).toBeNull();
       expect(card('app-average-rating-leaders').teamId).toBeNull();
@@ -250,15 +273,15 @@ describe('HistoryComponent', () => {
     });
 
     it('should save a filter without the router, keeping the season and the history state', async () => {
-      const replaceState = await openWithUrl('/history?season=20252026', {season: '20252026'});
+      const replaceState = await openWithUrl('/players?season=20252026', {season: '20252026'});
       changeFilter('app-average-rating-leaders', 'teamIdChange', 59);
-      expect(replaceState).toHaveBeenCalledOnceWith('/history', 'season=20252026&team=59', {ɵrouterPageId: 4});
+      expect(replaceState).toHaveBeenCalledOnceWith('/players', 'season=20252026&team=59', {ɵrouterPageId: 4});
       expect(navigate).not.toHaveBeenCalled();
       expect(card('app-average-rating-leaders').teamId).toBe(59);
     });
 
     it('should save every card\'s filter', async () => {
-      const replaceState = await openWithUrl('/history');
+      const replaceState = await openWithUrl('/players');
       changeFilter('app-rating-distribution', 'positionChange', 'D');
       expect(replaceState.calls.mostRecent().args[1]).toBe('distribution=D');
       changeFilter('app-average-rating-leaders', 'positionChange', 'G');
@@ -268,16 +291,16 @@ describe('HistoryComponent', () => {
     });
 
     it('should take a filter back to its default out of the URL', async () => {
-      const replaceState = await openWithUrl('/history?distribution=D&team=59&best=F',
+      const replaceState = await openWithUrl('/players?distribution=D&team=59&best=F',
           {distribution: 'D', team: '59', best: 'F'});
       changeFilter('app-rating-distribution', 'positionChange', 'F');
       changeFilter('app-average-rating-leaders', 'teamIdChange', null);
       changeFilter('app-best-games', 'positionChange', null);
-      expect(replaceState.calls.mostRecent().args.slice(0, 2)).toEqual(['/history', '']);
+      expect(replaceState.calls.mostRecent().args.slice(0, 2)).toEqual(['/players', '']);
     });
 
     it('should clear the filters when another season is picked', async () => {
-      await openWithUrl('/history', {team: '59', best: 'F'});
+      await openWithUrl('/players', {team: '59', best: 'F'});
       component.selectSeason(finishedSeason);
       await respond(mockSeasonHistory(), undefined, finishedSeasonUrl);
       expect(card('app-average-rating-leaders').teamId).toBeNull();
@@ -285,7 +308,7 @@ describe('HistoryComponent', () => {
     });
 
     it('should follow the back button to a URL with other filters of the same season', async () => {
-      await openWithUrl('/history', {best: 'F'});
+      await openWithUrl('/players', {best: 'F'});
       queryParams.next(convertToParamMap({best: 'G'}));
       fixture.detectChanges();
       expect(card('app-best-games').position).toBe('G');

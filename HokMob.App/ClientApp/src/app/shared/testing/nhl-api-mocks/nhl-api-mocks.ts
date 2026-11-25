@@ -147,7 +147,7 @@ import {TeamRatingUtils} from "@shared/utils/team-rating-utils";
  * unchanged responses, except score-2026-03-01 (trimmed to 3 games), score-2026-10-08 and score-2026-09-19 (trimmed to
  * 2 games, the latter captured on 2026-09-18) and the club-schedule-season-* responses (trimmed games, see
  * mockClubScheduleSeason). The club-stats-* responses were captured on 2026-10-04 (see mockClubStats). The
- * gamecenter-* responses are unchanged. season-history-20252026-2 isn't a response but the history page's data file,
+ * gamecenter-* responses are unchanged. season-history-20252026-2 isn't a response but the players page's data file,
  * generated for a few games (see mockSeasonHistory). The 25 leader responses (*-points-25, *-savePctg-25) and the
  * season-players-* responses were captured on 2026-10-02; season-players-* were merged from the stats API's
  * skater/summary and skater/realtime (or goalie/summary) the way the backend merges them. The nst-game-* responses are

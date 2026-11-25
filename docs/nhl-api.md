@@ -53,7 +53,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Teams | `standings/now` (for the season ID), `/api/nhl-stats/teams?season=&gameType=2`, `/api/nhl-stats/team-games?season=&gameType=2` and `/api/nst/team-games?season=` (see [Teams page](#teams-page)) |
 | Draft | `draft/picks/{year}/{round}` (or `draft/picks/now`), `/api/nhl-stats/draft?year=&round=` — see [`draft-page.md`](draft-page.md) |
 | Header search | `/api/nhl-search/player?q=…`; teams come from `NhlTeamUtils`, with no request |
-| History | `assets/history/{season}-{gameType}.json`, a static file generated from the stats API (see [History data](#history-data)), with no NHL API request |
+| Players | `assets/history/{season}-{gameType}.json`, a static file generated from the stats API (see [History data](#history-data)), with no NHL API request |
 
 ### Loading skeletons
 
@@ -237,7 +237,7 @@ from their edge. `NhlApiClient` keeps the scoreboard up through it (the reasonin
 Every rating is colored by its tier (`RatingColorUtils`): elite (blue), good (green), ordinary (orange) and poor (red).
 The colors are the `--rating-elite`, `--rating-good`, `--rating-ordinary` and `--rating-poor` custom properties in
 `styles.scss`, so stylesheets and style bindings share them: TS binds `var(--rating-…)` (`RatingColorUtils.getColor`),
-and the history page's distribution chart, a canvas, reads their values (`RatingColorUtils.resolveTierColor`). Don't
+and the players page's distribution chart, a canvas, reads their values (`RatingColorUtils.resolveTierColor`). Don't
 write the hex values anywhere else.
 
 A filled, colored box behind a number means a rating, so nothing else gets one. A stat leader's value on the stats
@@ -250,8 +250,8 @@ and a team alike.
 
 | Scale | Elite | Good | Ordinary | Poor | Shown on |
 |---|---|---|---|---|---|
-| `game` | 8+ | 6.5+ | 5+ | below 5 | game page, player page's recent games, ratings explorer, history page's best games and distribution |
-| `seasonAverage` | 6.5+ | 6+ | 5.5+ | below 5.5 | player page, team page's players, history page's leaders, game page's season leaders |
+| `game` | 8+ | 6.5+ | 5+ | below 5 | game page, player page's recent games, ratings explorer, players page's best games and distribution |
+| `seasonAverage` | 6.5+ | 6+ | 5.5+ | below 5.5 | player page, team page's players, players page's leaders, game page's season leaders |
 | `team` | 7.5+ | 6+ | 3.5+ | below 3.5 | teams page, team page's and game page's power rating |
 
 - **Game:** the median skater game of 2025-26 is about 5.8, so these color about 3% of skater games blue, 20% green,
@@ -271,7 +271,7 @@ color otherwise, whatever his rating.
 `/team/{id}` has five tabs, kept in the `tab` query parameter (`overview`, the default, is left out): `team-stats`,
 `player-stats`, `games` and `standings`, in that order (`TeamTabs`). The standings tab's type is `standingsType`, as on the standings
 page (`StandingsTypeUtils`), left out at its default, the divisions. Picking a tab rewrites the URL with
-`Location.replaceState`, like the history page's filters, so it doesn't scroll to the top or add a history entry, and
+`Location.replaceState`, like the players page's filters, so it doesn't scroll to the top or add a history entry, and
 the back button still leaves the page.
 
 - **Overview:** the power rating card, the conference standings, the next game, the form and the schedule. The power
@@ -540,7 +540,7 @@ pool and minimum games), and the season performance card shares it, the endpoint
 
 - **Position groups:** forwards (`C`, `L`, `R`), defensemen (`D`) and goalies, each against its own group.
 - **Pool:** the group's players with at least the minimum games: 20 in a full season, the same share of games as the
-  history page's leaderboard (20 of 82), scaled to the most games any team has played (`mostTeamGames`, from
+  players page's leaderboard (20 of 82), scaled to the most games any team has played (`mostTeamGames`, from
   `team/summary`), at least 1 (`PlayerPercentileUtils.getMinGames`, which `SeasonRatingStatsUtils.getMinGames` uses
   too). The (?) explanation names it ("Among 433 forwards with at least 7 games in 2026-2027"). A player under it is
   charted against the pool without being in it, with "Only 4 games, small sample" under the chart.
@@ -790,12 +790,12 @@ the latest bracket that has series.
 
 ## History data
 
-The history page doesn't call the NHL APIs. A season's per game stat lines are preloaded into
-`src/assets/history/{season}-{gameType}.json` (`20252026-2.json` is the 2025-26 regular season), which the history
+The players page doesn't call the NHL APIs. A season's per game stat lines are preloaded into
+`src/assets/history/{season}-{gameType}.json` (`20252026-2.json` is the 2025-26 regular season), which the players
 page loads (`SeasonHistoryService`), as do the player page for its rating column, the team page for its players' ratings
 and a future game's season leaders (see [Season leaders](#season-leaders)). They're rated in the browser with
 `StatsUtils.calculateSkaterGameRating` / `calculateGoalieGameRating`, the same as the player page's recent games. The
-file holds the rating's inputs, not ratings, so a formula change shows up on the history page without regenerating it.
+file holds the rating's inputs, not ratings, so a formula change shows up on the players page without regenerating it.
 
 - **Generating a season:** `npm run build-season-data -- 20252026 [gameType]` from `HokMob.App/ClientApp` (game type 2
   by default), once the season is over: it fails while any of its games isn't final, unless `--partial` is passed. It
@@ -813,10 +813,13 @@ file holds the rating's inputs, not ratings, so a formula change shows up on the
 - **Player page:** when the landing's featured season has a regular season file, the season card gets a fifth column:
   the player's average HokMob rating over their rated games, and below it a skater's 5v5 Corsi For % (`satFor` /
   (`satFor` + `satAgainst`)) or a goalie's goals saved above average (`StatsUtils.getGoalsSavedAboveAverage`, summed
-  over their games), from `PlayerSeasonRatingUtils`. The file is shared with the history page and kept for the session.
+  over their games), from `PlayerSeasonRatingUtils`. The file is shared with the players page and kept for the session.
   A player who isn't in the file (no game since it was generated) gets no column, and the playoffs card never has one.
-- **URL:** the picked season is a query parameter, `/history?season=20252026`, with `&gameType=3` for a playoffs file. Plain
-  `/history`, or a season the page doesn't have, shows the newest season. The cards' filters are query parameters too:
+- **Layout:** the players page (`/players`, called History until 2026-11) shows the average rating leaderboard and the
+  best games side by side, then the rating distribution at the bottom, with the paragraph on what it counts above it.
+- **URL:** the picked season is a query parameter, `/players?season=20252026`, with `&gameType=3` for a playoffs file.
+  Plain `/players`, or a season the page doesn't have, shows the newest season. The old `/history` redirects to
+  `/players` with its query parameters, so a shared link still works. The cards' filters are query parameters too:
   `distribution`, `leaders` and `best` (`F`, `D` or `G`) and `team` (the leaderboard's team ID), left out at their
   defaults. They're written with `Location.replaceState` rather than the router, which would scroll to the top of the page
   (`AppComponent` does on every router event) and add a history entry per click, and with the history state kept, because
@@ -859,7 +862,7 @@ file holds the rating's inputs, not ratings, so a formula change shows up on the
   and rates every row in under 100 ms, so there's no web worker.
 - **Goalie points:** the boxscore has no goals or assists for a goalie, so the game page counts them from the landing's
   scoring summary (`StatsUtils.getGoalieRatingContext`), with the primary/secondary split. The stats API's goalie rows
-  have no split, so the player and history pages count a goalie's assists at the flat 0.5. 2025-26 had 58 goalie
+  have no split, so the player page and the players page count a goalie's assists at the flat 0.5. 2025-26 had 58 goalie
   assists, in 58 games, and no goalie goals.
 - **What the page leaves out:** goalies who faced no shots, whom the rating gives 0 (3 in 2025-26). A goalie who
   faced shots and made no saves also gets 0, and is kept, as on the game page.

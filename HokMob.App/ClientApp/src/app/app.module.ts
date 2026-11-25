@@ -83,10 +83,10 @@ import { PlayerTraitsComponent } from './player/player-traits/player-traits.comp
 import { PlayerSeasonPerformanceComponent } from './player/player-season-performance/player-season-performance.component';
 import { DraftComponent } from './draft/draft.component';
 import { RatingsComponent } from './ratings/ratings.component';
-import { HistoryComponent } from './history/history.component';
-import { RatingDistributionComponent } from './history/rating-distribution/rating-distribution.component';
-import { AverageRatingLeadersComponent } from './history/average-rating-leaders/average-rating-leaders.component';
-import { BestGamesComponent } from './history/best-games/best-games.component';
+import { PlayersComponent } from './players/players.component';
+import { RatingDistributionComponent } from './players/rating-distribution/rating-distribution.component';
+import { AverageRatingLeadersComponent } from './players/average-rating-leaders/average-rating-leaders.component';
+import { BestGamesComponent } from './players/best-games/best-games.component';
 import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {EdgeSeasonService} from "@shared/services/edge-season.service";
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
@@ -163,7 +163,7 @@ import {TeamRatingService} from "@shared/services/team-rating.service";
     PlayerSeasonPerformanceComponent,
     DraftComponent,
     RatingsComponent,
-    HistoryComponent,
+    PlayersComponent,
     RatingDistributionComponent,
     AverageRatingLeadersComponent,
     BestGamesComponent

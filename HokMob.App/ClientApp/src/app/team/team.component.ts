@@ -241,7 +241,7 @@ export class TeamComponent implements OnInit, OnDestroy {
    * Writes the tab to the URL, leaving out the overview, and the standings type while the standings tab is open. It
    * doesn't go through the router, which would scroll to the top of the page and add a history entry per tab, so the
    * back button still leaves the team page. The history state is kept, because the back buttons and the scroll
-   * restoration need the router's page ID in it (like the history page's filters).
+   * restoration need the router's page ID in it (like the players page's filters).
    */
   private saveTabToUrl(): void {
     const [path, query] = this.location.path().split("?");

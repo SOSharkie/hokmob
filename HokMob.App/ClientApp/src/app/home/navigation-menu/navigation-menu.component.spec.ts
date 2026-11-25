@@ -39,11 +39,11 @@ describe('NavigationMenuComponent', () => {
     expect(menuLinks().get('Draft').getAttribute('href')).toBe('/draft');
   });
 
-  it('should show a History menu item under Stats that links to the history page', () => {
+  it('should show a Players menu item under Stats that links to the players page', () => {
     const names = Array.from(menuLinks().keys());
 
-    expect(names.indexOf('History')).toBe(names.indexOf('Stats') + 1);
-    expect(menuLinks().get('History').getAttribute('href')).toBe('/history');
+    expect(names.indexOf('Players')).toBe(names.indexOf('Stats') + 1);
+    expect(menuLinks().get('Players').getAttribute('href')).toBe('/players');
   });
 
   it('should render every menu item as a link with an href, so it can be reached from the keyboard', () => {

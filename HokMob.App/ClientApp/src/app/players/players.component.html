@@ -1,13 +1,9 @@
-<div class="history-page">
-  <div class="history-header">
-    <div class="history-heading">
-      <h1 class="history-title">History</h1>
-      <p class="history-lead">
-        Every HokMob rating of a season, from each player's stat line in every game, rated with the same formula as
-        the game and player pages.
-      </p>
+<div class="players-page">
+  <div class="players-header">
+    <div class="players-heading">
+      <h1 class="players-title">Players</h1>
       @if (progressNote) {
-        <p class="history-progress">{{progressNote}}</p>
+        <p class="players-progress">{{progressNote}}</p>
       }
     </div>
     <button type="button" class="pill-picker season-picker"
@@ -28,21 +24,26 @@
     </div>
   }
   @if (hasError) {
-    <div class="history-message">
+    <div class="players-message">
       <span>The season couldn't be loaded</span>
     </div>
   }
   @if (ratedSeason) {
-    <app-rating-distribution class="history-section" [ratedGames]="ratedSeason.ratedGames"
-                             [position]="distributionPosition"
-                             (positionChange)="distributionPosition = $event; saveFilters()"></app-rating-distribution>
-    <div class="history-columns">
+    <div class="players-columns">
       <app-average-rating-leaders [ratedSeason]="ratedSeason" [minGames]="minGames" [position]="leadersPosition"
                                   [teamId]="leadersTeamId"
                                   (positionChange)="leadersPosition = $event; saveFilters()"
                                   (teamIdChange)="leadersTeamId = $event; saveFilters()"></app-average-rating-leaders>
       <app-best-games [ratedSeason]="ratedSeason" [position]="bestGamesPosition"
                       (positionChange)="bestGamesPosition = $event; saveFilters()"></app-best-games>
+    </div>
+    <div class="distribution-section">
+      <p class="distribution-lead">
+        Every HokMob rating of a season, from each player's stat line in every game, rated with the same formula as
+        the game and player pages.
+      </p>
+      <app-rating-distribution [ratedGames]="ratedSeason.ratedGames" [position]="distributionPosition"
+                               (positionChange)="distributionPosition = $event; saveFilters()"></app-rating-distribution>
     </div>
   }
 </div>

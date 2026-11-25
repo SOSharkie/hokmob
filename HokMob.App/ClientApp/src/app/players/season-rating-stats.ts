@@ -60,7 +60,7 @@ export interface AverageRatingFilter {
 }
 
 /**
- * The season-wide numbers of the history page's cards, from a season's rated games (SeasonHistoryService).
+ * The season-wide numbers of the players page's cards, from a season's rated games (SeasonHistoryService).
  */
 export class SeasonRatingStatsUtils {
 
