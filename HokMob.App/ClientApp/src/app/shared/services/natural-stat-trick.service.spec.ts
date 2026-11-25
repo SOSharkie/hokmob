@@ -74,8 +74,21 @@ describe('NaturalStatTrickService', () => {
       expect(rows.length).toBe(50);
       expect(rows.find(row => row.playerId === 8477934)).toEqual({
         playerId: 8477934, gamesPlayed: 26, timeOnIce: 34332, expectedGoals: 13.64, highDangerAttempts: 29,
-        rushAttempts: 3, reboundsCreated: 8, hitsTaken: 19
+        rushAttempts: 3, reboundsCreated: 8, hitsTaken: 19, onIceTimeOnIce: 25460, onIceExpectedGoalsFor: 20.06,
+        onIceExpectedGoalsAgainst: 16.09
       });
+    });
+
+    it('should keep the on-ice columns null when the backend had no on-ice page', async () => {
+      const response = mockNstPlayers();
+      response.players.onIceTimeOnIce = response.players.playerId.map(() => null);
+      response.players.onIceExpectedGoalsAgainst = response.players.playerId.map(() => null);
+      const players = service.getPlayers(20262027);
+      httpMock.expectOne(url).flush(response);
+
+      const draisaitl = (await players).find(row => row.playerId === 8477934);
+      expect(draisaitl.onIceExpectedGoalsAgainst).toBeNull();
+      expect(draisaitl.expectedGoals).toBe(13.64);
     });
 
     it('should reuse a season for a few minutes, so the next player does not ask again', async () => {

@@ -5,9 +5,11 @@ import {MatIconRegistry} from '@angular/material/icon';
 import {registerLucideIcons} from '@shared/icons/lucide-icons';
 import {AppTestingModule} from '@shared/testing/app-testing.module';
 import {
+  mockEdgeSeason,
   mockLeagueGoalies,
   mockLeaguePlayerRows,
-  mockLeagueSkaters
+  mockLeagueSkaters,
+  mockNstPlayerRows
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {PlayerPercentileUtils, PlayerTraits} from '@shared/utils/player-percentile-utils';
 
@@ -34,6 +36,12 @@ describe('PlayerTraitsComponent', () => {
 
   function skaterTraits(playerId: number): PlayerTraits {
     return PlayerPercentileUtils.getPlayerTraits(mockLeaguePlayerRows(mockLeagueSkaters()), playerId);
+  }
+
+  /** A skater's traits with Natural Stat Trick and the EDGE season file. */
+  function fullSkaterTraits(playerId: number): PlayerTraits {
+    return PlayerPercentileUtils.getPlayerTraits(mockLeaguePlayerRows(mockLeagueSkaters()), playerId,
+        {nstPlayers: mockNstPlayerRows(), edgeSeason: mockEdgeSeason()});
   }
 
   function goalieTraits(playerId: number): PlayerTraits {
@@ -72,7 +80,27 @@ describe('PlayerTraitsComponent', () => {
     expect(fixture.nativeElement.querySelector('.traits-small-sample')).toBeNull();
     // The stat behind each percentile is in its title
     expect(fixture.nativeElement.querySelector('.trait-label').getAttribute('title'))
-        .toBe('Goals per 60 minutes: 2.41 per 60');
+        .toBe('Goals per 60 minutes, and his expected goals (ixG) per 60 at half weight, each ranked and averaged: ' +
+            '2.41 goals per 60');
+    // Without Natural Stat Trick, no credit
+    expect(fixture.nativeElement.querySelector('.traits-source')).toBeNull();
+    expect(text('.traits-help')).not.toContain('Natural Stat Trick');
+  });
+
+  it('should chart Speed and Possession for a skater in the EDGE season file, and credit NST', () => {
+    render(fullSkaterTraits(8477934));
+    expect(component.labels.map(label => label.label))
+        .toEqual(['Goals', 'Possession', 'Playmaking', 'Speed', 'Defense', 'Physical']);
+    // The file's date is in Speed's title and the explanation
+    const speed = fixture.nativeElement.querySelectorAll('.trait-label')[3];
+    expect(speed.getAttribute('title')).toContain('(NHL EDGE)');
+    expect(speed.getAttribute('title')).toMatch(/, through [A-Z][a-z]+ \d+$/);
+    expect(text('.traits-help')).toContain("Speed is NHL EDGE's top speed and bursts over 20 mph per 60, through");
+    expect(text('.traits-help')).toContain("like Possession's shot attempts and 5v5 Corsi For %");
+    expect(text('.traits-help')).toContain('come from Natural Stat Trick');
+    const source: HTMLAnchorElement = fixture.nativeElement.querySelector('.traits-source');
+    expect(source.textContent.replace(/\s+/g, ' ').trim()).toBe('ixG, hits taken and xGA from Natural Stat Trick');
+    expect(source.href).toContain('naturalstattrick.com/playerteams.php?fromseason=20262027');
   });
 
   it('should draw the rings, the spokes and the shape, with the top vertex at the top', () => {
@@ -158,6 +186,15 @@ describe('PlayerTraitsComponent', () => {
     expect(skeleton.getAttribute('cardTitle')).toBe('Player Traits');
     expect(skeleton.layout).toEqual(component.skeletonLayout);
     expect(fixture.nativeElement.querySelector('.player-traits')).toBeNull();
+  });
+
+  it("should keep a place for a skater's NST credit in the skeleton, and not for a goalie's", () => {
+    render(undefined, 22, true);
+    const skaterPadding = component.skeletonLayout.paddingBottom;
+    fixture.componentRef.setInput('isGoalie', true);
+    fixture.detectChanges();
+    expect(skaterPadding - component.skeletonLayout.paddingBottom).toBe(24);
+    expect(fixture.nativeElement.querySelector('app-skeleton-card').layout).toEqual(component.skeletonLayout);
   });
 
   it('should show nothing without traits', () => {

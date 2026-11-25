@@ -16,7 +16,8 @@
     "capture-live-fixtures": "node capture-live-fixtures.js",
     "build-season-data": "node build-season-data.js",
     "build-nst-team-games": "node build-nst-team-games.js",
-    "build-play-by-play": "node build-play-by-play.js"
+    "build-play-by-play": "node build-play-by-play.js",
+    "build-edge-data": "node build-edge-data.js"
   },
   "private": true,
   "dependencies": {

@@ -172,4 +172,19 @@
     font-size: 13px;
     color: $gray-04;
   }
+
+  // 24px with its margin, which a skater's skeleton keeps a place for (PlayerTraitsComponent.creditHeight)
+  .traits-source {
+    display: block;
+    width: fit-content;
+    margin: 8px auto 0;
+    font-size: 12px;
+    line-height: 16px;
+    color: $gray-04;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }

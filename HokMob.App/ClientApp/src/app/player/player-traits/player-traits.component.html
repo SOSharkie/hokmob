@@ -36,5 +36,9 @@
     @if (smallSampleNote) {
       <div class="traits-small-sample">{{smallSampleNote}}</div>
     }
+    @if (traits.usesNst) {
+      <a class="traits-source" [href]="nstUrl" target="_blank" rel="noopener">ixG, hits taken and xGA from Natural Stat
+        Trick</a>
+    }
   </div>
 }

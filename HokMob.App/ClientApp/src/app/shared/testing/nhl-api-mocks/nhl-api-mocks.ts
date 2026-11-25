@@ -134,6 +134,8 @@ import {NstPlayerStats, NstPlayersResponse} from "@shared/models/natural-stat-tr
 import edgeSkaterDetail8477934 from './edge-skater-detail-8477934-20262027-2.json';
 import edgeGoalieDetail8476945 from './edge-goalie-detail-8476945-20262027-2.json';
 import {EdgeGoalieDetail, EdgeSkaterDetail} from "@shared/models/nhl-web-api/edge.model";
+import edgeSeason20262027 from './edge-season-20262027-2.json';
+import {EdgeSeason, EdgeSeasonFile, EdgeSeasonSkater} from "@shared/models/nhl-edge/edge-season.model";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {TeamRatingUtils} from "@shared/utils/team-rating-utils";
 
@@ -562,7 +564,9 @@ export function mockLeagueGoalies(): LeaguePlayersResponse<LeagueGoalieStats> {
  * Trick's player season page) and cut to the 50 skaters of mockLeagueSkaters(), as columns sorted by player ID. Every
  * one of them has a row. Leon Draisaitl (8477934) has 13.64 expected goals (23 goals, so 9.36 above expected), 29 high
  * danger attempts, 3 rush attempts, 8 rebounds created and 19 hits taken in 34332 seconds, the stats API's
- * time on ice to the second.
+ * time on ice to the second. The on-ice columns (onIceTimeOnIce, onIceExpectedGoalsFor, onIceExpectedGoalsAgainst)
+ * were added the same evening from NST's 5v5 on-ice page for the same 50, by then a game further for 4 of them:
+ * Draisaitl's 27 games have 25460 seconds at 5v5, with 20.06 xG for and 16.09 against (2.28 against per 60).
  */
 export function mockNstPlayers(): NstPlayersResponse {
   return copy<NstPlayersResponse>(nstPlayers20262027);
@@ -594,6 +598,29 @@ export function mockEdgeSkaterDetail(): EdgeSkaterDetail {
  */
 export function mockEdgeGoalieDetail(): EdgeGoalieDetail {
   return copy<EdgeGoalieDetail>(edgeGoalieDetail8476945);
+}
+
+/**
+ * src/assets/edge/20262027-2.json, the 2026-27 NHL EDGE season file written by build-edge-data.js with --partial on
+ * 2026-11-24, cut to the 50 skaters of mockLeagueSkaters(), all of them in it.
+ * It runs through 2026-11-24 (throughDate), a game further than the league fixture for some: Leon Draisaitl (8477934)
+ * has 27 EDGE games, a 22.272 mph top speed and 61 bursts over 20 mph. Connor McDavid (8478402) is the fastest of
+ * the 32 forwards with the minimum games (24.013 mph) and has the most bursts per 60.
+ */
+export function mockEdgeSeasonFile(): EdgeSeasonFile {
+  return copy<EdgeSeasonFile>(edgeSeason20262027);
+}
+
+/** mockEdgeSeasonFile() as one object per skater, the way EdgeSeasonService.getEdgeSeason resolves it. */
+export function mockEdgeSeason(): EdgeSeason {
+  const file = mockEdgeSeasonFile();
+  const columns = file.skaters;
+  const skaters = columns.playerId.map((_, i) => {
+    const row = {} as Record<keyof EdgeSeasonSkater, number>;
+    (Object.keys(columns) as (keyof EdgeSeasonSkater)[]).forEach(field => row[field] = columns[field][i]);
+    return row as EdgeSeasonSkater;
+  });
+  return {season: file.season, throughDate: file.throughDate, skaters};
 }
 
 /**

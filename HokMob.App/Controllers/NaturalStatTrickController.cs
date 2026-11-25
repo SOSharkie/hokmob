@@ -74,9 +74,10 @@ namespace HokMob.App.Controllers
         /// <summary>
         /// Returns every skater's individual stats of a regular season that the NHL's APIs don't have, as { season,
         /// players: { playerId, gamesPlayed, timeOnIce, expectedGoals, highDangerAttempts, rushAttempts, reboundsCreated,
-        /// hitsTaken } }: columns of equally long arrays, one row per skater, sorted by player ID. From NST's
-        /// player season page, kept for an hour. 404 when NST has no skaters for the season yet, 503 when NST can't be
-        /// asked right now, as for a game.
+        /// hitsTaken, onIceTimeOnIce, onIceExpectedGoalsFor, onIceExpectedGoalsAgainst } }: columns of equally long
+        /// arrays, one row per skater, sorted by player ID. From NST's player season page, and its 5v5 on-ice page for
+        /// the onIce columns (null when that page can't be had), each kept for an hour. 404 when NST has no skaters for
+        /// the season yet, 503 when NST can't be asked right now, as for a game.
         /// </summary>
         /// <param name="season">The season ID, like 20262027, from 2007-08 on.</param>
         [HttpGet("players")]

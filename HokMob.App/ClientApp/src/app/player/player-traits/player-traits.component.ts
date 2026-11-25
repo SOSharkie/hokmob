@@ -4,6 +4,8 @@ import {PositionGroup} from "@shared/models/nhl-history/season-history.model";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {SkeletonCardLayout} from "@shared/components/skeleton-card/skeleton-card.component";
+import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
+import dayjs from "dayjs";
 
 /** Where a vertex's label sits: above the top vertex, below the bottom one, or beside a side one. */
 type TraitLabelAnchor = "top" | "bottom" | "left" | "right";
@@ -79,13 +81,31 @@ export class PlayerTraitsComponent implements OnChanges {
   @Input()
   public loading: boolean = false;
 
+  /** Whether the player is a goalie, known before his traits: a skater's card has the Natural Stat Trick credit. */
+  @Input()
+  public isGoalie: boolean = false;
+
   /**
    * The card's size while it loads: the header, the chart (at its full 258px, which it has wherever the card is at
-   * least 340px wide) and the padding under it. A player under the minimum games has a note under the chart too,
-   * which isn't known before the data.
+   * least 340px wide) and the padding under it, and for a skater the Natural Stat Trick credit's line
+   * (PlayerTraitsComponent.creditHeight). A player under the minimum games has a note under the chart too, and a
+   * skater without NST no credit, which aren't known before the data.
    */
-  public readonly skeletonLayout: SkeletonCardLayout = {
+  public get skeletonLayout(): SkeletonCardLayout {
+    return this.isGoalie ? PlayerTraitsComponent.goalieSkeletonLayout : PlayerTraitsComponent.skaterSkeletonLayout;
+  }
+
+  /** The Natural Stat Trick credit's height under the chart: its 16px line and the 8px above it. */
+  private static readonly creditHeight = 24;
+
+  /** The skeletons, kept as they are so the binding doesn't change on every check. */
+  private static readonly goalieSkeletonLayout: SkeletonCardLayout = {
     rows: 1, rowHeight: 258, headerHeight: 59, paddingBottom: 10
+  };
+
+  private static readonly skaterSkeletonLayout: SkeletonCardLayout = {
+    ...PlayerTraitsComponent.goalieSkeletonLayout,
+    paddingBottom: 10 + PlayerTraitsComponent.creditHeight
   };
 
   public readonly viewBox = "0 0 " + PlayerTraitsComponent.width + " " + PlayerTraitsComponent.height;
@@ -128,12 +148,54 @@ export class PlayerTraitsComponent implements OnChanges {
     return "Only " + games + (games === 1 ? " game" : " games") + ", small sample";
   }
 
-  /** What the numbers are, for the (?) explanation: the pool, and how each percentile is worked out. */
+  /**
+   * What the numbers are, for the (?) explanation: the pool, how each percentile is worked out, and for a skater where
+   * the stats come from.
+   */
   public get helpText(): string {
     const season = this.season ? " in " + DateTimeUtils.getNhlSeasonDisplayValue(String(this.season)) : "";
-    return "Among " + (this.traits?.poolSize ?? 0) + " " + this.groupName + " with at least " +
+    const pool = "Among " + (this.traits?.poolSize ?? 0) + " " + this.groupName + " with at least " +
         (this.traits?.minGames ?? 0) + " games" + season + ". Each number is a percentile: the share of them this " +
         "player is ahead of. Counting stats are per 60 minutes on the ice.";
+    return [pool, this.combinedAxesText, this.edgeText, this.nstText].filter(text => text).join(" ");
+  }
+
+  /** The Natural Stat Trick page the credit links to: its skaters of the season. */
+  public get nstUrl(): string {
+    return NstStatsUtils.getPlayerSeasonUrl(this.season);
+  }
+
+  /** A skater's axes of more than one stat, for the explanation. Nothing for a goalie. */
+  private get combinedAxesText(): string {
+    if (!this.isSkater) {
+      return "";
+    }
+    return "An axis of several stats ranks each one and averages the percentiles" +
+        (this.traits.usesEdge ? ", like Possession's shot attempts and 5v5 Corsi For %." : ".");
+  }
+
+  /** Where Speed comes from, for the explanation, or nothing without it. */
+  private get edgeText(): string {
+    if (!this.traits?.usesEdge) {
+      return "";
+    }
+    return "Speed is NHL EDGE's top speed and bursts over 20 mph per 60" + this.edgeThroughText + ".";
+  }
+
+  /** What comes from Natural Stat Trick, for the explanation, or nothing when it isn't used. */
+  private get nstText(): string {
+    return this.traits?.usesNst ? "Expected goals (ixG), hits taken and 5v5 expected goals against come from " +
+        "Natural Stat Trick, each at half weight in its axis." : "";
+  }
+
+  /** Like ", through November 23" for an EDGE file of a season in progress, or nothing. */
+  private get edgeThroughText(): string {
+    const throughDate = this.traits?.edgeThroughDate;
+    return throughDate ? ", through " + dayjs(throughDate).format("MMMM D") : "";
+  }
+
+  private get isSkater(): boolean {
+    return !!this.traits && this.traits.group !== "G";
   }
 
   private get groupName(): string {
@@ -167,7 +229,7 @@ export class PlayerTraitsComponent implements OnChanges {
         key: trait.key,
         label: trait.label,
         percentileText: trait.percentile == null ? "-" : Math.round(trait.percentile) + "%",
-        title: trait.description + ": " + trait.formattedValue,
+        title: trait.description + ": " + trait.formattedValue + (trait.key === "speed" ? this.edgeThroughText : ""),
         left: x / PlayerTraitsComponent.width * 100,
         top: y / PlayerTraitsComponent.height * 100,
         anchor

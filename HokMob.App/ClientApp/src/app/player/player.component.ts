@@ -5,6 +5,8 @@ import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
+import {EdgeSeasonService} from "@shared/services/edge-season.service";
+import {EdgeSeason} from "@shared/models/nhl-edge/edge-season.model";
 import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
 import {PlayerPercentileUtils, PlayerTraits} from "@shared/utils/player-percentile-utils";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
@@ -27,7 +29,9 @@ import {
  * season cards, the career table and the recent games. The bio stays when the stats fail, and the season shown is the
  * landing's featuredStats season, so the off-season shows the last season played. When that season has a history
  * file (SeasonHistoryService), it's loaded too, for the regular season card's average HokMob rating, and so is every
- * player of his position that season (/api/nhl-stats/league-players), for the traits card's percentiles.
+ * player of his position that season (/api/nhl-stats/league-players), for the traits card's percentiles. A skater's
+ * traits also count Natural Stat Trick's skaters of the season and the season's NHL EDGE file (EdgeSeasonService),
+ * both optional, and the card waits for all three, so its shape doesn't change after it appears.
  *
  * While each request loads, its cards show skeletons at their size (SkeletonCardComponent), so the page doesn't jump
  * when the data comes in: the whole page until the landing loads, then the season, recent games and career cards
@@ -101,6 +105,15 @@ export class PlayerComponent implements OnInit {
   /** Whether the NHL EDGE stats are loading. */
   public edgePending: boolean = false;
 
+  /**
+   * Every skater's NHL EDGE stats of the featured regular season, from its stored file, for the traits card's Speed.
+   * Undefined for a goalie, for a season without a file (before 2021-22), while it loads and when it fails.
+   */
+  public edgeSeason: EdgeSeason;
+
+  /** Whether the EDGE season file is loading. */
+  public edgeSeasonPending: boolean = false;
+
   public teamColor: string = "#000000";
 
   /** A little wider than it is tall, so the widest crests keep roughly the visual weight of the square ones. */
@@ -153,9 +166,12 @@ export class PlayerComponent implements OnInit {
     return (!!this.regularSeasonStats || this.statsLoading) && (this.seasonRatingPending || !!this.seasonRating);
   }
 
-  /** Whether the traits card shows its skeleton: until the landing loads, then until the league players do. */
+  /**
+   * Whether the traits card shows its skeleton: until the landing loads, then until the league players, Natural Stat
+   * Trick and the EDGE season file have all answered.
+   */
   public get traitsLoading(): boolean {
-    return this.playerLoading || this.traitsPending;
+    return this.playerLoading || this.traitsPending || this.nstPending || this.edgeSeasonPending;
   }
 
   /**
@@ -224,7 +240,8 @@ export class PlayerComponent implements OnInit {
               private nhlGameService: NhlGameService,
               private nhlStatsApiService: NhlStatsApiService,
               private seasonHistoryService: SeasonHistoryService,
-              private naturalStatTrickService: NaturalStatTrickService) {}
+              private naturalStatTrickService: NaturalStatTrickService,
+              private edgeSeasonService: EdgeSeasonService) {}
 
   public ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
@@ -264,6 +281,7 @@ export class PlayerComponent implements OnInit {
       this.retrieveSeasonRating();
       this.retrieveTraits();
       this.retrieveSeasonPerformance();
+      this.retrieveEdgeSeason();
     }).catch(() => {
       // The service logs the error. Without the landing there's no player to show at all
       if (this.playerId === playerId) {
@@ -314,9 +332,9 @@ export class PlayerComponent implements OnInit {
   }
 
   /**
-   * Works out the player's traits from every player of his position in the featured regular season. The season is
-   * kept by NhlStatsApiService for a few minutes, so the next player of the same season doesn't load it again. A
-   * player who has never played an NHL game has no featured season, and gets no card.
+   * Loads every player of his position in the featured regular season, which the traits and season performance cards
+   * rank him among. The season is kept by NhlStatsApiService for a few minutes, so the next player of the same season
+   * doesn't load it again. A player who has never played an NHL game has no featured season, and gets no card.
    */
   private retrieveTraits(): void {
     const playerId = this.playerId;
@@ -329,8 +347,8 @@ export class PlayerComponent implements OnInit {
         .then(leaguePlayers => {
           if (this.playerId === playerId) {
             this.leaguePlayers = leaguePlayers;
-            this.traits = PlayerPercentileUtils.getPlayerTraits(leaguePlayers, playerId);
             this.traitsPending = false;
+            this.updateTraits();
           }
         }).catch(() => {
           // The service logs the error. The card is left out
@@ -341,9 +359,49 @@ export class PlayerComponent implements OnInit {
   }
 
   /**
+   * Loads the featured regular season's NHL EDGE file for a skater's Speed, when the season has one. The file is kept
+   * for the session. Without it (a goalie, a season before 2021-22, a failed load) the traits go without Speed.
+   */
+  private retrieveEdgeSeason(): void {
+    const playerId = this.playerId;
+    const season = this.featuredSeason;
+    if (!season || this.isGoalie || !EdgeSeasonService.hasSeason(season)) {
+      return;
+    }
+    this.edgeSeasonPending = true;
+    this.edgeSeasonService.getEdgeSeason(season).then(edgeSeason => {
+      if (this.playerId === playerId) {
+        this.edgeSeason = edgeSeason;
+        this.edgeSeasonPending = false;
+        this.updateTraits();
+      }
+    }).catch(() => {
+      // The service logs the error. The traits go without Speed
+      if (this.playerId === playerId) {
+        this.edgeSeasonPending = false;
+        this.updateTraits();
+      }
+    });
+  }
+
+  /**
+   * Works out the player's traits once the league players, Natural Stat Trick and the EDGE season file have all
+   * answered, with whichever of the last two came in.
+   */
+  private updateTraits(): void {
+    if (this.traitsPending || this.nstPending || this.edgeSeasonPending || !this.leaguePlayers) {
+      return;
+    }
+    this.traits = PlayerPercentileUtils.getPlayerTraits(this.leaguePlayers, this.playerId, {
+      nstPlayers: this.nstPlayers,
+      edgeSeason: this.edgeSeason
+    });
+  }
+
+  /**
    * Loads what the season performance card adds to the league players (retrieveTraits): Natural Stat Trick's skaters
-   * of the featured regular season, and the player's NHL EDGE stats. Either one failing leaves its rows out. NST has no
-   * goalie stats here, so a goalie only gets EDGE's.
+   * of the featured regular season, which the traits use too, and the player's NHL EDGE stats. Either one failing
+   * leaves its rows out. NST has no goalie stats here, so a goalie only gets EDGE's.
    */
   private retrieveSeasonPerformance(): void {
     const playerId = this.playerId;
@@ -357,11 +415,13 @@ export class PlayerComponent implements OnInit {
         if (this.playerId === playerId) {
           this.nstPlayers = nstPlayers;
           this.nstPending = false;
+          this.updateTraits();
         }
       }).catch(() => {
-        // The service logs the error. The card shows the NHL's stats alone
+        // The service logs the error. The cards show the NHL's stats alone
         if (this.playerId === playerId) {
           this.nstPending = false;
+          this.updateTraits();
         }
       });
     }
@@ -406,6 +466,8 @@ export class PlayerComponent implements OnInit {
     this.nstPending = false;
     this.edgeDetail = undefined;
     this.edgePending = false;
+    this.edgeSeason = undefined;
+    this.edgeSeasonPending = false;
     this.teamColor = "#000000";
     this.countryFlagPath = undefined;
   }
