@@ -618,8 +618,11 @@ pool and minimum games), and the season performance card shares it, the endpoint
   rating colors are reserved for ratings.
 - **Layout:** on a wide desktop the traits card tops the third column and the career table runs under it, beside the
   bio and season cards, the playoffs card (across the first two columns when there is one), the recent games and the
-  season performance card. On a small desktop and a phone the cards wrap or stack as before, with the traits card
-  just before the career table.
+  season performance card. Below 1200px the side column's box is dropped (`display: contents`) and its cards wrap
+  or stack with the others, and CSS `order` puts the traits card right after the season stats, before the recent
+  games, season performance and career cards. Around 1200px it shares the first row with the bio and season cards;
+  narrower, it takes a row of its own under them (on a phone, the next card down). The source order stays the wide
+  layout's, so keyboard focus still reaches the traits card after the season performance card.
 - **Caching:** the backend keeps each report 5 minutes, and `NhlStatsApiService.getLeaguePlayers` keeps a season's
   response 5 minutes too, so moving between players of the same season doesn't ask again.
 - **Credit:** a skater with an NST row gets "ixG, hits taken and xGA from Natural Stat Trick" under the chart,
@@ -665,7 +668,7 @@ works out every row.
 - **Placement:** on a wide desktop the card spans the recent games' two columns, right under them, with the traits
   and career cards down the third column beside it: the grid's rows are `auto auto 1fr` (`auto auto auto 1fr` with
   the playoffs card), and the card takes the flexible last row. On a small desktop it takes a row to itself, and on a
-  phone it comes after the recent games, before the traits card. Its groups are two columns from 700px up, one below.
+  phone it comes after the recent games, before the career table (the traits card is up by the season stats). Its groups are two columns from 700px up, one below.
 - **Shot attempts:** the stats API's `totalShotAttempts` is NST's iCF within one: of the 50 skaters of the league
   players fixture, 43 matched and 7 differed by one (2026-11-24).
 

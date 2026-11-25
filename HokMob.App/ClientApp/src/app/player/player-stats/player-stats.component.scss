@@ -151,13 +151,50 @@
       }
     }
 
-    .rating-column {
-      order: -1;
-      flex: none;
-      height: auto;
-      grid-template-rows: none;
-      grid-template-columns: repeat(2, 1fr);
-      padding: $spacing-small $spacing-medium 0;
+    // With the rating there's no room for a fifth column either, and a row of its own would make three: every tile
+    // goes into one grid of two rows, the rating at the end of the first and its stat at the end of the second. On
+    // twenty columns, so a row of five tiles (4 each) and a skater's second row of four (5 each) both fill it.
+    &.has-rating {
+      .stats-body {
+        display: grid;
+        grid-template-columns: repeat(20, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        height: 185px;
+        padding: $spacing-x-small $spacing-medium;
+      }
+
+      .stats-grid, .rating-column {
+        display: contents;
+      }
+
+      // In .stats-body, to outweigh the grid's own span above
+      .stats-body .stats-item {
+        grid-column: span 4;
+        order: 2;
+      }
+
+      .stats-grid .stats-item:nth-child(-n + 4) {
+        order: 0;
+      }
+
+      .stats-body .rating-item {
+        order: 1;
+      }
+
+      .rating-column .stats-item:last-child {
+        order: 3;
+      }
+
+      .skater-stats .stats-item:nth-child(n + 5), .skater-stats ~ .rating-column .stats-item:last-child {
+        grid-column: span 5;
+      }
+
+      // Five to a row: a little smaller and narrower, so the goalies' "Shots Against" still fits its fifth at 360px
+      .stats-body .stats-item .item-title {
+        padding-left: 2px;
+        padding-right: 2px;
+        font-size: clamp(10px, 2.8vw, 15px);
+      }
     }
   }
 }

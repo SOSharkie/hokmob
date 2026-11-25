@@ -248,6 +248,14 @@
   }
 }
 
+// Below the wide layout the side column's cards wrap or stack with the others: the traits card comes right after the
+// season stats, and the recent games, season performance and career cards after it
+@media only screen and (max-width: $small-display-breakpoint) {
+  .match-stats-container, .season-performance-container, .career-totals {
+    order: 1;
+  }
+}
+
 // Small Desktop Display: the cards cannot shrink past their 375px minimum, so let them wrap onto as many rows as they
 // need, stretching to fill each row
 @media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint) {

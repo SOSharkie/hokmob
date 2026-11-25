@@ -49,7 +49,7 @@ export class PlayerStatsComponent {
     return this.showRating ? PlayerStatsComponent.ratedSkeletonLayout : PlayerStatsComponent.unratedSkeletonLayout;
   }
 
-  /** On a phone the stats wrap, and the rating column is a row of its own under them. */
+  /** On a phone the stats keep their two rows, with the rating and its stat at the end of each, five to a row. */
   public get skeletonMobileLayout(): SkeletonCardLayout {
     return this.showRating ? PlayerStatsComponent.ratedSkeletonMobileLayout : PlayerStatsComponent.unratedSkeletonMobileLayout;
   }
@@ -62,7 +62,7 @@ export class PlayerStatsComponent {
     rows: 2, rowHeight: 94.5, columns: 4, headerHeight: 51.5
   };
 
-  private static readonly ratedSkeletonMobileLayout: SkeletonCardLayout = {rows: 3, rowHeight: 83.5, columns: 4};
+  private static readonly ratedSkeletonMobileLayout: SkeletonCardLayout = {rows: 2, rowHeight: 94.5, columns: 5};
 
   private static readonly unratedSkeletonMobileLayout: SkeletonCardLayout = {rows: 2, rowHeight: 94.5, columns: 4};
 
