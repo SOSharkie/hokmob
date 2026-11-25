@@ -5,6 +5,7 @@ import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
+import {PlayerPercentileUtils, PlayerTraits} from "@shared/utils/player-percentile-utils";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {NhlTeamColorUtils} from "@shared/utils/nhl-team-color-utils";
 import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
@@ -21,7 +22,8 @@ import {
  * The player page. Two requests: player/{id}/landing for the header and bio, and /api/nhl-stats/player/{id} for the
  * season cards, the career table and the recent games. The bio stays when the stats fail, and the season shown is the
  * landing's featuredStats season, so the off-season shows the last season played. When that season has a history
- * file (SeasonHistoryService), it's loaded too, for the regular season card's average HokMob rating.
+ * file (SeasonHistoryService), it's loaded too, for the regular season card's average HokMob rating, and so is every
+ * player of his position that season (/api/nhl-stats/league-players), for the traits card's percentiles.
  *
  * While each request loads, its cards show skeletons at their size (SkeletonCardComponent), so the page doesn't jump
  * when the data comes in: the whole page until the landing loads, then the season, recent games and career cards
@@ -64,6 +66,15 @@ export class PlayerComponent implements OnInit {
 
   /** Whether the featured season's history file is loading, so the card keeps a place for the rating. */
   public seasonRatingPending: boolean = false;
+
+  /**
+   * The player's percentiles in the featured regular season against his position. Undefined while they load, for a
+   * player without a row in that season, and when the request fails, which all hide the traits card.
+   */
+  public traits: PlayerTraits;
+
+  /** Whether the featured season's league players are loading, so the traits card shows its skeleton. */
+  public traitsPending: boolean = false;
 
   public teamColor: string = "#000000";
 
@@ -115,6 +126,16 @@ export class PlayerComponent implements OnInit {
       return true;
     }
     return (!!this.regularSeasonStats || this.statsLoading) && (this.seasonRatingPending || !!this.seasonRating);
+  }
+
+  /** Whether the traits card shows its skeleton: until the landing loads, then until the league players do. */
+  public get traitsLoading(): boolean {
+    return this.playerLoading || this.traitsPending;
+  }
+
+  /** The featured season, like 20262027, or undefined for a player who has never played an NHL game. */
+  public get featuredSeason(): number {
+    return this.player?.featuredStats?.season;
   }
 
   /** The header's two stripes: the team's color, or the skeletons' gray while the player loads. */
@@ -207,6 +228,7 @@ export class PlayerComponent implements OnInit {
       this.countryFlagPath = player.birthCountry ? "assets/flags/" + player.birthCountry + ".png" : undefined;
       this.retrieveStats();
       this.retrieveSeasonRating();
+      this.retrieveTraits();
     }).catch(() => {
       // The service logs the error. Without the landing there's no player to show at all
       if (this.playerId === playerId) {
@@ -257,6 +279,32 @@ export class PlayerComponent implements OnInit {
   }
 
   /**
+   * Works out the player's traits from every player of his position in the featured regular season. The season is
+   * kept by NhlStatsApiService for a few minutes, so the next player of the same season doesn't load it again. A
+   * player who has never played an NHL game has no featured season, and gets no card.
+   */
+  private retrieveTraits(): void {
+    const playerId = this.playerId;
+    const season = this.featuredSeason;
+    if (!season) {
+      return;
+    }
+    this.traitsPending = true;
+    this.nhlStatsApiService.getLeaguePlayers(season, NhlGameTypeEnum.REGULAR_SEASON, this.isGoalie)
+        .then(leaguePlayers => {
+          if (this.playerId === playerId) {
+            this.traits = PlayerPercentileUtils.getPlayerTraits(leaguePlayers, playerId);
+            this.traitsPending = false;
+          }
+        }).catch(() => {
+          // The service logs the error. The card is left out
+          if (this.playerId === playerId) {
+            this.traitsPending = false;
+          }
+        });
+  }
+
+  /**
    * The row of the landing's featured season, which is the player's latest season.
    */
   private findFeaturedSeason(seasons: SkaterSeasonStats[] | GoalieSeasonStats[]): SkaterSeasonStats | GoalieSeasonStats {
@@ -275,6 +323,8 @@ export class PlayerComponent implements OnInit {
     this.statsFailed = false;
     this.seasonRating = undefined;
     this.seasonRatingPending = false;
+    this.traits = undefined;
+    this.traitsPending = false;
     this.teamColor = "#000000";
     this.countryFlagPath = undefined;
   }

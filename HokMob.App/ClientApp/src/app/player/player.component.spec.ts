@@ -11,6 +11,8 @@ import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { SkaterSeasonStats } from '@shared/models/nhl-stats-api/player-stats.model';
 import {
+  mockLeagueGoalies,
+  mockLeagueSkaters,
   mockPlayerLanding,
   mockPlayerStats,
   mockSeasonHistory
@@ -27,6 +29,7 @@ describe('PlayerComponent', () => {
   const landingUrl = '/api/nhl/player/';
   const statsUrl = '/api/nhl-stats/player/';
   const historyUrl = 'assets/history/20252026-2.json';
+  const leaguePlayersUrl = '/api/nhl-stats/league-players';
 
   beforeEach(async () => {
     routeParams = new BehaviorSubject<Params>({});
@@ -44,6 +47,9 @@ describe('PlayerComponent', () => {
   });
 
   afterEach(() => {
+    // A test about the other cards leaves the traits card's request open
+    httpMock.match(request => request.url.startsWith(leaguePlayersUrl))
+        .forEach(request => request.flush({players: {playerId: []}, mostTeamGames: 0}));
     fixture.destroy();
     httpMock.verify();
   });
@@ -174,6 +180,7 @@ describe('PlayerComponent', () => {
       expect(child('app-recent-player-games').loadingRows).toBe(10);
       expect(child('app-player-career').loading).toBeTrue();
       expect(child('app-player-career').loadingRows).toBe(10);
+      expect(child('app-player-traits').loading).toBeTrue();
       httpMock.expectOne(landingUrl + '8477964/landing');
     });
 
@@ -236,6 +243,9 @@ describe('PlayerComponent', () => {
       expect(child('.regular-season-stats')).toBeNull();
       expect(child('.match-stats-container')).toBeNull();
       expect(child('.career-totals')).toBeNull();
+      // No featured season, so no traits to ask for
+      expect(child('app-player-traits')).toBeNull();
+      httpMock.expectNone(request => request.url.startsWith(leaguePlayersUrl));
       httpMock.match(() => true).forEach(request => request.flush({regularSeasons: [], playoffSeasons: [], recentGames: []}));
       await settle();
     });
@@ -338,6 +348,83 @@ describe('PlayerComponent', () => {
     expect(component.player).toBeUndefined();
     await flushPlayerPage(8476945, 'goalie');
     expect(text('.player-name')).toBe('Connor Hellebuyck');
+  });
+
+  describe('traits', () => {
+    const skatersUrl = leaguePlayersUrl + '?season=20252026&gameType=2&position=skater';
+
+    // The featured season of the captured landings is 2025-26; the captured 2026-27 players stand in for it, and both
+    // Ivan Barbashev (25 games) and Connor Hellebuyck (10 games) are in them
+
+    it('should chart a skater against the forwards of his featured regular season', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      expect(child('app-player-traits').loading).toBeTrue();
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      await settle();
+
+      const traits = child('app-player-traits');
+      expect(traits.loading).toBeFalse();
+      expect(traits.traits.group).toBe('F');
+      expect(traits.traits.gamesPlayed).toBe(25);
+      expect(traits.traits.poolSize).toBe(32);
+      expect(traits.traits.traits.length).toBe(6);
+      expect(traits.teamId).toBe(54);
+      expect(traits.season).toBe(20252026);
+    });
+
+    it('should chart a goalie against the goalies', async () => {
+      open(8476945);
+      await flushPlayerPage(8476945, 'goalie');
+      httpMock.expectOne(leaguePlayersUrl + '?season=20252026&gameType=2&position=goalie').flush(mockLeagueGoalies());
+      await settle();
+      expect(child('app-player-traits').traits.group).toBe('G');
+      expect(child('app-player-traits').traits.poolSize).toBe(14);
+    });
+
+    it('should put the traits card before the career table', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      await settle();
+      const sideCards = Array.from<HTMLElement>(child('.side-cards').children).map(card => card.className);
+      expect(sideCards).toEqual(['player-traits-container', 'career-totals']);
+    });
+
+    it('should leave the card out for a player without a row in the season', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      const response = mockLeagueSkaters();
+      response.players.playerId[response.players.playerId.indexOf(8477964)] = 1;
+      httpMock.expectOne(skatersUrl).flush(response);
+      await settle();
+      expect(component.traits).toBeUndefined();
+      expect(child('app-player-traits')).toBeNull();
+      expect(child('app-player-career')).not.toBeNull();
+    });
+
+    it('should leave the card out, and keep the other cards, when the request fails', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      httpMock.expectOne(skatersUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await settle();
+      expect(child('app-player-traits')).toBeNull();
+      expect(component.traitsLoading).toBeFalse();
+      expect(child('.regular-season-stats app-player-stats')).not.toBeNull();
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it('should not give the next player the traits of the one before', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      await settle();
+      routeParams.next({id: '8476945'});
+      fixture.detectChanges();
+      expect(component.traits).toBeUndefined();
+      expect(child('app-player-traits').loading).toBeTrue();
+      httpMock.expectOne(landingUrl + '8476945/landing');
+    });
   });
 
   describe('season rating', () => {

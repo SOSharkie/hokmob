@@ -9,6 +9,12 @@ import {HitsAndShotsLeaders} from "@shared/models/nhl-stats-api/leaders.model";
 import {CurrentSeason, SeasonDates, SeasonDatesResponse} from "@shared/models/nhl-stats-api/season-dates.model";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {DraftPlayerStats, DraftStatsResponse} from "@shared/models/nhl-stats-api/draft-stats.model";
+import {
+  LeagueGoalieStats,
+  LeaguePlayers,
+  LeaguePlayersResponse,
+  LeagueSkaterStats
+} from "@shared/models/nhl-stats-api/league-players.model";
 
 /**
  * The stats the NHL web API doesn't have, from the NHL stats API through the backend (/api/nhl-stats/*). The backend
@@ -32,6 +38,14 @@ export class NhlStatsApiService {
   private readonly nhlSeasonsUrl = "/api/nhl-stats/seasons";
 
   private readonly nhlDraftStatsUrl = "/api/nhl-stats/draft";
+
+  private readonly nhlLeaguePlayersUrl = "/api/nhl-stats/league-players";
+
+  /** How long a season's league players are reused before they're asked for again: 5 minutes, like the backend. */
+  public static readonly leaguePlayersMaxAge = 5 * 60 * 1000;
+
+  /** The league players requests by season, game type and position, until they're older than leaguePlayersMaxAge. */
+  private readonly leaguePlayers = new Map<string, {requestedAt: number, players: Promise<LeaguePlayers>}>();
 
   /** How long the season dates are reused before they're asked for again: 1 hour. */
   private readonly seasonDatesMaxAge = 60 * 60 * 1000;
@@ -185,7 +199,7 @@ export class NhlStatsApiService {
     return new Promise((resolve, reject) => {
       return this.http.get<TeamGamesResponse>(url).subscribe({
         next: (response) => {
-          resolve(NhlStatsApiService.toTeamGameRows(response?.games));
+          resolve(NhlStatsApiService.toRows<TeamGameStats>(response?.games, "gameId"));
         },
         error: (error) => {
           console.error(error);
@@ -196,16 +210,59 @@ export class NhlStatsApiService {
   }
 
   /**
-   * Turns the team games' columns into one object per row.
+   * Gets every player's season row of one position, for percentiles against the league: about 1,000 skaters, or 100
+   * goalies, in a full season. A season is kept for leaguePlayersMaxAge, so moving between players doesn't load it
+   * again, and a failed request isn't reused. A season with no games yet resolves no players.
+   *
+   * @param season - The season ID, like 20262027.
+   * @param gameType - 2 for the regular season, 3 for the playoffs.
+   * @param isGoalie - Whether to get the goalies instead of the skaters.
    */
-  private static toTeamGameRows(columns: TeamGamesResponse["games"]): TeamGameStats[] {
-    const fields = Object.keys(columns ?? {}) as (keyof TeamGameStats)[];
-    const count = columns?.gameId?.length ?? 0;
-    const rows: TeamGameStats[] = [];
+  public getLeaguePlayers(season: number | string, gameType: number, isGoalie: boolean): Promise<LeaguePlayers> {
+    const position = isGoalie ? "goalie" : "skater";
+    const key = season + "-" + gameType + "-" + position;
+    const cached = this.leaguePlayers.get(key);
+    if (cached && Date.now() - cached.requestedAt < NhlStatsApiService.leaguePlayersMaxAge) {
+      return cached.players;
+    }
+    const url = this.nhlLeaguePlayersUrl + "?season=" + season + "&gameType=" + gameType + "&position=" + position;
+    const request = new Promise<LeaguePlayers>((resolve, reject) => {
+      return this.http.get<LeaguePlayersResponse>(url).subscribe({
+        next: (response) => {
+          resolve({
+            players: NhlStatsApiService.toRows<LeagueSkaterStats | LeagueGoalieStats>(response?.players, "playerId"),
+            mostTeamGames: response?.mostTeamGames ?? 0
+          });
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
+    this.leaguePlayers.set(key, {requestedAt: Date.now(), players: request});
+    request.catch(() => {
+      if (this.leaguePlayers.get(key)?.players === request) {
+        this.leaguePlayers.delete(key);
+      }
+    });
+    return request;
+  }
+
+  /**
+   * Turns a response's columns of equally long arrays into one object per row.
+   *
+   * @param columns - The arrays by field.
+   * @param countField - A field every row has, whose array's length is the number of rows.
+   */
+  private static toRows<T>(columns: {[field in keyof T]?: T[field][]}, countField: keyof T): T[] {
+    const fields = Object.keys(columns ?? {}) as (keyof T)[];
+    const count = columns?.[countField]?.length ?? 0;
+    const rows: T[] = [];
     for (let i = 0; i < count; i++) {
-      const row = {} as Record<keyof TeamGameStats, unknown>;
+      const row = {} as Record<keyof T, unknown>;
       fields.forEach(field => row[field] = columns[field][i]);
-      rows.push(row as unknown as TeamGameStats);
+      rows.push(row as T);
     }
     return rows;
   }

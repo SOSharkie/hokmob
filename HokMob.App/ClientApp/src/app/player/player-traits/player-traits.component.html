@@ -1,0 +1,40 @@
+@if (loading) {
+  <app-skeleton-card shape="block" cardTitle="Player Traits" [layout]="skeletonLayout"></app-skeleton-card>
+} @else if (traits) {
+  <div class="player-traits">
+    <div class="traits-header">
+      <span class="traits-title">Player Traits</span>
+      <span class="traits-subtitle">{{subtitle}}</span>
+      <button type="button" class="traits-help-button" aria-label="What the numbers are"
+              aria-controls="player-traits-help" [attr.aria-expanded]="helpOpen" (click)="toggleHelp($event)">
+        <mat-icon svgIcon="lucide:circle-question-mark"></mat-icon>
+      </button>
+      <div id="player-traits-help" class="traits-help" role="tooltip" [class.open]="helpOpen">{{helpText}}</div>
+    </div>
+    <div class="traits-chart">
+      <svg [attr.viewBox]="viewBox" aria-hidden="true" focusable="false">
+        @for (ring of rings; track $index) {
+          <polygon class="trait-ring" [attr.points]="ring"></polygon>
+        }
+        <polygon class="trait-outer-ring" [attr.points]="outerRing"></polygon>
+        @for (spoke of spokes; track $index) {
+          <line class="trait-spoke" [attr.x1]="center.x" [attr.y1]="center.y" [attr.x2]="spoke.x" [attr.y2]="spoke.y"></line>
+        }
+        <polygon class="trait-shape" [attr.points]="shape" [attr.fill]="color" [attr.stroke]="color"></polygon>
+        @for (dot of dots; track $index) {
+          <circle class="trait-dot" r="3" [attr.cx]="dot.x" [attr.cy]="dot.y" [attr.fill]="color"></circle>
+        }
+      </svg>
+      @for (label of labels; track label.key) {
+        <div class="trait-label" [ngClass]="'anchor-' + label.anchor" [style.left.%]="label.left"
+             [style.top.%]="label.top" [title]="label.title">
+          <span class="trait-name">{{label.label}}</span>
+          <span class="trait-percentile">{{label.percentileText}}</span>
+        </div>
+      }
+    </div>
+    @if (smallSampleNote) {
+      <div class="traits-small-sample">{{smallSampleNote}}</div>
+    }
+  </div>
+}

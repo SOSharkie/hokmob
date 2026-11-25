@@ -4,6 +4,8 @@ import {NhlStatsApiService} from '@shared/services/nhl-stats-api.service';
 import {
   mockDraftStats,
   mockHitsAndShotsLeaders,
+  mockLeagueGoalies,
+  mockLeagueSkaters,
   mockPlayerStats,
   mockSeasonDates,
   mockSeasonPlayersGoalieSavePctg,
@@ -19,6 +21,7 @@ import {
   SkaterSeasonStats
 } from '@shared/models/nhl-stats-api/player-stats.model';
 import {provideHttpClient} from '@angular/common/http';
+import {LeagueGoalieStats, LeagueSkaterStats} from '@shared/models/nhl-stats-api/league-players.model';
 
 describe('NhlStatsApiService', () => {
   let service: NhlStatsApiService;
@@ -339,6 +342,76 @@ describe('NhlStatsApiService', () => {
       httpMock.expectOne(teamGamesUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getLeaguePlayers', () => {
+    const skatersUrl = '/api/nhl-stats/league-players?season=20262027&gameType=2&position=skater';
+
+    afterEach(() => {
+      jasmine.clock().uninstall();
+    });
+
+    it('should turn the real columns into one row per skater', async () => {
+      const leaguePlayers = service.getLeaguePlayers(20262027, 2, false);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+
+      const {players, mostTeamGames} = await leaguePlayers;
+      expect(mostTeamGames).toBe(26);
+      expect(players.length).toBe(50);
+      const draisaitl = players.find(player => player.playerId === 8477934) as LeagueSkaterStats;
+      expect(draisaitl.skaterFullName).toBe('Leon Draisaitl');
+      expect(draisaitl.goals).toBe(23);
+      expect(draisaitl.totalPrimaryAssists).toBe(16);
+      expect(draisaitl.satFor).toBe(401);
+    });
+
+    it('should ask for the goalies', async () => {
+      const leaguePlayers = service.getLeaguePlayers('20262027', 2, true);
+      httpMock.expectOne('/api/nhl-stats/league-players?season=20262027&gameType=2&position=goalie')
+          .flush(mockLeagueGoalies());
+      const {players} = await leaguePlayers;
+      expect(players.length).toBe(15);
+      expect((players.find(player => player.playerId === 8476945) as LeagueGoalieStats).goalieFullName)
+          .toBe('Connor Hellebuyck');
+    });
+
+    it('should resolve no players without columns', async () => {
+      const leaguePlayers = service.getLeaguePlayers(20262027, 2, false);
+      httpMock.expectOne(skatersUrl).flush({});
+      expect(await leaguePlayers).toEqual({players: [], mostTeamGames: 0});
+    });
+
+    it('should share one request for a season until it is 5 minutes old', async () => {
+      jasmine.clock().install();
+      jasmine.clock().mockDate(new Date(2026, 10, 24, 12));
+      const first = service.getLeaguePlayers(20262027, 2, false);
+      const second = service.getLeaguePlayers(20262027, 2, false);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      expect(second).toBe(first);
+      expect((await second).players.length).toBe(50);
+
+      // Another season or position is another request
+      service.getLeaguePlayers(20252026, 2, false);
+      httpMock.expectOne('/api/nhl-stats/league-players?season=20252026&gameType=2&position=skater').flush({});
+
+      jasmine.clock().tick(NhlStatsApiService.leaguePlayersMaxAge + 1);
+      const third = service.getLeaguePlayers(20262027, 2, false);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      expect(third).not.toBe(first);
+      await third;
+    });
+
+    it('should log and reject when the request fails, and ask again next time', async () => {
+      const leaguePlayers = service.getLeaguePlayers(20262027, 2, false);
+      const rejection = expectAsync(leaguePlayers).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne(skatersUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+
+      const retry = service.getLeaguePlayers(20262027, 2, false);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      expect((await retry).players.length).toBe(50);
     });
   });
 

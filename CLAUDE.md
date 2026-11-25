@@ -33,7 +33,8 @@ A request to one of them is a regression.
   (`NhlSearchApiClient`). Only allowlisted query parameters are forwarded.
 - `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/season-players`,
   `/team-players?teamId=&season=&gameType=`, `/teams`, `/team-games?season=&gameType=` (every team's games, for the
-  power rating), `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
+  power rating), `/league-players?season=&gameType=&position=skater|goalie` (every player's season row, as columns,
+  for the player page's traits percentiles), `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
   into one response.
 - `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, and each
   shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page, and
@@ -55,8 +56,9 @@ A request to one of them is a regression.
     from the name: `NhlStarPlayerUtils` holds each team's three star forwards and two star defensemen, who fill the
     star lineup of the game page's top players and season leaders cards and break their ties; `PickerMenuUtils`
     goes with the `.pill-picker` styles in `styles.scss`, for the draft, playoffs and stats category pickers.
-    `StatCategoryUtils` defines the stats page's categories and the columns of their top 25 tables. `TeamRatingUtils`
-    holds the team power rating and advanced stats, for any team (see "Team power rating" in `docs/nhl-api.md`). The
+    `StatCategoryUtils` defines the stats page's categories and the columns of their top 25 tables.
+    `PlayerPercentileUtils` ranks a player's season stats against his position for the player page's traits card
+    (see "Player traits" in `docs/nhl-api.md`). `TeamRatingUtils` holds the team power rating and advanced stats, for any team (see "Team power rating" in `docs/nhl-api.md`). The
     rating counts NST's xG and falls back to the NHL's stats without it, and nothing in it comes from the standings.
     `RatingColorUtils` colors every rating (games, season averages, teams) by its tier, with each scale's own cut
     points, from the `--rating-*` colors in `styles.scss`; never write a rating color's hex anywhere else (see "Rating

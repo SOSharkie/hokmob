@@ -212,6 +212,118 @@ namespace HokMob.App.Controllers
         }
 
         /// <summary>
+        /// Returns every player's season row of one season, as { players: { playerId: [...], ... }, mostTeamGames }: one
+        /// row per player who played, as columns of equally long arrays (LeagueSkaterFields or LeagueGoalieFields) so
+        /// the field names aren't repeated over a season's 1,000 skaters, sorted by player ID. Each row merges the
+        /// reports in LeagueSkaterReports or LeagueGoalieReports. A traded player's season is one combined row
+        /// ("CAR,COL"). mostTeamGames is the most games any team has played, which a page's minimum games are scaled
+        /// to. Every report is required, so a failed one answers 502.
+        /// </summary>
+        /// <param name="season">The season ID, like 20262027.</param>
+        /// <param name="gameType">2 for the regular season, 3 for the playoffs. Defaults to the regular season.</param>
+        /// <param name="position">"skater" or "goalie".</param>
+        [HttpGet("league-players")]
+        public async Task<IActionResult> GetLeaguePlayers(int season, int? gameType, string? position,
+            CancellationToken cancellationToken)
+        {
+            var playerGameType = gameType ?? 2;
+            if (!IsValidSeason(season) || !IsValidGameType(playerGameType) ||
+                (position != "skater" && position != "goalie"))
+            {
+                return BadRequest();
+            }
+            var isGoalie = position == "goalie";
+            var reports = isGoalie ? LeagueGoalieReports : LeagueSkaterReports;
+            var fields = isGoalie ? LeagueGoalieFields : LeagueSkaterFields;
+
+            var parameters = new[]
+            {
+                new KeyValuePair<string, string>("isAggregate", "false"),
+                new KeyValuePair<string, string>("isGame", "false"),
+                new KeyValuePair<string, string>("cayenneExp", $"seasonId={season} and gameTypeId={playerGameType}")
+            };
+            // A season is up to about 1,000 skaters per report, so each is read page by page, by player ID: a player
+            // has one row per season
+            var reportTasks = reports
+                .Select(report => _nhlStatsApiClient.GetAllReportRowsAsync(report, parameters, LeaguePlayerSort,
+                    cancellationToken))
+                .ToList();
+            var teamsTask = _nhlStatsApiClient.GetReportAsync("team/summary", new[]
+            {
+                new KeyValuePair<string, string>("isAggregate", "false"),
+                new KeyValuePair<string, string>("isGame", "false"),
+                new KeyValuePair<string, string>("limit", "-1"),
+                new KeyValuePair<string, string>("cayenneExp", $"seasonId={season} and gameTypeId={playerGameType}")
+            }, cancellationToken);
+            await Task.WhenAll(reportTasks.Cast<Task>().Append(teamsTask));
+            if (reportTasks.Any(task => task.Result == null) || teamsTask.Result == null)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway);
+            }
+
+            var players = reportTasks[0].Result!;
+            for (var i = 1; i < reportTasks.Count; i++)
+            {
+                var reportIndex = i;
+                Merge(players, reportTasks[i].Result, "playerId", fields
+                    .Where(field => field.Report == reportIndex)
+                    .Select(field => field.Field)
+                    .ToArray());
+            }
+            players.Sort((rowA, rowB) =>
+                (GetLongValue(rowA["playerId"]) ?? 0).CompareTo(GetLongValue(rowB["playerId"]) ?? 0));
+
+            var columns = new JsonObject();
+            foreach (var field in fields)
+            {
+                columns[field.Field] = new JsonArray(players.Select(row => CopyValue(row[field.Field])).ToArray());
+            }
+            var mostTeamGames = teamsTask.Result.Select(team => GetLongValue(team["gamesPlayed"]) ?? 0)
+                .DefaultIfEmpty(0)
+                .Max();
+            return new JsonResult(new JsonObject {["players"] = columns, ["mostTeamGames"] = mostTeamGames});
+        }
+
+        /// <summary>
+        /// The skater reports of /league-players, in the order LeagueSkaterFields refers to them by index. The summary
+        /// comes first: its rows are the players.
+        /// </summary>
+        private static readonly string[] LeagueSkaterReports =
+            {"skater/summary", "skater/realtime", "skater/scoringpergame", "skater/summaryshooting"};
+
+        /// <summary>The goalie reports of /league-players, like LeagueSkaterReports.</summary>
+        private static readonly string[] LeagueGoalieReports = {"goalie/summary", "goalie/savesByStrength"};
+
+        /// <summary>The order the league player reports are paged in. A player has one row per season.</summary>
+        private static readonly string[] LeaguePlayerSort = {"playerId"};
+
+        /// <summary>
+        /// The columns of /league-players for skaters: the report each comes from (an index into LeagueSkaterReports)
+        /// and its field. The 5v5 shot attempts (sat, Corsi; usat, Fenwick) are on ice, for and against.
+        /// </summary>
+        private static readonly (int Report, string Field)[] LeagueSkaterFields =
+        {
+            (0, "playerId"), (0, "skaterFullName"), (0, "lastName"), (0, "positionCode"), (0, "teamAbbrevs"),
+            (0, "gamesPlayed"), (0, "goals"), (0, "assists"), (0, "points"), (0, "plusMinus"), (0, "ppGoals"),
+            (0, "ppPoints"), (0, "shGoals"), (0, "gameWinningGoals"), (0, "shots"), (0, "penaltyMinutes"),
+            (0, "faceoffWinPct"), (0, "timeOnIcePerGame"),
+            (1, "hits"), (1, "blockedShots"), (1, "takeaways"), (1, "giveaways"), (1, "missedShots"),
+            (1, "shotAttemptsBlocked"), (1, "totalShotAttempts"),
+            (2, "totalPrimaryAssists"), (2, "totalSecondaryAssists"),
+            (3, "satFor"), (3, "satAgainst"), (3, "usatFor"), (3, "usatAgainst"), (3, "timeOnIcePerGame5v5")
+        };
+
+        /// <summary>The columns of /league-players for goalies, like LeagueSkaterFields.</summary>
+        private static readonly (int Report, string Field)[] LeagueGoalieFields =
+        {
+            (0, "playerId"), (0, "goalieFullName"), (0, "lastName"), (0, "teamAbbrevs"), (0, "gamesPlayed"),
+            (0, "gamesStarted"), (0, "wins"), (0, "losses"), (0, "otLosses"), (0, "shutouts"), (0, "shotsAgainst"),
+            (0, "saves"), (0, "goalsAgainst"), (0, "goalsAgainstAverage"), (0, "savePct"), (0, "timeOnIce"),
+            (1, "evSaves"), (1, "evShotsAgainst"), (1, "ppSaves"), (1, "ppShotsAgainst"), (1, "shSaves"),
+            (1, "shShotsAgainst")
+        };
+
+        /// <summary>
         /// Returns a team's player stats for one season, as { skaters, goalies } in no particular order: the team page's
         /// player stats tab. Filtered by team, the stats API counts only a traded player's games for this team, though
         /// teamAbbrevs still lists every team of their season ("SJS,NYR"). A skater's rows include the realtime stats
