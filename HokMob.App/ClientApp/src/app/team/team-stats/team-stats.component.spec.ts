@@ -160,7 +160,7 @@ describe('TeamStatsComponent', () => {
     expect(text('.rating-bar-card-title')).toBe('Team Stats');
   });
 
-  it('should name the team with its logo when asked, for a page with more than one card', () => {
+  it('should name the team with its logo when asked, for a card with both teams', () => {
     fixture.componentRef.setInput('showTeam', true);
     show(6);
     expect(text('.rating-bar-card-title')).toBe('Bruins');
@@ -169,6 +169,22 @@ describe('TeamStatsComponent', () => {
     const logo: HTMLImageElement = fixture.nativeElement.querySelector('.rating-bar-card-logo');
     expect(logo.getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(6));
     expect(logo.alt).toBe('');
+  });
+
+  it('should lose its own background and padding inside a card with both teams, with the team on the left', () => {
+    fixture.componentRef.setInput('showTeam', true);
+    show(6);
+    const card: HTMLElement = fixture.nativeElement.querySelector('.rating-bar-card');
+    expect(card.classList).not.toContain('embedded');
+    expect(getComputedStyle(card).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+    expect(card.classList).toContain('embedded');
+    const style = getComputedStyle(card);
+    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(style.paddingLeft).toBe('0px');
+    expect(style.paddingRight).toBe('0px');
+    expect(card.querySelector('.rating-bar-card-logo').getBoundingClientRect().left).toBe(card.getBoundingClientRect().left);
   });
 
   it('should have no logo without showTeam', () => {

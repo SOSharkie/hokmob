@@ -260,17 +260,33 @@ describe('TeamPowerRatingComponent', () => {
     expect(fixture.nativeElement.querySelector('.rating-bar-card-logo')).toBeNull();
   });
 
-  it('should name the team with its logo instead when asked, for a page with more than one card', () => {
+  it('should name the team with its logo instead when asked, for a card with both teams', () => {
     fixture.componentRef.setInput('showTeam', true);
     show(sharks);
     expect(text('.rating-bar-card-title')).toBe('Sharks');
-    // Its stats say which card it is instead
-    expect(text('.rating-group-title')).toBe('Power Rating');
+    // The card around it says it's the power rating
+    expect(text('.rating-group-title')).toBe('Built from');
     // A compact card's title, beside the logo
     expect(text('.rating-bar-card-short-title')).toBe('SJS');
     const logo: HTMLImageElement = fixture.nativeElement.querySelector('.rating-bar-card-logo');
     expect(logo.getAttribute('src')).toBe(NhlTeamLogoUtils.getTeamPrimaryLogo(sharks));
     expect(logo.alt).toBe('');
+  });
+
+  it('should lose its own background and padding inside a card with both teams, with the team on the left', () => {
+    fixture.componentRef.setInput('showTeam', true);
+    show(sharks);
+    const card: HTMLElement = fixture.nativeElement.querySelector('.rating-bar-card');
+    expect(card.classList).not.toContain('embedded');
+    expect(getComputedStyle(card).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+    expect(card.classList).toContain('embedded');
+    const style = getComputedStyle(card);
+    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(style.paddingLeft).toBe('0px');
+    expect(style.paddingRight).toBe('0px');
+    expect(card.querySelector('.rating-bar-card-logo').getBoundingClientRect().left).toBe(card.getBoundingClientRect().left);
   });
 
   it('should show nothing for a team that hasn\'t played', () => {

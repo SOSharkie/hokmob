@@ -1,18 +1,7 @@
 <!-- Switches the card between the power rating and the season stats, in the header's top right corner -->
 <ng-template #viewToggle>
   @if (canToggle) {
-    <div class="card-view-toggle" role="group" aria-label="Card">
-      <button type="button" class="toggle-option" [class.selected]="shownView === 'power'"
-              [attr.aria-pressed]="shownView === 'power'" title="Power rating" (click)="selectView('power')">
-        <mat-icon class="view-icon" aria-hidden="true">speed</mat-icon>
-        <span class="view-label">Rating</span>
-      </button>
-      <button type="button" class="toggle-option" [class.selected]="shownView === 'stats'"
-              [attr.aria-pressed]="shownView === 'stats'" title="Season stats" (click)="selectView('stats')">
-        <mat-icon class="view-icon" aria-hidden="true">bar_chart</mat-icon>
-        <span class="view-label">Stats</span>
-      </button>
-    </div>
+    <app-team-rating-view-toggle [view]="shownView" (viewChange)="selectView($event)"></app-team-rating-view-toggle>
   }
 </ng-template>
 
@@ -22,8 +11,6 @@
       [ratings]="ratings"
       [timeline]="timeline"
       [loading]="ratingLoading"
-      [showTeam]="showTeam"
-      [showNote]="showNote"
   >
     <ng-container ngProjectAs="[cardAction]" [ngTemplateOutlet]="viewToggle"></ng-container>
   </app-team-power-rating>
@@ -32,7 +19,6 @@
       [teamId]="teamId"
       [teamStats]="teamStats"
       [loading]="statsLoading"
-      [showTeam]="showTeam"
   >
     <ng-container ngProjectAs="[cardAction]" [ngTemplateOutlet]="viewToggle"></ng-container>
   </app-team-stats>

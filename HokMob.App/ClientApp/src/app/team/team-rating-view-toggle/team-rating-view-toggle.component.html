@@ -1,0 +1,12 @@
+<div class="card-view-toggle" role="group" aria-label="Card">
+  <button type="button" class="toggle-option" [class.selected]="view === 'power'"
+          [attr.aria-pressed]="view === 'power'" title="Power rating" (click)="selectView('power')">
+    <mat-icon class="view-icon" aria-hidden="true">speed</mat-icon>
+    <span class="view-label">Rating</span>
+  </button>
+  <button type="button" class="toggle-option" [class.selected]="view === 'stats'"
+          [attr.aria-pressed]="view === 'stats'" title="Season stats" (click)="selectView('stats')">
+    <mat-icon class="view-icon" aria-hidden="true">bar_chart</mat-icon>
+    <span class="view-label">Stats</span>
+  </button>
+</div>

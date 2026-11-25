@@ -33,7 +33,7 @@ export interface PowerRatingPart extends TeamScoreBar {
  * the NHL's stats alone when there are none. See TeamRatingUtils for how it's worked out.
  *
  * A page can put the card in a size container named `power-rating` (container: power-rating / inline-size on an
- * element around it, like TeamRatingCardComponent's), like a future game's two cards side by side. Under 340px wide it
+ * element around it, like TeamRatingCardComponent's), like each team's half of a future game's card. Under 340px wide it
  * then goes compact: the team's abbreviation for a title, the stats' short names without their weights, and a smaller
  * rating. An element with a `cardAction` attribute is shown in the header's top right corner.
  */
@@ -58,11 +58,18 @@ export class TeamPowerRatingComponent implements OnChanges {
   public timeline: TeamRatingPoint[];
 
   /**
-   * Whether the header names the team, with its logo, like "Sharks", for a page that shows more than one team's card,
-   * like a future game's, where the card's toggle says which card it is (TeamRatingCardComponent).
+   * Whether the header names the team, with its logo, like "Sharks", for a card with both teams, like a future game's,
+   * whose own title says it's the power rating.
    */
   @Input()
   public showTeam: boolean = false;
+
+  /**
+   * Whether the card is one team's half of a card with both teams, like a future game's (GamePowerRatingsComponent),
+   * so it has no background or padding of its own, and its header, with showTeam, names the team on the left.
+   */
+  @Input()
+  public embedded: boolean = false;
 
   /**
    * Whether the card notes the league average and credits Natural Stat Trick under its stats. A page with more than one
@@ -102,14 +109,6 @@ export class TeamPowerRatingComponent implements OnChanges {
   public get title(): string {
     const teamName = this.showTeam ? NhlTeamUtils.getTeam(this.teamId)?.teamName : null;
     return teamName || "Power Rating";
-  }
-
-  /**
-   * The title over the rated stats: "Built from", under the card's own title, or "Power Rating" with showTeam, where
-   * the card's title is the team's name.
-   */
-  public get groupTitle(): string {
-    return this.showTeam ? "Power Rating" : "Built from";
   }
 
   /** The compact card's title: like "SJS" with showTeam, the logo beside it, or else the title. */

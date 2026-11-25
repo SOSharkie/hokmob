@@ -1,7 +1,7 @@
 @if (loading) {
   <app-skeleton-card shape="bar" [layout]="skeletonLayout"></app-skeleton-card>
 } @else if (team) {
-  <section class="rating-bar-card team-stats">
+  <section class="rating-bar-card team-stats" [class.embedded]="embedded">
     <div class="rating-bar-card-header">
       @if (showTeam) {
         <img class="rating-bar-card-logo" [src]="teamLogo" alt="">

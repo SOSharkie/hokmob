@@ -1,34 +1,43 @@
 @if (hasRatings) {
-  <div class="game-power-ratings">
-    <app-team-rating-card
-        [teamId]="homeTeamId"
-        [ratings]="ratings"
-        [timeline]="homeTimeline"
-        [teamStats]="teamStats"
-        [statsLoading]="statsLoading"
-        [showTeam]="true"
-        [showNote]="false"
-        [(view)]="view"
-    ></app-team-rating-card>
-    <app-team-rating-card
-        [teamId]="awayTeamId"
-        [ratings]="ratings"
-        [timeline]="awayTimeline"
-        [teamStats]="teamStats"
-        [statsLoading]="statsLoading"
-        [showTeam]="true"
-        [showNote]="false"
-        [(view)]="view"
-    ></app-team-rating-card>
-  </div>
-  @if (view === 'power') {
-    <p class="game-power-ratings-note">
-      5.0 is league average.
-      @if (hasExpectedGoals) {
-        <a class="power-rating-source" [href]="nstUrl" target="_blank" rel="noopener">xG from Natural Stat Trick</a>
-      } @else {
-        <span class="power-rating-fallback">Rated without expected goals, which aren't available right now.</span>
+  <section class="game-power-ratings">
+    <div class="game-power-ratings-header">
+      <h2 class="game-power-ratings-title">{{title}}</h2>
+      @if (canToggle) {
+        <app-team-rating-view-toggle [view]="shownView" (viewChange)="view = $event"></app-team-rating-view-toggle>
       }
-    </p>
-  }
+    </div>
+    <div class="game-power-ratings-teams">
+      @for (team of teams; track team.teamId) {
+        <div class="game-power-ratings-team">
+          @if (shownView === 'power') {
+            <app-team-power-rating
+                [teamId]="team.teamId"
+                [ratings]="ratings"
+                [timeline]="team.timeline"
+                [showTeam]="true"
+                [embedded]="true"
+                [showNote]="false"
+            ></app-team-power-rating>
+          } @else {
+            <app-team-stats
+                [teamId]="team.teamId"
+                [teamStats]="teamStats"
+                [showTeam]="true"
+                [embedded]="true"
+            ></app-team-stats>
+          }
+        </div>
+      }
+    </div>
+    @if (shownView === 'power') {
+      <p class="game-power-ratings-note">
+        5.0 is league average.
+        @if (hasExpectedGoals) {
+          <a class="power-rating-source" [href]="nstUrl" target="_blank" rel="noopener">xG from Natural Stat Trick</a>
+        } @else {
+          <span class="power-rating-fallback">Rated without expected goals, which aren't available right now.</span>
+        }
+      </p>
+    }
+  </section>
 }

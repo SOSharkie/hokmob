@@ -62,6 +62,7 @@ import { TeamStatsComponent } from './team/team-stats/team-stats.component';
 import { TeamStatsTabComponent } from './team/team-stats-tab/team-stats-tab.component';
 import { TeamPowerRatingComponent } from './team/team-power-rating/team-power-rating.component';
 import { TeamRatingCardComponent } from './team/team-rating-card/team-rating-card.component';
+import { TeamRatingViewToggleComponent } from './team/team-rating-view-toggle/team-rating-view-toggle.component';
 import { TeamAdvancedStatsComponent } from './team/team-advanced-stats/team-advanced-stats.component';
 import { TeamRatingChartComponent } from './shared/components/team-rating-chart/team-rating-chart.component';
 import { TeamNextGameComponent } from './team/team-next-game/team-next-game.component';
@@ -138,6 +139,7 @@ import {TeamRatingService} from "@shared/services/team-rating.service";
     TeamStatsTabComponent,
     TeamPowerRatingComponent,
     TeamRatingCardComponent,
+    TeamRatingViewToggleComponent,
     TeamAdvancedStatsComponent,
     TeamRatingChartComponent,
     TeamNextGameComponent,
