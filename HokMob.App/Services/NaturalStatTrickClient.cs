@@ -24,6 +24,9 @@ namespace HokMob.App.Services
     /// <summary>How a player season lookup went, with the skaters when they were found.</summary>
     public record NstPlayersResult(NstLookupStatus Status, NstPlayers? Players = null);
 
+    /// <summary>How a player season on-ice lookup went, with each skater's 5v5 on-ice stats when they were found.</summary>
+    public record NstOnIceResult(NstLookupStatus Status, Dictionary<long, NstOnIceStats>? OnIce = null);
+
     /// <summary>
     /// Typed HttpClient for data.naturalstattrick.com, the bot mirror of Natural Stat Trick. Every request needs the
     /// access key (the "NaturalStatTrick:Key" setting, sent as the nst-key header) and spends 10 of each of two usage
@@ -108,6 +111,11 @@ namespace HokMob.App.Services
 
         /// <summary>The size a season's cached skaters count for, roughly their JSON size (about 1,000 skaters).</summary>
         private const long CachedPlayersSize = 64 * 1024;
+
+        private const string PlayersOnIceCacheKeyPrefix = "nst-players-oi:";
+
+        /// <summary>The size a season's cached on-ice stats count for (three numbers per skater).</summary>
+        private const long CachedPlayersOnIceSize = 48 * 1024;
 
         /// <summary>Until when requests are paused (ticks of a UTC DateTime), shared by every instance.</summary>
         private static long _pausedUntilTicks;
@@ -231,20 +239,49 @@ namespace HokMob.App.Services
 
         /// <summary>
         /// Gets every skater's individual stats of a regular season that the NHL's APIs don't have (ixG, high danger
-        /// attempts, rush attempts, rebounds created and hits taken), from NST's player season page: one page for
-        /// the whole league, kept for an hour like the team game logs, so it costs at most 24 pages a day per season
-        /// asked for. Never NST's page for one player, which would scale with visitors.
+        /// attempts, rush attempts, rebounds created and hits taken), from NST's player season page, and his 5v5
+        /// on-ice xG for and against, from its on-ice page. One page each for the whole league, each kept for an hour
+        /// like the team game logs, so they cost at most 48 pages a day per season asked for. Never NST's page for one
+        /// player, which would scale with visitors. The on-ice page is optional: without it the skaters come back with
+        /// their on-ice columns null. They're joined on every call, so an on-ice page that failed once isn't left out
+        /// for the individual page's hour.
         /// </summary>
         /// <param name="season">The season ID, like 20262027.</param>
-        public Task<NstPlayersResult> GetPlayersAsync(int season)
+        public async Task<NstPlayersResult> GetPlayersAsync(int season)
         {
-            return GetSeasonPageAsync(PlayersCacheKeyPrefix + season, GetPlayersPath(season), html =>
+            var individual = GetSeasonPageAsync(PlayersCacheKeyPrefix + season, GetPlayersPath(season), html =>
             {
                 var players = NaturalStatTrickPlayersParser.Parse(season, html);
                 return players == null
                     ? new NstPlayersResult(NstLookupStatus.NotFound)
                     : new NstPlayersResult(NstLookupStatus.Found, players);
             }, new NstPlayersResult(NstLookupStatus.Unavailable), CachedPlayersSize);
+            var onIce = GetSeasonPageAsync(PlayersOnIceCacheKeyPrefix + season, GetPlayersOnIcePath(season), html =>
+            {
+                var stats = NaturalStatTrickPlayersParser.ParseOnIce(html);
+                return stats == null
+                    ? new NstOnIceResult(NstLookupStatus.NotFound)
+                    : new NstOnIceResult(NstLookupStatus.Found, stats);
+            }, new NstOnIceResult(NstLookupStatus.Unavailable), CachedPlayersOnIceSize);
+            await Task.WhenAll(individual, onIce);
+
+            var result = individual.Result;
+            if (result.Players == null)
+            {
+                return result;
+            }
+            return result with { Players = NaturalStatTrickPlayersParser.WithOnIce(result.Players, onIce.Result.OnIce) };
+        }
+
+        /// <summary>
+        /// The player season on-ice path: every skater of a regular season at 5v5, what happened while he was on the
+        /// ice (stdoi=oi) as counts, with the same filters as GetPlayersPath.
+        /// </summary>
+        public static string GetPlayersOnIcePath(int season)
+        {
+            return "playerteams.php?fromseason=" + season + "&thruseason=" + season +
+                   "&stype=2&sit=5v5&score=all&stdoi=oi&rate=n&team=ALL&pos=S&loc=B&toi=0&gpfilt=none&lines=single" +
+                   "&draftteam=ALL";
         }
 
         /// <summary>

@@ -1,8 +1,10 @@
 import {PlayerPercentileUtils} from './player-percentile-utils';
 import {
+  mockEdgeSeason,
   mockLeagueGoalies,
   mockLeaguePlayerRows,
-  mockLeagueSkaters
+  mockLeagueSkaters,
+  mockNstPlayerRows
 } from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {LeagueGoalieStats, LeaguePlayers, LeagueSkaterStats} from '@shared/models/nhl-stats-api/league-players.model';
 
@@ -183,11 +185,14 @@ describe('PlayerPercentileUtils', () => {
       expect(traits.isSmallSample).toBeFalse();
       expect(traits.traits.map(item => item.label))
           .toEqual(['Goals', 'Shot attempts', 'Playmaking', 'Possession', 'Defense', 'Physical']);
-      // Second in goals per 60, behind Cutter Gauthier: ahead of 30 and tied with himself
+      // Second in goals per 60, behind Cutter Gauthier: ahead of 30 and tied with himself. Without Natural Stat Trick
+      // his ixG drops out, and goals alone decide it
       expect(trait(traits, 'goals').percentile).toBeCloseTo(30.5 / 32 * 100, 10);
+      expect(trait(traits, 'goals').value).toBeCloseTo(30.5 / 32 * 100, 10);
       // 23 goals in 26 games of 1320.4615 seconds
-      expect(trait(traits, 'goals').value).toBeCloseTo(23 * 3600 / (26 * 1320.4615), 10);
-      expect(trait(traits, 'goals').formattedValue).toBe('2.41 per 60');
+      expect(trait(traits, 'goals').formattedValue).toBe('2.41 goals per 60');
+      expect(traits.usesNst).toBeFalse();
+      expect(traits.usesEdge).toBeFalse();
       // 401 shot attempts for and 292 against at 5v5
       expect(trait(traits, 'possession').value).toBeCloseTo(401 / 693, 10);
       expect(trait(traits, 'possession').formattedValue).toBe('57.9%');
@@ -240,9 +245,20 @@ describe('PlayerPercentileUtils', () => {
       expect(defense.formattedValue).toBe('2.3 blocks and 1.3 takeaways per 60');
     });
 
-    it('should leave defense out when one of its parts can\'t be worked out', () => {
+    it('should rank defense on the parts it has when one can\'t be worked out', () => {
       const rows = skaters();
       rows.players.find(row => row.playerId === 8477505).takeaways = null;
+      const defense = trait(PlayerPercentileUtils.getPlayerTraits(rows, 8477505), 'defense');
+      // Alexander Wennberg's blocks are ahead of 27 forwards
+      expect(defense.value).toBeCloseTo(27.5 / 32 * 100, 10);
+      expect(defense.formattedValue).toBe('2.3 blocks per 60');
+    });
+
+    it('should leave defense out when none of its parts can be worked out', () => {
+      const rows = skaters();
+      const player = rows.players.find(row => row.playerId === 8477505);
+      player.takeaways = null;
+      player.blockedShots = null;
       const defense = trait(PlayerPercentileUtils.getPlayerTraits(rows, 8477505), 'defense');
       expect(defense.value).toBeUndefined();
       expect(defense.percentile).toBeUndefined();
@@ -309,9 +325,142 @@ describe('PlayerPercentileUtils', () => {
     });
 
     it('should give nothing for a player without a row, or without players', () => {
+      expect(PlayerPercentileUtils.getPlayerTraits(skaters(), 1, {nstPlayers: mockNstPlayerRows()})).toBeUndefined();
       expect(PlayerPercentileUtils.getPlayerTraits(skaters(), 1)).toBeUndefined();
       expect(PlayerPercentileUtils.getPlayerTraits({players: [], mostTeamGames: 0}, 8477934)).toBeUndefined();
       expect(PlayerPercentileUtils.getPlayerTraits(undefined, 8477934)).toBeUndefined();
+    });
+  });
+
+  describe('getPlayerTraits with Natural Stat Trick', () => {
+    // Leon Draisaitl among the 32 forwards: his goals per 60 are ahead of 30, his ixG per 60 (1.43) of 26, his hits of
+    // 7, his hits taken of 4, his blocks of 2, his takeaways of 22 and his 5v5 on-ice xGA per 60 (2.28, lower is
+    // better) of 22, each tied with himself
+    function draisaitl() {
+      return PlayerPercentileUtils.getPlayerTraits(skaters(), 8477934, {nstPlayers: mockNstPlayerRows()});
+    }
+
+    it('should count ixG at half weight in Goals', () => {
+      const goals = trait(draisaitl(), 'goals');
+      expect(goals.value).toBeCloseTo((30.5 / 32 * 100 + 0.5 * 26.5 / 32 * 100) / 1.5, 10);
+      expect(goals.formattedValue).toBe('2.41 goals and 1.43 ixG per 60');
+      expect(goals.description).toContain('expected goals (ixG) per 60 at half weight');
+    });
+
+    it('should count hits taken at half weight in Physical', () => {
+      const physical = trait(draisaitl(), 'physical');
+      expect(physical.value).toBeCloseTo((7.5 / 32 * 100 + 0.5 * 4.5 / 32 * 100) / 1.5, 10);
+      expect(physical.formattedValue).toBe('1.3 hits and 2.0 hits taken per 60');
+    });
+
+    it('should rank Defense on blocks, takeaways and on-ice xGA at half weight, a lower xGA ranking higher', () => {
+      const defense = trait(draisaitl(), 'defense');
+      expect(defense.value).toBeCloseTo((2.5 + 22.5 + 0.5 * 22.5) / 2.5 / 32 * 100, 10);
+      expect(defense.formattedValue).toBe('0.9 blocks and 0.9 takeaways per 60, 2.28 xGA per 60 at 5v5');
+      // Cutter Gauthier allows the most xGA per 60 of them (3.60): behind everyone on that part
+      const gauthier = PlayerPercentileUtils.getPlayerTraits(skaters(), 8483445, {nstPlayers: mockNstPlayerRows()});
+      expect(trait(gauthier, 'defense').value).toBeCloseTo((7.5 + 1.5 + 0.5 * 0.5) / 2.5 / 32 * 100, 10);
+    });
+
+    it('should credit NST for a player with a row', () => {
+      expect(draisaitl().usesNst).toBeTrue();
+    });
+
+    it('should leave his NST parts out for a player missing from NST, and not credit it', () => {
+      const nstPlayers = mockNstPlayerRows().filter(row => row.playerId !== 8477934);
+      const traits = PlayerPercentileUtils.getPlayerTraits(skaters(), 8477934, {nstPlayers});
+      expect(traits.usesNst).toBeFalse();
+      // The other forwards' ixG is still ranked, but his goals alone make his Goals
+      expect(trait(traits, 'goals').value).toBeCloseTo(30.5 / 32 * 100, 10);
+      expect(trait(traits, 'goals').formattedValue).toBe('2.41 goals per 60');
+    });
+
+    it('should leave Defense\'s xGA out without NST\'s on-ice page', () => {
+      const nstPlayers = mockNstPlayerRows().map(row => ({...row, onIceTimeOnIce: null, onIceExpectedGoalsAgainst: null}));
+      const defense = trait(PlayerPercentileUtils.getPlayerTraits(skaters(), 8477934, {nstPlayers}), 'defense');
+      expect(defense.value).toBeCloseTo((2.5 + 22.5) / 2 / 32 * 100, 10);
+      expect(defense.formattedValue).toBe('0.9 blocks and 0.9 takeaways per 60');
+    });
+
+    it('should ignore the sources for a goalie', () => {
+      const traits = PlayerPercentileUtils.getPlayerTraits(goalies(), 8476945,
+          {nstPlayers: mockNstPlayerRows(), edgeSeason: mockEdgeSeason()});
+      expect(traits.traits.map(item => item.key))
+          .toEqual(['savePct', 'goalsSaved', 'evenStrength', 'penaltyKill', 'workload', 'winning']);
+      expect(traits.usesNst).toBeFalse();
+      expect(traits.usesEdge).toBeFalse();
+    });
+  });
+
+  describe('joinSkaterRows', () => {
+    it('should join each row with his NST and EDGE rows by player ID', () => {
+      const rows = PlayerPercentileUtils.joinSkaterRows(skaters().players,
+          {nstPlayers: mockNstPlayerRows(), edgeSeason: mockEdgeSeason()});
+      const draisaitl = rows.find(row => row.playerId === 8477934);
+      expect(draisaitl.skaterFullName).toBe('Leon Draisaitl');
+      expect(draisaitl.nst.expectedGoals).toBe(13.64);
+      expect(draisaitl.edge.playerId).toBe(8477934);
+    });
+
+    it('should leave the rows as they are without either source', () => {
+      const players = skaters().players;
+      expect(PlayerPercentileUtils.joinSkaterRows(players, undefined)).toBe(players);
+      expect(PlayerPercentileUtils.joinSkaterRows(players, {nstPlayers: [], edgeSeason: undefined})).toBe(players);
+    });
+  });
+
+  describe('getPlayerTraits with the EDGE season file', () => {
+    function withEdge(playerId: number) {
+      return PlayerPercentileUtils.getPlayerTraits(skaters(), playerId,
+          {nstPlayers: mockNstPlayerRows(), edgeSeason: mockEdgeSeason()});
+    }
+
+    it('should chart Speed and Possession for a skater in the file', () => {
+      const traits = withEdge(8477934);
+      expect(traits.traits.map(item => item.label))
+          .toEqual(['Goals', 'Possession', 'Playmaking', 'Speed', 'Defense', 'Physical']);
+      expect(traits.usesEdge).toBeTrue();
+      expect(traits.edgeThroughDate).toBe('2026-11-24');
+    });
+
+    it('should rank top speed and bursts per 60 against the pool, top speed at half weight', () => {
+      // Leon Draisaitl's 22.27 mph is ahead of 15 forwards, his 61 bursts in 27 games of 1320.4615 seconds of 16
+      const speed = trait(withEdge(8477934), 'speed');
+      expect(speed.value).toBeCloseTo((0.5 * 15.5 + 16.5) / 1.5 / 32 * 100, 10);
+      expect(speed.formattedValue).toBe('6.2 bursts over 20 mph per 60, 22.3 mph top speed');
+      // Connor McDavid is the fastest and bursts the most
+      expect(trait(withEdge(8478402), 'speed').percentile).toBeCloseTo(31.5 / 32 * 100, 10);
+    });
+
+    it("should rank Possession on shot attempts per 60 and 5v5 Corsi For %", () => {
+      // Leon Draisaitl: his 18.6 attempts per 60 are ahead of 24 forwards, his 57.9% Corsi For of 27
+      const possession = trait(withEdge(8477934), 'possession');
+      expect(possession.value).toBeCloseTo((24.5 + 27.5) / 2 / 32 * 100, 10);
+      expect(possession.formattedValue).toBe('18.6 attempts per 60, 57.9% Corsi For');
+    });
+
+    it("should divide the bursts by EDGE's own games, at the league row's ice time per game", () => {
+      const row = {...skaters().players.find(player => player.playerId === 8477934),
+        edge: mockEdgeSeason().skaters.find(skater => skater.playerId === 8477934)};
+      expect(PlayerPercentileUtils.getBurstsPer60(row)).toBeCloseTo(61 * 3600 / (1320.4615 * 27), 10);
+      expect(PlayerPercentileUtils.getBurstsPer60({...row, edge: undefined})).toBeUndefined();
+    });
+
+    it('should go back to the axes without Speed for a skater missing from the file', () => {
+      const edgeSeason = mockEdgeSeason();
+      edgeSeason.skaters = edgeSeason.skaters.filter(skater => skater.playerId !== 8477934);
+      const traits = PlayerPercentileUtils.getPlayerTraits(skaters(), 8477934, {edgeSeason});
+      expect(traits.traits.map(item => item.key))
+          .toEqual(['goals', 'shotAttempts', 'playmaking', 'possession', 'defense', 'physical']);
+      expect(traits.usesEdge).toBeFalse();
+      expect(traits.edgeThroughDate).toBeUndefined();
+    });
+
+    it('should go back to the axes without Speed without the file, like a season before 2021-22', () => {
+      const traits = PlayerPercentileUtils.getPlayerTraits(skaters(), 8477934, {nstPlayers: mockNstPlayerRows()});
+      expect(traits.traits.map(item => item.key))
+          .toEqual(['goals', 'shotAttempts', 'playmaking', 'possession', 'defense', 'physical']);
+      expect(traits.usesNst).toBeTrue();
     });
   });
 });

@@ -12,6 +12,7 @@ import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { SkaterSeasonStats } from '@shared/models/nhl-stats-api/player-stats.model';
 import {
   mockEdgeGoalieDetail,
+  mockEdgeSeasonFile,
   mockEdgeSkaterDetail,
   mockLeagueGoalies,
   mockLeagueSkaters,
@@ -35,6 +36,7 @@ describe('PlayerComponent', () => {
   const leaguePlayersUrl = '/api/nhl-stats/league-players';
   const nstPlayersUrl = '/api/nst/players';
   const edgeUrl = '/api/nhl/edge/';
+  const edgeSeasonFileUrl = 'assets/edge/';
 
   beforeEach(async () => {
     routeParams = new BehaviorSubject<Params>({});
@@ -59,6 +61,8 @@ describe('PlayerComponent', () => {
         .forEach(request => request.flush({season: 0, players: {playerId: []}}));
     httpMock.match(request => request.url.startsWith(edgeUrl))
         .forEach(request => request.flush({}, {status: 404, statusText: 'Not Found'}));
+    httpMock.match(request => request.url.startsWith(edgeSeasonFileUrl))
+        .forEach(request => request.flush({version: 1, season: 0, gameType: 2, skaters: {playerId: []}}));
     fixture.destroy();
     httpMock.verify();
   });
@@ -362,32 +366,72 @@ describe('PlayerComponent', () => {
 
   describe('traits', () => {
     const skatersUrl = leaguePlayersUrl + '?season=20252026&gameType=2&position=skater';
+    const nstUrl = nstPlayersUrl + '?season=20252026';
+    const edgeSeasonUrl = edgeSeasonFileUrl + '20252026-2.json';
 
-    // The featured season of the captured landings is 2025-26; the captured 2026-27 players stand in for it, and both
-    // Ivan Barbashev (25 games) and Connor Hellebuyck (10 games) are in them
+    // The featured season of the captured landings is 2025-26; the captured 2026-27 players, NST skaters and EDGE file
+    // stand in for it, and both Ivan Barbashev (25 games) and Connor Hellebuyck (10 games) are in them
 
-    it('should chart a skater against the forwards of his featured regular season', async () => {
+    /** Answers NST's skaters and the EDGE season file with their fixtures. */
+    function flushSources(): void {
+      httpMock.expectOne(nstUrl).flush(mockNstPlayers());
+      httpMock.expectOne(edgeSeasonUrl).flush(mockEdgeSeasonFile());
+    }
+
+    it('should chart a skater against the forwards of his featured regular season, once NST and EDGE are in',
+        async () => {
+          open(8477964);
+          await flushPlayerPage(8477964);
+          expect(child('app-player-traits').loading).toBeTrue();
+          expect(child('app-player-traits').isGoalie).toBeFalse();
+          httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+          await settle();
+          // Still waiting for NST and the EDGE file, so the shape doesn't change after it appears
+          expect(child('app-player-traits').loading).toBeTrue();
+          expect(component.traits).toBeUndefined();
+          httpMock.expectOne(nstUrl).flush(mockNstPlayers());
+          await settle();
+          expect(child('app-player-traits').loading).toBeTrue();
+          httpMock.expectOne(edgeSeasonUrl).flush(mockEdgeSeasonFile());
+          await settle();
+
+          const traits = child('app-player-traits');
+          expect(traits.loading).toBeFalse();
+          expect(traits.traits.group).toBe('F');
+          expect(traits.traits.gamesPlayed).toBe(25);
+          expect(traits.traits.poolSize).toBe(32);
+          expect(traits.traits.traits.map((item: {key: string}) => item.key))
+              .toEqual(['goals', 'possession', 'playmaking', 'speed', 'defense', 'physical']);
+          expect(traits.traits.usesNst).toBeTrue();
+          expect(traits.traits.usesEdge).toBeTrue();
+          expect(traits.teamId).toBe(54);
+          expect(traits.season).toBe(20252026);
+        });
+
+    it('should chart a skater without Speed and NST when both fail', async () => {
       open(8477964);
       await flushPlayerPage(8477964);
-      expect(child('app-player-traits').loading).toBeTrue();
       httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      httpMock.expectOne(nstUrl).flush('Unavailable', {status: 503, statusText: 'Service Unavailable'});
+      httpMock.expectOne(edgeSeasonUrl).flush('Not found', {status: 404, statusText: 'Not Found'});
       await settle();
-
       const traits = child('app-player-traits');
       expect(traits.loading).toBeFalse();
-      expect(traits.traits.group).toBe('F');
-      expect(traits.traits.gamesPlayed).toBe(25);
-      expect(traits.traits.poolSize).toBe(32);
-      expect(traits.traits.traits.length).toBe(6);
-      expect(traits.teamId).toBe(54);
-      expect(traits.season).toBe(20252026);
+      expect(traits.traits.traits.map((item: {key: string}) => item.key))
+          .toEqual(['goals', 'shotAttempts', 'playmaking', 'possession', 'defense', 'physical']);
+      expect(traits.traits.usesNst).toBeFalse();
+      expect(traits.traits.usesEdge).toBeFalse();
     });
 
     it('should chart a goalie against the goalies', async () => {
       open(8476945);
       await flushPlayerPage(8476945, 'goalie');
       httpMock.expectOne(leaguePlayersUrl + '?season=20252026&gameType=2&position=goalie').flush(mockLeagueGoalies());
+      // A goalie's traits need neither NST nor the skaters' EDGE file
+      httpMock.expectNone(edgeSeasonUrl);
       await settle();
+      expect(child('app-player-traits').loading).toBeFalse();
+      expect(child('app-player-traits').isGoalie).toBeTrue();
       expect(child('app-player-traits').traits.group).toBe('G');
       expect(child('app-player-traits').traits.poolSize).toBe(14);
     });
@@ -407,6 +451,7 @@ describe('PlayerComponent', () => {
       const response = mockLeagueSkaters();
       response.players.playerId[response.players.playerId.indexOf(8477964)] = 1;
       httpMock.expectOne(skatersUrl).flush(response);
+      flushSources();
       await settle();
       expect(component.traits).toBeUndefined();
       expect(child('app-player-traits')).toBeNull();
@@ -417,6 +462,7 @@ describe('PlayerComponent', () => {
       open(8477964);
       await flushPlayerPage(8477964);
       httpMock.expectOne(skatersUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+      flushSources();
       await settle();
       expect(child('app-player-traits')).toBeNull();
       expect(component.traitsLoading).toBeFalse();

@@ -91,7 +91,7 @@
           ></app-recent-player-games>
         </div>
       }
-      @if (traits || seasonPerformanceLoading) {
+      @if (traits || seasonPerformanceLoading || (traitsLoading && leaguePlayers)) {
         <div class="season-performance-container">
           <app-player-season-performance
               [playerId]="playerId"
@@ -112,6 +112,7 @@
                 [traits]="traits"
                 [teamId]="player?.currentTeamId"
                 [season]="featuredSeason"
+                [isGoalie]="isGoalie"
                 [loading]="traitsLoading"
             ></app-player-traits>
           </div>

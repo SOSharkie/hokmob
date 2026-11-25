@@ -57,8 +57,9 @@ describe('PlayerStatsComponent', () => {
     expect(skeleton.getAttribute('shape')).toBe('tiles');
     expect(skeleton.cardTitle).toBe('2025-2026 NHL Regular Season Stats');
     expect(skeleton.layout.columns).toBe(5);
-    // On a phone the rating column is a row of its own
-    expect(skeleton.mobileLayout.rows).toBe(3);
+    // On a phone the rating ends each of the two rows, five tiles to a row
+    expect(skeleton.mobileLayout.rows).toBe(2);
+    expect(skeleton.mobileLayout.columns).toBe(5);
     expect(fixture.nativeElement.querySelector('.stats-grid')).toBeNull();
 
     fixture.componentRef.setInput('ratingPending', false);

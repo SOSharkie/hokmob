@@ -88,6 +88,7 @@ import { RatingDistributionComponent } from './history/rating-distribution/ratin
 import { AverageRatingLeadersComponent } from './history/average-rating-leaders/average-rating-leaders.component';
 import { BestGamesComponent } from './history/best-games/best-games.component';
 import {SeasonHistoryService} from "@shared/services/season-history.service";
+import {EdgeSeasonService} from "@shared/services/edge-season.service";
 import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
 import {TeamRatingService} from "@shared/services/team-rating.service";
 
@@ -187,6 +188,7 @@ import {TeamRatingService} from "@shared/services/team-rating.service";
     RouterExtensionService,
     NhlSearchService,
     SeasonHistoryService,
+    EdgeSeasonService,
     NaturalStatTrickService,
     TeamRatingService
   ],

@@ -1,6 +1,6 @@
 ---
 name: update-history-season
-description: Refresh the HokMob history page's current season file (HokMob.App/ClientApp/src/assets/history/{season}-2.json) to the latest final NHL games, by checking it against the stats API, rebuilding it with build-season-data.js --partial, validating it and updating its line in docs/nhl-api.md. Use this whenever the user wants the current season's ratings, history page or season data brought up to date, refreshed, regenerated or "updated through last night", even when they don't name the file or the script, and when the season in progress has ended and its file needs its final rebuild.
+description: Refresh the HokMob history page's current season file (HokMob.App/ClientApp/src/assets/history/{season}-2.json) to the latest final NHL games, by checking it against the stats API, rebuilding it with build-season-data.js --partial, validating it and updating its line in docs/nhl-api.md, and the season's NHL EDGE file (src/assets/edge/{season}-2.json, the player traits' Speed) with build-edge-data.js on the same schedule. Use this whenever the user wants the current season's ratings, history page or season data brought up to date, refreshed, regenerated or "updated through last night", even when they don't name the file or the script, and when the season in progress has ended and its file needs its final rebuild.
 ---
 
 # Update the history season
@@ -78,7 +78,28 @@ the docs have always used the build's. Keep the docs' CRLF line endings (the rep
 Nothing else needs to change: no spec reads the season files, and the page picks up the new `throughDate` and games
 on its own, including the leaderboard's minimum games, which scales with the games played so far.
 
-## 5. Branch, commit and report
+## 5. Rebuild the EDGE season file
+
+The player page's traits chart ranks a skater's top speed and bursts over 20 mph from
+`HokMob.App/ClientApp/src/assets/edge/{season}-2.json`, which is refreshed on the same schedule as the history file
+(see "EDGE season data" in `docs/nhl-api.md`). From `HokMob.App/ClientApp`, with the same season:
+
+```bash
+npm run build-edge-data -- 20262027 --partial
+```
+
+Leave out `--partial` when step 1 said `finished`. It asks api-web for every skater of the season, about one request a
+second: about 15 minutes for 1,000 skaters, so run it in the background, and don't run it while another api-web script
+(`build-play-by-play`) is going, since they share the limit. Keep its last lines: the skaters written, the file size
+(`44 KB (16 KB gzipped)`) and the players left out. A handful left out (a 404: no EDGE season for a call-up) is
+normal; dozens mean api-web was refusing requests, so run it once more later.
+
+Check that its `throughDate` is the history file's, and that `git diff --stat` shows only the EDGE file and the docs.
+Then in `docs/nhl-api.md`, under "EDGE season data", replace the sentence that starts with the season's file name
+with its new date, skaters and sizes. A new season also needs its ID at the front of `EdgeSeasonService.seasons`, and
+`edge-season.service.spec.ts`'s list.
+
+## 6. Branch, commit and report
 
 Work on a feature branch from the latest `master`, like `claude/history-20262027-through-2026-11-12`; never commit to
 `master`. Commit, push and open a pull request only when the user asked for that. Otherwise stop with the changes in the
@@ -91,6 +112,7 @@ Refresh the 2026-27 history through 2026-11-12
 
 History data:
 - Rebuild 20262027-2.json with the final games through 2026-11-12 (312 games, 30 more)
+- Rebuild the EDGE season file 20262027-2.json through 2026-11-12 (812 skaters)
 
 Docs:
 - Update the season file's line in docs/nhl-api.md

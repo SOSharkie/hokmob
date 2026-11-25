@@ -136,8 +136,7 @@ export class PlayerSeasonPerformanceComponent implements OnChanges {
     const pool = PlayerSeasonPerformanceUtils.describePool(performance?.poolSize ?? 0,
         PlayerSeasonPerformanceUtils.getGroupName(performance?.group), performance?.minGames ?? 0);
     return "Ranks among the " + pool + season + "." + (this.hasModes && this.mode === "per60" ?
-        " Counting stats per 60 minutes on the ice." : "") +
-        (performance?.hasEdge ? " NHL EDGE's stats show the NHL's own percentile." : "");
+        " Counting stats per 60 minutes on the ice." : "");
   }
 
   public ngOnChanges(): void {
