@@ -86,6 +86,14 @@ import teamStats20252026 from './team-stats-20252026-2.json';
 import teamPlayersBos20252026 from './team-players-bos-20252026-2.json';
 import teamStats20262027 from './team-stats-20262027-2.json';
 import teamGames20262027 from './team-games-20262027-2.json';
+import leagueSkaters20262027 from './league-players-20262027-2-skater.json';
+import leagueGoalies20262027 from './league-players-20262027-2-goalie.json';
+import {
+  LeagueGoalieStats,
+  LeaguePlayers,
+  LeaguePlayersResponse,
+  LeagueSkaterStats
+} from "@shared/models/nhl-stats-api/league-players.model";
 import seasonDates from './seasons-2026-09-16.json';
 import {GoalieStatsLeaders, SkaterStatsLeaders} from "@shared/models/nhl-web-api/stats-leaders.model";
 import {PlayerSearchResult} from "@shared/models/nhl-web-api/player-search.model";
@@ -517,6 +525,42 @@ export function mockTeamGameRows(): TeamGameStats[] {
     (Object.keys(columns) as (keyof TeamGameStats)[]).forEach(field => row[field] = columns[field][i]);
     return row as unknown as TeamGameStats;
   });
+}
+
+/**
+ * /api/nhl-stats/league-players?season=20262027&gameType=2&position=skater, captured from a running app on 2026-11-24
+ * (789 skaters, mostTeamGames 26) and cut to 50 of them, as columns sorted by player ID. With the minimum of 7 games
+ * (26 of 82 games, scaled from 20), 32 forwards and 14 defensemen qualify. Cutter Gauthier (8483445) has the most goals
+ * per 60 of the forwards (22 in 24 games), then Leon Draisaitl (8477934: 23 goals, 16 primary assists, 12 hits in 26
+ * games). Andrew Mangiapane, Jeff Viel and Ty Dellandrea have no goals. Under the minimum: Vladislav Namestnikov
+ * (8476480, C, 6 games), Justin Dowling (C, 4), Justin Holl (D, 4) and Nick Jensen (D, 3).
+ */
+export function mockLeagueSkaters(): LeaguePlayersResponse<LeagueSkaterStats> {
+  return copy(leagueSkaters20262027);
+}
+
+/**
+ * /api/nhl-stats/league-players?season=20262027&gameType=2&position=goalie, captured with mockLeagueSkaters (79
+ * goalies) and cut to 15. 14 have at least 7 games. Joel Hofer has the best save percentage of them (.9194), Jordan
+ * Binnington the worst (.8465), and Connor Hellebuyck (8476945) is 7th (.8975, 8 wins in 9 decisions). Igor Shesterkin
+ * (8478048) has 5 games, under the minimum, with a .9266 save percentage that's better than all of them.
+ */
+export function mockLeagueGoalies(): LeaguePlayersResponse<LeagueGoalieStats> {
+  return copy(leagueGoalies20262027);
+}
+
+/**
+ * A league players response as one object per row, the way NhlStatsApiService.getLeaguePlayers resolves it.
+ */
+export function mockLeaguePlayerRows<T>(response: LeaguePlayersResponse<T>): LeaguePlayers<T> {
+  const columns = response.players;
+  const fields = Object.keys(columns) as (keyof T)[];
+  const players = (columns as {playerId: number[]}).playerId.map((_, i) => {
+    const row = {} as Record<keyof T, unknown>;
+    fields.forEach(field => row[field] = columns[field][i]);
+    return row as T;
+  });
+  return {players, mostTeamGames: response.mostTeamGames};
 }
 
 /**

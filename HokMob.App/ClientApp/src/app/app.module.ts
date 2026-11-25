@@ -79,6 +79,7 @@ import { PlayerShotMapComponent } from './game/player-shot-map/player-shot-map.c
 import { MiniEventTimelineComponent } from './game/mini-event-timeline/mini-event-timeline.component';
 import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-event.component';
 import { PlayerCareerComponent } from './player/player-career/player-career.component';
+import { PlayerTraitsComponent } from './player/player-traits/player-traits.component';
 import { DraftComponent } from './draft/draft.component';
 import { RatingsComponent } from './ratings/ratings.component';
 import { HistoryComponent } from './history/history.component';
@@ -156,6 +157,7 @@ import {TeamRatingService} from "@shared/services/team-rating.service";
     MiniEventTimelineComponent,
     MiniEventComponent,
     PlayerCareerComponent,
+    PlayerTraitsComponent,
     DraftComponent,
     RatingsComponent,
     HistoryComponent,

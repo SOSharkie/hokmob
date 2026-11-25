@@ -12,6 +12,7 @@ import {
 import {GoalieGameStats, SkaterGameStats} from "@shared/models/nhl-stats-api/player-stats.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {StatsUtils} from "@shared/utils/stats-utils";
+import {PlayerPercentileUtils} from "@shared/utils/player-percentile-utils";
 
 /**
  * A season the history page has data for.
@@ -201,6 +202,6 @@ export class SeasonHistoryService {
    * The position group of a position code: D and G are their own, and C, L and R are forwards.
    */
   public static getPositionGroup(position: string): PositionGroup {
-    return position === "D" || position === "G" ? position : "F";
+    return PlayerPercentileUtils.getPositionGroup(position);
   }
 }

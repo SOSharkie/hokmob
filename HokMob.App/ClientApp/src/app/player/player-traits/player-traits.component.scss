@@ -1,0 +1,175 @@
+@use "variables" as *;
+@use "interaction" as *;
+
+.player-traits {
+  background-color: $black-02;
+  border-radius: 25px;
+  color: white;
+  padding-bottom: $spacing-large;
+
+  // The title and subtitle are centered, the (?) sits at the right, and its explanation opens under it
+  .traits-header {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: $spacing-large 48px;
+    border-bottom: 1px solid $black-03;
+
+    // Fixed line heights, so the header is 59px at any pixel density, like its skeleton
+    .traits-title {
+      font-size: 17px;
+      line-height: 20px;
+      font-weight: 500;
+    }
+
+    .traits-subtitle {
+      margin-top: $spacing-x-small;
+      font-size: 13px;
+      line-height: 16px;
+      color: $gray-03;
+    }
+
+    .traits-help-button {
+      position: absolute;
+      top: 50%;
+      right: $spacing-x-large;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: none;
+      color: $gray-03;
+      cursor: pointer;
+      @include focus-ring;
+
+      @include hover {
+        color: white;
+      }
+
+      .mat-icon {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .traits-help {
+      display: none;
+      position: absolute;
+      top: calc(100% - #{$spacing-small});
+      right: $spacing-large;
+      z-index: 5;
+      width: min(280px, calc(100% - #{$spacing-xx-large}));
+      padding: $spacing-large $spacing-large + 2px;
+      border-radius: 12px;
+      background-color: $black-04;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+      color: $gray-04;
+      font-size: 13px;
+      line-height: 1.4;
+
+      &.open {
+        display: block;
+      }
+    }
+
+    // A mouse opens it by hovering too; a touch screen only by tapping
+    @media (hover: hover) {
+      .traits-help-button:hover + .traits-help {
+        display: block;
+      }
+    }
+  }
+
+  // The chart keeps its proportions, and the labels are placed over it in % of its size, so they stay on their
+  // vertices at any width. 340 by 258 is the SVG's own size (PlayerTraitsComponent.width and height).
+  .traits-chart {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 340 / 258;
+    margin: 0 auto;
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .trait-ring, .trait-outer-ring {
+      fill: none;
+      stroke: $gray-01;
+      stroke-width: 1;
+    }
+
+    .trait-ring {
+      stroke-dasharray: 3 3;
+    }
+
+    .trait-spoke {
+      stroke: $black-04;
+      stroke-width: 1;
+    }
+
+    .trait-shape {
+      fill-opacity: 0.35;
+      stroke-width: 2;
+      stroke-linejoin: round;
+    }
+
+    .trait-label {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      max-width: 25%;
+      font-size: 12px;
+      line-height: 1.25;
+      cursor: default;
+
+      .trait-name {
+        color: $gray-04;
+      }
+
+      .trait-percentile {
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+      }
+
+      &.anchor-top {
+        align-items: center;
+        text-align: center;
+        transform: translate(-50%, -100%);
+      }
+
+      &.anchor-bottom {
+        align-items: center;
+        text-align: center;
+        transform: translate(-50%, 0);
+      }
+
+      &.anchor-right {
+        align-items: flex-start;
+        transform: translate(0, -50%);
+      }
+
+      &.anchor-left {
+        align-items: flex-end;
+        text-align: right;
+        transform: translate(-100%, -50%);
+      }
+    }
+  }
+
+  .traits-small-sample {
+    margin-top: $spacing-small;
+    text-align: center;
+    font-size: 13px;
+    color: $gray-04;
+  }
+}

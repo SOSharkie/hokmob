@@ -1,5 +1,6 @@
 import {HistoryPlayer, PositionGroup, RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";
 import {RatingColorUtils} from "@shared/utils/rating-color-utils";
+import {PlayerPercentileUtils} from "@shared/utils/player-percentile-utils";
 
 /**
  * A choice of a position toggle. A null value is every position.
@@ -90,10 +91,7 @@ export class SeasonRatingStatsUtils {
   public static readonly eliteRating = RatingColorUtils.cutPoints.game.elite;
 
   /** The fewest games a player needs on the average rating leaderboard of a finished season. */
-  public static readonly fullSeasonMinGames = 20;
-
-  /** A team's games in a regular season. */
-  public static readonly teamSeasonGames = 82;
+  public static readonly fullSeasonMinGames = PlayerPercentileUtils.fullSeasonMinGames;
 
   /**
    * Bins the ratings of one position group into a 0 to 10 histogram, and works out their mean, median and the share
@@ -138,16 +136,13 @@ export class SeasonRatingStatsUtils {
    * @param ratedSeason - The season shown.
    */
   public static getMinGames(ratedSeason: RatedSeason): number {
-    const fullSeasonMinGames = SeasonRatingStatsUtils.fullSeasonMinGames;
     if (!ratedSeason?.throughDate) {
-      return fullSeasonMinGames;
+      return SeasonRatingStatsUtils.fullSeasonMinGames;
     }
     const teamGames = new Map<number, number>();
     ratedSeason.games.flatMap(game => [game.homeTeamId, game.awayTeamId])
         .forEach(teamId => teamGames.set(teamId, (teamGames.get(teamId) ?? 0) + 1));
-    const mostTeamGames = Math.max(0, ...teamGames.values());
-    const minGames = Math.ceil(mostTeamGames * fullSeasonMinGames / SeasonRatingStatsUtils.teamSeasonGames);
-    return Math.max(1, Math.min(fullSeasonMinGames, minGames));
+    return PlayerPercentileUtils.getMinGames(Math.max(0, ...teamGames.values()));
   }
 
   /**

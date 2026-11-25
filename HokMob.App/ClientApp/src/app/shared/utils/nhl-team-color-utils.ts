@@ -106,6 +106,43 @@ export class NhlTeamColorUtils {
     return darkContrast > whiteContrast ? NhlTeamColorUtils.darkTextColor : "#FFFFFF";
   }
 
+  /**
+   * The team's primary color, lightened toward white until it stands out from the dark cards, for a shape drawn in the
+   * team's color, like the player traits chart. The light primaries (gold, orange) stay as they are, and the dark
+   * ones (navy, black, deep red) come out as a lighter shade of themselves.
+   *
+   * @param teamId - The team ID.
+   */
+  public static getTeamColorOnCard(teamId: number): string {
+    return NhlTeamColorUtils.lightenForCard(NhlTeamColorUtils.getTeamPrimaryColor(teamId));
+  }
+
+  /**
+   * A "#RRGGBB" color mixed with white in steps of 5% until it has at least minContrast against the cards' background
+   * (3:1, the WCAG contrast for graphics), or the color itself when it already has. A color that can't be read comes
+   * back unchanged.
+   *
+   * @param color - The color, like "#041E42".
+   * @param minContrast - The contrast it needs with the cards.
+   */
+  public static lightenForCard(color: string, minContrast: number = 3): string {
+    const match = /^#([0-9a-f]{6})$/i.exec(color ?? "");
+    if (!match) {
+      return color;
+    }
+    const cardLuminance = NhlTeamColorUtils.getRelativeLuminance(NhlTeamColorUtils.cardColor);
+    for (let step = 0; step <= 20; step++) {
+      const mixed = "#" + [0, 2, 4].map(start => {
+        const channel = parseInt(match[1].substring(start, start + 2), 16);
+        return Math.round(channel + (255 - channel) * step / 20).toString(16).padStart(2, "0");
+      }).join("").toUpperCase();
+      if ((NhlTeamColorUtils.getRelativeLuminance(mixed) + 0.05) / (cardLuminance + 0.05) >= minContrast) {
+        return mixed;
+      }
+    }
+    return "#FFFFFF";
+  }
+
   private static readonly darkTextColor = "#1B1B1B";
 
   /** The cards' background ($black-02), which a translucent color is seen over. */

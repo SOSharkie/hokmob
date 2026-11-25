@@ -57,4 +57,31 @@ describe('NhlTeamColorUtils', () => {
       expect(NhlTeamColorUtils.getTeamSecondaryColor(12, 54)).toBe('#B4975A');
     });
   });
+
+  describe('getTeamColorOnCard and lightenForCard', () => {
+    it('should keep a light primary as it is', () => {
+      // Penguins and Bruins gold
+      expect(NhlTeamColorUtils.getTeamColorOnCard(5)).toBe('#FCB514');
+      expect(NhlTeamColorUtils.getTeamColorOnCard(6)).toBe('#FFB81C');
+    });
+
+    it('should lighten a dark primary toward white until it stands out from the cards', () => {
+      // Oilers navy, #041E42, mixed 35% with white
+      expect(NhlTeamColorUtils.getTeamColorOnCard(22)).toBe('#5C6D84');
+      // An unknown team's black comes out a mid gray
+      const gray = NhlTeamColorUtils.getTeamColorOnCard(999);
+      expect(gray).toMatch(/^#([0-9A-F]{2})\1\1$/);
+      expect(gray).not.toBe('#000000');
+    });
+
+    it('should take a stricter contrast in more steps', () => {
+      expect(NhlTeamColorUtils.lightenForCard('#041E42', 1)).toBe('#041E42');
+      expect(NhlTeamColorUtils.lightenForCard('#041E42', 21)).toBe('#FFFFFF');
+    });
+
+    it('should leave a color it can\'t read unchanged', () => {
+      expect(NhlTeamColorUtils.lightenForCard('#FFFFFFB1')).toBe('#FFFFFFB1');
+      expect(NhlTeamColorUtils.lightenForCard(undefined)).toBeUndefined();
+    });
+  });
 });

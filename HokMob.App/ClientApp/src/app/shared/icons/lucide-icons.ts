@@ -45,6 +45,8 @@ export const LUCIDE_ICONS: Record<string, string> = {
     '<path d="m15 18-6-6 6-6"/>'),
   "chevron-right": lucideSvg(
     '<path d="m9 18 6-6-6-6"/>'),
+  "circle-question-mark": lucideSvg(
+    '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>'),
   "clipboard-list": lucideSvg(
     '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>' +
     '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>' +

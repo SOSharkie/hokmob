@@ -91,16 +91,29 @@
           ></app-recent-player-games>
         </div>
       }
-      @if (stats?.regularSeasons?.length || (statsLoading && expectedCareerSeasons)) {
-        <div class="career-totals" [ngClass]="{'career-beside-stats': !playoffStats}">
-          <app-player-career
-              [seasons]="stats?.regularSeasons"
-              [isGoalie]="isGoalie"
-              [loading]="statsLoading"
-              [loadingRows]="expectedCareerSeasons"
-          ></app-player-career>
-        </div>
-      }
+      <!-- The top right column on a wide desktop; elsewhere its cards wrap or stack with the others -->
+      <div class="side-cards">
+        @if (traits || traitsLoading) {
+          <div class="player-traits-container">
+            <app-player-traits
+                [traits]="traits"
+                [teamId]="player?.currentTeamId"
+                [season]="featuredSeason"
+                [loading]="traitsLoading"
+            ></app-player-traits>
+          </div>
+        }
+        @if (stats?.regularSeasons?.length || (statsLoading && expectedCareerSeasons)) {
+          <div class="career-totals">
+            <app-player-career
+                [seasons]="stats?.regularSeasons"
+                [isGoalie]="isGoalie"
+                [loading]="statsLoading"
+                [loadingRows]="expectedCareerSeasons"
+            ></app-player-career>
+          </div>
+        }
+      </div>
     </div>
   </div>
 }

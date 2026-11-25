@@ -178,6 +178,12 @@
       min-height: 240px;
     }
 
+    // The traits and career cards: one column on a wide desktop, and elsewhere no box of its own, so they wrap or
+    // stack with the other cards, traits first
+    .side-cards {
+      display: contents;
+    }
+
     .stats-error {
       display: flex;
       align-items: center;
@@ -205,10 +211,10 @@
   }
 }
 
-// Wide Desktop Styling: three equal columns. The bio and season stats cards share the first row and stretch to its
-// height; the recent games take two columns below them. Without playoff stats the career table fills the empty third
-// column of the first row and runs down beside the recent games (dense placement moves it up into that slot, and the
-// flexible second row keeps its height from stretching the first row)
+// Wide Desktop Styling: three columns. The third holds the traits card and the career table under it, and spans every
+// row, the last of which is flexible, so its height never stretches the first rows. The bio and regular season cards
+// share the first row and stretch to its height; the playoffs card (when there is one) takes their two columns below
+// them, and the recent games the same two columns under that (dense placement moves the season card up beside the bio)
 @media only screen and (min-width: $small-display-breakpoint) {
   .player-container .player-cards {
     display: grid;
@@ -216,28 +222,27 @@
     grid-template-rows: auto 1fr;
     grid-auto-flow: row dense;
 
-    .match-stats-container {
+    &.with-playoff-stats {
+      grid-template-rows: auto auto 1fr;
+    }
+
+    .playoff-stats, .match-stats-container {
       grid-column: span 2;
       align-self: start;
     }
 
-    .career-totals {
-      align-self: start;
+    .side-cards {
+      grid-column: 3;
+      grid-row: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-large;
     }
 
-    .career-beside-stats {
-      grid-row: span 2;
-    }
-
-    // With its rating column the season card has five columns to the bio's four, so the bio gives it some width:
-    // 8 to 10 beside the career table, or 8 and 9 to the season card's 10 after the playoffs card. The recent games
-    // keep about two thirds below.
+    // With its rating column the season card has five columns to the bio's four, so the bio gives it some width. The
+    // recent games keep about two thirds below.
     &.season-rating-cards {
       grid-template-columns: minmax(0, 8fr) minmax(0, 10fr) minmax(0, 9fr);
-
-      &.with-playoff-stats {
-        grid-template-columns: minmax(0, 8fr) minmax(0, 9fr) minmax(0, 10fr);
-      }
     }
   }
 }
@@ -246,7 +251,8 @@
 // need, stretching to fill each row
 @media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint) {
   .player-container .player-cards {
-    .player-bio-container, .playoff-stats, .regular-season-stats, .stats-error, .career-totals {
+    .player-bio-container, .playoff-stats, .regular-season-stats, .stats-error, .career-totals,
+    .player-traits-container {
       flex: 1 1 375px;
     }
 
