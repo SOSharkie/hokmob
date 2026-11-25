@@ -7,12 +7,13 @@ import {TeamRating, TeamRatingPoint, TeamRatingUtils} from "@shared/utils/team-r
 import {NstStatsUtils} from "@shared/utils/nst-stats-utils";
 
 /**
- * A future game's power rating cards, the home team's then the away team's, side by side, compact on a phone, with the
- * league average and Natural Stat Trick's credit noted once under both. Each card's toggle switches both cards to the
- * teams' season stats and back (TeamRatingCardComponent). Rates the league on the game's regular season, like the team
- * page (TeamRatingService): every team's games (/api/nhl-stats/team-games) with Natural Stat Trick's expected goals
- * (/api/nst/team-games), which are optional, so without them the rating falls back to the NHL's stats. The season stats
- * (/api/nhl-stats/teams) load at the same time, and without them the cards have no toggle. Nothing shows until both
+ * A future game's team stats card: both teams' power ratings in one card, the home team's then the away team's, side
+ * by side, compact on a phone, with the league average and Natural Stat Trick's credit noted once under both. One
+ * toggle in its header (TeamRatingViewToggleComponent) switches both teams to their season stats and back. Rates the
+ * league on the game's regular season, like the team page (TeamRatingService): every team's games
+ * (/api/nhl-stats/team-games) with Natural Stat Trick's expected goals (/api/nst/team-games), which are optional, so
+ * without them the rating falls back to the NHL's stats. The season stats
+ * (/api/nhl-stats/teams) load at the same time, and without them the card has no toggle. Nothing shows until both
  * teams have played a regular season game, or when the games can't be loaded. A playoff game shows the regular season's
  * ratings and stats.
  */
@@ -35,13 +36,13 @@ export class GamePowerRatingsComponent implements OnChanges {
   @Input()
   public awayTeamId: number;
 
-  /** Every team's season stats, for the cards' stats view. Empty until they load, or when they can't be. */
+  /** Every team's season stats, for the card's stats view. Empty until they load, or when they can't be. */
   public teamStats: TeamSeasonStats[] = [];
 
   /** Whether the season stats are still loading. */
   public statsLoading: boolean = false;
 
-  /** The card both cards show, switched together by either card's toggle. */
+  /** The view picked with the toggle. */
   public view: TeamRatingCardView = "power";
 
   /** Every team's rating of the season, best first. Empty until the games load. */
@@ -65,9 +66,37 @@ export class GamePowerRatingsComponent implements OnChanges {
     return !!this.ratings.find(rating => rating.teamId === this.homeTeamId)?.hasExpectedGoals;
   }
 
-  /** Whether both teams are rated, so both cards show. */
+  /** Whether both teams are rated, so the card shows. */
   public get hasRatings(): boolean {
     return [this.homeTeamId, this.awayTeamId].every(teamId => this.ratings.some(rating => rating.teamId === teamId));
+  }
+
+  /** Whether the stats have both teams' rows, so the toggle can switch to them. */
+  public get hasStats(): boolean {
+    return [this.homeTeamId, this.awayTeamId].every(teamId => this.teamStats.some(stats => stats.teamId === teamId));
+  }
+
+  /** Whether the season stats are ready to switch to. */
+  public get canToggle(): boolean {
+    return this.hasStats && !this.statsLoading;
+  }
+
+  /** The view shown: the season stats only once they're ready, or else the power ratings. */
+  public get shownView(): TeamRatingCardView {
+    return this.view === "stats" && this.canToggle ? "stats" : "power";
+  }
+
+  /** "Power Rating", or "Team Stats" with the season stats shown. */
+  public get title(): string {
+    return this.shownView === "stats" ? "Team Stats" : "Power Rating";
+  }
+
+  /** The home team then the away team, each with its own timeline. */
+  public get teams(): {teamId: number, timeline: TeamRatingPoint[]}[] {
+    return [
+      {teamId: this.homeTeamId, timeline: this.homeTimeline},
+      {teamId: this.awayTeamId, timeline: this.awayTimeline}
+    ];
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -103,12 +132,12 @@ export class GamePowerRatingsComponent implements OnChanges {
       this.homeTimeline = timelines.get(this.homeTeamId) ?? [];
       this.awayTimeline = timelines.get(this.awayTeamId) ?? [];
     }).catch(() => {
-      // The service logs the error. The cards stay hidden
+      // The service logs the error. The card stays hidden
     });
   }
 
   /**
-   * Loads every team's season stats, for the cards' stats view.
+   * Loads every team's season stats, for the card's stats view.
    */
   private retrieveTeamStats(key: string): void {
     this.statsLoading = true;
@@ -119,7 +148,7 @@ export class GamePowerRatingsComponent implements OnChanges {
       this.teamStats = teamStats;
       this.statsLoading = false;
     }).catch(() => {
-      // The service logs the error. The cards keep their power ratings, without a toggle
+      // The service logs the error. The card keeps the power ratings, without a toggle
       if (key !== this.loadKey) {
         return;
       }

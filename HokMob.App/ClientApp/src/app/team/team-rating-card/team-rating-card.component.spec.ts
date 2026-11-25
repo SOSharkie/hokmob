@@ -6,6 +6,7 @@ import { TeamRating, TeamRatingPoint, TeamRatingUtils } from '@shared/utils/team
 import { TeamSeasonStats } from '@shared/models/nhl-stats-api/team-stats.model';
 
 import { TeamRatingCardComponent, TeamRatingCardView } from './team-rating-card.component';
+import { TeamRatingViewToggleComponent } from '../team-rating-view-toggle/team-rating-view-toggle.component';
 
 describe('TeamRatingCardComponent', () => {
   let component: TeamRatingCardComponent;
@@ -20,7 +21,8 @@ describe('TeamRatingCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ AppTestingModule ],
-      declarations: [ TeamRatingCardComponent ],
+      // With its toggle, so its buttons switch the card
+      declarations: [ TeamRatingCardComponent, TeamRatingViewToggleComponent ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
@@ -52,14 +54,12 @@ describe('TeamRatingCardComponent', () => {
   }
 
   it('should show the power rating first, with the toggle in its header', () => {
-    show({showTeam: true, showNote: false});
+    show();
     const card = child('app-team-power-rating');
     expect(card.teamId).toBe(sharks);
     expect(card.ratings).toBe(ratings);
     expect(card.timeline).toBe(timeline);
     expect(card.loading).toBeFalse();
-    expect(card.showTeam).toBeTrue();
-    expect(card.showNote).toBeFalse();
     expect(child('app-team-stats')).toBeNull();
     // Projected into the card's header, like its own content
     expect(card.querySelector('.card-view-toggle')).not.toBeNull();
@@ -94,7 +94,7 @@ describe('TeamRatingCardComponent', () => {
     expect(views).toEqual([]);
   });
 
-  it('should show the card the page picks, like the other card of a future game', () => {
+  it('should show the card the page picks', () => {
     show({view: 'stats'});
     expect(child('app-team-stats')).not.toBeNull();
   });
@@ -124,12 +124,8 @@ describe('TeamRatingCardComponent', () => {
     expect(child('.card-view-toggle')).toBeNull();
   });
 
-  it('should be a size container, and move a named team\'s title to the left of the toggle', () => {
+  it('should be a size container, for the compact card and the toggle\'s labels', () => {
     show();
-    const host: HTMLElement = fixture.nativeElement;
-    expect(getComputedStyle(host).containerName).toBe('power-rating');
-    expect(host.classList).not.toContain('names-team');
-    show({showTeam: true});
-    expect(host.classList).toContain('names-team');
+    expect(getComputedStyle(fixture.nativeElement).containerName).toBe('power-rating');
   });
 });

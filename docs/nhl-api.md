@@ -40,7 +40,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Page | Requests |
 |---|---|
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
-| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `/api/nhl-stats/team-games` and `/api/nst/team-games` for a future game's power rating cards; `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a live or finished game's xG and Corsi (the game stats card, the shot maps and the player dialog) |
+| Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `/api/nhl-stats/team-games` and `/api/nst/team-games` for a future game's power rating card; `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a live or finished game's xG and Corsi (the game stats card, the shot maps and the player dialog) |
 | Team | `standings/now` (division, conference and season), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams`. The standings tab loads `standings/now` again for its type, the player stats tab `/api/nhl-stats/team-players?teamId=&season=&gameType=2` and the season's `assets/history/{season}-2.json` when it has one, and the team stats tab `/api/nhl-stats/team-games?season=&gameType=2` and `/api/nst/teams?season=` (see [Team page](#team-page) and [Team power rating](#team-power-rating)) |
 | Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split), and the featured season's `assets/history/{season}-2.json` when it has one, for the regular season card's rating column (see [History data](#history-data)) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
@@ -491,20 +491,22 @@ players card.
 - **Star lineup:** the toggle swaps the skaters for each team's stars who have played for it, topped up by points
   (`NhlStarPlayerUtils.pickStarLine`). The goalie stays the wins leader.
 
-Below the season leaders, a future game shows each team's power rating card (`GamePowerRatingsComponent`), the home
-team's first, side by side at every width. Each card is the team page overview's (`TeamRatingCardComponent`), with a
-toggle in its header's top right corner to the team's season stats (`/api/nhl-stats/teams`, loaded with the games):
-either card's toggle switches both, so the teams stay side by side on the same stats. Its header names the team with
-its logo on the left, like "Sharks", with the power rating's stats titled "Power Rating" instead of "Built from",
-and `showNote` is off: the league average
-and NST's credit are noted once, centered, under both, while they show the power ratings. Without the season stats the
-cards have no toggle. Each card is a `power-rating` size container, so under 340px wide, like on a phone, it goes
-compact: the logo and the team's abbreviation for a title, each stat's short name (`TeamMetric.shortLabel`, or the team
-stats card's own) on one line with its value and a smaller rank pill, no weights or group titles, a smaller rating, the
-change shortened to "0.9 last 5", and a smaller toggle. The toggle shows its labels (Rating, Stats) only from 500px
-wide, and its icons alone below. The team stats tab's cards aren't in such a container, so they never go compact. The league is rated on the game's regular season from `/api/nhl-stats/team-games` and NST's
-`/api/nst/team-games`, the same way as the team stats tab (see [Team power rating](#team-power-rating)), so a playoff
-game shows the regular season's ratings. There's no fallback to the previous season: the cards are hidden until both
+Below the season leaders, a future game shows both teams' power ratings in one card (`GamePowerRatingsComponent`), the
+home team's first, side by side at every width with a line between them. The card's header says "Power Rating", with
+one toggle in its top right corner (`TeamRatingViewToggleComponent`, the team page card's too) that switches both teams
+to their season stats (`/api/nhl-stats/teams`, loaded with the games) and back, and the title to "Team Stats". Each team's
+half is the team page's power rating or team stats card with `showTeam` and `embedded` on: no background or padding of
+its own, and a smaller header with the team's logo and name on the left, like "Sharks". `showNote` is off: the league
+average and NST's credit are noted once, centered, at the bottom of the card while it shows the power ratings. Without
+both teams' season stats, or while they load, there's no toggle. Each half is a `power-rating` size container, so under
+340px wide, like on a phone, it goes compact: the logo and the team's abbreviation for a title, each stat's short name
+(`TeamMetric.shortLabel`, or the team stats card's own) on one line with its value and a smaller rank pill, no weights
+or group titles, a smaller rating and the change shortened to "0.9 last 5". The card itself is a `power-rating`
+container too, for the toggle, which shows its labels (Rating, Stats) only from 500px wide, and its icons alone below.
+The team stats tab's cards aren't in such a container, so they never go compact. The league is rated on the game's
+regular season from `/api/nhl-stats/team-games` and NST's `/api/nst/team-games`, the same way as the team stats tab
+(see [Team power rating](#team-power-rating)), so a playoff game shows the regular season's ratings. There's no fallback
+to the previous season: the card is hidden until both
 teams have played a regular season game, and when the games fail to load. Loaded once, not on the game's refresh.
 
 ## Shot maps

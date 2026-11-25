@@ -266,6 +266,23 @@ $rank-middle-background: #2a2a2a;
   object-fit: contain;
 }
 
+// One team's half of a card with both teams, like a future game's (`embedded`): no background or padding of its own,
+// and a smaller title, under the card's own, with the team's logo and name on the left. Two classes, to win over the
+// compact card's padding below
+.rating-bar-card.embedded {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+
+  .rating-bar-card-header {
+    justify-content: flex-start;
+
+    .rating-bar-card-title {
+      font-size: 16px;
+    }
+  }
+}
+
 // The compact card's title and stat names show only in a compact card
 .rating-bar-card-short-title,
 .rating-parts .part-label .part-short-name {

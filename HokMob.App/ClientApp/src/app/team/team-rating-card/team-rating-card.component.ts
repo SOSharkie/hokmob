@@ -7,21 +7,18 @@ export type TeamRatingCardView = "power" | "stats";
 
 /**
  * A team's power rating card (TeamPowerRatingComponent) or its season stats card (TeamStatsComponent), one at a time,
- * with a toggle in the header's top right corner to switch between them: the team page's overview and a future game's
- * cards. The power rating shows first. The toggle only shows when the team has both, so a team without a rating yet
+ * with a toggle in the header's top right corner (TeamRatingViewToggleComponent) to switch between them: the team
+ * page's overview. The power rating shows first. The toggle only shows when the team has both, so a team without a rating yet
  * (before its first game, or when the season's games can't be loaded) shows its stats alone, and the other way round.
  * While the shown card's data loads, it shows its skeleton.
  *
  * The card is a `power-rating` size container, so under 340px wide both cards go compact, and the toggle's labels
- * only show when it's wide enough for them. A page with more than one card can bind `view` to switch them together.
+ * only show when it's wide enough for them.
  */
 @Component({
     selector: 'app-team-rating-card',
     templateUrl: './team-rating-card.component.html',
     styleUrls: ['./team-rating-card.component.scss'],
-    host: {
-        '[class.names-team]': 'showTeam'
-    },
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
@@ -49,14 +46,6 @@ export class TeamRatingCardComponent {
   /** Whether the season stats are still loading. */
   @Input()
   public statsLoading: boolean = false;
-
-  /** Whether the header names the team with its logo, for a page with more than one team's card. */
-  @Input()
-  public showTeam: boolean = false;
-
-  /** Whether the power rating card notes the league average and credits Natural Stat Trick under its stats. */
-  @Input()
-  public showNote: boolean = true;
 
   /** The card picked with the toggle. */
   @Input()
@@ -91,7 +80,7 @@ export class TeamRatingCardComponent {
   }
 
   /**
-   * Shows a card and tells the page, which may switch its other cards too.
+   * Shows a card and tells the page.
    */
   public selectView(view: TeamRatingCardView): void {
     if (view === this.view) {

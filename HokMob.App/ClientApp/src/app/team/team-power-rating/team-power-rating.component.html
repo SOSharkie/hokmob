@@ -2,7 +2,7 @@
   <app-skeleton-card shape="bar" [cardTitle]="title" [layout]="skeletonLayout"
                      [mobileLayout]="skeletonMobileLayout"></app-skeleton-card>
 } @else if (team) {
-  <section class="rating-bar-card power-rating-card">
+  <section class="rating-bar-card power-rating-card" [class.embedded]="embedded">
     <div class="rating-bar-card-header">
       @if (showTeam) {
         <img class="rating-bar-card-logo" [src]="teamLogo" alt="">
@@ -28,7 +28,7 @@
       </div>
     </div>
     <div class="rating-group">
-      <h3 class="rating-group-title">{{groupTitle}}</h3>
+      <h3 class="rating-group-title">Built from</h3>
       <ul class="rating-parts">
         @for (part of parts; track part.label) {
           <li class="rating-part" [title]="part.description">

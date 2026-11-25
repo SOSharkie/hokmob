@@ -1,0 +1,76 @@
+@use "variables" as *;
+@use "interaction" as *;
+@use "segmented-toggle" as *;
+
+// In the top right corner of the card's header, like the power rating chart's Season / Last 10 toggle, so the title
+// stays centered on the card
+:host {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.card-view-toggle {
+  @include segmented-toggle;
+  padding: 3px;
+
+  .toggle-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-small;
+    min-width: 36px;
+    padding: 0 $spacing-medium;
+    @include focus-ring;
+
+    .view-icon {
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+    }
+
+    // Read out but not shown on a narrow card, where the icons stand alone
+    .view-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+}
+
+@container power-rating (width >= 500px) {
+  .card-view-toggle .toggle-option {
+    padding: 0 $spacing-large 0 $spacing-medium;
+
+    .view-label {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+    }
+  }
+}
+
+// A compact card's toggle gets smaller, for the shorter header
+@container power-rating (width < 340px) {
+  .card-view-toggle {
+    padding: 2px;
+
+    .toggle-option {
+      min-width: 30px;
+      height: 26px;
+      padding: 0 $spacing-small;
+
+      .view-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+      }
+    }
+  }
+}

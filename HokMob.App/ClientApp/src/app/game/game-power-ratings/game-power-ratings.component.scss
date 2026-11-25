@@ -4,30 +4,76 @@
   display: block;
 }
 
-// Side by side at every width, the home team's first. Each card is a `power-rating` size container, so it goes compact
-// when it's narrow, like on a phone (see TeamRatingCardComponent)
+// One card for both teams, like the game page's other cards. It's a `power-rating` size container for its toggle,
+// which shows its labels from 500px wide (TeamRatingViewToggleComponent)
 .game-power-ratings {
+  container: power-rating / inline-size;
+  padding: 0 $spacing-x-large $spacing-large;
+  border-radius: 25px;
+  background-color: $black-02;
+  color: white;
+}
+
+// The title centered like the game page's other cards, with the toggle in the top right corner
+.game-power-ratings-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 48px;
+
+  .game-power-ratings-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+  }
+}
+
+// Each team's half side by side at every width, the home team's first, with a line between them. Each half is a
+// `power-rating` size container, so it goes compact when it's narrow, like on a phone (see the card partial)
+.game-power-ratings-teams {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: $spacing-card-gap;
   align-items: start;
+}
+
+.game-power-ratings-team {
+  container: power-rating / inline-size;
+  min-width: 0;
+  padding-right: $spacing-x-large;
+
+  & + .game-power-ratings-team {
+    padding-right: 0;
+    padding-left: $spacing-x-large;
+    border-left: 1px solid $black-03;
+  }
 }
 
 @media only screen and (max-width: $mobile-screen-breakpoint) {
   .game-power-ratings {
-    gap: $spacing-large;
+    padding: 0 $spacing-large $spacing-medium;
+    border-radius: 20px;
+  }
+
+  .game-power-ratings-team {
+    padding-right: $spacing-medium;
+
+    & + .game-power-ratings-team {
+      padding-right: 0;
+      padding-left: $spacing-medium;
+    }
   }
 }
 
-// The cards' note, once under both
+// The league average and Natural Stat Trick's credit, once for both teams
 .game-power-ratings-note {
-  margin: $spacing-medium $spacing-large 0;
+  margin: $spacing-medium 0 0;
   color: $gray-03;
   font-size: 12px;
   text-align: center;
 }
 
-// Credits Natural Stat Trick for the expected goals, like the cards' own credit
+// Credits Natural Stat Trick for the expected goals, like the team page card's credit
 .power-rating-source {
   color: inherit;
   text-decoration: none;

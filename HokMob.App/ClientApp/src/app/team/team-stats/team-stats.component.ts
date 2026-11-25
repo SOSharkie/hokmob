@@ -73,11 +73,17 @@ export class TeamStatsComponent implements OnChanges {
   public teamStats: TeamSeasonStats[];
 
   /**
-   * Whether the header names the team, with its logo, like "Sharks", for a page that shows more than one team's card,
-   * like a future game's.
+   * Whether the header names the team, with its logo, like "Sharks", for a card with both teams, like a future game's.
    */
   @Input()
   public showTeam: boolean = false;
+
+  /**
+   * Whether the card is one team's half of a card with both teams, like a future game's (GamePowerRatingsComponent),
+   * so it has no background or padding of its own, and its header, with showTeam, names the team on the left.
+   */
+  @Input()
+  public embedded: boolean = false;
 
   /** Whether the stats are still loading, so the card shows its skeleton at its size. */
   @Input()
