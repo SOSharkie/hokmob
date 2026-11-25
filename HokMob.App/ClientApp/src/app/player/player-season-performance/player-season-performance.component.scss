@@ -1,0 +1,86 @@
+@use "variables" as *;
+@use "interaction" as *;
+@use "segmented-toggle" as *;
+@use "../../team/rating-bar-card" as *;
+
+// The rating bar cards' rows (the team page's stats cards), in two columns of groups on a desktop and one on a phone.
+// A row's bar is as long as the player's percentile, from the left, and the line in the middle of the track is the
+// pool's median.
+
+.season-performance {
+  height: 100%;
+}
+
+// The games and ice time on the left, the Total / Per 60 toggle on the right
+.performance-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-large;
+  min-height: 44px;
+
+  .performance-games {
+    color: $gray-03;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .performance-modes {
+    @include segmented-toggle;
+    padding: 3px;
+
+    .toggle-option {
+      @include focus-ring;
+    }
+  }
+}
+
+.performance-small-sample {
+  margin: $spacing-small 0 0;
+  color: $gray-03;
+  font-size: 12px;
+}
+
+.performance-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 36px;
+}
+
+// Each column's first group sits closer to the toggle line, like a rating bar card's first group to its title
+.performance-column > .rating-group:first-child {
+  margin-top: $spacing-small;
+}
+
+// NHL EDGE's groups say whose percentiles they show
+.rating-group .rating-group-title .group-source {
+  margin-left: $spacing-medium;
+  color: $gray-02;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+// Some ranks are an EDGE percentile ("96%"), a little wider than "12th"
+.rating-parts .rating-part {
+  grid-template-columns: minmax(0, 1fr) auto 48px;
+}
+
+.performance-source {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// A phone: one column, the right column's groups under the left's
+@media only screen and (max-width: $mobile-screen-breakpoint) {
+  .performance-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .performance-column + .performance-column > .rating-group:first-child {
+    margin-top: 28px;
+  }
+}

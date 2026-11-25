@@ -5,6 +5,20 @@ import {NstGameStats} from '@shared/models/natural-stat-trick/nst-game-stats.mod
 
 describe('NstStatsUtils', () => {
 
+  describe('getPlayerSeasonUrl', () => {
+    it("should link to NST's page of every skater's regular season", () => {
+      expect(NstStatsUtils.getPlayerSeasonUrl(20262027)).toBe('https://www.naturalstattrick.com/playerteams.php?' +
+          'fromseason=20262027&thruseason=20262027&stype=2&sit=all&score=all&stdoi=std&rate=n&team=ALL&pos=S&loc=B&toi=0' +
+          '&gpfilt=none&lines=single&draftteam=ALL');
+      expect(NstStatsUtils.getPlayerSeasonUrl('20252026')).toContain('fromseason=20252026&thruseason=20252026');
+    });
+
+    it('should be empty without a season', () => {
+      expect(NstStatsUtils.getPlayerSeasonUrl(undefined)).toBe('');
+      expect(NstStatsUtils.getPlayerSeasonUrl('2026')).toBe('');
+    });
+  });
+
   describe('getGamePageUrl', () => {
     it('should link the NST game page of a regular season and a playoff game', () => {
       expect(NstStatsUtils.getGamePageUrl(2026020010))

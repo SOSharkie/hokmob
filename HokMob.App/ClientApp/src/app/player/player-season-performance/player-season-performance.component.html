@@ -1,0 +1,61 @@
+@if (loading) {
+  <app-skeleton-card shape="bar" [cardTitle]="title" [layout]="skeletonLayout"
+                     [mobileLayout]="mobileSkeletonLayout"></app-skeleton-card>
+} @else if (performance) {
+  <section class="rating-bar-card season-performance">
+    <div class="rating-bar-card-header">
+      <h2 class="rating-bar-card-title">{{title}}</h2>
+    </div>
+    <div class="performance-summary">
+      <span class="performance-games">{{subtitle}}</span>
+      @if (hasModes) {
+        <div class="performance-modes" role="group" aria-label="Counting stats">
+          <button type="button" class="toggle-option" [class.selected]="mode === 'total'"
+                  [attr.aria-pressed]="mode === 'total'" (click)="selectMode('total')">Total</button>
+          <button type="button" class="toggle-option" [class.selected]="mode === 'per60'"
+                  [attr.aria-pressed]="mode === 'per60'" (click)="selectMode('per60')">Per 60</button>
+        </div>
+      }
+    </div>
+    @if (smallSampleNote) {
+      <p class="performance-small-sample">{{smallSampleNote}}</p>
+    }
+    <div class="performance-columns">
+      @for (column of columns; track $index) {
+        <div class="performance-column">
+          @for (group of column; track group.title) {
+            <div class="rating-group">
+              <h3 class="rating-group-title">
+                {{group.title}}
+                @if (group.isEdge) {
+                  <span class="group-source">NHL EDGE</span>
+                }
+              </h3>
+              <ul class="rating-parts">
+                @for (row of group.rows; track row.key) {
+                  <li class="rating-part" [title]="row.description">
+                    <div class="part-label">
+                      <span class="part-name">{{row.label}}</span>
+                    </div>
+                    <span class="part-value">{{row.value}}</span>
+                    <span class="part-rank" [ngClass]="'rank-' + row.rankTier" [class.no-rank]="!row.rank">{{row.rank}}</span>
+                    <div class="part-bar" aria-hidden="true">
+                      <span class="part-bar-fill" [ngClass]="'rank-' + row.rankTier" [style.width.%]="row.barWidth"></span>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <p class="rating-bar-card-note">
+      {{rankNote}}
+      @if (performance.hasNst) {
+        <a class="performance-source" [href]="nstUrl" target="_blank" rel="noopener">xG, high danger and rush attempts,
+          rebounds and hits taken from Natural Stat Trick</a>
+      }
+    </p>
+  </section>
+}

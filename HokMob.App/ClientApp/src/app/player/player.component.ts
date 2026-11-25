@@ -4,6 +4,7 @@ import {RouterExtensionService} from "@shared/services/router-extension.service"
 import {NhlGameService} from "@shared/services/nhl-game.service";
 import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {SeasonHistoryService} from "@shared/services/season-history.service";
+import {NaturalStatTrickService} from "@shared/services/natural-stat-trick.service";
 import {PlayerSeasonRating, PlayerSeasonRatingUtils} from "@shared/utils/player-season-rating-utils";
 import {PlayerPercentileUtils, PlayerTraits} from "@shared/utils/player-percentile-utils";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
@@ -12,6 +13,9 @@ import {NhlTeamLogoUtils} from "@shared/utils/nhl-team-logo-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
+import {LeaguePlayers} from "@shared/models/nhl-stats-api/league-players.model";
+import {NstPlayerStats} from "@shared/models/natural-stat-trick/nst-players.model";
+import {EdgeGoalieDetail, EdgeSkaterDetail} from "@shared/models/nhl-web-api/edge.model";
 import {
   GoalieSeasonStats,
   PlayerStats,
@@ -76,6 +80,27 @@ export class PlayerComponent implements OnInit {
   /** Whether the featured season's league players are loading, so the traits card shows its skeleton. */
   public traitsPending: boolean = false;
 
+  /**
+   * Every player of the featured regular season at the player's position, which the traits and season performance
+   * cards rank him among. Undefined while they load and when the request fails.
+   */
+  public leaguePlayers: LeaguePlayers;
+
+  /**
+   * Every skater's featured regular season on Natural Stat Trick, for the season performance card's advanced stats.
+   * Undefined for a goalie, while it loads and when it fails, which leaves the card with the NHL's stats.
+   */
+  public nstPlayers: NstPlayerStats[];
+
+  /** Whether Natural Stat Trick's skaters are loading. */
+  public nstPending: boolean = false;
+
+  /** The player's NHL EDGE stats of the featured regular season, or undefined without them (before 2021-22). */
+  public edgeDetail: EdgeSkaterDetail | EdgeGoalieDetail;
+
+  /** Whether the NHL EDGE stats are loading. */
+  public edgePending: boolean = false;
+
   public teamColor: string = "#000000";
 
   /** A little wider than it is tall, so the widest crests keep roughly the visual weight of the square ones. */
@@ -131,6 +156,14 @@ export class PlayerComponent implements OnInit {
   /** Whether the traits card shows its skeleton: until the landing loads, then until the league players do. */
   public get traitsLoading(): boolean {
     return this.playerLoading || this.traitsPending;
+  }
+
+  /**
+   * Whether the season performance card shows its skeleton: until the landing loads, then until the league players,
+   * Natural Stat Trick and NHL EDGE have all answered, so its rows don't come in one source at a time.
+   */
+  public get seasonPerformanceLoading(): boolean {
+    return this.playerLoading || this.traitsPending || this.nstPending || this.edgePending;
   }
 
   /** The featured season, like 20262027, or undefined for a player who has never played an NHL game. */
@@ -190,7 +223,8 @@ export class PlayerComponent implements OnInit {
               private routerExtensionService: RouterExtensionService,
               private nhlGameService: NhlGameService,
               private nhlStatsApiService: NhlStatsApiService,
-              private seasonHistoryService: SeasonHistoryService) {}
+              private seasonHistoryService: SeasonHistoryService,
+              private naturalStatTrickService: NaturalStatTrickService) {}
 
   public ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
@@ -229,6 +263,7 @@ export class PlayerComponent implements OnInit {
       this.retrieveStats();
       this.retrieveSeasonRating();
       this.retrieveTraits();
+      this.retrieveSeasonPerformance();
     }).catch(() => {
       // The service logs the error. Without the landing there's no player to show at all
       if (this.playerId === playerId) {
@@ -293,6 +328,7 @@ export class PlayerComponent implements OnInit {
     this.nhlStatsApiService.getLeaguePlayers(season, NhlGameTypeEnum.REGULAR_SEASON, this.isGoalie)
         .then(leaguePlayers => {
           if (this.playerId === playerId) {
+            this.leaguePlayers = leaguePlayers;
             this.traits = PlayerPercentileUtils.getPlayerTraits(leaguePlayers, playerId);
             this.traitsPending = false;
           }
@@ -300,6 +336,46 @@ export class PlayerComponent implements OnInit {
           // The service logs the error. The card is left out
           if (this.playerId === playerId) {
             this.traitsPending = false;
+          }
+        });
+  }
+
+  /**
+   * Loads what the season performance card adds to the league players (retrieveTraits): Natural Stat Trick's skaters
+   * of the featured regular season, and the player's NHL EDGE stats. Either one failing leaves its rows out. NST has no
+   * goalie stats here, so a goalie only gets EDGE's.
+   */
+  private retrieveSeasonPerformance(): void {
+    const playerId = this.playerId;
+    const season = this.featuredSeason;
+    if (!season) {
+      return;
+    }
+    if (!this.isGoalie) {
+      this.nstPending = true;
+      this.naturalStatTrickService.getPlayers(season).then(nstPlayers => {
+        if (this.playerId === playerId) {
+          this.nstPlayers = nstPlayers;
+          this.nstPending = false;
+        }
+      }).catch(() => {
+        // The service logs the error. The card shows the NHL's stats alone
+        if (this.playerId === playerId) {
+          this.nstPending = false;
+        }
+      });
+    }
+    this.edgePending = true;
+    this.nhlGameService.getPlayerEdgeDetail(playerId, season, NhlGameTypeEnum.REGULAR_SEASON, this.isGoalie)
+        .then(edgeDetail => {
+          if (this.playerId === playerId) {
+            this.edgeDetail = edgeDetail;
+            this.edgePending = false;
+          }
+        }).catch(() => {
+          // The service logs the error. The card goes without EDGE's stats
+          if (this.playerId === playerId) {
+            this.edgePending = false;
           }
         });
   }
@@ -325,6 +401,11 @@ export class PlayerComponent implements OnInit {
     this.seasonRatingPending = false;
     this.traits = undefined;
     this.traitsPending = false;
+    this.leaguePlayers = undefined;
+    this.nstPlayers = undefined;
+    this.nstPending = false;
+    this.edgeDetail = undefined;
+    this.edgePending = false;
     this.teamColor = "#000000";
     this.countryFlagPath = undefined;
   }

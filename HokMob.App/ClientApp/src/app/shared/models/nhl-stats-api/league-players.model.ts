@@ -19,9 +19,9 @@ export interface LeaguePlayers<T = LeagueSkaterStats | LeagueGoalieStats> {
 }
 
 /**
- * A skater's season row, merged by the backend from the stats API's skater summary, realtime, scoringpergame and
- * summaryshooting reports. A traded player's season is one row ("CAR,COL"). A field a report doesn't have for the
- * player is null.
+ * A skater's season row, merged by the backend from the stats API's skater summary, realtime, scoringpergame,
+ * summaryshooting, timeonice, penalties and faceoffwins reports. A traded player's season is one row ("CAR,COL"). A
+ * field a report doesn't have for the player is null.
  */
 export interface LeagueSkaterStats {
   playerId: number;
@@ -65,6 +65,19 @@ export interface LeagueSkaterStats {
   usatAgainst: number;
   /** Seconds per game at 5v5. */
   timeOnIcePerGame5v5: number;
+  /** Seconds over the season, all situations (skater/timeonice). */
+  timeOnIce: number;
+  /** Seconds per game at even strength, on the power play and short-handed. */
+  evTimeOnIcePerGame: number;
+  ppTimeOnIcePerGame: number;
+  shTimeOnIcePerGame: number;
+  /** The penalties he took (skater/penalties). */
+  penalties: number;
+  /** The penalties he drew. */
+  penaltiesDrawn: number;
+  /** His faceoffs won and lost (skater/faceoffwins), 0 for a player who took none. */
+  totalFaceoffWins: number;
+  totalFaceoffLosses: number;
 }
 
 /**

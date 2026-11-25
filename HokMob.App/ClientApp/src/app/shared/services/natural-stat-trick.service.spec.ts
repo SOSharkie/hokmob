@@ -1,7 +1,7 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {NaturalStatTrickService} from '@shared/services/natural-stat-trick.service';
-import {mockNstGameStats, mockNstTeamGames} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
+import {mockNstGameStats, mockNstPlayers, mockNstTeamGames} from '@shared/testing/nhl-api-mocks/nhl-api-mocks';
 import {provideHttpClient} from '@angular/common/http';
 
 describe('NaturalStatTrickService', () => {
@@ -60,6 +60,76 @@ describe('NaturalStatTrickService', () => {
 
       await rejected;
       expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getPlayers', () => {
+    const url = '/api/nst/players?season=20262027';
+
+    it("should resolve every real skater's NST stats as one row each, by NHL player ID", async () => {
+      const players = service.getPlayers(20262027);
+      httpMock.expectOne(url).flush(mockNstPlayers());
+
+      const rows = await players;
+      expect(rows.length).toBe(50);
+      expect(rows.find(row => row.playerId === 8477934)).toEqual({
+        playerId: 8477934, gamesPlayed: 26, timeOnIce: 34332, expectedGoals: 13.64, highDangerAttempts: 29,
+        rushAttempts: 3, reboundsCreated: 8, hitsTaken: 19
+      });
+    });
+
+    it('should reuse a season for a few minutes, so the next player does not ask again', async () => {
+      const first = service.getPlayers(20262027);
+      httpMock.expectOne(url).flush(mockNstPlayers());
+      await first;
+      expect((await service.getPlayers(20262027)).length).toBe(50);
+      httpMock.expectNone(url);
+
+      // Another season is its own request
+      service.getPlayers(20252026);
+      httpMock.expectOne('/api/nst/players?season=20252026').flush(mockNstPlayers());
+    });
+
+    it('should ask again once a season is older than its max age', async () => {
+      const now = Date.now();
+      const clock = spyOn(Date, 'now').and.returnValue(now);
+      const first = service.getPlayers(20262027);
+      httpMock.expectOne(url).flush(mockNstPlayers());
+      await first;
+      clock.and.returnValue(now + NaturalStatTrickService.playersMaxAge);
+      service.getPlayers(20262027);
+      httpMock.expectOne(url).flush(mockNstPlayers());
+    });
+
+    it('should resolve no skaters without logging when NST has none for the season yet', async () => {
+      const players = service.getPlayers(20262027);
+      httpMock.expectOne(url).flush('Not found', {status: 404, statusText: 'Not Found'});
+      expect(await players).toEqual([]);
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it('should resolve no skaters for a body without them', async () => {
+      const players = service.getPlayers(20262027);
+      httpMock.expectOne(url).flush({season: 20262027});
+      expect(await players).toEqual([]);
+    });
+
+    it('should reject and log when the backend cannot ask NST, and ask again next time', async () => {
+      const players = service.getPlayers(20262027);
+      const rejection = expectAsync(players).toBeRejectedWith(jasmine.objectContaining({status: 503}));
+      httpMock.expectOne(url).flush('Unavailable', {status: 503, statusText: 'Service Unavailable'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+
+      service.getPlayers(20262027);
+      httpMock.expectOne(url).flush(mockNstPlayers());
+    });
+
+    it('should reject when the request fails', async () => {
+      const players = service.getPlayers(20262027);
+      const rejection = expectAsync(players).toBeRejected();
+      httpMock.expectOne(url).error(new ProgressEvent('error'));
+      await rejection;
     });
   });
 

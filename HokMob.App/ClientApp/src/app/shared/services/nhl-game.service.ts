@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import dayjs from 'dayjs'
 import {ScoreGame, ScoreResponse} from "@shared/models/nhl-web-api/score.model";
 import {GameBundle} from "@shared/models/nhl-web-api/game-bundle.model";
@@ -8,6 +8,7 @@ import {PlayByPlay} from "@shared/models/nhl-web-api/play-by-play.model";
 import {Boxscore} from "@shared/models/nhl-web-api/boxscore.model";
 import {RightRail} from "@shared/models/nhl-web-api/right-rail.model";
 import {PlayerLanding} from "@shared/models/nhl-web-api/player-landing.model";
+import {EdgeGoalieDetail, EdgeSkaterDetail} from "@shared/models/nhl-web-api/edge.model";
 import {
   ClubScheduleGame,
   ClubScheduleSeason,
@@ -42,6 +43,11 @@ export class NhlGameService {
   private readonly nhlDraftPicksUrl = "/api/nhl/draft/picks/";
 
   private readonly nhlClubStatsUrl = "/api/nhl/club-stats/";
+
+  private readonly nhlEdgeUrl = "/api/nhl/edge/";
+
+  /** The first season NHL EDGE has stats for: earlier ones answer 404. */
+  public static readonly firstEdgeSeason = 20212022;
 
   private readonly teamFormGameCount = 5;
 
@@ -121,6 +127,41 @@ export class NhlGameService {
    */
   public getPlayerLanding(playerId: number): Promise<PlayerLanding> {
     return this.get<PlayerLanding>(this.nhlPlayerUrl + playerId + "/landing");
+  }
+
+  /**
+   * Gets a player's NHL EDGE stats of a season (skating speed, shot speed and zone time for a skater, high
+   * danger saves for a goalie), each with the NHL's percentile. Resolves undefined without a request for a season
+   * before EDGE (firstEdgeSeason), and when EDGE has nothing for the player (404), like a season he didn't play.
+   * Rejects on any other error.
+   *
+   * @param playerId - The player's ID.
+   * @param season - The season ID, like 20262027.
+   * @param gameType - 2 for the regular season, 3 for the playoffs.
+   * @param isGoalie - Whether to get a goalie's stats instead of a skater's.
+   */
+  public getPlayerEdgeDetail(playerId: number, season: number, gameType: number,
+                             isGoalie: boolean): Promise<EdgeSkaterDetail | EdgeGoalieDetail> {
+    if (!(season >= NhlGameService.firstEdgeSeason)) {
+      return Promise.resolve(undefined);
+    }
+    const url = this.nhlEdgeUrl + (isGoalie ? "goalie-detail/" : "skater-detail/") + playerId + "/" + season + "/" +
+        gameType;
+    return new Promise((resolve, reject) => {
+      return this.http.get<EdgeSkaterDetail | EdgeGoalieDetail>(url).subscribe({
+        next: (response) => {
+          resolve(response ?? undefined);
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error?.status === 404) {
+            resolve(undefined);
+            return;
+          }
+          console.error(error);
+          reject(error);
+        }
+      });
+    });
   }
 
   /**

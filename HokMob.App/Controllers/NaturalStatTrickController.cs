@@ -57,8 +57,7 @@ namespace HokMob.App.Controllers
         [HttpGet("team-games")]
         public async Task<IActionResult> GetTeamGames(int season)
         {
-            var startYear = season / 10000;
-            if (startYear < FirstSeasonStartYear || startYear > DateTime.UtcNow.Year || season % 10000 != startYear + 1)
+            if (!IsValidSeason(season))
             {
                 return BadRequest();
             }
@@ -72,5 +71,37 @@ namespace HokMob.App.Controllers
             };
         }
 
+        /// <summary>
+        /// Returns every skater's individual stats of a regular season that the NHL's APIs don't have, as { season,
+        /// players: { playerId, gamesPlayed, timeOnIce, expectedGoals, highDangerAttempts, rushAttempts, reboundsCreated,
+        /// hitsTaken } }: columns of equally long arrays, one row per skater, sorted by player ID. From NST's
+        /// player season page, kept for an hour. 404 when NST has no skaters for the season yet, 503 when NST can't be
+        /// asked right now, as for a game.
+        /// </summary>
+        /// <param name="season">The season ID, like 20262027, from 2007-08 on.</param>
+        [HttpGet("players")]
+        public async Task<IActionResult> GetPlayers(int season)
+        {
+            if (!IsValidSeason(season))
+            {
+                return BadRequest();
+            }
+
+            var result = await _naturalStatTrickClient.GetPlayersAsync(season);
+            return result.Status switch
+            {
+                NstLookupStatus.Found => Ok(result.Players),
+                NstLookupStatus.NotFound => NotFound(),
+                _ => StatusCode(StatusCodes.Status503ServiceUnavailable)
+            };
+        }
+
+        /// <summary>Whether a season ID is one NST can have, like 20262027: from 2007-08 to this year's.</summary>
+        private static bool IsValidSeason(int season)
+        {
+            var startYear = season / 10000;
+            return startYear >= FirstSeasonStartYear && startYear <= DateTime.UtcNow.Year &&
+                   season % 10000 == startYear + 1;
+        }
     }
 }

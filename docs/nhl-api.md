@@ -6,10 +6,10 @@ expected goals and Corsi from Natural Stat Trick. All of them are called through
 
 | API | Host | Proxy | Used for |
 |---|---|---|---|
-| api-web | `api-web.nhle.com/v1` | `/api/nhl/<path>` | live, game, team, schedule, standings, playoff, draft and leader data |
+| api-web | `api-web.nhle.com/v1` | `/api/nhl/<path>` | live, game, team, schedule, standings, playoff, draft and leader data, and NHL EDGE's tracking stats (see [NHL EDGE](#nhl-edge)) |
 | Stats API | `api.nhle.com/stats/rest/en` | `/api/nhl-stats/*` | per-season and per-game player stats, every player's season (for percentiles), team season stats, hits and shots leaders, season dates, draft career stats |
 | Player search | `search.d3.nhle.com` | `/api/nhl-search/player` | header search |
-| Natural Stat Trick | `data.naturalstattrick.com` | `/api/nst/game/{gameId}`, `/api/nst/team-games?season=` | a live or finished game's expected goals (xG) and Corsi, for teams and skaters, and every team's xG in each game of a season, for the power rating (see [Natural Stat Trick](#natural-stat-trick)) |
+| Natural Stat Trick | `data.naturalstattrick.com` | `/api/nst/game/{gameId}`, `/api/nst/team-games?season=`, `/api/nst/players?season=` | a live or finished game's expected goals (xG) and Corsi, for teams and skaters, every team's xG in each game of a season, for the power rating, and every skater's season stats the NHL doesn't have, for the player page (see [Natural Stat Trick](#natural-stat-trick)) |
 
 Reference: [Zmalski/NHL-API-Reference](https://github.com/Zmalski/NHL-API-Reference/blob/main/README.md). It documents
 api-web well. For the stats API it lists endpoints and query parameters but not the report names, the `cayenneExp`
@@ -22,6 +22,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 |---|---|---|
 | Player header, bio, headshot, draft, current team | api-web `player/{id}/landing` | The stats API's `players` report has only the name, position and current team, and returns at most 5 rows |
 | Player traits (percentiles against his position) | Stats API, every player's season row (`/api/nhl-stats/league-players`) | Every skater or goalie of a season in one response, with the realtime, assist split and 5v5 shot attempt fields; api-web has no league-wide player rows. Not NHL EDGE, whose percentile pool is the NHL's and starts in 2021-22 |
+| Player season performance (ranked stats in groups) | Stats API's league rows, Natural Stat Trick's player season page, NHL EDGE | The ranks need every player of the season, which only the stats API and NST give in one response each; EDGE alone has skating and shot speed and zone time, with its own percentiles (see [Season performance](#season-performance)) |
 | Player season cards, career table, recent games | Stats API | The landing's `seasonTotals` mixes every league, splits a traded season into one row per team and has no hits; the api-web game log has no hits, blocks, faceoffs or saves by strength, so no HokMob rating |
 | Leaderboards: points, goals, assists, TOI, SV%, GAA, wins | api-web `skater-stats-leaders`, `goalie-stats-leaders` | Headshots, logos and the NHL's own qualification rules |
 | Leaderboards: hits, shots | Stats API | api-web has no such categories (`categories=hits` returns 400) |
@@ -35,6 +36,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Player search | `search.d3.nhle.com` | Active filter, current team and up to 20 results; the stats API's `players` has none of that |
 | Expected goals (xG), Corsi | Natural Stat Trick | Neither NHL API has them per game, and neither has xG |
 | Each team's xG per game (the power rating, and 5v5 xGF%) | Natural Stat Trick's team game logs | A whole season of every team's games in one page, so one fetch an hour covers the league |
+| A skater's season ixG, high danger and rush attempts, rebounds created, hits taken | Natural Stat Trick's player season page | Every skater of a season in one page, keyed by NHL player ID; not NST's page for one player, which would cost a page per visitor |
 
 ## What each page loads
 
@@ -43,7 +45,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Home | `score/{YYYY-MM-DD}` (scoreboard, polled every 10s), `standings/now`, `playoff-series/carousel/{season}` plus `playoff-bracket/{year}` for seed ranks, `/api/nhl-stats/seasons` |
 | Game | `gamecenter/{id}/landing`, `/play-by-play`, `/boxscore`, `/right-rail`; `score/{gameDate}` for a playoff game's `seriesStatus` (only `score` has it); `club-schedule-season/{abbrev}/{season}` for team form; `club-stats/{abbrev}/{season}/{gameType}` for a future game's season leaders (see [Season leaders](#season-leaders)); `/api/nhl-stats/team-games` and `/api/nst/team-games` for a future game's power rating card; `player/{id}/landing` for the player dialog; `/api/nst/game/{id}` for a live or finished game's xG and Corsi (the game stats card, the shot maps and the player dialog) |
 | Team | `standings/now` (division, conference and season), `club-schedule-season/{abbrev}/now` (schedule and form), `score/{date}` for the next game, `/api/nhl-stats/teams`. The standings tab loads `standings/now` again for its type, the player stats tab `/api/nhl-stats/team-players?teamId=&season=&gameType=2` and the season's `assets/history/{season}-2.json` when it has one, and the team stats tab `/api/nhl-stats/team-games?season=&gameType=2` and `/api/nst/teams?season=` (see [Team page](#team-page) and [Team power rating](#team-power-rating)) |
-| Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split), and the featured season's `assets/history/{season}-2.json` when it has one, for the regular season card's rating column (see [History data](#history-data)), and `/api/nhl-stats/league-players?season=&gameType=2&position=skater` or `goalie` for the featured season, for the traits card (see [Player traits](#player-traits)) |
+| Player | `player/{id}/landing`, `/api/nhl-stats/player/{id}?position=skater` or `goalie` (a skater's recent games carry `totalFaceoffs`, `totalPrimaryAssists` / `totalSecondaryAssists`, `ppAssists` and `penaltiesDrawn` for the HokMob rating; a goalie's carry `goals` and `assists`, with no assist split), and the featured season's `assets/history/{season}-2.json` when it has one, for the regular season card's rating column (see [History data](#history-data)), and `/api/nhl-stats/league-players?season=&gameType=2&position=skater` or `goalie` for the featured season, for the traits and season performance cards (see [Player traits](#player-traits)), with `/api/nst/players?season=` (skaters only) and `edge/skater-detail/{id}/{season}/2` or `edge/goalie-detail/...` (from 2021-22) for the season performance card (see [Season performance](#season-performance)) |
 | Stats | `standings/now` (for the season ID), `skater-stats-leaders/{season}/{gameType}`, `goalie-stats-leaders/{season}/{gameType}`, `/api/nhl-stats/leaders` (hits and shots), `/api/nhl-stats/seasons` |
 | Stats category (`/stats/{category}`, a card's top 25) | `standings/now`, the card's leaders with `limit=25` and only its category, then `/api/nhl-stats/season-players?season=&gameType=&position=skater` or `goalie` `&ids=` (the 25 IDs) for the other columns, `/api/nhl-stats/seasons`. The categories and their columns are in `StatCategoryUtils` |
 | Playoffs | `playoff-bracket/{year}`, `schedule/playoff-series/{season}/{letter}` for the series dialog, `/api/nhl-stats/seasons` |
@@ -74,11 +76,13 @@ class (`styles/skeleton.scss`), which a page's own placeholders use too, like th
 - **Player page:** the header and every card until the landing loads, assuming the season card has its rating column
   like most; then the season, recent games and career cards until the stats load, with a career row per NHL regular
   season in the landing's `seasonTotals` and a recent game row per game played, up to 10, and the traits card until
-  the league players load. A player who has never played an NHL game shows no stats skeletons.
+  the league players load. The season performance card waits for the league players, NST and EDGE together, so its
+  rows don't come in one source at a time, at a center's size with NST and EDGE (16 rows in its taller column on a
+  desktop, 32 on a phone) or a goalie's. A player who has never played an NHL game shows no stats skeletons.
 - **Known drift:** a schedule row grows when a long team name wraps in a narrow column, a team stats row is 44 or 45px
   on a phone, a career row's height follows its crests (a traded season's two logos can wrap), and the player traits
-  card is 20px taller for a player under the minimum games, with its small sample note, none of which is known before
-  the data. Each is the last card in its column, or a few pixels.
+  card is 20px taller for a player under the minimum games, with its small sample note, and the season performance
+  card is shorter without NST, EDGE or faceoffs (a winger, a defenseman), none of which is known before the data. Each is the last card in its column, or a few pixels.
 
 ## api-web conventions
 
@@ -148,10 +152,11 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
 - **Every player's season rows:** the season and game type alone, read page by page sorted by `playerId` (one row
   per player per season), give the whole league: 789 skaters and 79 goalies in 2026-27 through 26 games, about 1,000
   skaters in a full season. `/api/nhl-stats/league-players` reads `skater/summary`, `skater/realtime`,
-  `skater/scoringpergame` and `skater/summaryshooting` (or `goalie/summary` and `goalie/savesByStrength`) this way,
-  about 40 page requests for skaters, and merges them by `playerId` into columns (like `/team-games`), with
-  `mostTeamGames` from `team/summary`. A cold full season takes about 2 seconds, a season in progress under 2; the
-  skater response is about 100 KB.
+  `skater/scoringpergame`, `skater/summaryshooting`, `skater/timeonice`, `skater/penalties` and `skater/faceoffwins`
+  (or `goalie/summary` and `goalie/savesByStrength`) this way, about 56 page requests for 2026-27's 789 skaters and
+  70 for a full season, and merges them by `playerId` into columns (like `/team-games`), with `mostTeamGames` from
+  `team/summary`. Cold, 2026-27 through 26 games took 3.4 seconds (1.6 with the first four reports) without a 429;
+  the skater response is 134 KB (100 KB before the last three).
 - **A team's season rows:** `teamId=<id>` with the season and game type gives one row per player who played for the
   team, counting only their games for it: Lukas Reichel's 2025-26 row for Boston has 10 games, though `teamAbbrevs`
   still lists every team of his season (`"CHI,VAN,BOS"`). `skater/realtime` and `goalie/summary` take the same filter.
@@ -161,10 +166,11 @@ every query (`NhlStatsController` with `NhlStatsApiClient`) and merges the repor
 | `skater/summary` | `skaterFullName`, `positionCode`, `teamAbbrevs` / `teamAbbrev`, `gamesPlayed`, `goals`, `assists`, `points`, `pointsPerGame`, `plusMinus`, `ppGoals`, `ppPoints`, `gameWinningGoals`, `shots`, `shootingPct` (`null` without shots), `penaltyMinutes`, `faceoffWinPct` (`null` without faceoffs), `timeOnIcePerGame` |
 | `skater/realtime` | `hits`, `blockedShots`, `takeaways`, `giveaways`, `missedShots`, and a shooter's own `shotAttemptsBlocked` and `totalShotAttempts` (on goal, missed and blocked: McDavid's 2026-27 row has 68 + 35 + 28 = 131) |
 | `skater/summaryshooting` | On-ice 5v5 shot attempts: `satFor`, `satAgainst` (Corsi), `usatFor`, `usatAgainst` (Fenwick), `timeOnIcePerGame5v5`; per season, a traded season is one row |
-| `skater/faceoffwins` | `totalFaceoffWins`, `totalFaceoffLosses` (and by zone and strength) |
+| `skater/faceoffwins` | `totalFaceoffWins`, `totalFaceoffLosses` (and by zone and strength); every skater has a row, 0 and 0 without faceoffs |
+| `skater/timeonice` | `timeOnIce` (the season), `evTimeOnIcePerGame`, `ppTimeOnIcePerGame`, `shTimeOnIcePerGame` (also the season totals, `shifts`, `timeOnIcePerShift`) |
 | `skater/scoringpergame` | `totalPrimaryAssists`, `totalSecondaryAssists` (the boxscore and `skater/summary` only have the total) |
 | `skater/powerplay` | `ppAssists` (also `ppPrimaryAssists` / `ppSecondaryAssists`), `ppTimeOnIce` |
-| `skater/penalties` | `penaltiesDrawn`. It matches a count of the play-by-play's `drawnByPlayerId`: fighting majors and coincidental minors count, and penalties with no drawer (too many men, misconducts) count for nobody |
+| `skater/penalties` | `penalties` (taken), `penaltiesDrawn`, also `netPenalties` (drawn minus taken) and their per 60s. It matches a count of the play-by-play's `drawnByPlayerId`: fighting majors and coincidental minors count, and penalties with no drawer (too many men, misconducts) count for nobody |
 | `skater/bios`, `goalie/bios` | `playerId`, `draftYear`, `draftRound`, `draftOverall`; skater bios also have games, goals, assists and points |
 | `goalie/summary` | `goalieFullName`, `teamAbbrevs` / `teamAbbrev`, `gamesPlayed`, `gamesStarted`, `wins`, `losses`, `otLosses`, `shutouts`, `shotsAgainst`, `saves`, `goalsAgainst`, `goalsAgainstAverage`, `savePct`, `timeOnIce`, and the goalie's own `goals`, `assists` and `points` |
 | `goalie/savesByStrength` | `evSaves`, `ppSaves`, `shSaves`, `evShotsAgainst`, `ppShotsAgainst`, `shShotsAgainst`, `savePct`. The `pp` split is the shots a goalie faced on the penalty kill (the other team's power play: Shesterkin's 2026-27 row has 16 `pp` shots to 1 `sh`) |
@@ -191,7 +197,7 @@ allowlisted query parameters.
 |---|---|
 | `score`, `scoreboard`, `gamecenter` | 10s |
 | `schedule`, `club-schedule`, `club-schedule-season`, `standings`, `playoff-series` | 5 min |
-| `player`, `roster`, `club-stats`, `skater-stats-leaders`, `goalie-stats-leaders` | 30 min |
+| `player`, `roster`, `club-stats`, `skater-stats-leaders`, `goalie-stats-leaders`, `edge` | 30 min |
 | `draft` | 6 hours (picks only change during the draft) |
 | anything else | 1 min |
 
@@ -206,7 +212,9 @@ upstream returns 502 rather than a partial answer.
 
 `NaturalStatTrickClient` keeps a game NST marks final with a 24-hour sliding expiration, and anything else (a game
 in progress, or no stats yet) for 3 minutes, or 10 once the key's standard tokens are below half. It keeps a season's
-team game logs for an hour. See [Natural Stat Trick](#natural-stat-trick) for why.
+team game logs and its skaters for an hour, and a failed one for 5 minutes. See [Natural Stat Trick](#natural-stat-trick)
+for why. `NaturalStatTrickService.getPlayers` keeps a season's skaters 5 minutes in the browser, like
+`NhlStatsApiService.getLeaguePlayers`.
 
 ### Surviving an api-web outage
 
@@ -524,8 +532,9 @@ teams have played a regular season game, and when the games fail to load. Loaded
 The player page's traits card (`PlayerTraitsComponent`, like FotMob's "Player traits") is a hexagon of six season
 stats, each the player's percentile among the players at his position. It uses the landing's featured season, the
 same one the season card shows, regular season only, and `/api/nhl-stats/league-players` for that season, so it
-needs neither play-by-play nor Natural Stat Trick, and every season has it. `PlayerPercentileUtils` does the math, and
-the season performance card (#173) is meant to reuse it and the endpoint.
+needs neither play-by-play nor Natural Stat Trick, and every season has it. `PlayerPercentileUtils` does the math
+(`getPlayerPool` gives a player's group, pool and minimum games), and the season performance card shares it, the
+endpoint and the response.
 
 - **Position groups:** forwards (`C`, `L`, `R`), defensemen (`D`) and goalies, each against its own group.
 - **Pool:** the group's players with at least the minimum games: 20 in a full season, the same share of games as the
@@ -556,12 +565,76 @@ the season performance card (#173) is meant to reuse it and the endpoint.
   (`NhlTeamColorUtils.getTeamColorOnCard`), so the navy and black primaries show; gray without a current team. The
   rating colors are reserved for ratings.
 - **Layout:** on a wide desktop the traits card tops the third column and the career table runs under it, beside the
-  bio and season cards, the playoffs card (across the first two columns when there is one) and the recent games. On
-  a small desktop and a phone the cards wrap or stack as before, with the traits card just before the career table.
+  bio and season cards, the playoffs card (across the first two columns when there is one), the recent games and the
+  season performance card. On a small desktop and a phone the cards wrap or stack as before, with the traits card
+  just before the career table.
 - **Caching:** the backend keeps each report 5 minutes, and `NhlStatsApiService.getLeaguePlayers` keeps a season's
   response 5 minutes too, so moving between players of the same season doesn't ask again.
 - **Not used:** NHL EDGE's skating speed and zone time have the NHL's own percentiles, from a pool we don't choose,
   and only from 2021-22 on.
+
+## Season performance
+
+The player page's season performance card (`PlayerSeasonPerformanceComponent`, like FotMob's) lists the featured
+regular season's stats in titled groups, each with its value, the player's rank in a pill and a bar as long as his
+percentile, the way the team page's stats cards show a team's. `PlayerSeasonPerformanceUtils` defines the groups and
+works out every row.
+
+- **Pool:** `PlayerPercentileUtils.getPlayerPool`, the traits card's: his position group's players with the minimum
+  games. A player under it is ranked against them (`getRank`: 1 plus the values ahead of his, so ties share a rank),
+  with "Only 4 games, small sample" under the header. A row's tooltip says among whom, like "12th of 433 forwards
+  with 7+ games". Faceoff % ranks only the players with 5 faceoffs per minimum game ("and 35+ faceoffs"), and
+  shooting % those with a shot per minimum game, so a handful of lucky attempts can't top them. Each rank agreed with
+  a count from the stats API's rows (McDavid, 2026-11-24: 13 goals 11th of 433 forwards in total, 1.27 per 60 79th).
+- **Colors:** only what stands out, in the rating colors (`PlayerPercentileUtils.getRankTier`): blue for the top 5%,
+  green for the rest of the top 25%, red for the bottom 20%, gray between. Giveaways, penalty minutes and GAA rank
+  lower first; hits taken are ranked but never colored.
+- **Total / Per 60:** counting stats become per 60 minutes of all-situation ice time (`skater/timeonice`'s
+  `timeOnIce`), for the pool too, so the ranks follow the toggle. Shares stay, and ice times are per game. A goalie
+  has no toggle: his groups are shares, GAA and season counts, with goals saved above average both in total and per
+  60.
+- **Skater groups:** Scoring (goals, assists, primary and secondary, points, power play points), Shooting (shots,
+  shooting %, shot attempts, NST's ixG and high danger attempts), Possession
+  (5v5 Corsi and Fenwick For %, faceoff % for a player who takes faceoffs, with his record in its tooltip, NST's
+  rebounds created and rush attempts), Defense and physical (hits, NST's hits taken, blocked shots, takeaways,
+  giveaways), Discipline (penalty minutes, penalties drawn, the differential), Usage (ice time, power play and
+  short-handed time per game, EDGE's offensive zone time) and Skating (EDGE's top speed, bursts over 20 mph and top
+  shot speed). The first three groups are the left column on a desktop, the others the right.
+- **Goalie groups:** Goaltending (save %, GAA, goals saved above average and per 60), By strength (even strength and
+  penalty kill save %), Workload (starts, wins, shutouts) and Tracking (EDGE's high danger save % and games above
+  .900).
+- **Left out:** game-winning goals, goals above expected, IPP (individual points percentage, NST's) and EDGE's
+  distance skated, to keep the card short. IPP ranked small samples first (fourth-liners with 3 points from 3 on-ice goals at 100%, one at 120%)
+  and McDavid 55th of 427 forwards, and the points rows already say who drives the scoring.
+- **Missing sources:** without NST (503, no key, no row for him) its rows are left out and the credit with them;
+  without EDGE (before 2021-22, a 404, an error) its rows are. A stat nobody in the pool has, like 2017-18's shot
+  attempts, is left out too; a stat only he lacks shows "-".
+- **Placement:** on a wide desktop the card spans the recent games' two columns, right under them, with the traits
+  and career cards down the third column beside it: the grid's rows are `auto auto 1fr` (`auto auto auto 1fr` with
+  the playoffs card), and the card takes the flexible last row. On a small desktop it takes a row to itself, and on a
+  phone it comes after the recent games, before the traits card. Its groups are two columns from 700px up, one below.
+- **Shot attempts:** the stats API's `totalShotAttempts` is NST's iCF within one: of the 50 skaters of the league
+  players fixture, 43 matched and 7 differed by one (2026-11-24).
+
+## NHL EDGE
+
+`api-web.nhle.com/v1/edge/...` (proxied as `/api/nhl/edge/...`, 30 minutes cached) has the NHL's player tracking:
+`skater-detail/{playerId}/{season}/{gameType}` and `goalie-detail/...`, one request per player
+(`NhlGameService.getPlayerEdgeDetail`, typed in `edge.model.ts`).
+
+- **Skaters:** top skating speed (`skatingSpeed.speedMax`), bursts over 20 mph, total distance and the most in a game,
+  top shot speed, shots, goals and shooting % by area, and zone time. Each has its value (imperial and metric), the
+  **NHL's percentile** (0 to 1) and the league average. `skater-skating-distance-detail` adds distance per 60 and
+  `skater-shot-speed-detail` the average shot speed. The card shows top speed, bursts, top shot speed and offensive
+  zone time, and asks for nothing else, so its EDGE rows are the same in Total and Per 60.
+- **Goalies:** `stats` (GAA, games above .900, goal differential and support per 60, points %) and
+  `shotLocationSummary` by `all`, `high`, `mid` and `long`, each with its save % percentile. The counts' percentiles
+  look upside down (Shesterkin's 101 saves at the 0th), so only the save percentages and games above .900 are used.
+- **Seasons:** 2021-22 on (`seasonsWithEdgeStats` lists them); 2020-21 and the playoffs of a season without them
+  answer 404, which the service resolves as no stats, and it doesn't ask for a season before 2021-22.
+- **Percentiles aren't ours:** the pool is the NHL's (a 2026-27 forward's zone time percentiles are multiples of
+  1/392). The card shows them as they are, as a percentage in the pill, under groups marked "NHL EDGE".
+- **Units:** imperial (mph), like the site's distances in feet.
 
 ## Shot maps
 
@@ -910,6 +983,27 @@ adjusted 5v5), `all`, `pp` and `pk`; 2015-16 to 2020-21 have no `sva` (fetched o
 season never needs fetching again while the files are kept; rerun the current season's to refresh it (5 pages). The
 app doesn't read these files.
 
+### Player season page
+
+`/api/nst/players?season=20262027` reads NST's player season page (`NaturalStatTrickPlayersParser`):
+`playerteams.php?fromseason=20262027&thruseason=20262027&stype=2&sit=all&score=all&stdoi=std&rate=n&team=ALL&pos=S&loc=B&toi=0&gpfilt=none&lines=single&draftteam=ALL`,
+every skater's individual stats of a regular season, all situations, on one page (440 KB for 789 skaters, 10 tokens).
+It's kept an hour like the team game logs (at most 24 pages a day per season asked for), a failed fetch 5 minutes.
+**Never fetch NST's page for one player** (`playerreport.php`): it would cost a page per visitor.
+
+- **Table:** one `<table id=indreg>`, a row per skater: Player, Team, Position, GP, TOI (minutes with decimals),
+  Goals, Total / First / Second Assists, Total Points, IPP, Shots, SH%, ixG, iCF, iFF, iSCF, iHDCF, Rush Attempts,
+  Rebounds Created, PIM, penalties by type, Penalties Drawn, Giveaways, Takeaways, Hits, Hits Taken, Shots Blocked and
+  Faceoffs Won / Lost / %. The first cell is a row number.
+- **IDs:** each row links to the player's report (`playerreport.php?...&playerid=8470613`), so rows are keyed by NHL
+  player ID with no name matching. A traded skater is one row (`CAR, COL`).
+- **Response:** columns sorted by player ID: `playerId`, `gamesPlayed`, `timeOnIce` (seconds), `expectedGoals` (ixG),
+  `highDangerAttempts` (iHDCF), `rushAttempts`, `reboundsCreated` and `hitsTaken`, about 25 KB
+  for 789 skaters. A "-" is null. Its TOI matched the stats API's to the second
+  (McDavid's 36979). 404 when NST has no skaters yet, 503 when it can't be asked.
+- **Not used yet:** on-ice xGF% (`stdoi=oi`, another page a day per hour) and goalies (`pos=G&stdoi=g`, unverified;
+  see the open items).
+
 ### Live games
 
 NST updates a game's page while it's played, a few minutes behind. Captured on 2026-10-20 (LAK @ WSH, game
@@ -966,6 +1060,10 @@ rounding, except the two teams whose goalie shot: NST's team totals count his sh
 had two shots in the same second, paired by distance.
 
 ## Open items
+
+- **NST for the season performance card:** a goalie's GSAx and high danger save % (`playerteams.php` with `pos=G` and
+  `stdoi=g`, never fetched: save one page to scratch before parsing) and a skater's on-ice xGF% (`stdoi=oi`, a second
+  page an hour) aren't on the card.
 
 - **Goalie season averages** run higher than skaters' (5.4 to 6.8 in 2025-26), so on the season average cut points
   about half of goalies with 20+ games are green. They may need their own scale (see [Rating colors](#rating-colors)).

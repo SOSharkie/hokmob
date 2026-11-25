@@ -289,7 +289,10 @@ namespace HokMob.App.Controllers
         /// comes first: its rows are the players.
         /// </summary>
         private static readonly string[] LeagueSkaterReports =
-            {"skater/summary", "skater/realtime", "skater/scoringpergame", "skater/summaryshooting"};
+        {
+            "skater/summary", "skater/realtime", "skater/scoringpergame", "skater/summaryshooting", "skater/timeonice",
+            "skater/penalties", "skater/faceoffwins"
+        };
 
         /// <summary>The goalie reports of /league-players, like LeagueSkaterReports.</summary>
         private static readonly string[] LeagueGoalieReports = {"goalie/summary", "goalie/savesByStrength"};
@@ -299,7 +302,8 @@ namespace HokMob.App.Controllers
 
         /// <summary>
         /// The columns of /league-players for skaters: the report each comes from (an index into LeagueSkaterReports)
-        /// and its field. The 5v5 shot attempts (sat, Corsi; usat, Fenwick) are on ice, for and against.
+        /// and its field. The 5v5 shot attempts (sat, Corsi; usat, Fenwick) are on ice, for and against. penalties is
+        /// the penalties he took, and the ice times are in seconds (timeOnIce over the season, the others per game).
         /// </summary>
         private static readonly (int Report, string Field)[] LeagueSkaterFields =
         {
@@ -310,7 +314,10 @@ namespace HokMob.App.Controllers
             (1, "hits"), (1, "blockedShots"), (1, "takeaways"), (1, "giveaways"), (1, "missedShots"),
             (1, "shotAttemptsBlocked"), (1, "totalShotAttempts"),
             (2, "totalPrimaryAssists"), (2, "totalSecondaryAssists"),
-            (3, "satFor"), (3, "satAgainst"), (3, "usatFor"), (3, "usatAgainst"), (3, "timeOnIcePerGame5v5")
+            (3, "satFor"), (3, "satAgainst"), (3, "usatFor"), (3, "usatAgainst"), (3, "timeOnIcePerGame5v5"),
+            (4, "timeOnIce"), (4, "evTimeOnIcePerGame"), (4, "ppTimeOnIcePerGame"), (4, "shTimeOnIcePerGame"),
+            (5, "penalties"), (5, "penaltiesDrawn"),
+            (6, "totalFaceoffWins"), (6, "totalFaceoffLosses")
         };
 
         /// <summary>The columns of /league-players for goalies, like LeagueSkaterFields.</summary>

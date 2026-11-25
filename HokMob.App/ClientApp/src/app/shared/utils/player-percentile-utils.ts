@@ -5,6 +5,7 @@ import {
   LeagueSkaterStats
 } from "@shared/models/nhl-stats-api/league-players.model";
 import {StatsUtils} from "@shared/utils/stats-utils";
+import {TeamRankTier} from "@shared/utils/team-rating-utils";
 
 /**
  * One axis of a player's traits: a season stat, worked out the same way for every player of the pool.
@@ -56,6 +57,23 @@ export interface PlayerTrait {
   percentile: number;
 }
 
+/**
+ * The players a player is ranked against: his position group's players of the season with at least the minimum
+ * games. A player under the minimum is ranked against them without being one of them.
+ */
+export interface PlayerPool<T = LeagueSkaterStats | LeagueGoalieStats> {
+  group: PositionGroup;
+  /** The player's own row. */
+  player: T;
+  /** His group's rows with at least minGames, his own among them unless he's a small sample. */
+  pool: T[];
+  /** The fewest games a player of the pool has (getMinGames). */
+  minGames: number;
+  gamesPlayed: number;
+  /** Whether he has fewer than minGames, so he's ranked against the pool without being in it. */
+  isSmallSample: boolean;
+}
+
 /** A player's traits: his percentile on each axis among the players at his position with enough games. */
 export interface PlayerTraits {
   group: PositionGroup;
@@ -84,6 +102,12 @@ export class PlayerPercentileUtils {
 
   /** What a secondary assist counts for in Playmaking, where a primary assist counts 1. */
   public static readonly secondaryAssistWeight = 0.5;
+
+  /**
+   * The percentiles where a rank's color tier starts (getRankTier), in the rating colors' shares: elite the top 5%,
+   * good the rest of the top 25%, and poor the bottom 20%.
+   */
+  public static readonly rankTierPercentiles = {elite: 95, good: 75, poor: 20};
 
   /** The axes of a skater's traits, forwards and defensemen alike, clockwise from the top. */
   public static readonly skaterAxes: PlayerTraitAxis<LeagueSkaterStats>[] = [
@@ -269,6 +293,71 @@ export class PlayerPercentileUtils {
   }
 
   /**
+   * A value's rank in a pool: 1 plus how many of the pool's values are better, so tied values share a rank. A value
+   * in the pool doesn't count itself, and a player under the minimum games gets the rank he'd have among them.
+   * Undefined without a value or without a pool. The pool's undefined values are left out.
+   *
+   * @param value - The player's value.
+   * @param poolValues - The pool's values, the player's own among them when he's in the pool.
+   * @param lowerIsBetter - Whether a lower value ranks higher.
+   */
+  public static getRank(value: number, poolValues: number[], lowerIsBetter: boolean = false): number {
+    const pool = (poolValues ?? []).filter(poolValue => poolValue != null && !isNaN(poolValue));
+    if (value == null || isNaN(value) || !pool.length) {
+      return undefined;
+    }
+    return 1 + pool.filter(poolValue => lowerIsBetter ? poolValue < value : poolValue > value).length;
+  }
+
+  /**
+   * Where a percentile stands, for its rank's color (rankTierPercentiles): "elite" at the top 5%, "good" in the rest of
+   * the top 25%, "poor" in the bottom 20%, and "middle" between them or without a percentile. A league of about 400
+   * forwards needs shares, not the team cards' fixed ranks (TeamRatingUtils.getRankTier).
+   *
+   * @param percentile - 0 to 100, as getPercentile gives it.
+   */
+  public static getRankTier(percentile: number): TeamRankTier {
+    const tiers = PlayerPercentileUtils.rankTierPercentiles;
+    if (percentile == null || isNaN(percentile)) {
+      return "middle";
+    }
+    if (percentile >= tiers.elite) {
+      return "elite";
+    }
+    if (percentile >= tiers.good) {
+      return "good";
+    }
+    return percentile < tiers.poor ? "poor" : "middle";
+  }
+
+  /**
+   * The players a player is ranked against: the season's players of his position group with at least the minimum
+   * games, which the traits card and the season performance card share. Undefined when he has no row in the season.
+   *
+   * @param leaguePlayers - Every player of the season at his position (skaters or goalies).
+   * @param playerId - The player.
+   */
+  public static getPlayerPool<T extends LeagueSkaterStats | LeagueGoalieStats>(leaguePlayers: LeaguePlayers<T>,
+                                                                               playerId: number): PlayerPool<T> {
+    const rows = leaguePlayers?.players ?? [];
+    const player = rows.find(row => row.playerId === playerId);
+    if (!player) {
+      return undefined;
+    }
+    const group = PlayerPercentileUtils.getRowGroup(player);
+    const minGames = PlayerPercentileUtils.getMinGames(leaguePlayers.mostTeamGames);
+    const gamesPlayed = player.gamesPlayed ?? 0;
+    return {
+      group,
+      player,
+      pool: rows.filter(row => PlayerPercentileUtils.getRowGroup(row) === group && (row.gamesPlayed ?? 0) >= minGames),
+      minGames,
+      gamesPlayed,
+      isSmallSample: gamesPlayed < minGames
+    };
+  }
+
+  /**
    * A player's traits: his percentile on each axis among the season's players of his position group with at least
    * the minimum games. A player under the minimum is charted against that pool, without being in it. Undefined when
    * he has no row in the season.
@@ -277,23 +366,19 @@ export class PlayerPercentileUtils {
    * @param playerId - The player.
    */
   public static getPlayerTraits(leaguePlayers: LeaguePlayers, playerId: number): PlayerTraits {
-    const rows = leaguePlayers?.players ?? [];
-    const player = rows.find(row => row.playerId === playerId);
-    if (!player) {
+    const playerPool = PlayerPercentileUtils.getPlayerPool(leaguePlayers, playerId);
+    if (!playerPool) {
       return undefined;
     }
-    const group = PlayerPercentileUtils.getRowGroup(player);
+    const {group, player, pool} = playerPool;
     const axes = (group === "G" ? PlayerPercentileUtils.goalieAxes : PlayerPercentileUtils.skaterAxes) as
         PlayerTraitAxis<LeagueSkaterStats | LeagueGoalieStats>[];
-    const minGames = PlayerPercentileUtils.getMinGames(leaguePlayers.mostTeamGames);
-    const pool = rows.filter(row => PlayerPercentileUtils.getRowGroup(row) === group &&
-        (row.gamesPlayed ?? 0) >= minGames);
     return {
       group,
-      gamesPlayed: player.gamesPlayed ?? 0,
-      minGames,
+      gamesPlayed: playerPool.gamesPlayed,
+      minGames: playerPool.minGames,
       poolSize: pool.length,
-      isSmallSample: (player.gamesPlayed ?? 0) < minGames,
+      isSmallSample: playerPool.isSmallSample,
       traits: axes.map(axis => {
         const getValue = PlayerPercentileUtils.getAxisValue(axis, pool);
         const value = getValue(player);
@@ -328,27 +413,27 @@ export class PlayerPercentileUtils {
   }
 
   /** A row's position group: a goalie row has no position code. */
-  private static getRowGroup(row: LeagueSkaterStats | LeagueGoalieStats): PositionGroup {
+  public static getRowGroup(row: LeagueSkaterStats | LeagueGoalieStats): PositionGroup {
     return "positionCode" in row ? PlayerPercentileUtils.getPositionGroup(row.positionCode) : "G";
   }
 
   /** A part's share of a part and the rest, like Corsi For of all the shot attempts, or undefined without any. */
-  private static getShare(part: number, rest: number): number {
+  public static getShare(part: number, rest: number): number {
     return PlayerPercentileUtils.getRatio(part, (part ?? 0) + (rest ?? 0));
   }
 
   /** A count over a total, or undefined without the count or a total. */
-  private static getRatio(count: number, total: number): number {
+  public static getRatio(count: number, total: number): number {
     return count == null || !(total > 0) ? undefined : count / total;
   }
 
   /** A save percentage as the NHL shows it, like ".915". */
-  private static formatSavePct(value: number): string {
+  public static formatSavePct(value: number): string {
     return value.toFixed(3).replace(/^0/, "");
   }
 
   /** A finite number, or undefined. */
-  private static toNumber(value: number): number {
+  public static toNumber(value: number): number {
     return value == null || !isFinite(value) ? undefined : value;
   }
 }

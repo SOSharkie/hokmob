@@ -26,6 +26,19 @@ export class NstStatsUtils {
   public static readonly teamTableUrl = "https://www.naturalstattrick.com/teamtable.php";
 
   /**
+   * The public Natural Stat Trick page of every skater's regular season, credited where its player stats are shown: the
+   * page /api/nst/players reads, all situations, individual stats. Empty without a season.
+   */
+  public static getPlayerSeasonUrl(season: number | string): string {
+    const id = String(season ?? "");
+    if (!/^\d{8}$/.test(id)) {
+      return "";
+    }
+    return "https://www.naturalstattrick.com/playerteams.php?fromseason=" + id + "&thruseason=" + id +
+        "&stype=2&sit=all&score=all&stdoi=std&rate=n&team=ALL&pos=S&loc=B&toi=0&gpfilt=none&lines=single&draftteam=ALL";
+  }
+
+  /**
    * The share of the shot attempts that were for, like "55.9%", or "-" when there were none (or a count is missing).
    */
   public static getCorsiPercentage(corsiFor: number, corsiAgainst: number): string {

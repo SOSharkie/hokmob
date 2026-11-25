@@ -91,6 +91,19 @@
           ></app-recent-player-games>
         </div>
       }
+      @if (traits || seasonPerformanceLoading) {
+        <div class="season-performance-container">
+          <app-player-season-performance
+              [playerId]="playerId"
+              [leaguePlayers]="leaguePlayers"
+              [nstPlayers]="nstPlayers"
+              [edge]="edgeDetail"
+              [season]="featuredSeason"
+              [isGoalie]="isGoalie"
+              [loading]="seasonPerformanceLoading"
+          ></app-player-season-performance>
+        </div>
+      }
       <!-- The top right column on a wide desktop; elsewhere its cards wrap or stack with the others -->
       <div class="side-cards">
         @if (traits || traitsLoading) {
