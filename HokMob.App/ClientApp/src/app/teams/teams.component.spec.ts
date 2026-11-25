@@ -40,6 +40,7 @@ describe('TeamsComponent', () => {
   const canucks = 23;
 
   beforeEach(async () => {
+    fixture = undefined;
     queryParams = new BehaviorSubject<ParamMap>(convertToParamMap({}));
     scrollingUp = new BehaviorSubject<boolean>(true);
     await TestBed.configureTestingModule({
@@ -64,7 +65,8 @@ describe('TeamsComponent', () => {
   });
 
   afterEach(() => {
-    fixture.destroy();
+    // A test that only reads the columns never opens the page
+    fixture?.destroy();
     httpMock.verify();
   });
 
