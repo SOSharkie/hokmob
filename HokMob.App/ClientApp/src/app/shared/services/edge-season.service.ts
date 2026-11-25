@@ -11,10 +11,10 @@ import {EdgeSeason, EdgeSeasonFile, EdgeSeasonSkater} from "@shared/models/nhl-e
 export class EdgeSeasonService {
 
   /**
-   * The regular seasons with a file in src/assets/edge, newest first, from the season in progress. EDGE starts in
-   * 2021-22, so the list can go back that far.
+   * The regular seasons with a file in src/assets/edge, newest first: the season in progress back to 2021-22, when
+   * EDGE starts.
    */
-  public static readonly seasons: number[] = [20262027, 20252026, 20242025, 20232024];
+  public static readonly seasons: number[] = [20262027, 20252026, 20242025, 20232024, 20222023, 20212022];
 
   private readonly edgeUrl = "assets/edge/";
 

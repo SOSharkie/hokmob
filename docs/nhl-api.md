@@ -712,12 +712,13 @@ a static asset, kept for the session. It's the NHL's data, so it's committed; NS
   `models/nhl-edge/`). Speeds in mph, distance in miles, zone time as a share. `throughDate`, in a file built with
   `--partial`, is the day of the season's last final game. Distance, top shot speed and zone time aren't used yet;
   the season performance card could rank them against our pool from here instead of showing EDGE's percentiles.
-- **Seasons:** EDGE starts in 2021-22 (2020-21 answers 404), so `EdgeSeasonService.seasons` can go back to 2021-22,
-  and an earlier featured season has no file and no Speed. Built so far, and listed: 2023-24 (924 skaters, none
-  left out, 43 KB, 16 KB gzipped), 2024-25 (918, 2 left out with a 404, 43 KB, 16 KB gzipped), 2025-26 (940, none
-  left out, 44 KB, 16 KB gzipped) and `20262027-2.json`, through 2026-11-24 (788 skaters, 1 left out, 36 KB, 13 KB
-  gzipped). 2021-22 and 2022-23 are still to be built, and chart without Speed until they are. In 2023-24 and
-  2025-26, EDGE's games matched the stats API's for every skater.
+- **Seasons:** EDGE starts in 2021-22 (2020-21 answers 404), so `EdgeSeasonService.seasons` lists 2021-22 to
+  2026-27, and an earlier featured season has no file and no Speed. 2021-22: 1,004 skaters, none left out, 47 KB
+  (17 KB gzipped); 2022-23: 951, none left out, 44 KB (16 KB); 2023-24: 924, none left out, 43 KB (16 KB); 2024-25:
+  918, 2 left out with a 404, 43 KB (16 KB); 2025-26: 940, none left out, 44 KB (16 KB); and `20262027-2.json`,
+  through 2026-11-24: 788 skaters, 1 left out, 36 KB (13 KB). In every finished season EDGE's games matched the stats
+  API's for every skater. A few rows have no top speed (1 in 2022-23, 2 in 2021-22): those skaters chart without
+  Speed, like a skater missing from the file.
 - **Refresh:** the season in progress is rebuilt with `--partial` on the history file's schedule, in the
   `update-history-season` skill, and once more without it when the season is over. The file can trail the league
   rows by a day, which is fine for a percentile.

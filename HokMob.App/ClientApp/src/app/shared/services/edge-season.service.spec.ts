@@ -52,8 +52,8 @@ describe('EdgeSeasonService', () => {
     httpMock.expectNone(() => true);
   });
 
-  it('should list the seasons with a file, newest first, from the season in progress', () => {
-    expect(EdgeSeasonService.seasons).toEqual([20262027, 20252026, 20242025, 20232024]);
+  it('should have a file from the season in progress back to 2021-22, when EDGE starts', () => {
+    expect(EdgeSeasonService.seasons).toEqual([20262027, 20252026, 20242025, 20232024, 20222023, 20212022]);
   });
 
   it('should resolve no skaters for a file without them', async () => {
