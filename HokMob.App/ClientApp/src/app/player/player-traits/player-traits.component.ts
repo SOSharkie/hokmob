@@ -149,43 +149,21 @@ export class PlayerTraitsComponent implements OnChanges {
   }
 
   /**
-   * What the numbers are, for the (?) explanation: the pool, how each percentile is worked out, and for a skater where
-   * the stats come from.
+   * What the numbers are, for the (?) explanation: the pool, and how each percentile is worked out. Where each stat
+   * comes from is in its vertex's title and the credit under the chart.
    */
   public get helpText(): string {
     const season = this.season ? " in " + DateTimeUtils.getNhlSeasonDisplayValue(String(this.season)) : "";
     const pool = "Among " + (this.traits?.poolSize ?? 0) + " " + this.groupName + " with at least " +
         (this.traits?.minGames ?? 0) + " games" + season + ". Each number is a percentile: the share of them this " +
         "player is ahead of. Counting stats are per 60 minutes on the ice.";
-    return [pool, this.combinedAxesText, this.edgeText, this.nstText].filter(text => text).join(" ");
+    // A goalie's axes are one stat each
+    return this.isSkater ? pool + " An axis of several stats ranks each one and averages the percentiles." : pool;
   }
 
   /** The Natural Stat Trick page the credit links to: its skaters of the season. */
   public get nstUrl(): string {
     return NstStatsUtils.getPlayerSeasonUrl(this.season);
-  }
-
-  /** A skater's axes of more than one stat, for the explanation. Nothing for a goalie. */
-  private get combinedAxesText(): string {
-    if (!this.isSkater) {
-      return "";
-    }
-    return "An axis of several stats ranks each one and averages the percentiles" +
-        (this.traits.usesEdge ? ", like Possession's shot attempts and 5v5 Corsi For %." : ".");
-  }
-
-  /** Where Speed comes from, for the explanation, or nothing without it. */
-  private get edgeText(): string {
-    if (!this.traits?.usesEdge) {
-      return "";
-    }
-    return "Speed is NHL EDGE's bursts over 20 mph per 60, with top speed at half weight" + this.edgeThroughText + ".";
-  }
-
-  /** What comes from Natural Stat Trick, for the explanation, or nothing when it isn't used. */
-  private get nstText(): string {
-    return this.traits?.usesNst ? "Expected goals (ixG), hits taken and 5v5 expected goals against come from " +
-        "Natural Stat Trick, each at half weight in its axis." : "";
   }
 
   /** Like ", through November 23" for an EDGE file of a season in progress, or nothing. */

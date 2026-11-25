@@ -84,20 +84,20 @@ describe('PlayerTraitsComponent', () => {
             '2.41 goals per 60');
     // Without Natural Stat Trick, no credit
     expect(fixture.nativeElement.querySelector('.traits-source')).toBeNull();
-    expect(text('.traits-help')).not.toContain('Natural Stat Trick');
   });
 
   it('should chart Speed and Possession for a skater in the EDGE season file, and credit NST', () => {
     render(fullSkaterTraits(8477934));
     expect(component.labels.map(label => label.label))
         .toEqual(['Goals', 'Possession', 'Playmaking', 'Speed', 'Defense', 'Physical']);
-    // The file's date is in Speed's title and the explanation
+    // The file's date is in Speed's title
     const speed = fixture.nativeElement.querySelectorAll('.trait-label')[3];
     expect(speed.getAttribute('title')).toContain('(NHL EDGE)');
     expect(speed.getAttribute('title')).toMatch(/, through [A-Z][a-z]+ \d+$/);
-    expect(text('.traits-help')).toContain("Speed is NHL EDGE's bursts over 20 mph per 60, with top speed at half weight, through");
-    expect(text('.traits-help')).toContain("like Possession's shot attempts and 5v5 Corsi For %");
-    expect(text('.traits-help')).toContain('come from Natural Stat Trick');
+    // The explanation is the pool and the math, the sources being in the titles and the credit
+    expect(text('.traits-help')).toBe('Among 32 forwards with at least 7 games in 2026-2027. Each number is a ' +
+        'percentile: the share of them this player is ahead of. Counting stats are per 60 minutes on the ice. An axis ' +
+        'of several stats ranks each one and averages the percentiles.');
     const source: HTMLAnchorElement = fixture.nativeElement.querySelector('.traits-source');
     expect(source.textContent.replace(/\s+/g, ' ').trim()).toBe('ixG, hits taken and xGA from Natural Stat Trick');
     expect(source.href).toContain('naturalstattrick.com/playerteams.php?fromseason=20262027');
@@ -136,6 +136,8 @@ describe('PlayerTraitsComponent', () => {
     expect(labels()[0]).toBe('Save % 54%');
     expect(labels().length).toBe(6);
     expect(text('.traits-help')).toContain('Among 14 goalies with at least 7 games in 2026-2027.');
+    // A goalie's axes are one stat each
+    expect(text('.traits-help')).not.toContain('An axis of several stats');
   });
 
   it('should note that a player under the minimum is a small sample', () => {

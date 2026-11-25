@@ -568,8 +568,8 @@ pool and minimum games), and the season performance card shares it, the endpoint
 - **Speed** is ranked against our pool, not with EDGE's percentiles, which rank the bursts as a count and so favor
   the players with the most games. Bursts per 60 divide the file's `burstsOver20` by the league row's
   `timeOnIcePerGame` times EDGE's own `gamesPlayed`, so a file a day behind the league rows still divides by the games
-  its bursts came from (in 2025-26 EDGE's games matched the stats API's for all 940 skaters). The Speed tooltip and the
-  (?) explanation give the file's date for a season in progress.
+  its bursts came from (in 2025-26 EDGE's games matched the stats API's for all 940 skaters). The Speed tooltip gives the
+  file's date for a season in progress.
 - **Validation, season to season** (as for Playmaking): the correlation of a player's axis value (his percentile)
   with his next season's, players with 40+ games in both, 2023-24 → 2024-25 and 2024-25 → 2025-26, forwards then
   defensemen:
@@ -623,7 +623,8 @@ pool and minimum games), and the season performance card shares it, the endpoint
 - **Caching:** the backend keeps each report 5 minutes, and `NhlStatsApiService.getLeaguePlayers` keeps a season's
   response 5 minutes too, so moving between players of the same season doesn't ask again.
 - **Credit:** a skater with an NST row gets "ixG, hits taken and xGA from Natural Stat Trick" under the chart,
-  linking to NST's player season page, and the (?) explanation says which axes come from NST and EDGE.
+  linking to NST's player season page. Each vertex's title names its stats and sources; the (?) explanation only
+  gives the pool and how the percentiles are worked out.
 
 ## Season performance
 
