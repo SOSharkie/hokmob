@@ -14,7 +14,7 @@ export class EdgeSeasonService {
    * The regular seasons with a file in src/assets/edge, newest first, from the season in progress. EDGE starts in
    * 2021-22, so the list can go back that far.
    */
-  public static readonly seasons: number[] = [20262027, 20252026, 20242025];
+  public static readonly seasons: number[] = [20262027, 20252026, 20242025, 20232024];
 
   private readonly edgeUrl = "assets/edge/";
 

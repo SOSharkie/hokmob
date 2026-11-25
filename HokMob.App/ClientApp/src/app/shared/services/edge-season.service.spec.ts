@@ -53,7 +53,7 @@ describe('EdgeSeasonService', () => {
   });
 
   it('should list the seasons with a file, newest first, from the season in progress', () => {
-    expect(EdgeSeasonService.seasons).toEqual([20262027, 20252026, 20242025]);
+    expect(EdgeSeasonService.seasons).toEqual([20262027, 20252026, 20242025, 20232024]);
   });
 
   it('should resolve no skaters for a file without them', async () => {

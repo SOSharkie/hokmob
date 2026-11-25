@@ -236,7 +236,7 @@ export class PlayerPercentileUtils {
         "and averaged",
     // Ranked against our pool, not EDGE's percentiles: EDGE ranks the bursts as a count, which favors the players
     // with the most games and ice time. Top speed counts half: a single fastest moment, it repeats from season to
-    // season less (0.63 for forwards, against 0.87 for bursts per 60), but it doesn't grow in little ice time the way
+    // season less (0.56 and 0.63 for forwards, against 0.91 and 0.87 for bursts per 60), but it doesn't grow in little ice time the way
     // a rate does, so it holds back the fast depth forwards that bursts per 60 alone put at the top
     parts: [
       {getValue: row => row.edge?.speedMax ?? undefined, weight: PlayerPercentileUtils.topSpeedWeight},
