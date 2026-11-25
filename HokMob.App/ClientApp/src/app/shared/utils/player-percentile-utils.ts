@@ -123,7 +123,7 @@ export interface PlayerTraits {
  */
 export class PlayerPercentileUtils {
 
-  /** The fewest games a player needs in a finished season, the same as the history page's leaderboard. */
+  /** The fewest games a player needs in a finished season, the same as the players page's leaderboard. */
   public static readonly fullSeasonMinGames = 20;
 
   /** A team's games in a regular season. */
@@ -388,7 +388,7 @@ export class PlayerPercentileUtils {
   }
 
   /**
-   * The fewest games a player needs to be in a percentile pool, or on the history page's leaderboard: 20 in a
+   * The fewest games a player needs to be in a percentile pool, or on the players page's leaderboard: 20 in a
    * finished season, and the same share of the season while it's in progress, counted from the most games any team
    * has played. At least 1.
    *

@@ -45,17 +45,17 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('#games-item')?.textContent).toContain('Games');
   });
 
-  it('should link the History page as the mobile menu\'s 4th item, and select it there', () => {
+  it('should link the Players page as the mobile menu\'s 4th item, and select it there', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const items = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.mobile-menu .menu-item'));
-    expect(items.map(item => item.textContent.trim())).toEqual(['Games', 'Standings', 'Stats', 'History']);
+    expect(items.map(item => item.textContent.trim())).toEqual(['Games', 'Standings', 'Stats', 'Players']);
 
-    const history = fixture.nativeElement.querySelector('#history-item') as HTMLElement;
-    expect(history.classList).not.toContain('selected');
-    fixture.componentInstance.menuUrl = '/history';
+    const players = fixture.nativeElement.querySelector('#players-item') as HTMLElement;
+    expect(players.classList).not.toContain('selected');
+    fixture.componentInstance.menuUrl = '/players';
     fixture.detectChanges();
-    expect(history.classList).toContain('selected');
+    expect(players.classList).toContain('selected');
   });
 
   it('should select Standings with a standings type in the URL, and not on another page', () => {
@@ -67,21 +67,21 @@ describe('AppComponent', () => {
       expect(standings.classList).withContext(url).toContain('selected');
     }
 
-    fixture.componentInstance.menuUrl = '/history';
+    fixture.componentInstance.menuUrl = '/players';
     fixture.detectChanges();
     expect(standings.classList).not.toContain('selected');
   });
 
-  it('should select History with a season in the URL, and not on another page', () => {
+  it('should select Players with a season in the URL, and not on another page', () => {
     const fixture = TestBed.createComponent(AppComponent);
-    const history = fixture.nativeElement.querySelector('#history-item') as HTMLElement;
-    fixture.componentInstance.menuUrl = '/history?season=20252026';
+    const players = fixture.nativeElement.querySelector('#players-item') as HTMLElement;
+    fixture.componentInstance.menuUrl = '/players?season=20252026';
     fixture.detectChanges();
-    expect(history.classList).toContain('selected');
+    expect(players.classList).toContain('selected');
 
     fixture.componentInstance.menuUrl = '/standings';
     fixture.detectChanges();
-    expect(history.classList).not.toContain('selected');
+    expect(players.classList).not.toContain('selected');
   });
 
   it('should select Stats on the stats page, with a game type, and on a category table', () => {
@@ -133,7 +133,7 @@ describe('AppComponent', () => {
       .map(icon => icon.getAttribute('svgIcon'));
 
     expect(mobileIcons).toEqual(['lucide:calendar-days', 'lucide:list-ordered', 'lucide:chart-no-axes-column',
-      'lucide:history']);
+      'lucide:users']);
     for (const name of Object.keys(LUCIDE_ICONS)) {
       const svg = await firstValueFrom(iconRegistry.getNamedSvgIcon(name, 'lucide'));
       expect(svg.getAttribute('viewBox')).withContext(name).toBe('0 0 24 24');

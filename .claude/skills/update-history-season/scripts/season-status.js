@@ -1,4 +1,4 @@
-// Says whether the history page's season file is behind the stats API, before anything is rebuilt.
+// Says whether the players page's season file is behind the stats API, before anything is rebuilt.
 //
 // Usage (from the repo root): node .claude/skills/update-history-season/scripts/season-status.js [season] [gameType]
 //   season    Like 20262027. Default: the season of the file that is still in progress (it has a throughDate), or

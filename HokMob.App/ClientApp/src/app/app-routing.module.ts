@@ -11,7 +11,7 @@ import {TeamComponent} from "@app/team/team.component";
 import {LeagueStandingsComponent} from "@app/league-standings/league-standings.component";
 import {DraftComponent} from "@app/draft/draft.component";
 import {RatingsComponent} from "@app/ratings/ratings.component";
-import {HistoryComponent} from "@app/history/history.component";
+import {PlayersComponent} from "@app/players/players.component";
 import {TeamsComponent} from "@app/teams/teams.component";
 
 const routes: Routes = [
@@ -25,11 +25,13 @@ const routes: Routes = [
   { path: 'standings', component: LeagueStandingsComponent, data: {routeIdx: 7} },
   { path: 'draft', component: DraftComponent, data: {routeIdx: 8} },
   { path: 'ratings', component: RatingsComponent, data: {routeIdx: 9} },
-  { path: 'history', component: HistoryComponent, data: {routeIdx: 10} },
+  { path: 'players', component: PlayersComponent, data: {routeIdx: 10} },
   { path: 'stats/:category', component: StatCategoryComponent, data: {routeIdx: 11} },
   { path: 'teams', component: TeamsComponent, data: {routeIdx: 12} },
   // The page's old address while it was local only; the redirect keeps a game's stat line in the query parameters
   { path: 'dev', redirectTo: 'ratings' },
+  // The players page's old name; the redirect keeps the season and filters in the query parameters
+  { path: 'history', redirectTo: 'players' },
   { path: '**', redirectTo: '' }
 ];
 

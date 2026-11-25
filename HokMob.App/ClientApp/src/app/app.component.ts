@@ -44,9 +44,9 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.menuUrl === '/standings' || this.menuUrl.startsWith('/standings?');
   }
 
-  /** Whether the history page is open, with or without a season. */
-  public get isHistorySelected(): boolean {
-    return this.menuUrl === '/history' || this.menuUrl.startsWith('/history?');
+  /** Whether the players page is open, with or without a season. */
+  public get isPlayersSelected(): boolean {
+    return this.menuUrl === '/players' || this.menuUrl.startsWith('/players?');
   }
 
   /**

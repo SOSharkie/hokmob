@@ -38,7 +38,7 @@ export interface RecentGameRow {
 /**
  * The player's last 10 games, newest first, with regular season and playoff games mixed as the stats API returns
  * them (/api/nhl-stats/player/{id}). The ratings use the same formulas as the game page, through
- * StatsUtils.calculateSkaterGameRating / calculateGoalieGameRating, like the history page.
+ * StatsUtils.calculateSkaterGameRating / calculateGoalieGameRating, like the players page.
  */
 @Component({
     selector: 'app-recent-player-games',

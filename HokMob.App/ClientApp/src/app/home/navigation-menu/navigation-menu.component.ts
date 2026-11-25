@@ -16,7 +16,7 @@ export class NavigationMenuComponent {
     // {name: "Playoffs", iconName: "ballot", route: "/playoffs"},
     {name: "Standings", iconName: "list-ordered", route: "/standings"},
     {name: "Stats", iconName: "chart-no-axes-column", route: "/stats"},
-    {name: "History", iconName: "history", route: "/history"},
+    {name: "Players", iconName: "users", route: "/players"},
     {name: "Draft", iconName: "clipboard-list", route: "/draft"},
     {name: "News", iconName: "newspaper", url: "https://www.reddit.com/r/hockey/"},
     {name: "Teams", iconName: "shield", route: "/teams"}

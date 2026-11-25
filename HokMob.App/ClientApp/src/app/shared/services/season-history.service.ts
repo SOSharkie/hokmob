@@ -15,7 +15,7 @@ import {StatsUtils} from "@shared/utils/stats-utils";
 import {PlayerPercentileUtils} from "@shared/utils/player-percentile-utils";
 
 /**
- * A season the history page has data for.
+ * A season the players page has data for.
  */
 export interface HistorySeasonOption {
   season: number;
@@ -23,10 +23,10 @@ export interface HistorySeasonOption {
 }
 
 /**
- * The history page's data: a season's per game stat lines, preloaded into src/assets/history by build-season-data.js,
+ * The players page's data: a season's per game stat lines, preloaded into src/assets/history by build-season-data.js,
  * and rated in the browser with the same formulas as the game and player pages. A season in progress is a snapshot of
  * its final games, up to the file's throughDate. The file is a static asset, so it stays out of the main bundle. The
- * history page loads it, and so do the player page for its featured season's rating column, the team page for its
+ * players page loads it, and so do the player page for its featured season's rating column, the team page for its
  * players' ratings and a future game's season leaders.
  */
 @Injectable()

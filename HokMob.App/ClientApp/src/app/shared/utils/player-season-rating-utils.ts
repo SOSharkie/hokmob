@@ -79,7 +79,7 @@ export class PlayerSeasonRatingUtils {
   }
 
   /**
-   * An average rating as shown on the card, like "7.12", the same two decimals as the history page's leaderboard.
+   * An average rating as shown on the card, like "7.12", the same two decimals as the players page's leaderboard.
    * A dash without one.
    */
   public static formatAverageRating(averageRating: number): string {

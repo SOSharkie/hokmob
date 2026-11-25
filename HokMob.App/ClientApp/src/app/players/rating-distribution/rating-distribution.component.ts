@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import {Chart, Plugin, registerables, TooltipItem} from 'chart.js';
 import {PositionGroup, RatedGame} from "@shared/models/nhl-history/season-history.model";
-import {PositionOption, RatingDistribution, SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
+import {PositionOption, RatingDistribution, SeasonRatingStatsUtils} from "@app/players/season-rating-stats";
 import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 Chart.register(...registerables);
 

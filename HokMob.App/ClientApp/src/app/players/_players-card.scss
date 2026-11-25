@@ -1,8 +1,8 @@
 @use "variables" as *;
 @use "segmented-toggle" as *;
 
-// A card of the history page, in the look of the ratings page's cards, with a title and toggles on one line
-.history-card {
+// A card of the players page, in the look of the ratings page's cards, with a title and toggles on one line
+.players-card {
   box-sizing: border-box;
   min-width: 0;
   padding: $spacing-xx-large;
@@ -139,7 +139,7 @@
 }
 
 @media only screen and (max-width: $mobile-screen-breakpoint) {
-  .history-card {
+  .players-card {
     padding: $spacing-x-large;
   }
 

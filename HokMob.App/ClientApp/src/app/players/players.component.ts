@@ -8,23 +8,24 @@ import {HistorySeasonOption, SeasonHistoryService} from "@shared/services/season
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {PickerMenuUtils} from "@shared/utils/picker-menu-utils";
-import {SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
+import {SeasonRatingStatsUtils} from "@app/players/season-rating-stats";
 
 /**
- * The history page (`/history`): season-wide HokMob rating charts of a season, from the season's preloaded stat lines
- * (SeasonHistoryService), rated with the same formulas as the game and player pages. The season picker lists every
+ * The players page (`/players`, formerly `/history`): a season's HokMob rating leaders, best games and rating
+ * distribution, from the season's preloaded stat lines (SeasonHistoryService), rated with the same formulas as the game
+ * and player pages. The season picker lists every
  * season with a file in src/assets/history, and the picked season is a query parameter, like `?season=20252026`, so a
  * reload or a shared link keeps it, and so are the cards' filters, like `?team=59&leaders=F`, until another season is
  * picked. A season in progress says how far its file goes.
  */
 @Component({
-    selector: 'app-history',
-    templateUrl: './history.component.html',
-    styleUrls: ['./history.component.scss'],
+    selector: 'app-players',
+    templateUrl: './players.component.html',
+    styleUrls: ['./players.component.scss'],
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class HistoryComponent implements OnInit, OnDestroy {
+export class PlayersComponent implements OnInit, OnDestroy {
 
   /** The rating distribution's position when the URL doesn't name one. */
   private static readonly defaultDistributionPosition: PositionGroup = "F";
@@ -38,7 +39,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
   /** The fewest games a player needs on the leaderboard of the season shown. */
   public minGames: number = SeasonRatingStatsUtils.fullSeasonMinGames;
 
-  public distributionPosition: PositionGroup = HistoryComponent.defaultDistributionPosition;
+  public distributionPosition: PositionGroup = PlayersComponent.defaultDistributionPosition;
 
   /** The leaderboard's position group, or null for every position. */
   public leadersPosition: PositionGroup = null;
@@ -124,7 +125,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
     const [path, query] = this.location.path().split("?");
     const params = new URLSearchParams(query);
     const filters = {
-      distribution: this.distributionPosition === HistoryComponent.defaultDistributionPosition
+      distribution: this.distributionPosition === PlayersComponent.defaultDistributionPosition
           ? null : this.distributionPosition,
       leaders: this.leadersPosition,
       team: this.leadersTeamId,
@@ -161,11 +162,11 @@ export class HistoryComponent implements OnInit, OnDestroy {
    * The cards' filters in the query parameters. A missing or unknown one is the card's default.
    */
   private parseFilters(params: ParamMap): void {
-    this.distributionPosition = HistoryComponent.parsePosition(params.get("distribution")) ??
-        HistoryComponent.defaultDistributionPosition;
-    this.leadersPosition = HistoryComponent.parsePosition(params.get("leaders"));
+    this.distributionPosition = PlayersComponent.parsePosition(params.get("distribution")) ??
+        PlayersComponent.defaultDistributionPosition;
+    this.leadersPosition = PlayersComponent.parsePosition(params.get("leaders"));
     this.leadersTeamId = Number(params.get("team")) || null;
-    this.bestGamesPosition = HistoryComponent.parsePosition(params.get("best"));
+    this.bestGamesPosition = PlayersComponent.parsePosition(params.get("best"));
   }
 
   private static parsePosition(value: string): PositionGroup {

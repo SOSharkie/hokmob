@@ -5,7 +5,7 @@ import {DateTimeUtils} from "@shared/utils/date-time-utils";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {NhlPlayerHeadshotUtils} from "@shared/utils/nhl-player-headshot-utils";
 import {StatsUtils} from "@shared/utils/stats-utils";
-import {PositionOption, SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
+import {PositionOption, SeasonRatingStatsUtils} from "@app/players/season-rating-stats";
 import {RatingColorUtils} from "@shared/utils/rating-color-utils";
 
 /** A row of the best games list. */

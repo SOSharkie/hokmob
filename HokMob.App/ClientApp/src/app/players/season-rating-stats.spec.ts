@@ -1,4 +1,4 @@
-import {SeasonRatingStatsUtils} from "@app/history/season-rating-stats";
+import {SeasonRatingStatsUtils} from "@app/players/season-rating-stats";
 import {SeasonHistoryService} from "@shared/services/season-history.service";
 import {derivedSeasonHistoryInProgress, mockSeasonHistory} from "@shared/testing/nhl-api-mocks/nhl-api-mocks";
 import {RatedGame, RatedSeason} from "@shared/models/nhl-history/season-history.model";

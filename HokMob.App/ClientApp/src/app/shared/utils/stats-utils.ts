@@ -183,7 +183,7 @@ export class StatsUtils {
 
   /**
    * The total of a skater's rating terms (calculateSkaterHokmobRating) before it's capped at 10 and rounded. The
-   * history page ranks the games capped at 10 by it.
+   * players page ranks the games capped at 10 by it.
    *
    * @param skater - The skater's boxscore stats.
    * @param context - The faceoffs the skater took, his assist split, his power play assists and the penalties he drew,
@@ -322,7 +322,7 @@ export class StatsUtils {
 
   /**
    * The total of a goalie's rating terms (calculateGoalieHokMobRating) before it's kept between 0 and 10 and rounded.
-   * The history page ranks the games capped at 10 by it.
+   * The players page ranks the games capped at 10 by it.
    *
    * It starts from goalieBaseRating and adds:
    * - The goals he saved above an average goalie (getGoalsSavedAboveAverage), times getGoalsSavedAboveAverageWeight:
@@ -533,7 +533,7 @@ export class StatsUtils {
 
   /**
    * Rates a stats API skater game row: toBoxscoreSkater, with the row's faceoffs taken, assist split, power play
-   * assists and penalties drawn as the rating context. The player page's recent games and the history page both rate
+   * assists and penalties drawn as the rating context. The player page's recent games and the players page both rate
    * rows through it, so the two always agree.
    *
    * @param game - The skater's stats for one game.
