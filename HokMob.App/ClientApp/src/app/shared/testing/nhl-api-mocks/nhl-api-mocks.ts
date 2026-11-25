@@ -129,6 +129,11 @@ import gamecenter2026020144PlayByPlayLive from './gamecenter-2026020144-play-by-
 import {NstGameStats} from "@shared/models/natural-stat-trick/nst-game-stats.model";
 import {NstTeamGameStats, NstTeamGamesResponse} from "@shared/models/natural-stat-trick/nst-team-games.model";
 import nstTeamGames20262027 from './nst-team-games-20262027.json';
+import nstPlayers20262027 from './nst-players-20262027.json';
+import {NstPlayerStats, NstPlayersResponse} from "@shared/models/natural-stat-trick/nst-players.model";
+import edgeSkaterDetail8477934 from './edge-skater-detail-8477934-20262027-2.json';
+import edgeGoalieDetail8476945 from './edge-goalie-detail-8476945-20262027-2.json';
+import {EdgeGoalieDetail, EdgeSkaterDetail} from "@shared/models/nhl-web-api/edge.model";
 import {NhlTeamUtils} from "@shared/utils/nhl-team-utils";
 import {TeamRatingUtils} from "@shared/utils/team-rating-utils";
 
@@ -533,7 +538,10 @@ export function mockTeamGameRows(): TeamGameStats[] {
  * (26 of 82 games, scaled from 20), 32 forwards and 14 defensemen qualify. Cutter Gauthier (8483445) has the most goals
  * per 60 of the forwards (22 in 24 games), then Leon Draisaitl (8477934: 23 goals, 16 primary assists, 12 hits in 26
  * games). Andrew Mangiapane, Jeff Viel and Ty Dellandrea have no goals. Under the minimum: Vladislav Namestnikov
- * (8476480, C, 6 games), Justin Dowling (C, 4), Justin Holl (D, 4) and Nick Jensen (D, 3).
+ * (8476480, C, 6 games), Justin Dowling (C, 4), Justin Holl (D, 4) and Nick Jensen (D, 3). The skater/timeonice,
+ * skater/penalties and skater/faceoffwins fields were added on 2026-11-24 from the same queries for the same 50, whose
+ * other stats hadn't changed: Draisaitl has 34332 seconds on the ice, 234 faceoffs won and 175 lost, 4 penalties taken
+ * and 6 drawn. Kyle Connor (8478398) and Pavel Dorofeyev took no faceoffs, nor did any of the defensemen.
  */
 export function mockLeagueSkaters(): LeaguePlayersResponse<LeagueSkaterStats> {
   return copy(leagueSkaters20262027);
@@ -547,6 +555,45 @@ export function mockLeagueSkaters(): LeaguePlayersResponse<LeagueSkaterStats> {
  */
 export function mockLeagueGoalies(): LeaguePlayersResponse<LeagueGoalieStats> {
   return copy(leagueGoalies20262027);
+}
+
+/**
+ * /api/nst/players?season=20262027, captured from a running app on 2026-11-24 (789 skaters, read from Natural Stat
+ * Trick's player season page) and cut to the 50 skaters of mockLeagueSkaters(), as columns sorted by player ID. Every
+ * one of them has a row. Leon Draisaitl (8477934) has 13.64 expected goals (23 goals, so 9.36 above expected), 29 high
+ * danger attempts, 3 rush attempts, 8 rebounds created and 19 hits taken in 34332 seconds, the stats API's
+ * time on ice to the second.
+ */
+export function mockNstPlayers(): NstPlayersResponse {
+  return copy<NstPlayersResponse>(nstPlayers20262027);
+}
+
+/** mockNstPlayers() as one object per skater, the way NaturalStatTrickService.getPlayers resolves them. */
+export function mockNstPlayerRows(): NstPlayerStats[] {
+  const columns = mockNstPlayers().players;
+  return columns.playerId.map((_, i) => {
+    const row = {} as Record<keyof NstPlayerStats, number>;
+    (Object.keys(columns) as (keyof NstPlayerStats)[]).forEach(field => row[field] = columns[field][i]);
+    return row as NstPlayerStats;
+  });
+}
+
+/**
+ * api-web edge/skater-detail/8477934/20262027/2, captured on 2026-11-24: Leon Draisaitl's NHL EDGE stats through 26
+ * games, unchanged. Top speed 22.27 mph (percentile 0.6583), 61 bursts over 20 mph (0.9126), 85.66 miles skated
+ * (0.9845), a top shot of 82.54 mph (0.4883) and 49.1% of his ice time in the offensive zone (0.9923).
+ */
+export function mockEdgeSkaterDetail(): EdgeSkaterDetail {
+  return copy<EdgeSkaterDetail>(edgeSkaterDetail8477934);
+}
+
+/**
+ * api-web edge/goalie-detail/8476945/20262027/2, captured on 2026-11-24: Connor Hellebuyck's NHL EDGE stats through
+ * 10 games, unchanged. A .815 save percentage on high danger shots (percentile 0.6481) and a .900 or better save
+ * percentage in 60% of his games (0.8704).
+ */
+export function mockEdgeGoalieDetail(): EdgeGoalieDetail {
+  return copy<EdgeGoalieDetail>(edgeGoalieDetail8476945);
 }
 
 /**

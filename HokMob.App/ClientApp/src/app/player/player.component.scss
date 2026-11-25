@@ -214,19 +214,20 @@
 // Wide Desktop Styling: three columns. The third holds the traits card and the career table under it, and spans every
 // row, the last of which is flexible, so its height never stretches the first rows. The bio and regular season cards
 // share the first row and stretch to its height; the playoffs card (when there is one) takes their two columns below
-// them, and the recent games the same two columns under that (dense placement moves the season card up beside the bio)
+// them, the recent games the same two columns under that, and the season performance card the last, flexible row
+// (dense placement moves the season card up beside the bio)
 @media only screen and (min-width: $small-display-breakpoint) {
   .player-container .player-cards {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto 1fr;
     grid-auto-flow: row dense;
 
     &.with-playoff-stats {
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto auto 1fr;
     }
 
-    .playoff-stats, .match-stats-container {
+    .playoff-stats, .match-stats-container, .season-performance-container {
       grid-column: span 2;
       align-self: start;
     }
@@ -251,14 +252,15 @@
 // need, stretching to fill each row
 @media only screen and (min-width: $mobile-screen-breakpoint) and (max-width: $small-display-breakpoint) {
   .player-container .player-cards {
-    .player-bio-container, .playoff-stats, .regular-season-stats, .stats-error, .career-totals,
-    .player-traits-container {
+    // Every card, the side column's too (its box is gone here, so they're the row's items)
+    > *, .side-cards > * {
       flex: 1 1 375px;
     }
 
-    // The recent games table has the most columns, so it always gets a row to itself here
-    .match-stats-container {
-      flex: 1 1 100%;
+    // The recent games table has the most columns, and the season performance card two columns of its own, so they
+    // always get a row to themselves here
+    .match-stats-container, .season-performance-container {
+      flex-basis: 100%;
     }
   }
 }

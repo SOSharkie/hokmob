@@ -16,7 +16,7 @@ namespace HokMob.App.Controllers
         {
             "score", "scoreboard", "schedule", "club-schedule", "club-schedule-season", "standings",
             "gamecenter", "player", "roster", "club-stats", "playoff-series", "playoff-bracket",
-            "skater-stats-leaders", "goalie-stats-leaders", "draft"
+            "skater-stats-leaders", "goalie-stats-leaders", "draft", "edge"
         };
 
         private readonly NhlApiClient _nhlApiClient;

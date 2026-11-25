@@ -6,10 +6,13 @@ import {NhlStatsApiService} from "@shared/services/nhl-stats-api.service";
 import {ScoreGame} from "@shared/models/nhl-web-api/score.model";
 import {NhlGameTypeEnum} from "@shared/enums/nhl-game-type.enum";
 import {ClubStats} from "@shared/models/nhl-web-api/club-stats.model";
+import {EdgeGoalieDetail, EdgeSkaterDetail} from "@shared/models/nhl-web-api/edge.model";
 import {
   mockClubScheduleSeason,
   mockClubStats,
   mockDraftPicks,
+  mockEdgeGoalieDetail,
+  mockEdgeSkaterDetail,
   mockGameBoxscore,
   mockGameLanding,
   mockGamePlayByPlay,
@@ -287,6 +290,49 @@ describe('NhlGameService', () => {
       const playerLanding = service.getPlayerLanding(1);
       const rejection = expectAsync(playerLanding).toBeRejectedWith(jasmine.objectContaining({status: 404}));
       httpMock.expectOne('/api/nhl/player/1/landing').flush('Not found', {status: 404, statusText: 'Not Found'});
+      await rejection;
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getPlayerEdgeDetail', () => {
+    it("should request a skater's NHL EDGE stats of a season", async () => {
+      const edge = service.getPlayerEdgeDetail(8477934, 20262027, NhlGameTypeEnum.REGULAR_SEASON, false);
+      httpMock.expectOne('/api/nhl/edge/skater-detail/8477934/20262027/2').flush(mockEdgeSkaterDetail());
+      const detail = await edge as EdgeSkaterDetail;
+      expect(detail.player.id).toBe(8477934);
+      expect(detail.skatingSpeed.burstsOver20.value).toBe(61);
+      expect(detail.topShotSpeed.percentile).toBe(0.4883);
+    });
+
+    it("should request a goalie's", async () => {
+      const edge = service.getPlayerEdgeDetail(8476945, 20262027, NhlGameTypeEnum.REGULAR_SEASON, true);
+      httpMock.expectOne('/api/nhl/edge/goalie-detail/8476945/20262027/2').flush(mockEdgeGoalieDetail());
+      const detail = await edge as EdgeGoalieDetail;
+      expect(detail.stats.gamesAbove900.value).toBe(0.6);
+    });
+
+    it('should resolve undefined without a request for a season before EDGE', async () => {
+      expect(await service.getPlayerEdgeDetail(8468083, 20172018, NhlGameTypeEnum.REGULAR_SEASON, false))
+          .toBeUndefined();
+      expect(await service.getPlayerEdgeDetail(8468083, undefined, NhlGameTypeEnum.REGULAR_SEASON, false))
+          .toBeUndefined();
+      httpMock.expectNone(() => true);
+    });
+
+    it('should resolve undefined without logging when EDGE has nothing for the player', async () => {
+      const edge = service.getPlayerEdgeDetail(8477934, 20262027, NhlGameTypeEnum.PLAYOFFS, false);
+      httpMock.expectOne('/api/nhl/edge/skater-detail/8477934/20262027/3')
+          .flush({status: 404, error: 'The NHL API request failed.'}, {status: 404, statusText: 'Not Found'});
+      expect(await edge).toBeUndefined();
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it('should log and reject when the request fails', async () => {
+      const edge = service.getPlayerEdgeDetail(8477934, 20262027, NhlGameTypeEnum.REGULAR_SEASON, false);
+      const rejection = expectAsync(edge).toBeRejectedWith(jasmine.objectContaining({status: 502}));
+      httpMock.expectOne('/api/nhl/edge/skater-detail/8477934/20262027/2')
+          .flush({status: 502}, {status: 502, statusText: 'Bad Gateway'});
       await rejection;
       expect(console.error).toHaveBeenCalled();
     });

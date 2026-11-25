@@ -80,6 +80,7 @@ import { MiniEventTimelineComponent } from './game/mini-event-timeline/mini-even
 import { MiniEventComponent } from './game/mini-event-timeline/mini-event/mini-event.component';
 import { PlayerCareerComponent } from './player/player-career/player-career.component';
 import { PlayerTraitsComponent } from './player/player-traits/player-traits.component';
+import { PlayerSeasonPerformanceComponent } from './player/player-season-performance/player-season-performance.component';
 import { DraftComponent } from './draft/draft.component';
 import { RatingsComponent } from './ratings/ratings.component';
 import { HistoryComponent } from './history/history.component';
@@ -158,6 +159,7 @@ import {TeamRatingService} from "@shared/services/team-rating.service";
     MiniEventComponent,
     PlayerCareerComponent,
     PlayerTraitsComponent,
+    PlayerSeasonPerformanceComponent,
     DraftComponent,
     RatingsComponent,
     HistoryComponent,

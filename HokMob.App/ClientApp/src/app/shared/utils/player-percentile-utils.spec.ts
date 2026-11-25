@@ -90,6 +90,89 @@ describe('PlayerPercentileUtils', () => {
     });
   });
 
+  describe('getRank', () => {
+    it('should rank a value 1 plus the values ahead of it, with ties sharing a rank', () => {
+      expect(PlayerPercentileUtils.getRank(5, [9, 5, 5, 1])).toBe(2);
+      expect(PlayerPercentileUtils.getRank(9, [9, 5, 5, 1])).toBe(1);
+      expect(PlayerPercentileUtils.getRank(1, [9, 5, 5, 1])).toBe(4);
+    });
+
+    it('should rank the other way when lower is better', () => {
+      expect(PlayerPercentileUtils.getRank(1, [9, 5, 5, 1], true)).toBe(1);
+      expect(PlayerPercentileUtils.getRank(9, [9, 5, 5, 1], true)).toBe(4);
+    });
+
+    it('should give a value outside the pool the rank it would have among it', () => {
+      expect(PlayerPercentileUtils.getRank(6, [9, 5, 1])).toBe(2);
+      expect(PlayerPercentileUtils.getRank(10, [9, 5, 1])).toBe(1);
+    });
+
+    it("should leave the pool's missing values out, and have no rank without a value or a pool", () => {
+      expect(PlayerPercentileUtils.getRank(5, [undefined, 9, null, NaN, 1])).toBe(2);
+      expect(PlayerPercentileUtils.getRank(undefined, [9, 5])).toBeUndefined();
+      expect(PlayerPercentileUtils.getRank(5, [])).toBeUndefined();
+      expect(PlayerPercentileUtils.getRank(5, undefined)).toBeUndefined();
+    });
+  });
+
+  describe('getRankTier', () => {
+    it('should color the top 5% elite, the rest of the top 25% good and the bottom 20% poor', () => {
+      expect(PlayerPercentileUtils.getRankTier(99.5)).toBe('elite');
+      expect(PlayerPercentileUtils.getRankTier(95)).toBe('elite');
+      expect(PlayerPercentileUtils.getRankTier(94.9)).toBe('good');
+      expect(PlayerPercentileUtils.getRankTier(75)).toBe('good');
+      expect(PlayerPercentileUtils.getRankTier(74.9)).toBe('middle');
+      expect(PlayerPercentileUtils.getRankTier(20)).toBe('middle');
+      expect(PlayerPercentileUtils.getRankTier(19.9)).toBe('poor');
+      expect(PlayerPercentileUtils.getRankTier(0)).toBe('poor');
+    });
+
+    it('should leave a missing percentile uncolored', () => {
+      expect(PlayerPercentileUtils.getRankTier(undefined)).toBe('middle');
+      expect(PlayerPercentileUtils.getRankTier(NaN)).toBe('middle');
+    });
+  });
+
+  describe('getPlayerPool', () => {
+    it('should pool a forward with the forwards who have the minimum games, himself among them', () => {
+      const pool = PlayerPercentileUtils.getPlayerPool(skaters(), 8477934);
+      expect(pool.group).toBe('F');
+      expect(pool.player.skaterFullName).toBe('Leon Draisaitl');
+      expect(pool.minGames).toBe(7);
+      expect(pool.gamesPlayed).toBe(26);
+      expect(pool.pool.length).toBe(32);
+      expect(pool.pool.every(row => row.positionCode !== 'D' && row.gamesPlayed >= 7)).toBeTrue();
+      expect(pool.pool).toContain(pool.player);
+      expect(pool.isSmallSample).toBeFalse();
+    });
+
+    it('should pool a defenseman with the defensemen', () => {
+      const pool = PlayerPercentileUtils.getPlayerPool(skaters(), 8470613);
+      expect(pool.group).toBe('D');
+      expect(pool.pool.length).toBe(14);
+    });
+
+    it('should rank a player under the minimum against the pool without putting him in it', () => {
+      const pool = PlayerPercentileUtils.getPlayerPool(skaters(), 8476480);
+      expect(pool.player.skaterFullName).toBe('Vladislav Namestnikov');
+      expect(pool.isSmallSample).toBeTrue();
+      expect(pool.gamesPlayed).toBe(6);
+      expect(pool.pool.length).toBe(32);
+      expect(pool.pool).not.toContain(pool.player);
+    });
+
+    it('should pool a goalie with the goalies', () => {
+      const pool = PlayerPercentileUtils.getPlayerPool(goalies(), 8476945);
+      expect(pool.group).toBe('G');
+      expect(pool.pool.length).toBe(14);
+    });
+
+    it('should have no pool for a player without a row', () => {
+      expect(PlayerPercentileUtils.getPlayerPool(skaters(), 1)).toBeUndefined();
+      expect(PlayerPercentileUtils.getPlayerPool(undefined, 8477934)).toBeUndefined();
+    });
+  });
+
   describe('getPlayerTraits', () => {
     it('should rank a forward among the 32 forwards with at least 7 games', () => {
       const traits = PlayerPercentileUtils.getPlayerTraits(skaters(), 8477934);

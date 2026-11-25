@@ -11,8 +11,11 @@ import { BehaviorSubject } from 'rxjs';
 import { AppTestingModule } from '@shared/testing/app-testing.module';
 import { SkaterSeasonStats } from '@shared/models/nhl-stats-api/player-stats.model';
 import {
+  mockEdgeGoalieDetail,
+  mockEdgeSkaterDetail,
   mockLeagueGoalies,
   mockLeagueSkaters,
+  mockNstPlayers,
   mockPlayerLanding,
   mockPlayerStats,
   mockSeasonHistory
@@ -30,6 +33,8 @@ describe('PlayerComponent', () => {
   const statsUrl = '/api/nhl-stats/player/';
   const historyUrl = 'assets/history/20252026-2.json';
   const leaguePlayersUrl = '/api/nhl-stats/league-players';
+  const nstPlayersUrl = '/api/nst/players';
+  const edgeUrl = '/api/nhl/edge/';
 
   beforeEach(async () => {
     routeParams = new BehaviorSubject<Params>({});
@@ -47,9 +52,13 @@ describe('PlayerComponent', () => {
   });
 
   afterEach(() => {
-    // A test about the other cards leaves the traits card's request open
+    // A test about the other cards leaves the traits and season performance cards' requests open
     httpMock.match(request => request.url.startsWith(leaguePlayersUrl))
         .forEach(request => request.flush({players: {playerId: []}, mostTeamGames: 0}));
+    httpMock.match(request => request.url.startsWith(nstPlayersUrl))
+        .forEach(request => request.flush({season: 0, players: {playerId: []}}));
+    httpMock.match(request => request.url.startsWith(edgeUrl))
+        .forEach(request => request.flush({}, {status: 404, statusText: 'Not Found'}));
     fixture.destroy();
     httpMock.verify();
   });
@@ -181,6 +190,7 @@ describe('PlayerComponent', () => {
       expect(child('app-player-career').loading).toBeTrue();
       expect(child('app-player-career').loadingRows).toBe(10);
       expect(child('app-player-traits').loading).toBeTrue();
+      expect(child('app-player-season-performance').loading).toBeTrue();
       httpMock.expectOne(landingUrl + '8477964/landing');
     });
 
@@ -423,6 +433,104 @@ describe('PlayerComponent', () => {
       fixture.detectChanges();
       expect(component.traits).toBeUndefined();
       expect(child('app-player-traits').loading).toBeTrue();
+      httpMock.expectOne(landingUrl + '8476945/landing');
+    });
+  });
+
+  describe('season performance', () => {
+    // The featured season of the captured landings is 2025-26, which the captured 2026-27 responses stand in for
+    const skatersUrl = leaguePlayersUrl + '?season=20252026&gameType=2&position=skater';
+    const nstUrl = nstPlayersUrl + '?season=20252026';
+    const skaterEdgeUrl = edgeUrl + 'skater-detail/8477964/20252026/2';
+
+    function card(): any {
+      return child('app-player-season-performance');
+    }
+
+    it('should show its skeleton until the league players, NST and EDGE have all answered', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      expect(card().loading).toBeTrue();
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      await settle();
+      expect(card().loading).toBeTrue();
+      httpMock.expectOne(nstUrl).flush(mockNstPlayers());
+      await settle();
+      expect(card().loading).toBeTrue();
+      httpMock.expectOne(skaterEdgeUrl).flush(mockEdgeSkaterDetail());
+      await settle();
+
+      expect(card().loading).toBeFalse();
+      expect(card().playerId).toBe(8477964);
+      expect(card().season).toBe(20252026);
+      expect(card().isGoalie).toBeFalse();
+      expect(card().leaguePlayers.players.length).toBe(50);
+      expect(card().nstPlayers.length).toBe(50);
+      expect(card().edge.skatingSpeed.burstsOver20.value).toBe(61);
+    });
+
+    it('should put the card after the recent games and before the traits and career cards', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      await settle();
+      const cards = Array.from<HTMLElement>(child('.player-cards').children).map(item => item.className);
+      expect(cards.indexOf('season-performance-container')).toBe(cards.indexOf('match-stats-container') + 1);
+      expect(cards.indexOf('side-cards')).toBe(cards.indexOf('season-performance-container') + 1);
+    });
+
+    it('should still show the card when NST and EDGE fail, without their stats', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      httpMock.expectOne(nstUrl).flush('Unavailable', {status: 503, statusText: 'Service Unavailable'});
+      httpMock.expectOne(skaterEdgeUrl).flush({status: 502}, {status: 502, statusText: 'Bad Gateway'});
+      await settle();
+      expect(card().loading).toBeFalse();
+      expect(card().leaguePlayers.players.length).toBe(50);
+      expect(card().nstPlayers).toBeUndefined();
+      expect(card().edge).toBeUndefined();
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it("should ask a goalie's EDGE stats, and not NST, which has no goalies here", async () => {
+      open(8476945);
+      await flushPlayerPage(8476945, 'goalie');
+      httpMock.expectOne(leaguePlayersUrl + '?season=20252026&gameType=2&position=goalie').flush(mockLeagueGoalies());
+      httpMock.expectOne(edgeUrl + 'goalie-detail/8476945/20252026/2').flush(mockEdgeGoalieDetail());
+      httpMock.expectNone(request => request.url.startsWith(nstPlayersUrl));
+      await settle();
+      expect(card().loading).toBeFalse();
+      expect(card().isGoalie).toBeTrue();
+      expect(card().edge.stats.gamesAbove900.value).toBe(0.6);
+    });
+
+    it('should leave the card out for a player without a row in the season, and when the league players fail',
+        async () => {
+          open(8477964);
+          await flushPlayerPage(8477964);
+          httpMock.expectOne(skatersUrl).flush('Bad gateway', {status: 502, statusText: 'Bad Gateway'});
+          httpMock.expectOne(nstUrl).flush(mockNstPlayers());
+          httpMock.expectOne(skaterEdgeUrl).flush(mockEdgeSkaterDetail());
+          await settle();
+          expect(component.seasonPerformanceLoading).toBeFalse();
+          expect(card()).toBeNull();
+          expect(child('app-player-career')).not.toBeNull();
+        });
+
+    it('should not give the next player the season of the one before', async () => {
+      open(8477964);
+      await flushPlayerPage(8477964);
+      httpMock.expectOne(skatersUrl).flush(mockLeagueSkaters());
+      httpMock.expectOne(nstUrl).flush(mockNstPlayers());
+      httpMock.expectOne(skaterEdgeUrl).flush(mockEdgeSkaterDetail());
+      await settle();
+      routeParams.next({id: '8476945'});
+      fixture.detectChanges();
+      expect(component.leaguePlayers).toBeUndefined();
+      expect(component.nstPlayers).toBeUndefined();
+      expect(component.edgeDetail).toBeUndefined();
+      expect(card().loading).toBeTrue();
       httpMock.expectOne(landingUrl + '8476945/landing');
     });
   });

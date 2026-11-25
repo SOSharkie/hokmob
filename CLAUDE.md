@@ -34,12 +34,15 @@ A request to one of them is a regression.
 - `HokMob.App/Controllers/NhlStatsController.cs`: `/api/nhl-stats/player/{id}`, `/leaders`, `/season-players`,
   `/team-players?teamId=&season=&gameType=`, `/teams`, `/team-games?season=&gameType=` (every team's games, for the
   power rating), `/league-players?season=&gameType=&position=skater|goalie` (every player's season row, as columns,
-  for the player page's traits percentiles), `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
+  for the player page's traits and season performance ranks), `/seasons` and `/draft?year=&round=`. It builds every stats API query (`NhlStatsApiClient`) and merges the reports a page needs
   into one response.
 - `HokMob.App/Controllers/NaturalStatTrickController.cs`: `/api/nst/game/{gameId}`, a game's xG and Corsi, and each
   shot's xG for the shot maps, read by `NaturalStatTrickGameParser` from NST's HTML game page, and
   `/api/nst/team-games?season=`, every team's xG in each game of a season, for the power rating, from NST's team game
-  logs (`NaturalStatTrickTeamGamesParser`). `NaturalStatTrickClient` caches them and stays under the token limits.
+  logs (`NaturalStatTrickTeamGamesParser`), and `/api/nst/players?season=`, every skater's season stats the NHL
+  doesn't have (ixG, high danger and rush attempts, rebounds, hits taken), for the player page's season
+  performance card (`NaturalStatTrickPlayersParser`). `NaturalStatTrickClient` caches them and stays under the token
+  limits.
 - `data/natural-stat-trick/team-games/`: whole seasons of NST's team game logs as CSV, for backtesting the power
   rating without asking NST again (see "Team game logs" in `docs/nhl-api.md`). It's in `.gitignore` and must stay out
   of git: the repo is public, and NST's data isn't republished in it. The app doesn't read the files.
@@ -58,7 +61,9 @@ A request to one of them is a regression.
     goes with the `.pill-picker` styles in `styles.scss`, for the draft, playoffs and stats category pickers.
     `StatCategoryUtils` defines the stats page's categories and the columns of their top 25 tables.
     `PlayerPercentileUtils` ranks a player's season stats against his position for the player page's traits card
-    (see "Player traits" in `docs/nhl-api.md`). `TeamRatingUtils` holds the team power rating and advanced stats, for any team (see "Team power rating" in `docs/nhl-api.md`). The
+    (see "Player traits" in `docs/nhl-api.md`), with each stat's rank and the pool both cards share
+    (`getPlayerPool`). `PlayerSeasonPerformanceUtils` defines the season performance card's groups and ranks its rows
+    (see "Season performance"). `TeamRatingUtils` holds the team power rating and advanced stats, for any team (see "Team power rating" in `docs/nhl-api.md`). The
     rating counts NST's xG and falls back to the NHL's stats without it, and nothing in it comes from the standings.
     `RatingColorUtils` colors every rating (games, season averages, teams) by its tier, with each scale's own cut
     points, from the `--rating-*` colors in `styles.scss`; never write a rating color's hex anywhere else (see "Rating
