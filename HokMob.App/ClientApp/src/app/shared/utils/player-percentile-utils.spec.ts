@@ -235,7 +235,7 @@ describe('PlayerPercentileUtils', () => {
       expect(defense.value).toBeCloseTo((31.5 / 32 * 100 + 3.5 / 32 * 100) / 2, 10);
       // His average is ahead of 18 forwards' averages, where his blocks and takeaways added up were ahead of 30
       expect(defense.percentile).toBeCloseTo(18.5 / 32 * 100, 10);
-      expect(defense.description).toContain('each ranked on its own and averaged');
+      expect(defense.description).toBe('Blocked shots, takeaways and 5v5 on-ice expected goals against per 60 minutes');
     });
 
     it('should put the forward who does both best at the top of defense', () => {
@@ -344,7 +344,7 @@ describe('PlayerPercentileUtils', () => {
       const goals = trait(draisaitl(), 'goals');
       expect(goals.value).toBeCloseTo((30.5 / 32 * 100 + 0.5 * 26.5 / 32 * 100) / 1.5, 10);
       expect(goals.formattedValue).toBe('2.41 goals and 1.43 ixG per 60');
-      expect(goals.description).toContain('expected goals (ixG) per 60 at half weight');
+      expect(goals.description).toBe('Goals and expected goals (ixG) per 60 minutes');
     });
 
     it('should count hits taken at half weight in Physical', () => {

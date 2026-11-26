@@ -154,7 +154,7 @@ export class PlayerPercentileUtils {
   private static readonly goalsAxis: PlayerTraitAxis<SkaterTraitRow> = {
     key: "goals",
     label: "Goals",
-    description: "Goals per 60 minutes, and his expected goals (ixG) per 60 at half weight, each ranked and averaged",
+    description: "Goals and expected goals (ixG) per 60 minutes",
     // Chance quality counts, so a hot or cold shooting streak counts less, while goals still lead: goals with ixG at
     // half repeat from season to season better than goals alone (0.71 to 0.73 for forwards, against 0.62 to 0.63)
     parts: [
@@ -178,8 +178,7 @@ export class PlayerPercentileUtils {
   private static readonly possessionAxis: PlayerTraitAxis<SkaterTraitRow> = {
     key: "possession",
     label: "Possession",
-    description: "Shot attempts per 60 minutes (on goal, missed and blocked) and his team's 5v5 Corsi For % while he's " +
-        "on the ice, each ranked and averaged",
+    description: "Shot attempts per 60 minutes and 5v5 Corsi For %",
     // Both from the stats API. Of the pairs tried, they repeat from season to season best (0.74 to 0.79 for forwards);
     // high danger attempts (iHDCF) or on-ice xGF% in their place repeat less
     parts: [
@@ -232,8 +231,7 @@ export class PlayerPercentileUtils {
   private static readonly speedAxis: PlayerTraitAxis<SkaterTraitRow> = {
     key: "speed",
     label: "Speed",
-    description: "Bursts over 20 mph per 60 minutes, and top skating speed at half weight (NHL EDGE), each ranked " +
-        "and averaged",
+    description: "Bursts over 20 mph per 60 minutes and top skating speed",
     // Ranked against our pool, not EDGE's percentiles: EDGE ranks the bursts as a count, which favors the players
     // with the most games and ice time. Top speed counts half: a single fastest moment, it repeats from season to
     // season less (0.56 and 0.63 for forwards, against 0.91 and 0.87 for bursts per 60), but it doesn't grow in little ice time the way
@@ -255,8 +253,7 @@ export class PlayerPercentileUtils {
   private static readonly defenseAxis: PlayerTraitAxis<SkaterTraitRow> = {
     key: "defense",
     label: "Defense",
-    description: "Blocked shots and takeaways per 60 minutes, and the 5v5 expected goals against per 60 while he's on " +
-        "the ice at half weight (lower is better), each ranked on its own and averaged",
+    description: "Blocked shots, takeaways and 5v5 on-ice expected goals against per 60 minutes",
     // Ranked apart, since a defenseman blocks five or six shots for every takeaway and blocks alone would decide it.
     // xGA follows the team and the role (a defenseman on a weak team, or who starts in his own end, allows more), so
     // it counts half: at a full third, defensemen's Defense repeated from season to season less than without it
@@ -288,7 +285,7 @@ export class PlayerPercentileUtils {
   private static readonly physicalAxis: PlayerTraitAxis<SkaterTraitRow> = {
     key: "physical",
     label: "Physical",
-    description: "Hits per 60 minutes, and hits taken per 60 at half weight, each ranked and averaged",
+    description: "Hits and hits taken per 60 minutes",
     // Hits taken count half, since they partly measure carrying the puck into contact
     parts: [
       {getValue: row => PlayerPercentileUtils.getPer60(row.hits, PlayerPercentileUtils.getSkaterTimeOnIce(row))},

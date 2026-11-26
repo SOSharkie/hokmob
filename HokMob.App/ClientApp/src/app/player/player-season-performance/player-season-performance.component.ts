@@ -43,7 +43,7 @@ export class PlayerSeasonPerformanceComponent implements OnChanges {
   private static readonly headerHeight = 92;
 
   /** The skeleton's rows per column on a desktop (the taller one) and on a phone, and their groups: a center's card. */
-  private static readonly skaterRows = {desktop: 16, desktopGroups: 3, mobile: 31, mobileGroups: 7};
+  private static readonly skaterRows = {desktop: 17, desktopGroups: 3, mobile: 32, mobileGroups: 7};
 
   private static readonly goalieRows = {desktop: 6, desktopGroups: 2, mobile: 11, mobileGroups: 4};
 

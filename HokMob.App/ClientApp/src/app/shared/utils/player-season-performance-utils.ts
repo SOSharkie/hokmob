@@ -198,6 +198,13 @@ export class PlayerSeasonPerformanceUtils {
           format: value => PlayerSeasonPerformanceUtils.formatPercent(value)
         },
         {
+          key: "expectedGoalsShare", label: "5v5 xGF%", fromNst: true,
+          description: "5v5 expected goals for %: his team's share of the expected goals while he's on the ice",
+          getValue: row => PlayerPercentileUtils.getShare(row.nst?.onIceExpectedGoalsFor,
+              row.nst?.onIceExpectedGoalsAgainst),
+          format: value => PlayerSeasonPerformanceUtils.formatPercent(value)
+        },
+        {
           key: "faceoffs", label: "Faceoffs", description: "Faceoffs won, of the ones he took",
           getValue: row => PlayerPercentileUtils.getShare(row.totalFaceoffWins, row.totalFaceoffLosses),
           format: value => PlayerSeasonPerformanceUtils.formatPercent(value),
