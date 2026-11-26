@@ -98,8 +98,9 @@ describe('PlayerSeasonPerformanceComponent', () => {
     expect(modeButton('Per 60').getAttribute('aria-pressed')).toBe('true');
     expect(modeButton('Total').getAttribute('aria-pressed')).toBe('false');
     expect(rowText('Goals')).toEqual(['2.41', '2nd']);
-    // A share stays as it is
+    // Shares stay as they are
     expect(rowText('5v5 Corsi For %')).toEqual(corsi);
+    expect(rowText('5v5 xGF%')).toEqual(['55.5%', '12th']);
     expect(text('.rating-bar-card-note')).toContain('Counting stats per 60 minutes on the ice.');
 
     modeButton('Total').click();
@@ -120,7 +121,9 @@ describe('PlayerSeasonPerformanceComponent', () => {
     const link = element().querySelector<HTMLAnchorElement>('.performance-source');
     expect(link.textContent).toContain('Natural Stat Trick');
     expect(link.href).toContain('naturalstattrick.com/playerteams.php?fromseason=20262027&thruseason=20262027');
+    expect(link.textContent).toContain('xGF%');
     expect(rowText('Expected goals')).toEqual(['13.6', '2nd']);
+    expect(rowText('5v5 xGF%')).toEqual(['55.5%', '12th']);
     expect(text('.rating-bar-card-note')).toContain('Ranks among the 32 forwards with 7+ games in 2026-2027.');
   });
 
@@ -129,6 +132,7 @@ describe('PlayerSeasonPerformanceComponent', () => {
     expect(element().querySelector('.performance-source')).toBeNull();
     expect(rowText('Expected goals')).toBeUndefined();
     expect(rowText('Hits taken')).toBeUndefined();
+    expect(rowText('5v5 xGF%')).toBeUndefined();
     expect(rowText('Goals')).toEqual(['23', '1st']);
   });
 
@@ -178,10 +182,10 @@ describe('PlayerSeasonPerformanceComponent', () => {
       const skeleton = element().querySelector('app-skeleton-card') as any;
       expect(skeleton.getAttribute('shape')).toBe('bar');
       expect(skeleton.cardTitle).toBe('Season Performance');
-      // 16 rows in the taller column, under its 3 group titles
-      expect(skeleton.layout.rows).toBe(16);
-      expect(skeleton.layout.rows * skeleton.layout.rowHeight).toBe(16 * 43 + 22 + 2 * 46);
-      expect(skeleton.mobileLayout.rows).toBe(31);
+      // 17 rows in the taller column, under its 3 group titles
+      expect(skeleton.layout.rows).toBe(17);
+      expect(skeleton.layout.rows * skeleton.layout.rowHeight).toBe(17 * 43 + 22 + 2 * 46);
+      expect(skeleton.mobileLayout.rows).toBe(32);
       expect(element().querySelector('section')).toBeNull();
     });
 

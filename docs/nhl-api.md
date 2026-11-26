@@ -36,7 +36,7 @@ syntax or the response fields, so those are written down below (its WADL is at
 | Player search | `search.d3.nhle.com` | Active filter, current team and up to 20 results; the stats API's `players` has none of that |
 | Expected goals (xG), Corsi | Natural Stat Trick | Neither NHL API has them per game, and neither has xG |
 | Each team's xG per game (the power rating, and 5v5 xGF%) | Natural Stat Trick's team game logs | A whole season of every team's games in one page, so one fetch an hour covers the league |
-| A skater's season ixG, high danger and rush attempts, rebounds created, hits taken | Natural Stat Trick's player season page | Every skater of a season in one page, keyed by NHL player ID; not NST's page for one player, which would cost a page per visitor |
+| A skater's season ixG, high danger and rush attempts, rebounds created, hits taken, 5v5 on-ice xGF and xGA | Natural Stat Trick's player season page | Every skater of a season in one page, keyed by NHL player ID; not NST's page for one player, which would cost a page per visitor |
 
 ## What each page loads
 
@@ -78,7 +78,7 @@ class (`styles/skeleton.scss`), which a page's own placeholders use too, like th
   season in the landing's `seasonTotals` and a recent game row per game played, up to 10, and the traits card until
   the league players, NST and a skater's EDGE season file have all answered, so the chart's axes don't change after
   it appears (with a line for the NST credit under a skater's chart). The season performance card waits for the league players, NST and EDGE together, so its
-  rows don't come in one source at a time, at a center's size with NST and EDGE (16 rows in its taller column on a
+  rows don't come in one source at a time, at a center's size with NST and EDGE (17 rows in its taller column on a
   desktop, 32 on a phone) or a goalie's. A player who has never played an NHL game shows no stats skeletons.
 - **Known drift:** a schedule row grows when a long team name wraps in a narrow column, a team stats row is 44 or 45px
   on a phone, a career row's height follows its crests (a traded season's two logos can wrap), and the player traits
@@ -651,9 +651,9 @@ works out every row.
   60.
 - **Skater groups:** Scoring (goals, assists, primary and secondary, points, power play points), Shooting (shots,
   shooting %, shot attempts, NST's ixG and high danger attempts), Possession
-  (5v5 Corsi and Fenwick For %, faceoff % for a player who takes faceoffs, with his record in its tooltip, NST's
-  rebounds created and rush attempts), Defense and physical (hits, NST's hits taken, blocked shots, takeaways,
-  giveaways), Discipline (penalty minutes, penalties drawn, the differential), Usage (ice time, power play and
+  (5v5 Corsi and Fenwick For %, NST's 5v5 xGF% (his on-ice xGF over xGF plus xGA; McDavid's 56.1% on 2026-11-24),
+  faceoff % for a player who takes faceoffs, with his record in its tooltip, NST's rebounds created and rush
+  attempts), Defense and physical (hits, NST's hits taken, blocked shots, takeaways, giveaways), Discipline (penalty minutes, penalties drawn, the differential), Usage (ice time, power play and
   short-handed time per game, EDGE's offensive zone time) and Skating (EDGE's top speed, bursts over 20 mph and top
   shot speed). The first three groups are the left column on a desktop, the others the right.
 - **Goalie groups:** Goaltending (save %, GAA, goals saved above average and per 60), By strength (even strength and
@@ -1159,8 +1159,8 @@ had two shots in the same second, paired by distance.
 ## Open items
 
 - **NST for the season performance card:** a goalie's GSAx and high danger save % (`playerteams.php` with `pos=G` and
-  `stdoi=g`, never fetched: save one page to scratch before parsing) aren't on the card. A skater's on-ice xGF% is in
-  `/api/nst/players` now (the traits card's Defense uses its xGA), but not on the card.
+  `stdoi=g`, never fetched: save one page to scratch before parsing) aren't on the card. A skater's on-ice xGF% is, in
+  Possession.
 - **A minimum ice time for the traits pool:** per 60 axes still put fourth-liners at the top of Defense and Physical.
 
 - **Goalie season averages** run higher than skaters' (5.4 to 6.8 in 2025-26), so on the season average cut points

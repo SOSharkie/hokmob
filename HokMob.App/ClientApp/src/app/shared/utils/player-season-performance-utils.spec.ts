@@ -58,6 +58,8 @@ describe('PlayerSeasonPerformanceUtils', () => {
           ['Goals', 'Assists', 'Primary assists', 'Secondary assists', 'Points', 'Power play points']);
       expect(performance.groups.find(group => group.title === 'Shooting').rows.map(item => item.label)).toEqual(
           ['Shots on goal', 'Shooting %', 'Shot attempts', 'Expected goals', 'High danger attempts']);
+      expect(performance.groups.find(group => group.title === 'Possession').rows.map(item => item.label)).toEqual(
+          ['5v5 Corsi For %', '5v5 Fenwick For %', '5v5 xGF%', 'Faceoffs', 'Rebounds created', 'Rush attempts']);
     });
 
     it('should make the bar as long as his percentile', () => {
@@ -117,6 +119,34 @@ describe('PlayerSeasonPerformanceUtils', () => {
       expect(row(performance, 'rushAttempts').value).toBe('3');
     });
 
+    it('should rank his 5v5 xGF%, his team\'s share of the expected goals while he\'s on the ice', () => {
+      const total = PlayerSeasonPerformanceUtils.getSeasonPerformance(skaters(), draisaitl, 'total',
+          mockNstPlayerRows());
+      // 20.06 xGF and 16.09 xGA at 5v5
+      expect(row(total, 'expectedGoalsShare')).toEqual(jasmine.objectContaining({value: '55.5%', rank: '12th'}));
+      expect(row(total, 'expectedGoalsShare').description).toBe('5v5 expected goals for %: his team\'s share of the ' +
+          'expected goals while he\'s on the ice. 12th of 32 forwards with 7+ games');
+      // A share, so Per 60 doesn't change it
+      const per60 = PlayerSeasonPerformanceUtils.getSeasonPerformance(skaters(), draisaitl, 'per60',
+          mockNstPlayerRows());
+      expect(row(per60, 'expectedGoalsShare')).toEqual(row(total, 'expectedGoalsShare'));
+    });
+
+    it('should rank a defenseman\'s 5v5 xGF% among the defensemen', () => {
+      const performance = PlayerSeasonPerformanceUtils.getSeasonPerformance(skaters(), 8470613, 'total',
+          mockNstPlayerRows());
+      expect(row(performance, 'expectedGoalsShare')).toEqual(jasmine.objectContaining({value: '43.2%', rank: '9th'}));
+    });
+
+    it('should leave 5v5 xGF% out when NST\'s on-ice page couldn\'t be had', () => {
+      const nstPlayers = mockNstPlayerRows().map(nst => ({
+        ...nst, onIceTimeOnIce: null, onIceExpectedGoalsFor: null, onIceExpectedGoalsAgainst: null
+      }));
+      const performance = PlayerSeasonPerformanceUtils.getSeasonPerformance(skaters(), draisaitl, 'total', nstPlayers);
+      expect(row(performance, 'expectedGoalsShare')).toBeUndefined();
+      expect(row(performance, 'expectedGoals').value).toBe('13.6');
+    });
+
     it('should never color hits taken, which are neither good nor bad', () => {
       const hitsTaken = row(PlayerSeasonPerformanceUtils.getSeasonPerformance(skaters(), draisaitl, 'total',
           mockNstPlayerRows()), 'hitsTaken');
@@ -129,7 +159,7 @@ describe('PlayerSeasonPerformanceUtils', () => {
       [undefined, [], mockNstPlayerRows().filter(nst => nst.playerId !== draisaitl)].forEach(nstPlayers => {
         const performance = PlayerSeasonPerformanceUtils.getSeasonPerformance(skaters(), draisaitl, 'total', nstPlayers);
         expect(performance.hasNst).toBeFalse();
-        ['expectedGoals', 'highDangerAttempts', 'reboundsCreated', 'rushAttempts', 'hitsTaken'].forEach(key => expect(row(performance, key)).withContext(key).toBeUndefined());
+        ['expectedGoals', 'highDangerAttempts', 'reboundsCreated', 'rushAttempts', 'hitsTaken', 'expectedGoalsShare'].forEach(key => expect(row(performance, key)).withContext(key).toBeUndefined());
         expect(row(performance, 'goals').rank).toBe('1st');
       });
     });

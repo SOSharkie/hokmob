@@ -80,8 +80,7 @@ describe('PlayerTraitsComponent', () => {
     expect(fixture.nativeElement.querySelector('.traits-small-sample')).toBeNull();
     // The stat behind each percentile is in its title
     expect(fixture.nativeElement.querySelector('.trait-label').getAttribute('title'))
-        .toBe('Goals per 60 minutes, and his expected goals (ixG) per 60 at half weight, each ranked and averaged: ' +
-            '2.41 goals per 60');
+        .toBe('Goals and expected goals (ixG) per 60 minutes: 2.41 goals per 60');
     // Without Natural Stat Trick, no credit
     expect(fixture.nativeElement.querySelector('.traits-source')).toBeNull();
   });
@@ -92,7 +91,7 @@ describe('PlayerTraitsComponent', () => {
         .toEqual(['Goals', 'Possession', 'Playmaking', 'Speed', 'Defense', 'Physical']);
     // The file's date is in Speed's title
     const speed = fixture.nativeElement.querySelectorAll('.trait-label')[3];
-    expect(speed.getAttribute('title')).toContain('(NHL EDGE)');
+    expect(speed.getAttribute('title')).toContain('Bursts over 20 mph per 60 minutes and top skating speed');
     expect(speed.getAttribute('title')).toMatch(/, through [A-Z][a-z]+ \d+$/);
     // The explanation is the pool and the math, the sources being in the titles and the credit
     expect(text('.traits-help')).toBe('Among 32 forwards with at least 7 games in 2026-2027. Each number is a ' +
